@@ -1,0 +1,1547 @@
+[
+  {
+    "id": "CASE-005",
+    "caseNumber": "200-เซ็นเซอร์น้ำอัจฉริยะ",
+    "title": "IOT Water Sensor - High Water Level Alert",
+    "description": "เซ็นเซอร์ตรวจจับระดับน้ำสูงผิดปกติในระบบระบายน้ำเขตบางรัก อาจเกิดน้ำท่วมในพื้นที่ธุรกิจ",
+    "status": "S001",
+    "statusLabel": "เหตุใหม่",
+    "priority": "high",
+    "category": "IOT Water Sensor",
+    "assignedTo": "Sarah Chen",
+    "reporter": "สมชาย วงศ์ใหญ่",
+    "createdAt": "2025-01-16T06:30:00Z",
+    "updatedAt": "2025-01-16T06:30:00Z",
+    "dueDate": "2025-01-16T11:15:00Z",
+    "tags": ["iot", "water-sensor", "flood-risk", "urgent"],
+    "attachments": [
+      {
+        "id": "att-5",
+        "filename": "water-level-readings.csv",
+        "size": 15360,
+        "type": "text/csv",
+        "uploadedAt": "2025-01-16T06:35:00Z",
+        "uploadedBy": "Automated System"
+      }
+    ],
+    "comments": [
+      {
+        "id": "comment-17",
+        "content": "ได้รับรายงานจากระบบอัตโนมัติ กำลังตรวจสอบข้อมูล",
+        "author": "สมชาย วงศ์ใหญ่",
+        "createdAt": "2025-01-16T06:35:00Z",
+        "isInternal": true
+      }
+    ],
+    "customFields": {
+      "sensorId": "WS-D5-001",
+      "currentLevel": "2.8m",
+      "thresholdLevel": "2.0m",
+      "affectedArea": "เขตบางรัก พื้นที่ธุรกิจ"
+    },
+    "location": "อำเภอบางรัก ระบบระบายน้ำ",
+    "department": "Water Management",
+    "estimatedHours": 3,
+    "sla": "45"
+  },
+  {
+    "id": "CASE-006",
+    "caseNumber": "100-กล้องอัจฉริยะ",
+    "title": "IOT Camera - Surveillance Equipment Malfunction",
+    "description": "กล้องวงจรปิดที่สี่แยกไม่แสดงภาพ สงสัยว่าฮาร์ดแวร์เสียหาย ต้องการตรวจสอบและซ่อมแซม",
+    "status": "S003",
+    "statusLabel": "สั่งการรถสายตรวจ",
+    "priority": "high",
+    "category": "IOT Camera",
+    "assignedTo": "Technical Team Alpha",
+    "reporter": "สุกัญญา ทองดี",
+    "createdAt": "2025-01-15T22:15:00Z",
+    "updatedAt": "2025-01-16T07:45:00Z",
+    "dueDate": "2025-01-16T16:15:00Z",
+    "tags": ["iot", "camera", "surveillance", "hardware"],
+    "attachments": [
+      {
+        "id": "att-6",
+        "filename": "camera-diagnostics.pdf",
+        "size": 245760,
+        "type": "application/pdf",
+        "uploadedAt": "2025-01-16T07:00:00Z",
+        "uploadedBy": "Control Room Operator"
+      }
+    ],
+    "comments": [
+      {
+        "id": "comment-4",
+        "content": "สั่งหน่วยตรวจสอบไปยังจุดติดตั้งกล้อง",
+        "author": "ศิริชัย ควบคุมการ",
+        "createdAt": "2025-01-16T07:45:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-18",
+        "content": "ตรวจสอบประวัติการทำงานของกล้องแล้ว หยุดทำงานตั้งแต่เมื่อคืน",
+        "author": "เทคนิคทีม อัลฟา",
+        "createdAt": "2025-01-16T08:15:00Z",
+        "isInternal": false
+      }
+    ],
+    "customFields": {
+      "cameraId": "CAM-INT-445",
+      "lastOnlineTime": "2025-01-15T21:30:00Z",
+      "intersectionName": "สี่แยกราชดำเนิน"
+    },
+    "location": "อำเภอพระนคร สี่แยกราชดำเนิน",
+    "department": "Traffic Surveillance",
+    "estimatedHours": 4,
+    "sla": "30"
+  },
+  {
+    "id": "CASE-007",
+    "caseNumber": "300-จราจรอัจฉริยะ",
+    "title": "IOT Traffic - Heavy Congestion Alert",
+    "description": "ระบบตรวจสอบการจราจรตรวจพบรถติดหนาแน่นบนถนนวิภาวดีรังสิต ในช่วงเวลาเร่งด่วน",
+    "status": "S006",
+    "statusLabel": "ถึงที่เกิดเหตุ",
+    "priority": "high",
+    "category": "IOT Traffic",
+    "assignedTo": "Traffic Control Unit",
+    "reporter": "นิรันดร์ สายสุข",
+    "createdAt": "2025-01-16T08:00:00Z",
+    "updatedAt": "2025-01-16T08:30:00Z",
+    "dueDate": "2025-01-16T10:00:00Z",
+    "tags": ["iot", "traffic", "congestion", "highway"],
+    "attachments": [
+      {
+        "id": "att-7",
+        "filename": "traffic-flow-analysis.jpg",
+        "size": 892000,
+        "type": "image/jpeg",
+        "uploadedAt": "2025-01-16T08:15:00Z",
+        "uploadedBy": "Highway Monitoring System"
+      }
+    ],
+    "comments": [
+      {
+        "id": "comment-5",
+        "content": "เจ้าหน้าที่ควบคุมจราจรได้เดินทางถึงจุดเกิดเหตุแล้ว",
+        "author": "ประวิทย์ ควบคุมจราจร",
+        "createdAt": "2025-01-16T08:30:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-19",
+        "content": "เริ่มจัดเรียงการจราจรและเปิดเลนเพิ่มเติม",
+        "author": "ประวิทย์ ควบคุมจราจร",
+        "createdAt": "2025-01-16T08:45:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-20",
+        "content": "การจราจรเริ่มคล่องตัวขึ้น ลดเวลาติดขัดลง 40%",
+        "author": "ประวิทย์ ควบคุมจราจร",
+        "createdAt": "2025-01-16T09:15:00Z",
+        "isInternal": false
+      }
+    ],
+    "customFields": {
+      "averageSpeed": "15 km/h",
+      "normalSpeed": "80 km/h",
+      "affectedLength": "3.2 km",
+      "estimatedDelay": "25 นาที"
+    },
+    "location": "อำเภอจตุจักร ถนนวิภาวดีรังสิต กม.15-18",
+    "department": "Traffic Management",
+    "estimatedHours": 2,
+    "actualHours": 1,
+    "sla": "50"
+  },
+  {
+    "id": "CASE-008",
+    "caseNumber": "200-เซ็นเซอร์น้ำอัจฉริยะ",
+    "title": "IOT Water Sensor - Calibration Required",
+    "description": "ต้องการบำรุงรักษาและปรับเทียบเซ็นเซอร์วัดระดับน้ำในพื้นที่เขตหลักสี่ตามกำหนดการ",
+    "status": "S015",
+    "statusLabel": "กำลังดำเนินการ",
+    "priority": "medium",
+    "category": "IOT Water Sensor",
+    "assignedTo": "Maintenance Team B",
+    "reporter": "อุมาพร เจริญสุข",
+    "createdAt": "2025-01-14T09:00:00Z",
+    "updatedAt": "2025-01-16T08:00:00Z",
+    "dueDate": "2025-01-18T17:00:00Z",
+    "tags": ["iot", "water-sensor", "maintenance", "calibration"],
+    "attachments": [],
+    "comments": [
+      {
+        "id": "comment-6",
+        "content": "กำลังดำเนินการปรับเทียบ เสร็จแล้ว 3 จาก 8 เครื่อง",
+        "author": "ทีมบำรุงรักษา บี",
+        "createdAt": "2025-01-16T08:00:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-30",
+        "content": "ปรับเทียบเสร็จแล้ว 5 จาก 8 เครื่อง คาดว่าจะเสร็จวันพรุ่งนี้",
+        "author": "ทีมบำรุงรักษา บี",
+        "createdAt": "2025-01-16T15:30:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-31",
+        "content": "พบปัญหาเซ็นเซอร์ 1 ตัว ต้องเปลี่ยนอะไหล่",
+        "author": "ช่างเทคนิค",
+        "createdAt": "2025-01-16T16:45:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-32",
+        "content": "สั่งอะไหล่เพิ่มเติมแล้ว คาดว่าจะมาถึงวันจันทร์",
+        "author": "ผู้จัดการฝ่ายจัดซื้อ",
+        "createdAt": "2025-01-16T17:00:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-33",
+        "content": "อัพเดทแผนงาน เลื่อนกำหนดเสร็จ 2 วัน",
+        "author": "หัวหน้าทีมบำรุงรักษา",
+        "createdAt": "2025-01-16T17:15:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-34",
+        "content": "แจ้งผู้ที่เกี่ยวข้องทราบการเปลี่ยนแปลงกำหนดการแล้ว",
+        "author": "ผู้ประสานงาน",
+        "createdAt": "2025-01-16T17:30:00Z",
+        "isInternal": true
+      }
+    ],
+    "customFields": {
+      "sensorsTotal": 8,
+      "sensorsCompleted": 3,
+      "lastCalibration": "2024-10-15",
+      "nextScheduledMaintenance": "2025-04-15"
+    },
+    "location": "อำเภอหลักสี่ พื้นที่เขตเหนือ",
+    "department": "Sensor Maintenance",
+    "estimatedHours": 16,
+    "actualHours": 6,
+    "sla": "45"
+  },
+  {
+    "id": "CASE-009",
+    "caseNumber": "100-กล้องอัจฉริยะ",
+    "title": "IOT Camera - Night Vision Module Failure",
+    "description": "กล้องรักษาความปลอดภัยมีปัญหาการมองเห็นในเวลากลางคืน ภาพไม่ชัดเจนในลานจอดรถ",
+    "status": "S002",
+    "statusLabel": "เหตุรอสั่งการ",
+    "priority": "medium",
+    "category": "IOT Camera",
+    "assignedTo": "Night Shift Technician",
+    "reporter": "วิชัย รักษาสันติ",
+    "createdAt": "2025-01-16T02:30:00Z",
+    "updatedAt": "2025-01-16T08:45:00Z",
+    "dueDate": "2025-01-17T14:30:00Z",
+    "tags": ["iot", "camera", "night-vision", "security"],
+    "attachments": [
+      {
+        "id": "att-8",
+        "filename": "poor-quality-footage.mp4",
+        "size": 5242880,
+        "type": "video/mp4",
+        "uploadedAt": "2025-01-16T02:45:00Z",
+        "uploadedBy": "Security Guard"
+      }
+    ],
+    "comments": [
+      {
+        "id": "comment-21",
+        "content": "รายงานปัญหาจากทีมรักษาความปลอดภัยกะกลางคืน",
+        "author": "วิชัย รักษาสันติ",
+        "createdAt": "2025-01-16T02:45:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-22",
+        "content": "ตรวจสอบแล้วพบว่าโมดูลไนท์วิชั่นอาจเสียหาย",
+        "author": "เทคนิคกะกลางคืน",
+        "createdAt": "2025-01-16T06:30:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-23",
+        "content": "รออนุมัติสั่งซื้ออะไหล่ทดแทน",
+        "author": "เทคนิคกะกลางคืน",
+        "createdAt": "2025-01-16T08:45:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-24",
+        "content": "ได้รับอนุมัติแล้ว จะดำเนินการซ่อมวันพรุ่งนี้",
+        "author": "หัวหน้าเทคนิค",
+        "createdAt": "2025-01-16T10:15:00Z",
+        "isInternal": false
+      }
+    ],
+    "customFields": {
+      "cameraModel": "SecureCam-Pro-4K",
+      "installDate": "2023-08-15",
+      "warrantyStatus": "ยังไม่หมดอายุ",
+      "lightConditions": "ไม่มีแสงสว่าง"
+    },
+    "location": "อำเภอวัฒนา ลานจอดรถตะวันตก",
+    "department": "Security Systems",
+    "estimatedHours": 3,
+    "sla": "30"
+  },
+  {
+    "id": "CASE-010",
+    "caseNumber": "300-จราจรอัจฉริยะ",
+    "title": "IOT Traffic - Signal Timing Optimization",
+    "description": "ขอปรับปรุงระบบจังหวะไฟจราจรตามการวิเคราะห์รูปแบบการจราจรใหม่ในเขตธุรกิจกลางเมือง",
+    "status": "S017",
+    "statusLabel": "ขออนุมัติงาน",
+    "priority": "low",
+    "category": "IOT Traffic",
+    "assignedTo": "Traffic Engineering Team",
+    "reporter": "รัตนา ประดิษฐ์ดี",
+    "createdAt": "2025-01-12T14:20:00Z",
+    "updatedAt": "2025-01-15T11:30:00Z",
+    "dueDate": "2025-02-01T17:00:00Z",
+    "tags": ["iot", "traffic", "optimization", "planning"],
+    "attachments": [
+      {
+        "id": "att-9",
+        "filename": "traffic-pattern-study.pdf",
+        "size": 3145728,
+        "type": "application/pdf",
+        "uploadedAt": "2025-01-12T14:30:00Z",
+        "uploadedBy": "City Planning Department"
+      }
+    ],
+    "comments": [
+      {
+        "id": "comment-7",
+        "content": "การวิเคราะห์เบื้องต้นแสดงว่าสามารถปรับปรุงได้ 15%",
+        "author": "ทีมวิศวกรรมจราจร",
+        "createdAt": "2025-01-15T11:30:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-35",
+        "content": "เสนอแผนการติดตั้งเป็น 3 เฟส เริ่มจากจุดที่มีปัญหามากที่สุด",
+        "author": "ทีมวิศวกรรมจราจร",
+        "createdAt": "2025-01-15T14:20:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-36",
+        "content": "รออนุมัติงบประมาณจากผู้บริหาร",
+        "author": "รัตนา ประดิษฐ์ดี",
+        "createdAt": "2025-01-15T16:45:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-37",
+        "content": "เตรียมเอกสารประกอบการพิจารณาเพิ่มเติม",
+        "author": "ผู้ช่วยโครงการ",
+        "createdAt": "2025-01-16T09:00:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-38",
+        "content": "นัดประชุมพิจารณาอนุมัติวันพฤหัสบดีหน้า",
+        "author": "เลขานุการผู้บริหาร",
+        "createdAt": "2025-01-16T11:15:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-39",
+        "content": "ส่งเอกสารให้ทีมกฎหมายตรวจสอบความถูกต้องแล้ว",
+        "author": "ผู้จัดการโครงการ",
+        "createdAt": "2025-01-16T13:30:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-40",
+        "content": "ได้รับการรับรองจากทีมกฎหมาย พร้อมนำเสนอ",
+        "author": "นักกฎหมาย",
+        "createdAt": "2025-01-16T15:45:00Z",
+        "isInternal": false
+      }
+    ],
+    "customFields": {
+      "intersectionsAffected": 12,
+      "potentialImprovementPercent": 15,
+      "budgetRequired": "25,000 บาท",
+      "implementationPhases": 3
+    },
+    "location": "อำเภอปทุมวัน ใจกลางเมือง",
+    "department": "Traffic Engineering",
+    "estimatedHours": 80,
+    "sla": "50"
+  },
+  {
+    "id": "CASE-011",
+    "caseNumber": "200-เซ็นเซอร์น้ำอัจฉริยะ",
+    "title": "IOT Water Sensor - Connection Lost",
+    "description": "เซ็นเซอร์วัดระดับน้ำหลายจุดในนิคมอุตสาหกรรมหายการเชื่อมต่อเครือข่าย ต้องการตรวจสอบระบบ",
+    "status": "S008",
+    "statusLabel": "ดำเนินการล่าช้า",
+    "priority": "high",
+    "category": "IOT Water Sensor",
+    "assignedTo": "Network Infrastructure Team",
+    "reporter": "ประหยัด ติดตั้งเซ็น",
+    "createdAt": "2025-01-15T16:45:00Z",
+    "updatedAt": "2025-01-16T09:15:00Z",
+    "dueDate": "2025-01-16T12:45:00Z",
+    "tags": ["iot", "water-sensor", "connectivity", "network"],
+    "attachments": [
+      {
+        "id": "att-10",
+        "filename": "network-diagnostic.log",
+        "size": 8192,
+        "type": "text/plain",
+        "uploadedAt": "2025-01-16T09:00:00Z",
+        "uploadedBy": "Network Infrastructure Team"
+      }
+    ],
+    "comments": [
+      {
+        "id": "comment-8",
+        "content": "กำหนดการเปลี่ยนสวิตช์เครือข่ายในวันพรุ่งนี้เช้า",
+        "author": "ทีมโครงสร้างเครือข่าย",
+        "createdAt": "2025-01-16T09:15:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-41",
+        "content": "ตรวจสอบสาเหตุเริ่มต้น พบว่าสวิตช์หลักเสียหาย",
+        "author": "ประหยัด ติดตั้งเซ็น",
+        "createdAt": "2025-01-15T17:30:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-42",
+        "content": "ประสานงานกับผู้จำหน่ายอุปกรณ์เพื่อเร่งส่งของ",
+        "author": "ฝ่ายจัดซื้อ",
+        "createdAt": "2025-01-16T08:00:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-43",
+        "content": "อุปกรณ์มาถึงแล้ว เตรียมพร้อมติดตั้ง",
+        "author": "หัวหน้าโครงสร้างเครือข่าย",
+        "createdAt": "2025-01-16T10:30:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-44",
+        "content": "แจ้งโรงงานในพื้นที่ให้ทราบการซ่อมแซม",
+        "author": "ผู้ประสานงานอุตสาหกรรม",
+        "createdAt": "2025-01-16T11:00:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-45",
+        "content": "เตรียมทีมงานสำรองในกรณีมีปัญหาระหว่างติดตั้ง",
+        "author": "หัวหน้าโครงสร้างเครือข่าย",
+        "createdAt": "2025-01-16T11:45:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-46",
+        "content": "ทดสอบระบบสำรองแล้ว พร้อมใช้งานตามแผน",
+        "author": "วิศวกรเครือข่าย",
+        "createdAt": "2025-01-16T12:15:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-47",
+        "content": "เลื่อนเวลาการติดตั้งเป็นบ่ายวันนี้เนื่องจากปัญหาพื้นที่",
+        "author": "หัวหน้าโครงสร้างเครือข่าย",
+        "createdAt": "2025-01-16T13:30:00Z",
+        "isInternal": false
+      }
+    ],
+    "customFields": {
+      "affectedSensors": 6,
+      "lastConnectionTime": "2025-01-15T15:30:00Z",
+      "networkZone": "อุตสาหกรรม-A",
+      "replacementPartStatus": "สั่งซื้อแล้ว"
+    },
+    "location": "อำเภอคลองเตย นิคมอุตสาหกรรม เขต A",
+    "department": "Network Operations",
+    "estimatedHours": 8,
+    "actualHours": 2,
+    "sla": "45"
+  },
+  {
+    "id": "CASE-012",
+    "caseNumber": "100-กล้องอัจฉริยะ",
+    "title": "IOT Camera - Storage Capacity Full",
+    "description": "ระบบจัดเก็บวิดีโอใกล้เต็มความจุสูงสุด ต้องการทำความสะอาดและจัดเก็บข้อมูลเก่า",
+    "status": "S016",
+    "statusLabel": "เสร็จสิ้น",
+    "priority": "medium",
+    "category": "IOT Camera",
+    "assignedTo": "Data Management Team",
+    "reporter": "วันเพ็ญ สำรองข้อมูล",
+    "createdAt": "2025-01-13T11:00:00Z",
+    "updatedAt": "2025-01-15T16:30:00Z",
+    "resolvedAt": "2025-01-15T16:30:00Z",
+    "dueDate": "2025-01-15T17:00:00Z",
+    "tags": ["iot", "camera", "storage", "archive"],
+    "attachments": [],
+    "comments": [
+      {
+        "id": "comment-9",
+        "content": "ทำความสะอาดข้อมูลเก่าเสร็จสิ้น เพิ่มพื้นที่ว่าง 2TB",
+        "author": "ทีมจัดการข้อมูล",
+        "createdAt": "2025-01-15T16:30:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-48",
+        "content": "ตรวจสอบระบบสำรองข้อมูลก่อนลบ",
+        "author": "วันเพ็ญ สำรองข้อมูล",
+        "createdAt": "2025-01-15T10:00:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-49",
+        "content": "สำรองข้อมูลสำคัญไปยังเซิร์ฟเวอร์สำรองแล้ว",
+        "author": "ทีมจัดการข้อมูล",
+        "createdAt": "2025-01-15T12:15:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-50",
+        "content": "เริ่มกระบวนการลบข้อมูลเก่าเกิน 90 วัน",
+        "author": "ระบบอัตโนมัติ",
+        "createdAt": "2025-01-15T14:00:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-51",
+        "content": "ตรวจสอบความสมบูรณ์ของข้อมูลหลังการลบ",
+        "author": "นักวิเคราะห์ข้อมูล",
+        "createdAt": "2025-01-15T16:00:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-52",
+        "content": "อัพเดทรายงานสถานะความจุพื้นที่เก็บข้อมูล",
+        "author": "ผู้จัดการระบบ",
+        "createdAt": "2025-01-15T16:45:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-53",
+        "content": "กำหนดการทำความสะอาดครั้งต่อไปเป็นวันที่ 15 ก.พ.",
+        "author": "ทีมจัดการข้อมูล",
+        "createdAt": "2025-01-15T17:00:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-54",
+        "content": "ส่งรายงานสรุปให้ผู้บริหารแล้ว",
+        "author": "หัวหน้าจัดการข้อมูล",
+        "createdAt": "2025-01-15T17:15:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-55",
+        "content": "ระบบกลับมาทำงานปกติ ประสิทธิภาพดีขึ้น 25%",
+        "author": "วิศวกรระบบ",
+        "createdAt": "2025-01-15T17:30:00Z",
+        "isInternal": true
+      }
+    ],
+    "customFields": {
+      "storageUsedPercent": 98,
+      "dataArchivedTB": 2.1,
+      "retentionPolicyDays": 90,
+      "nextCleanupScheduled": "2025-02-15"
+    },
+    "location": "อำเภอราชเทวี ศูนย์ข้อมูลกลาง",
+    "department": "Data Management",
+    "estimatedHours": 6,
+    "actualHours": 4,
+    "sla": "30"
+  },
+  {
+    "id": "CASE-013",
+    "caseNumber": "300-จราจรอัจฉริยะ",
+    "title": "IOT Traffic - Emergency Vehicle Priority System",
+    "description": "ติดตั้งระบบให้สิทธิพิเศษรถฉุกเฉินในการควบคุมไฟจราจร เพื่อลดเวลาในการเดินทางไปช่วยเหลือ",
+    "status": "S018",
+    "statusLabel": "อนุมัติเหตุการณ์",
+    "priority": "high",
+    "category": "IOT Traffic",
+    "assignedTo": "Emergency Systems Team",
+    "reporter": "สมบัติ ดับเพลิง",
+    "createdAt": "2025-01-10T08:30:00Z",
+    "updatedAt": "2025-01-14T14:00:00Z",
+    "dueDate": "2025-03-01T17:00:00Z",
+    "tags": ["iot", "traffic", "emergency", "priority-system"],
+    "attachments": [
+      {
+        "id": "att-11",
+        "filename": "emergency-system-specs.pdf",
+        "size": 1572864,
+        "type": "application/pdf",
+        "uploadedAt": "2025-01-10T09:00:00Z",
+        "uploadedBy": "Fire Department"
+      }
+    ],
+    "comments": [
+      {
+        "id": "comment-10",
+        "content": "โครงการได้รับการอนุมัติ เริ่มขั้นตอนการจัดหาอุปกรณ์",
+        "author": "ทีมระบบฉุกเฉิน",
+        "createdAt": "2025-01-14T14:00:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-56",
+        "content": "ประชุมร่วมกับหน่วยงานดับเพลิง ตำรวจ และกู้ชีพ",
+        "author": "สมบัติ ดับเพลิง",
+        "createdAt": "2025-01-12T10:30:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-57",
+        "content": "ทุกหน่วยงานเห็นชอบและให้ความร่วมมือ",
+        "author": "ผู้ประสานงานโครงการ",
+        "createdAt": "2025-01-12T15:45:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-58",
+        "content": "จัดทำรายละเอียดทางเทคนิคและข้อกำหนด",
+        "author": "วิศวกรระบบ",
+        "createdAt": "2025-01-13T09:00:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-59",
+        "content": "ได้รับใบเสนอราคาจากผู้จำหน่าย 3 ราย",
+        "author": "ฝ่ายจัดซื้อจัดจ้าง",
+        "createdAt": "2025-01-14T11:30:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-60",
+        "content": "ดำเนินการตรวจสอบและเปรียบเทียบข้อเสนอ",
+        "author": "คณะกรรมการจัดซื้อ",
+        "createdAt": "2025-01-14T16:00:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-61",
+        "content": "เลือกผู้จำหน่ายที่มีราคาและคุณภาพเหมาะสมแล้ว",
+        "author": "ประธานกรรมการจัดซื้อ",
+        "createdAt": "2025-01-15T14:30:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-62",
+        "content": "เตรียมสัญญาและเอกสารการจัดซื้อ",
+        "author": "ฝ่ายกฎหมาย",
+        "createdAt": "2025-01-16T09:15:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-63",
+        "content": "กำหนดการส่งมอบและติดตั้งเบื้องต้น",
+        "author": "ผู้จัดการโครงการ",
+        "createdAt": "2025-01-16T11:00:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-64",
+        "content": "จัดเตรียมทีมงานติดตั้งและทดสอบระบบ",
+        "author": "หัวหน้าทีมเทคนิค",
+        "createdAt": "2025-01-16T13:45:00Z",
+        "isInternal": true
+      }
+    ],
+    "customFields": {
+      "projectBudget": "150,000 บาท",
+      "intersectionsCount": 25,
+      "emergencyServices": ["ดับเพลิง", "ตำรวจ", "รถพยาบาล"],
+      "expectedResponseTimeImprovement": "20%"
+    },
+    "location": "ทั่วกรุงเทพมหานคร ทุกเขต",
+    "department": "Emergency Systems",
+    "estimatedHours": 200,
+    "actualHours": 15,
+    "sla": "50"
+  },
+  {
+    "id": "CASE-014",
+    "caseNumber": "200-เซ็นเซอร์น้ำอัจฉริยะ",
+    "title": "IOT Water Sensor - False Alarm Investigation",
+    "description": "ตรวจสอบปัญหาการแจ้งเตือนน้ำท่วมที่ผิดพลาดซ้ำๆ จากเซ็นเซอร์ในพื้นที่ชุมชนที่อยู่อาศัย",
+    "status": "S019",
+    "statusLabel": "ดำเนินการแก้ไข",
+    "priority": "medium",
+    "category": "IOT Water Sensor",
+    "assignedTo": "Quality Assurance Team",
+    "reporter": "มาลี ประสานงาน",
+    "createdAt": "2025-01-11T13:15:00Z",
+    "updatedAt": "2025-01-16T10:00:00Z",
+    "dueDate": "2025-01-20T17:00:00Z",
+    "tags": ["iot", "water-sensor", "false-alarm", "investigation"],
+    "attachments": [
+      {
+        "id": "att-12",
+        "filename": "false-alarm-log.xlsx",
+        "size": 45056,
+        "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "uploadedAt": "2025-01-11T14:00:00Z",
+        "uploadedBy": "Residential Coordinator"
+      }
+    ],
+    "comments": [
+      {
+        "id": "comment-11",
+        "content": "กำหนดการปรับเทียบเซ็นเซอร์ใหม่ กำลังตรวจสอบปัจจัยสิ่งแวดล้อม",
+        "author": "ทีมประกันคุณภาพ",
+        "createdAt": "2025-01-16T10:00:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-65",
+        "content": "พบใบไม้ร่วงปกคลุมเซ็นเซอร์เป็นระยะ",
+        "author": "มาลี ประสานงาน",
+        "createdAt": "2025-01-14T08:30:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-66",
+        "content": "ตรวจสอบงานก่อสร้างใกล้เคียงที่อาจส่งผลกระทบ",
+        "author": "วิศวกรตรวจสอบ",
+        "createdAt": "2025-01-15T14:15:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-67",
+        "content": "ติดต่อผู้รับเหมาก่อสร้างเพื่อประสานงาน",
+        "author": "ผู้ประสานงานพื้นที่",
+        "createdAt": "2025-01-15T16:30:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-68",
+        "content": "วางแผนติดตั้งฝาครอบป้องกันใบไม้",
+        "author": "ทีมประกันคุณภาพ",
+        "createdAt": "2025-01-16T08:45:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-69",
+        "content": "ขออนุมัติงบประมาณสำหรับอุปกรณ์ป้องกัน",
+        "author": "หัวหน้าทีมประกันคุณภาพ",
+        "createdAt": "2025-01-16T12:30:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-70",
+        "content": "จัดทำแผนการบำรุงรักษาเชิงป้องกันที่ดีขึ้น",
+        "author": "ผู้เชี่ยวชาญเซ็นเซอร์",
+        "createdAt": "2025-01-16T15:00:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-71",
+        "content": "ประสานงานกับทีมทำความสะอาดพื้นที่",
+        "author": "ผู้ประสานงานพื้นที่",
+        "createdAt": "2025-01-16T16:15:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-72",
+        "content": "กำหนดการทดสอบประสิทธิภาพหลังการแก้ไข",
+        "author": "ทีมประกันคุณภาพ",
+        "createdAt": "2025-01-16T17:45:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-73",
+        "content": "เตรียมรายงานสรุปและข้อเสนอแนะ",
+        "author": "นักวิเคราะห์คุณภาพ",
+        "createdAt": "2025-01-16T18:30:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-74",
+        "content": "นำเสนอแนวทางแก้ไขให้ผู้บริหารพิจารณา",
+        "author": "หัวหน้าทีมประกันคุณภาพ",
+        "createdAt": "2025-01-16T19:00:00Z",
+        "isInternal": false
+      }
+    ],
+    "customFields": {
+      "falseAlarmsCount": 8,
+      "falseAlarmRate": "12%",
+      "sensorAge": "18 เดือน",
+      "environmentalFactors": ["ใบไม้ร่วง", "การก่อสร้างใกล้เคียง"]
+    },
+    "location": "อำเภอสาทร ชุมชนถนนเมเปิล",
+    "department": "Quality Assurance",
+    "estimatedHours": 12,
+    "actualHours": 8,
+    "sla": "45"
+  },
+  {
+    "id": "CASE-015",
+    "caseNumber": "100-กล้องอัจฉริยะ",
+    "title": "IOT Camera - Facial Recognition Upgrade",
+    "description": "อัพเกรดซอฟต์แวร์จดจำใบหน้าเพื่อเพิ่มคุณสมบัติด้านความปลอดภัยและความแม่นยำ",
+    "status": "S005",
+    "statusLabel": "กำลังเดินทาง",
+    "priority": "low",
+    "category": "IOT Camera",
+    "assignedTo": "Software Development Team",
+    "reporter": "ชัยชนะ รักษาความปลอดภัย",
+    "createdAt": "2025-01-09T10:45:00Z",
+    "updatedAt": "2025-01-16T09:30:00Z",
+    "dueDate": "2025-02-15T17:00:00Z",
+    "tags": ["iot", "camera", "facial-recognition", "upgrade"],
+    "attachments": [
+      {
+        "id": "att-13",
+        "filename": "recognition-requirements.docx",
+        "size": 256000,
+        "type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "uploadedAt": "2025-01-09T11:00:00Z",
+        "uploadedBy": "Security Administrator"
+      }
+    ],
+    "comments": [
+      {
+        "id": "comment-12",
+        "content": "ทีมพัฒนากำลังเดินทางไปอาคารหลักเพื่อติดตั้ง",
+        "author": "ทีมพัฒนาซอฟต์แวร์",
+        "createdAt": "2025-01-16T09:30:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-75",
+        "content": "ทดสอบระบบใหม่ในสภาพแวดล้อมจำลองเรียบร้อย",
+        "author": "ชัยชนะ รักษาความปลอดภัย",
+        "createdAt": "2025-01-14T16:30:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-76",
+        "content": "เตรียมข้อมูลสำหรับการฝึกอบรมผู้ใช้งาน",
+        "author": "ทีมพัฒนาซอฟต์แวร์",
+        "createdAt": "2025-01-15T10:45:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-77",
+        "content": "ประสานงานกับฝ่าย IT เพื่อเตรียมเซิร์ฟเวอร์",
+        "author": "ผู้จัดการโครงการ",
+        "createdAt": "2025-01-15T14:20:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-78",
+        "content": "ตรวจสอบความเข้ากันได้กับระบบเดิม",
+        "author": "วิศวกรระบบ",
+        "createdAt": "2025-01-16T08:00:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-79",
+        "content": "เตรียมแผนการย้ายข้อมูลและการตั้งค่า",
+        "author": "ผู้เชี่ยวชาญฐานข้อมูล",
+        "createdAt": "2025-01-16T11:45:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-80",
+        "content": "จัดเตรียมทีมสนับสนุนสำหรับวันติดตั้ง",
+        "author": "หัวหน้าทีมสนับสนุน",
+        "createdAt": "2025-01-16T13:15:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-81",
+        "content": "ทดสอบการเชื่อมต่อและการสื่อสารระบบ",
+        "author": "ทีมเครือข่าย",
+        "createdAt": "2025-01-16T15:30:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-82",
+        "content": "เตรียมเอกสารคู่มือและวิดีโอการใช้งาน",
+        "author": "ทีมเขียนเอกสาร",
+        "createdAt": "2025-01-16T16:45:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-83",
+        "content": "กำหนดการอบรมเจ้าหน้าที่รักษาความปลอดภัย",
+        "author": "ผู้จัดการฝึกอบรม",
+        "createdAt": "2025-01-16T17:20:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-84",
+        "content": "ส่งแผนการติดตั้งให้ผู้บริหารอนุมัติขั้นสุดท้าย",
+        "author": "ผู้จัดการโครงการ",
+        "createdAt": "2025-01-16T18:00:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-85",
+        "content": "ได้รับการอนุมัติ พร้อมเริ่มติดตั้งวันพรุ่งนี้",
+        "author": "ผู้อำนวยการฝ่าย IT",
+        "createdAt": "2025-01-16T19:30:00Z",
+        "isInternal": false
+      }
+    ],
+    "customFields": {
+      "currentVersion": "v2.1.3",
+      "targetVersion": "v3.0.1",
+      "accuracyImprovement": "15%",
+      "privacyCompliance": "GDPR, CCPA"
+    },
+    "location": "อำเภอบางรัก ศูนย์รักษาความปลอดภัยหลัก",
+    "department": "Software Development",
+    "estimatedHours": 40,
+    "actualHours": 12,
+    "sla": "30"
+  },
+  {
+    "id": "CASE-016",
+    "caseNumber": "300-จราจรอัจฉริยะ",
+    "title": "IOT Traffic - Weather-Adaptive Signal Control",
+    "description": "พัฒนาระบบควบคุมไฟจราจรที่ปรับตัวตามสภาพอากาศ สำหรับสภาวะที่ไม่เอื้ออำนวย",
+    "status": "S000",
+    "statusLabel": "แบบร่าง",
+    "priority": "low",
+    "category": "IOT Traffic",
+    "assignedTo": "Research & Development",
+    "reporter": "อรุณ วางแผนขนส่ง",
+    "createdAt": "2025-01-16T11:00:00Z",
+    "updatedAt": "2025-01-16T11:00:00Z",
+    "dueDate": "2025-04-01T17:00:00Z",
+    "tags": ["iot", "traffic", "weather", "adaptive"],
+    "attachments": [],
+    "comments": [
+      {
+        "id": "comment-25",
+        "content": "เริ่มการศึกษาความเป็นไปได้ของโครงการ",
+        "author": "อรุณ วางแผนขนส่ง",
+        "createdAt": "2025-01-16T11:30:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-26",
+        "content": "รวบรวมข้อมูลสภาพอากาศย้อนหลัง 5 ปี",
+        "author": "ทีมวิจัยและพัฒนา",
+        "createdAt": "2025-01-16T14:00:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-27",
+        "content": "ติดต่อประสานงานกับกรมอุตุนิยมวิทยาแล้ว",
+        "author": "ทีมวิจัยและพัฒนา",
+        "createdAt": "2025-01-16T16:30:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-28",
+        "content": "กำหนดประชุมหารือร่วมกับผู้เชี่ยวชาญสัปดาหน้า",
+        "author": "หัวหน้าโครงการ",
+        "createdAt": "2025-01-16T17:45:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-29",
+        "content": "เตรียมเอกสารนำเสนอต่อผู้บริหาร",
+        "author": "หัวหน้าโครงการ",
+        "createdAt": "2025-01-16T18:00:00Z",
+        "isInternal": false
+      }
+    ],
+    "customFields": {
+      "weatherConditions": ["ฝน", "หิมะ", "หมอก"],
+      "proposedBudget": "75,000 บาท",
+      "researchPhase": "การศึกษาเบื้องต้น",
+      "stakeholders": ["ขนส่ง", "อุตุนิยมวิทยา", "ความปลอดภัย"]
+    },
+    "location": "อำเภอดินแดง ศูนย์วิจัยและพัฒนา",
+    "department": "Research & Development",
+    "estimatedHours": 160,
+    "sla": "50"
+  },
+  {
+    "id": "CASE-017",
+    "caseNumber": "200-เซ็นเซอร์น้ำอัจฉริยะ",
+    "title": "IOT Water Sensor - Battery Replacement Program",
+    "description": "กำหนดการเปลี่ยนแบตเตอรี่เซ็นเซอร์วัดระดับน้ำไร้สายทั่วเครือข่าย ตามแผนบำรุงรักษา",
+    "status": "S004",
+    "statusLabel": "สายตรวจตอบรับเหตุ",
+    "priority": "medium",
+    "category": "IOT Water Sensor",
+    "assignedTo": "Field Maintenance Crew",
+    "reporter": "เสาวนีย์ บำรุงรักษา",
+    "createdAt": "2025-01-15T07:00:00Z",
+    "updatedAt": "2025-01-16T08:15:00Z",
+    "dueDate": "2025-01-25T17:00:00Z",
+    "tags": ["iot", "water-sensor", "battery", "maintenance"],
+    "attachments": [
+      {
+        "id": "att-14",
+        "filename": "battery-replacement-schedule.pdf",
+        "size": 128000,
+        "type": "application/pdf",
+        "uploadedAt": "2025-01-15T07:15:00Z",
+        "uploadedBy": "Preventive Maintenance System"
+      }
+    ],
+    "comments": [
+      {
+        "id": "comment-13",
+        "content": "ทีมบำรุงรักษาตอบรับงาน เริ่มจากจุดที่มีความสำคัญสูง",
+        "author": "ทีมบำรุงรักษาภาคสนาม",
+        "createdAt": "2025-01-16T08:15:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-86",
+        "content": "ตรวจสอบสถานะแบตเตอรี่ทั้ง 24 จุด",
+        "author": "เสาวนีย์ บำรุงรักษา",
+        "createdAt": "2025-01-15T09:30:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-87",
+        "content": "จัดเตรียมอุปกรณ์และเครื่องมือสำหรับงาน",
+        "author": "หัวหน้าทีมภาคสนาม",
+        "createdAt": "2025-01-15T11:45:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-88",
+        "content": "เริ่มงานที่เซ็นเซอร์ที่มีแบตเตอรี่เหลือน้อยที่สุด",
+        "author": "ช่างเทคนิคอาวุโส",
+        "createdAt": "2025-01-16T07:30:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-89",
+        "content": "เปลี่ยนแบตเตอรี่เสร็จแล้ว 8 จุด ใช้เวลาตามแผน",
+        "author": "ทีมบำรุงรักษาภาคสนาม",
+        "createdAt": "2025-01-16T12:00:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-90",
+        "content": "ทดสอบการทำงานของเซ็นเซอร์หลังเปลี่ยนแบตเตอรี่",
+        "author": "วิศวกรทดสอบระบบ",
+        "createdAt": "2025-01-16T14:30:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-91",
+        "content": "อัพเดทฐานข้อมูลสถานะแบตเตอรี่",
+        "author": "ผู้ดูแลระบบ",
+        "createdAt": "2025-01-16T16:15:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-92",
+        "content": "กำหนดการทำงานวันพรุ่งนี้สำหรับ 16 จุดที่เหลือ",
+        "author": "หัวหน้าทีมภาคสนาม",
+        "createdAt": "2025-01-16T17:45:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-93",
+        "content": "ประสานงานกับศูนย์ควบคุมเพื่อติดตามสัญญาณ",
+        "author": "ผู้ประสานงานเทคนิค",
+        "createdAt": "2025-01-16T18:20:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-94",
+        "content": "รายงานความคืบหน้าให้ผู้บริหารทราบ",
+        "author": "หัวหน้าฝ่ายบำรุงรักษา",
+        "createdAt": "2025-01-16T19:00:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-95",
+        "content": "จัดเตรียมแบตเตอรี่เก่าสำหรับการรีไซเคิล",
+        "author": "ผู้จัดการสิ่งแวดล้อม",
+        "createdAt": "2025-01-16T19:30:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-96",
+        "content": "อัพเดทแผนการบำรุงรักษาประจำปี",
+        "author": "วิศวกรวางแผน",
+        "createdAt": "2025-01-16T20:00:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-97",
+        "content": "ส่งรายงานสรุปผลการปฏิบัติงานวันนี้",
+        "author": "ทีมบำรุงรักษาภาคสนาม",
+        "createdAt": "2025-01-16T20:30:00Z",
+        "isInternal": false
+      }
+    ],
+    "customFields": {
+      "sensorsRequiringReplacement": 24,
+      "batteryLifeRemaining": "15-30 วัน",
+      "replacementBatteryType": "ลิเธียม 3.6V",
+      "maintenanceRoute": "เหนือลงใต้"
+    },
+    "location": "หลายจุดติดตั้งเซ็นเซอร์ ทั่วกรุงเทพมหานคร",
+    "department": "Field Maintenance",
+    "estimatedHours": 32,
+    "actualHours": 4,
+    "sla": "45"
+  },
+  {
+    "id": "CASE-018",
+    "caseNumber": "100-กล้องอัจฉริยะ",
+    "title": "IOT Camera - Privacy Zone Configuration",
+    "description": "ตั้งค่าเขตพื้นที่ส่วนตัวสำหรับพื้นที่ที่อยู่อาศัยในขอบเขตการติดตั้งกล้อง เพื่อความเป็นส่วนตัว",
+    "status": "S007",
+    "statusLabel": "ปิดเหตุ",
+    "priority": "high",
+    "category": "IOT Camera",
+    "assignedTo": "Privacy Compliance Officer",
+    "reporter": "วิศิษฏ์ กฎหมาย",
+    "createdAt": "2025-01-08T14:30:00Z",
+    "updatedAt": "2025-01-14T16:45:00Z",
+    "resolvedAt": "2025-01-14T16:45:00Z",
+    "dueDate": "2025-01-15T17:00:00Z",
+    "tags": ["iot", "camera", "privacy", "compliance"],
+    "attachments": [
+      {
+        "id": "att-15",
+        "filename": "privacy-compliance-report.pdf",
+        "size": 512000,
+        "type": "application/pdf",
+        "uploadedAt": "2025-01-14T16:00:00Z",
+        "uploadedBy": "Privacy Compliance Officer"
+      }
+    ],
+    "comments": [
+      {
+        "id": "comment-14",
+        "content": "ตั้งค่าเขตความเป็นส่วนตัวครบทั้ง 18 กล้องแล้ว",
+        "author": "เจ้าหน้าที่ปฏิบัติตามกฎหมายความเป็นส่วนตัว",
+        "createdAt": "2025-01-14T16:45:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-98",
+        "content": "ได้รับคำร้องจากฝ่ายกฎหมายให้ดำเนินการ",
+        "author": "วิศิษฏ์ กฎหมาย",
+        "createdAt": "2025-01-08T15:00:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-99",
+        "content": "สำรวจพื้นที่และระบุจุดที่ต้องปกปิด",
+        "author": "ทีมสำรวจพื้นที่",
+        "createdAt": "2025-01-09T10:30:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-100",
+        "content": "ประสานงานกับชุมชนและผู้อยู่อาศัย",
+        "author": "ผู้ประสานงานชุมชน",
+        "createdAt": "2025-01-10T14:15:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-101",
+        "content": "ได้รับความเห็นชอบจากตำแหน่งผู้อยู่อาศัย",
+        "author": "ผู้แทนชุมชน",
+        "createdAt": "2025-01-11T09:45:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-102",
+        "content": "เริ่มการตั้งค่าเขตปกปิดทีละกล้อง",
+        "author": "ช่างเทคนิคกล้อง",
+        "createdAt": "2025-01-12T08:00:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-103",
+        "content": "ทดสอบและปรับแต่งมุมมองที่เหมาะสม",
+        "author": "วิศวกรระบบกล้อง",
+        "createdAt": "2025-01-13T11:20:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-104",
+        "content": "จัดทำเอกสารรายงานการปฏิบัติตามกฎหมาย",
+        "author": "เจ้าหน้าที่ปฏิบัติตามกฎหมายความเป็นส่วนตัว",
+        "createdAt": "2025-01-14T13:30:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-105",
+        "content": "ตรวจสอบและรับรองการทำงานของระบบ",
+        "author": "ผู้ตรวจสอบอิสระ",
+        "createdAt": "2025-01-14T15:45:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-106",
+        "content": "ส่งรายงานสรุปให้หน่วยงานที่เกี่ยวข้อง",
+        "author": "ผู้จัดการฝ่ายกฎหมาย",
+        "createdAt": "2025-01-14T17:00:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-107",
+        "content": "จัดเก็บเอกสารหลักฐานสำหรับการตรวจสอบ",
+        "author": "เลขานุการฝ่ายกฎหมาย",
+        "createdAt": "2025-01-14T17:30:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-108",
+        "content": "แจ้งชุมชนถึงการเสร็จสิ้นการดำเนินการ",
+        "author": "ผู้ประสานงานชุมชน",
+        "createdAt": "2025-01-15T08:00:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-109",
+        "content": "กำหนดการตรวจสอบการทำงานเป็นประจำ",
+        "author": "หัวหน้าฝ่ายปฏิบัติตามกฎหมาย",
+        "createdAt": "2025-01-15T10:15:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-110",
+        "content": "อัพเดทคู่มือการปฏิบัติงานใหม่",
+        "author": "ทีมเขียนเอกสาร",
+        "createdAt": "2025-01-15T14:30:00Z",
+        "isInternal": true
+      }
+    ],
+    "customFields": {
+      "camerasConfigured": 18,
+      "privacyZonesCreated": 45,
+      "complianceStatus": "ปฏิบัติตามกฎหมายครบถ้วน",
+      "auditDate": "2025-01-14"
+    },
+    "location": "อำเภอห้วยขวาง พื้นที่ติดตามที่อยู่อาศัย",
+    "department": "Privacy Compliance",
+    "estimatedHours": 20,
+    "actualHours": 18,
+    "sla": "30"
+  },
+  {
+    "id": "CASE-019",
+    "caseNumber": "300-จราจรอัจฉริยะ",
+    "title": "IOT Traffic - Smart Crosswalk Integration",
+    "description": "เชื่อมต่อเซ็นเซอร์ตรวจจับคนเดินเท้ากับระบบไฟจราจร เพื่อความปลอดภัยของผู้ใช้ทางเดิน",
+    "status": "S014",
+    "statusLabel": "ยกเลิกเหตุ",
+    "priority": "medium",
+    "category": "IOT Traffic",
+    "assignedTo": "Pedestrian Safety Team",
+    "reporter": "นฤมล สิทธิพิเศษ",
+    "createdAt": "2025-01-05T16:20:00Z",
+    "updatedAt": "2025-01-12T10:30:00Z",
+    "dueDate": "2025-03-15T17:00:00Z",
+    "tags": ["iot", "traffic", "crosswalk", "pedestrian"],
+    "attachments": [
+      {
+        "id": "att-16",
+        "filename": "crosswalk-proposal.pdf",
+        "size": 1048576,
+        "type": "application/pdf",
+        "uploadedAt": "2025-01-05T16:30:00Z",
+        "uploadedBy": "Accessibility Committee"
+      }
+    ],
+    "comments": [
+      {
+        "id": "comment-15",
+        "content": "ยกเลิกโครงการเนื่องจากงบประมาณจำกัด จะพิจารณาใหม่ปีงบประมาณหน้า",
+        "author": "ทีมความปลอดภัยผู้เดินเท้า",
+        "createdAt": "2025-01-12T10:30:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-111",
+        "content": "เสนอโครงการเพื่อเพิ่มความปลอดภัยผู้เดินเท้า",
+        "author": "นฤมล สิทธิพิเศษ",
+        "createdAt": "2025-01-05T16:45:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-112",
+        "content": "จัดทำการศึกษาความเป็นไปได้เบื้องต้น",
+        "author": "ทีมศึกษาโครงการ",
+        "createdAt": "2025-01-06T09:15:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-113",
+        "content": "ประชุมกับคณะกรรมการการเงิน",
+        "author": "ผู้จัดการโครงการ",
+        "createdAt": "2025-01-08T14:30:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-114",
+        "content": "ได้รับแจ้งว่างบประมาณไม่เพียงพอ",
+        "author": "ประธานคณะกรรมการการเงิน",
+        "createdAt": "2025-01-10T11:45:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-115",
+        "content": "พยายามหาแหล่งงบประมาณทางเลือก",
+        "author": "ทีมความปลอดภัยผู้เดินเท้า",
+        "createdAt": "2025-01-11T08:20:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-116",
+        "content": "ติดต่อหน่วยงานภาคเอกชนเพื่อขอสนับสนุน",
+        "author": "ฝ่ายประสานงานเอกชน",
+        "createdAt": "2025-01-11T15:00:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-117",
+        "content": "ไม่ได้รับการตอบสนองที่เพียงพอ",
+        "author": "ผู้จัดการความสัมพันธ์เอกชน",
+        "createdAt": "2025-01-12T09:15:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-118",
+        "content": "ตัดสินใจยกเลิกโครงการชั่วคราว",
+        "author": "ผู้อำนวยการฝ่ายความปลอดภัย",
+        "createdAt": "2025-01-12T10:00:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-119",
+        "content": "จัดเก็บเอกสารโครงการสำหรับการพิจารณาในอนาคต",
+        "author": "เลขานุการโครงการ",
+        "createdAt": "2025-01-12T11:00:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-120",
+        "content": "แจ้งคณะกรรมการการเข้าถึงและผู้มีส่วนได้เสีย",
+        "author": "ผู้ประสานงานผู้มีส่วนได้เสีย",
+        "createdAt": "2025-01-12T13:45:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-121",
+        "content": "วางแผนนำเสนอในปีงบประมาณ 2567",
+        "author": "ทีมวางแผนยุทธศาสตร์",
+        "createdAt": "2025-01-12T16:20:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-122",
+        "content": "ปรับปรุงข้อเสนอโครงการให้ดีขึ้น",
+        "author": "ทีมความปลอดภัยผู้เดินเท้า",
+        "createdAt": "2025-01-13T10:30:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-123",
+        "content": "รวบรวมข้อมูลสถิติอุบัติเหตุเพิ่มเติม",
+        "author": "นักวิเคราะห์ข้อมูลความปลอดภัย",
+        "createdAt": "2025-01-14T14:15:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-124",
+        "content": "เตรียมความพร้อมสำหรับการนำเสนอครั้งต่อไป",
+        "author": "หัวหน้าทีมความปลอดภัยผู้เดินเท้า",
+        "createdAt": "2025-01-15T09:45:00Z",
+        "isInternal": false
+      }
+    ],
+    "customFields": {
+      "proposedLocations": 8,
+      "estimatedCost": "120,000 บาท",
+      "cancellationReason": "งบประมาณจำกัด",
+      "futureConsideration": "ปีงบ2567"
+    },
+    "location": "อำเภอปทุมวัน สี่แยกจราจรหนาแน่น",
+    "department": "Pedestrian Safety",
+    "estimatedHours": 100,
+    "actualHours": 15,
+    "sla": "50"
+  },
+  {
+    "id": "CASE-020",
+    "caseNumber": "200-เซ็นเซอร์น้ำอัจฉริยะ",
+    "title": "IOT Water Sensor - Data Analytics Dashboard",
+    "description": "พัฒนาหน้าจอแสดงผลการวิเคราะห์ข้อมูลแบบเรียลไทม์สำหรับการติดตามระดับน้ำ",
+    "status": "S009",
+    "statusLabel": "สั่งการล่าช้า",
+    "priority": "low",
+    "category": "IOT Water Sensor",
+    "assignedTo": "Analytics Development Team",
+    "reporter": "กิตติพงษ์ ผอ.บริหารน้ำ",
+    "createdAt": "2025-01-07T12:00:00Z",
+    "updatedAt": "2025-01-16T11:45:00Z",
+    "dueDate": "2025-02-28T17:00:00Z",
+    "tags": ["iot", "water-sensor", "analytics", "dashboard"],
+    "attachments": [
+      {
+        "id": "att-17",
+        "filename": "dashboard-mockup.png",
+        "size": 768000,
+        "type": "image/png",
+        "uploadedAt": "2025-01-07T12:30:00Z",
+        "uploadedBy": "Water Management Director"
+      }
+    ],
+    "comments": [
+      {
+        "id": "comment-16",
+        "content": "การพัฒนาล่าช้าเนื่องจากต้องจัดสรรทรัพยากรให้โครงการที่มีความสำคัญสูงกว่า",
+        "author": "ทีมพัฒนาการวิเคราะห์",
+        "createdAt": "2025-01-16T11:45:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-125",
+        "content": "เสนอโครงการพัฒนาแดชบอร์ดการวิเคราะห์",
+        "author": "กิตติพงษ์ ผอ.บริหารน้ำ",
+        "createdAt": "2025-01-07T12:15:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-126",
+        "content": "ทีมพัฒนาตรวจสอบความต้องการเบื้องต้น",
+        "author": "นักวิเคราะห์ระบบ",
+        "createdAt": "2025-01-08T09:30:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-127",
+        "content": "สร้างต้นแบบและทดสอบกับข้อมูลจำลอง",
+        "author": "นักพัฒนาฟรอนต์เอนด์",
+        "createdAt": "2025-01-10T14:45:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-128",
+        "content": "พบปัญหาการเชื่อมต่อกับระบบ SCADA เดิม",
+        "author": "วิศวกรระบบ",
+        "createdAt": "2025-01-12T10:20:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-129",
+        "content": "ต้องหยุดงานชั่วคราวเพื่อแก้ไขปัญหาระบบความปลอดภัย",
+        "author": "หัวหน้าทีมพัฒนา",
+        "createdAt": "2025-01-14T16:00:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-130",
+        "content": "จัดสรรทีมงานไปช่วยโครงการเร่งด่วนอื่น",
+        "author": "ผู้จัดการฝ่ายพัฒนา",
+        "createdAt": "2025-01-15T08:30:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-131",
+        "content": "ประเมินการปรับแผนงานและกำหนดการใหม่",
+        "author": "ผู้จัดการโครงการ",
+        "createdAt": "2025-01-16T09:15:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-132",
+        "content": "รอการยืนยันทรัพยากรสำหรับเดือนหน้า",
+        "author": "ทีมพัฒนาการวิเคราะห์",
+        "createdAt": "2025-01-16T13:20:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-133",
+        "content": "ติดต่อผู้ใช้งานเพื่อขอข้อมูลเพิ่มเติม",
+        "author": "นักวิเคราะห์ธุรกิจ",
+        "createdAt": "2025-01-16T15:45:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-134",
+        "content": "วางแผนการทดสอบและการนำใช้งาน",
+        "author": "ผู้เชี่ยวชาญคุณภาพ",
+        "createdAt": "2025-01-16T17:30:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-135",
+        "content": "ประสานงานกับฝ่าย IT เพื่อเตรียมสภาพแวดล้อม",
+        "author": "ผู้ดูแลระบบ",
+        "createdAt": "2025-01-16T18:15:00Z",
+        "isInternal": true
+      },
+      {
+        "id": "comment-136",
+        "content": "อัพเดทไทม์ไลน์โครงการและแจ้งผู้เกี่ยวข้อง",
+        "author": "ผู้ประสานงานโครงการ",
+        "createdAt": "2025-01-16T19:00:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-137",
+        "content": "เตรียมการนำเสนอสถานะโครงการให้ผู้บริหาร",
+        "author": "หัวหน้าฝ่ายพัฒนาการวิเคราะห์",
+        "createdAt": "2025-01-16T20:30:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-138",
+        "content": "ตั้งเป้าหมายเริ่มงานใหม่ต้นเดือนหน้า",
+        "author": "ผู้อำนวยการฝ่าย IT",
+        "createdAt": "2025-01-16T21:15:00Z",
+        "isInternal": false
+      },
+      {
+        "id": "comment-139",
+        "content": "จัดทำรายงานสรุปความล่าช้าและแผนแก้ไข",
+        "author": "ทีมพัฒนาการวิเคราะห์",
+        "createdAt": "2025-01-16T21:45:00Z",
+        "isInternal": true
+      }
+    ],
+    "customFields": {
+      "dataPoints": ["ระดับน้ำ", "อัตราการไหล", "อุณหภูมิ", "ความขุ่น"],
+      "userTypes": ["ผู้ปฏิบัติการ", "ผู้จัดการ", "หน่วยฉุกเฉิน"],
+      "platforms": ["เว็บ", "มือถือ"],
+      "integrationRequired": ["ระบบ SCADA เดิม"]
+    },
+    "location": "อำเภอราชเทวี ศูนย์พัฒนาซอฟต์แวร์",
+    "department": "Analytics Development",
+    "estimatedHours": 120,
+    "actualHours": 20,
+    "sla": "45"
+  }
+]

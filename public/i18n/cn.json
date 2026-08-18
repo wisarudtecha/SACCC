@@ -1,0 +1,3928 @@
+{
+  "common": {
+    "line": "LINE",
+    "facebook": "Facebook",
+    "phone_number": "电话号码",
+    "welcome": "欢迎",
+    "hello": "你好",
+    "goodbye": "再见",
+    "yes": "是",
+    "no": "否",
+    "save": "保存",
+    "saving": "正在保存",
+    "cancel": "取消",
+    "confirm": "确认",
+    "delete": "删除",
+    "unlink": "取消关联",
+    "edit": "编辑",
+    "edit_entity": "编辑 _ENTITY_",
+    "view": "查看",
+    "view_entity": "_ENTITY_ 细节",
+    "add": "新增",
+    "search": "搜索",
+    "loading": "加载中...",
+    "loadingPercentage": "加载中..._percentage_",
+    "loading_translations": "正在加载翻译...",
+    "error": "错误",
+    "success": "成功",
+    "back": "后退",
+    "previous": "上一页",
+    "next": "下一页",
+    "no_data": "暂无数据",
+    "show": "显示",
+    "of": "的",
+    "all": "全部",
+    "items": "条目",
+    "filters": "筛选器",
+    "clear_filters": "清除筛选",
+    "start_date": "开始日期",
+    "end_date": "结束日期",
+    "search_placeholder": "搜索...",
+    "refresh": "刷新",
+    "home": "家",
+    "retry": "重试",
+    "no_result": "未找到结果。",
+    "charater": "字符",
+    "noOption": "无选项。",
+    "publish": "发布",
+    "unpublish": "取消发布",
+    "draft": "草稿",
+    "locked": "已锁定",
+    "active": "启用",
+    "inactive": "禁用",
+    "at": "时间",
+    "createAt": "创建时间",
+    "by": "创建者",
+    "createBy": "创建者",
+    "at_time": "时间",
+    "new_version": "新版本",
+    "version": "版本",
+    "name": "名称",
+    "create": "创建",
+    "create_entity": "创建新的 _ENTITY_",
+    "change_version": "更改版本",
+    "import": "导入",
+    "export": "导出",
+    "preview": "预览",
+    "submit": "提交",
+    "close": "关闭",
+    "addField": "添加字段",
+    "remove": "移除",
+    "hide": "隐藏",
+    "download": "下载",
+    "upload": "上传",
+    "info": "信息",
+    "dob": "出生日期",
+    "email": "电子邮件",
+    "phoneNumber": "电话号码",
+    "address": "地址",
+    "type": "类型",
+    "room": "房间",
+    "floor": "楼层",
+    "using": "使用中",
+    "used": "已使用",
+    "current": "当前",
+    "report": "报告",
+    "status": "状态",
+    "required_field": "请填写",
+    "update_entity": "更新 _ENTITY_",
+    "linked_existing": "已链接",
+    "subcase": "子案例",
+    "product": "产品",
+    "spare_part": "备件",
+    "order": "订单",
+    "ordering": "正在下单"
+  },
+  "auth": {
+    "signin": {
+      "title": "登录",
+      "subtitle": "请输入用户名、密码和组织名称进行登录！",
+      "username": {
+        "label": "用户名",
+        "placeholder": "请输入用户名",
+        "required": "用户名是必填项"
+      },
+      "password": {
+        "label": "密码",
+        "placeholder": "请输入密码",
+        "required": "需要密码",
+        "min": "密码必须至少包含 6 个字符"
+      },
+      "organization": {
+        "label": "组织",
+        "placeholder": "请输入组织",
+        "required": "需要组织"
+      },
+      "email": {
+        "label": "电子邮件",
+        "placeholder": "输入您的电子邮件",
+        "required": "需要电子邮件",
+        "invalid": "电子邮件无效",
+        "error": "无法发送重置电子邮件"
+      },
+      "keep_logged_in": "保持登录状态",
+      "reset_password": "忘记密码？",
+      "button": "登录",
+      "loading": "加载中...",
+      "demo": {
+        "title": "演示账号:",
+        "username": "用户名",
+        "password": "密码",
+        "organization": "组织",
+        "auto_fill": "自动填写"
+      },
+      "no_account": "没有账号？",
+      "sign_up": "注册",
+      "forgot_password": {
+        "title": "重置密码",
+        "subtitle": "输入您的电子邮件以重置密码"
+      },
+      "state": {
+        "is_locked": "由于多次尝试失败，帐户被暂时锁定。请稍后重试",
+        "network_status": "没有网络连接。请检查您的连接并重试",
+        "network_online": "已连接",
+        "network_offline": "离线 - 某些功能可能无法使用",
+        "is_loading": "身份验证...",
+        "is_refreshing": "刷新会话...",
+        "wating": "请稍等",
+        "session_timeout": {
+          "title": "会话超时警告",
+          "subtitle": "您的会话将在",
+          "description": "秒后过期",
+          "login": "保持登录状态",
+          "logout": "登出",
+          "extending": "正在延长...",
+          "extend_failed": "无法延长会话，请重新登录"
+        }
+      }
+    },
+    "permission": {
+      "access_denied": {
+        "title": "拒绝访问",
+        "subtitle": "您无权",
+        "description": "所需权限"
+      },
+      "insufficient_permissions": {
+        "title": "权限不足",
+        "subtitle": "您没有执行此操作所需的全部权限",
+        "description": "所需权限"
+      }
+    }
+  },
+  "dashboard": {
+    "custom": {
+      "customize": "自定义",
+      "entity_name": "布局",
+      "layouts": "布局",
+      "layout_actions": "布局操作",
+      "no_saved_layouts": "尚无已保存的布局",
+      "new_layout": "新建布局",
+      "rename_layout": "重命名布局",
+      "duplicate_layout": "复制布局",
+      "delete_layout": "删除布局",
+      "layout_name": "布局名称",
+      "layout_name_placeholder": "例如：运营总览",
+      "layout_name_required": "请输入布局名称",
+      "duplicate_suffix": "(副本)",
+      "create": "创建",
+      "rename": "重命名",
+      "duplicate": "复制",
+      "set_default": "设为默认",
+      "default_badge": "默认",
+      "share_layout": "共享给团队",
+      "unshare_layout": "停止共享",
+      "shared_badge": "已共享",
+      "read_only": "只读",
+      "default_layout_name": "默认仪表盘",
+      "unsaved_layout_hint": "尚未保存",
+      "confirm_delete_title": "删除布局",
+      "confirm_delete_message": "确定删除“_NAME_”吗？此操作无法撤销。",
+      "confirm_delete_dirty_message": "确定删除“_NAME_”吗？未保存的更改将会丢失，且无法撤销。",
+      "confirm_discard_title": "放弃更改",
+      "confirm_discard_message": "您有未保存的更改，确定放弃吗？",
+      "remote_updated": "已在别处更新",
+      "remote_updated_hint": "该布局已在服务器上发生变更。点击“保存”覆盖，或点击“放弃更改”加载最新版本。",
+      "unavailable_title": "无法加载已保存的布局",
+      "unavailable_message": "当前显示的是临时布局。在问题解决前，您的更改不会被保存。",
+      "done": "完成",
+      "add_widget": "添加小部件",
+      "save": "保存",
+      "saving": "保存中...",
+      "discard": "放弃更改",
+      "cancel": "取消",
+      "apply": "应用",
+      "unsaved_changes": "有未保存的更改",
+      "no_widgets": "暂无小部件。开启自定义以添加。",
+      "unknown_widget": "未知小部件",
+      "widget_settings": "小部件设置",
+      "widget_title": "标题",
+      "remove_widget": "移除小部件",
+      "drag_handle": "拖动以重新排序",
+      "col_span": "宽度（列）",
+      "row_span": "高度（行）",
+      "month_range": "显示月数",
+      "show_header": "显示标题",
+      "connected": "实时",
+      "disconnected": "未连接",
+      "groups": {
+        "case": "案件管理",
+        "product": "产品管理",
+        "kms": "知识库",
+        "workspace": "工作区"
+      },
+      "widgets": {
+        "case_summary_metrics": {
+          "label": "案件汇总",
+          "description": "案件总数及按组别细分。"
+        },
+        "sla_performance": {
+          "label": "SLA 绩效",
+          "description": "SLA 达标率、超时率与平均响应时间。"
+        },
+        "case_daily_chart": {
+          "label": "每日案件",
+          "description": "近期各天按状态划分的案件。"
+        },
+        "case_monthly_chart": {
+          "label": "每月案件",
+          "description": "近期各月按状态划分的案件。"
+        },
+        "case_status_donut": {
+          "label": "案件状态概览",
+          "description": "最近一个周期的状态占比。"
+        },
+        "growth_metrics": {
+          "label": "增长指标",
+          "description": "产品、备件、订购与待处理总数及环比增长。"
+        },
+        "module_overview": {
+          "label": "模块概览",
+          "description": "库存、备件、客户与预约的有效记录数。"
+        },
+        "top_ordered": {
+          "label": "订购最多",
+          "description": "订购量最高的备件及数量与单价。"
+        },
+        "revenue": {
+          "label": "预计收入",
+          "description": "本月收入目标及备件/产品占比。"
+        },
+        "inventory_alert": {
+          "label": "库存预警",
+          "description": "低库存备件与待审批的采购申请。"
+        }
+      }
+    }
+  },
+  "navigation": {
+    "super_app": {
+      "sidebar": {
+        "workspace": {
+          "title": "工作区",
+          "menu": {
+            "softphone": "软电话",
+            "chat": {
+              "title": "聊天",
+              "sub_menu": {
+                "lobby": "大厅（来电）",
+                "history": "聊天记录"
+              }
+            },
+            "email": "电子邮件",
+            "dashboard": "仪表盘"
+          }
+        },
+        "contact": {
+          "title": "联系人",
+          "menu": {
+            "list": "联系人列表",
+            "appointment": "预约"
+          }
+        },
+        "case": {
+          "title": "案件",
+          "menu": {
+            "list": "案件列表",
+            "assign": "案件分配",
+            "dashboard": "案件仪表盘",
+            "custom_dashboard": "自定义仪表盘"
+          }
+        },
+        "product": {
+          "title": "产品",
+          "menu": {
+            "product": "产品列表",
+            "inventory": "备件",
+            "inventory_request": "申请备件",
+            "dashboard": "仪表盘"
+          }
+        },
+        "knowledge": {
+          "title": "知识库",
+          "menu": {
+            "dashboard": "仪表板",
+            "broadcast": "公告",
+            "files": "文件",
+            "articles": "文章",
+            "category": "分类管理",
+            "banner": "横幅管理",
+            "source": "来源管理"
+          }
+        }
+      },
+      "topbar": {
+        "workspace": "工作区",
+        "contact": "联系人",
+        "case": "案件",
+        "product": "产品",
+        "more": {
+          "title": "更多",
+          "menu": {
+            "product": {
+              "title": "产品",
+              "sub_menu": {
+                "product": "产品",
+                "product_stock": "产品库存",
+                "inventory": "备件",
+                "inventory_stock": "备件库存",
+                "inventory_request": "申请备件"
+              }
+            },
+            "case": {
+              "title": "案件",
+              "sub_menu": {
+                "create": "创建",
+                "schedule": "日程",
+                "assign": "分配",
+                "history": "历史记录"
+              }
+            },
+            "system_config": {
+              "title": "系统配置",
+              "sub_menu": {
+                "service_type": "服务类型管理",
+                "unit": "单位管理",
+                "skill": "技能管理",
+                "area": "区域管理"
+              }
+            },
+            "user_mgmt": {
+              "title": "用户管理",
+              "sub_menu": {
+                "user": "用户管理",
+                "role_privilege": "角色与权限",
+                "user_group": "用户组",
+                "org": "组织机构",
+                "audit": "审计日志"
+              }
+            },
+            "contact": {
+              "title": "联系人",
+              "sub_menu": {
+                "list": "联系人列表",
+                "config": "联系人配置",
+                "appointment": "预约"
+              }
+            },
+            "dashboard_analytic": {
+              "title": "仪表盘与分析",
+              "sub_menu": {
+                "case": "案件",
+                "product": "产品",
+                "custom": "自定义仪表盘"
+              }
+            },
+            "form": {
+              "title": "表单",
+              "sub_menu": {
+                "mgmt": "管理",
+                "builder": "构建器"
+              }
+            },
+            "package_service": {
+              "title": "套餐与服务",
+              "sub_menu": {
+                "package": "套餐",
+                "service": "服务"
+              }
+            },
+            "workflow": {
+              "title": "工作流程",
+              "sub_menu": {
+                "mgmt": "管理",
+                "builder": "构建器"
+              }
+            },
+            "report": {
+              "title": "报告",
+              "sub_menu": {
+                "report": "报告",
+                "case": "案件报告",
+                "order": "订单报告"
+              }
+            },
+            "knowledge": {
+              "title": "知识库",
+              "sub_menu": {
+                "category": "分类管理",
+                "banner": "横幅管理",
+                "source": "来源管理",
+                "boardcastlog": "广播发送记录"
+              }
+            }
+          }
+        },
+        "status": {
+          "available": "可用",
+          "offline": "离线"
+        },
+        "knowlage": "产品"
+      }
+    },
+    "home": "首页",
+    "topbar": {
+      "search": {
+        "title": "搜索",
+        "placeholder": "搜索或输入命令...",
+        "search_button": "搜索",
+        "no_results": "未找到结果"
+      },
+      "settings": {
+        "title": "设置",
+        "language": "语言",
+        "theme": "主题",
+        "notification": {
+          "title": "通知",
+          "mark_all_as_read": "全部标记为已读",
+          "no_notifications": "没有通知",
+          "search": "搜索",
+          "view_all_notifications": "查看所有通知"
+        }
+      },
+      "profile": {
+        "edit_profile": "个人资料",
+        "account_settings": "账户设置",
+        "notification": "通知",
+        "sign_out": "退出登录"
+      }
+    },
+    "sidebar": {
+      "main": {
+        "case_management": {
+          "title": "案件管理",
+          "nested": {
+            "case_creation": "案件创建",
+            "creation_schedule_date": "计划创建",
+            "case_assignment": "案件分配",
+            "case_history": {
+              "title": "历史记录",
+              "header": "工作订单历史记录"
+            }
+          }
+        },
+        "dashboard": {
+          "title": "仪表板 & 分析",
+          "nested": {
+            "analytics": "分析",
+            "call_center": "呼叫中心",
+            "agent_status": "座席状态",
+            "service": {
+              "title": "工作单",
+              "header": "工单仪表板"
+            }
+          }
+        },
+        "report": {
+          "title": "报告"
+        },
+        "form_builder": {
+          "title": "表单构建器",
+          "nested": {
+            "form_management": "表单管理",
+            "form_builder": "表单构建"
+          }
+        },
+        "workflow": {
+          "title": "工作流",
+          "nested": {
+            "workflow_management": "工作流管理",
+            "workflow_builder": {
+              "title": "工作流构建",
+              "header": "工作流构建",
+              "create": {
+                "title": "创建工作流",
+                "header": "创建工作流"
+              },
+              "read": {
+                "title": "工作流详情",
+                "header": "工作流详情"
+              },
+              "update": {
+                "title": "编辑工作流",
+                "header": "编辑工作流"
+              }
+            }
+          }
+        },
+        "user_management": {
+          "title": "用户管理",
+          "nested": {
+            "user": {
+              "title": "用户",
+              "header": "用户",
+              "create": {
+                "title": "创建用户",
+                "header": "创建用户"
+              },
+              "read": {
+                "title": "用户详情",
+                "header": "用户详情"
+              },
+              "update": {
+                "title": "编辑用户",
+                "header": "编辑用户"
+              }
+            },
+            "role_privilege": "角色与权限",
+            "user_group": "用户组",
+            "organization": "组织",
+            "audit_log": "审计日志"
+          }
+        },
+        "system_configuration": {
+          "title": "系统配置",
+          "nested": {
+            "service_management": "服务管理",
+            "unit_management": {
+              "title": "单位管理",
+              "header": "单位管理",
+              "create": {
+                "title": "创建单元",
+                "header": "创建单元"
+              },
+              "read": {
+                "title": "单元详情",
+                "header": "单元详情"
+              },
+              "update": {
+                "title": "编辑单元",
+                "header": "编辑单元"
+              }
+            },
+            "skill_management": "技能管理",
+            "property_management": "属性管理",
+            "area_management": "区域管理"
+          }
+        }
+      },
+      "menu": {
+        "title": "菜单",
+        "dashboard": {
+          "title": "仪表板",
+          "nested": {
+            "ecommerce": "电子商务",
+            "dashboard_framework": "仪表板框架"
+          }
+        },
+        "calendar": "日历",
+        "user_profile": "用户资料",
+        "forms": {
+          "title": "表单",
+          "nested": {
+            "form_elements": "表单元素"
+          }
+        },
+        "tables": {
+          "title": "表格",
+          "nested": {
+            "basic_tables": "基础表格"
+          }
+        },
+        "pages": {
+          "title": "页面",
+          "nested": {
+            "blank_page": "空白页",
+            "404_error": "404 错误"
+          }
+        }
+      },
+      "other": {
+        "title": "其它",
+        "charts": {
+          "title": "图表",
+          "nested": {
+            "line_chart": "折线图",
+            "bar_chart": "柱状图"
+          }
+        },
+        "ui_elements": {
+          "title": "UI 元素",
+          "nested": {
+            "alerts": "提醒",
+            "avatar": "头像",
+            "badge": "徽章",
+            "buttons": "按钮",
+            "buttons_customize": "按钮（自定义）",
+            "images": "图片",
+            "tabs": "标签",
+            "videos": "视频"
+          }
+        },
+        "authentication": {
+          "title": "认证",
+          "nested": {
+            "sign_in": "登录",
+            "sign_up": "注册",
+            "authenticate_inspector": "验证检查员"
+          }
+        },
+        "security": {
+          "title": "安全与错误",
+          "nested": {
+            "error_boundaries": "错误边界",
+            "loading": "加载与骨架屏",
+            "security_alert": "安全警报",
+            "offline": "离线处理"
+          }
+        },
+        "theme_debugger": {
+          "title": "主题调试器"
+        }
+      },
+      "archives": {
+        "title": "归档",
+        "case_management": {
+          "title": "案件管理",
+          "nested": {
+            "case_history": "案件历史"
+          }
+        },
+        "workflow": {
+          "title": "工作流",
+          "nested": {
+            "workflow_builder_v1": "工作流构建 v0.1.0",
+            "workflow_builder_v2": "工作流构建 v0.2.0"
+          }
+        }
+      }
+    }
+  },
+  "crud": {
+    "common": {
+      "processing": "正在处理...",
+      "search": "搜索",
+      "length_menu": {
+        "show": "显示",
+        "entries": "条条目"
+      },
+      "info": "显示 _START_-_END_ of _TOTAL_ 条条目",
+      "info_empty": "显示 0 条条目",
+      "info_filtered": "（共筛选 _MAX_ 条条目）",
+      "info_postFix": "",
+      "loading_records": "正在加载...",
+      "zero_records": "没有可显示的条目",
+      "empty_table": "没有可用数据",
+      "paginate": {
+        "info": "页 _PAGE_ 的 _TOTAL_",
+        "first": "第一条",
+        "previous": "上一条",
+        "next": "下一条",
+        "last": "最后一条"
+      },
+      "aria": {
+        "sortAscending": "启用升序对列进行排序",
+        "sortDescending": "启用降序对列进行排序"
+      },
+      "search_advanced": "高级过滤器",
+      "reset_all": "全部重置",
+      "apply_filters": "应用过滤器",
+      "count_filters": "过滤器处于活动状态",
+      "no_filters": "未应用任何滤镜",
+      "no_filters_active": "尝试调整您的过滤器或搜索词",
+      "no_records": "创建您的第一个_ENTITY_以开始",
+      "action": "操作",
+      "create": "创建_ENTITY_",
+      "read": "查看",
+      "update": "编辑",
+      "delete": "删除",
+      "delete_success": "_ENTITY_ 已成功删除",
+      "delete_error": "删除 _ENTITY_ 失败",
+      "confirm_modal": {
+        "dialog_title": {
+          "delete": "删除确认",
+          "status": "状态更改",
+          "other": "确认"
+        },
+        "dialog_subtitle": {
+          "delete": "此操作无法撤消",
+          "status": "",
+          "other": "请确认您的操作"
+        },
+        "dialog_message": {
+          "delete": "您确定要删除_ENTITY_吗? 此操作无法撤消",
+          "status": "将_ENTITY_状态更改为_NEW_?",
+          "other": "您确定要继续吗？"
+        },
+        "dialog_button": {
+          "cancel": "取消",
+          "delete": "删除",
+          "status": "",
+          "other": "确认"
+        }
+      },
+      "permission_denied": "您没有执行此操作的权限",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索 _ENTITY_..."
+          }
+        }
+      },
+      "form": {
+        "attachment": {
+          "label": "_ENTITY_ 图片",
+          "placeholder": "更改照片",
+          "helper": "允许格式: JPG, PNG, GIF"
+        },
+        "action": {
+          "cancel": "取消",
+          "reset": "重置",
+          "save": "保存",
+          "saving": "保存中...",
+          "confirmDialog": {
+            "titleCreate": "创建 _ENTITY_ 确认",
+            "titleUpdate": "编辑 _ENTITY_ 确认",
+            "descriptionCreate": "请确认创建 _ENTITY_",
+            "descriptionUpdate": "请确认编辑 _ENTITY_",
+            "cancel": "取消",
+            "confirm": "确认"
+          },
+          "create": {
+            "success": "_ENTITY_ 创建成功",
+            "error": "创建 _ENTITY_ 失败"
+          },
+          "delete": {
+            "success": "_ENTITY_ 删除成功",
+            "error": "删除 _ENTITY_ 失败"
+          },
+          "update": {
+            "success": "_ENTITY_ 更新成功",
+            "error": "更新 _ENTITY_ 失败"
+          }
+        }
+      },
+      "unit": {
+        "day": "天",
+        "month": "月",
+        "out_of_stock": "缺货",
+        "low_stock": "库存不足",
+        "in_stock": "有货"
+      }
+    },
+    "case_history": {
+      "name": "工作订单",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索工单..."
+          },
+          "filter": {
+            "status": "选择状态",
+            "priority": "选择优先级"
+          },
+          "advanced_filter": {
+            "start_date": {
+              "label": "开始日期",
+              "placeholder": "选择开始日期"
+            },
+            "end_date": {
+              "label": "结束日期",
+              "placeholder": "选择结束日期"
+            },
+            "caseType": {
+              "label": "类型",
+              "placeholder": "选择类型"
+            },
+            "caseSType": {
+              "label": "子类型",
+              "placeholder": "选择子类型"
+            },
+            "countryId": {
+              "label": "国家",
+              "placeholder": "选择国家"
+            },
+            "provId": {
+              "label": "省份",
+              "placeholder": "选择省份"
+            },
+            "distId": {
+              "label": "区",
+              "placeholder": "选择区"
+            },
+            "category": {
+              "label": "类别",
+              "placeholder": "输入类别"
+            },
+            "caseDetail": {
+              "label": "细节",
+              "placeholder": "输入细节"
+            },
+            "createBy": {
+              "label": "创建通过",
+              "placeholder": "选择用户名"
+            }
+          }
+        },
+        "header": {
+          "case": "案例编号",
+          "detail": "详情",
+          "status": "状态",
+          "priority": "优先级",
+          "created_by": "创建者",
+          "created_at": "创建时间"
+        },
+        "body": {
+          "actions": {
+            "cancel": "取消"
+          }
+        },
+        "preview": {
+          "tab": {
+            "header": {
+              "overview": "概述",
+              "activity": "活动日志"
+            }
+          }
+        }
+      }
+    },
+    "workflow": {
+      "name": "工作流程",
+      "builder": {
+        "toolbar": {
+          "header": "工作流程详情",
+          "nodes": {
+            "header": "添加节点",
+            "start": "开始",
+            "process": "处理",
+            "dispatch": "分派",
+            "sla": "SLA",
+            "decision": "决策",
+            "end": "结束"
+          },
+          "actions": {
+            "adding": "点击或拖动到画布",
+            "import": "导入工作流程",
+            "preview": "预览SOP",
+            "save": "保存工作流程",
+            "edit": "编辑工作流程"
+          }
+        },
+        "metadata": {
+          "wfType": {
+            "label": "类型",
+            "options": {
+              "case": "个案",
+              "request": "订购备件"
+            }
+          },
+          "title": {
+            "label": "标题",
+            "placeholder": "输入工作流标题...",
+            "default": "未命名工作流程"
+          },
+          "description": {
+            "label": "描述",
+            "placeholder": "简要描述..."
+          },
+          "status": {
+            "label": "状态",
+            "placeholder": "选择状态",
+            "options": {
+              "draft": "草稿",
+              "active": "活动",
+              "inactive": "非活动",
+              "testing": "测试"
+            }
+          },
+          "total_sla": "总SLA",
+          "created_at": "创建时间",
+          "created_by": "由"
+        },
+        "node": {
+          "header": "节点配置",
+          "description": "选择一个节点来配置其属性",
+          "validation": {
+            "header": "验证错误",
+            "node_required": "工作流程至少需要一个 _NODE_ 节点",
+            "action_required": "工作流程在 _NODE_ 节点中至少需要一个 _ACTION_ 操作",
+            "maximum_connections": "_NODE_ 节点已达到最大连接数",
+            "determine_connections": "_NODE_ 节点已同时具有“是”和“否”连接"
+          },
+          "form": {
+            "label": { "label": "标签" },
+            "description": {
+              "label": "描述",
+              "placeholder": "输入描述..."
+            },
+            "node_type": { "label": "节点类型" },
+            "position": { "label": "位置" },
+            "actions": {
+              "label": "操作",
+              "placeholder": "选择操作"
+            },
+            "form": {
+              "label": "表单",
+              "placeholder": "选择表单"
+            },
+            "sla": { "label": "SLA（分钟）" },
+            "group": {
+              "label": "负责组",
+              "placeholder": "选择组"
+            },
+            "pic": {
+              "label": "负责人（PIC）",
+              "placeholder": "选择用户"
+            },
+            "conditions": {
+              "label": "条件",
+              "placeholder": "输入条件..."
+            }
+          },
+          "connections": {
+            "header": "连接",
+            "outgoing": "输出",
+            "incoming": "输入"
+          },
+          "stats": {
+            "header": "工作流程统计",
+            "title": "标题",
+            "status": "状态",
+            "nodes": "节点",
+            "connections": "连接",
+            "start_nodes": "起始节点",
+            "end_nodes": "结束节点"
+          }
+        },
+        "modal": {
+          "import": {
+            "header": "导入工作流程",
+            "file": { "label": "上传 .json 文件" },
+            "textarea": {
+              "label": "或粘贴 JSON 内容",
+              "placeholder": "在此粘贴工作流程 JSON..."
+            },
+            "actions": { "import": "导入" }
+          },
+          "preview": {
+            "header": "预览工作流程的SOP",
+            "description": "根据工作流程路径生成表单组件",
+            "step": "步骤",
+            "start": "工作流程开始",
+            "decision": {
+              "header": "条件",
+              "path": "选择决策路径"
+            },
+            "sla": {
+              "header": "SLA时间",
+              "path": "SLA决策路径",
+              "yes": "符合SLA",
+              "no": "超出SLA"
+            },
+            "current_path": "当前路径",
+            "end": "工作流程结束",
+            "actions": { "close": "关闭" },
+            "empty": {
+              "title": "没有标准操作程序可供预览",
+              "description": "添加开始节点、流程节点、调度节点和结束节点以及连接，以生成 SOP 预览。"
+            }
+          },
+          "save": {
+            "header": "预览工作流程JSON并确认",
+            "actions": {
+              "copy": "复制",
+              "copied": "已复制",
+              "download": "下载",
+              "confirm": "确认",
+              "saving": "保存中..."
+            }
+          },
+          "actions": { "cancel": "取消" }
+        }
+      },
+      "metrics": {
+        "total": "总计",
+        "active": "活跃",
+        "published": "已发布",
+        "locked": "已锁定"
+      },
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索工作流..."
+          }
+        },
+        "header": {
+          "title": "名称",
+          "active": "状态",
+          "createdAt": "创建时间"
+        },
+        "preview": {
+          "header": "_TITLE_ 工作流",
+          "tab": {
+            "header": {
+              "overview": "概览",
+              "configuration": "配置",
+              "activity": "活动"
+            },
+            "overview": {
+              "desc": "描述",
+              "status": "状态",
+              "versions": "版本",
+              "createdAt": "创建时间",
+              "createdBy": "创建者",
+              "updatedAt": "更新时间",
+              "updatedBy": "更新者"
+            },
+            "configuration": {
+              "header": "工作流配置",
+              "description": "查看工作流节点和连接",
+              "node": "节点",
+              "connection": "连接",
+              "start_node": "开始节点",
+              "process_node": "处理节点",
+              "dispatch_node": "调度节点",
+              "end_node": "结束节点"
+            },
+            "activity": {
+              "header": "工作流活动",
+              "no_activity": "该工作流暂无活动记录"
+            }
+          }
+        },
+        "confirm": {
+          "warning": {
+            "title": "修改工作流 (Workflow Modification)",
+            "message": "您正在尝试编辑 _WORKFLOW_, 而该工作流当前正被 _SUB_TYPE_ 使用 修改此工作流可能会导致现有操作流程出现错误 请确保您编辑的工作流符合要求，否则系统将无法保存更改"
+          }
+        }
+      },
+      "action": {
+        "create": {
+          "success": "工作流创建成功",
+          "error": "工作流创建失败"
+        },
+        "update": {
+          "success": "工作流更新成功",
+          "error": "工作流更新失败"
+        },
+        "delete": {
+          "success": "工作流删除成功",
+          "error": "工作流删除失败"
+        },
+        "button": {
+          "edit": "编辑",
+          "delete": "删除"
+        }
+      },
+      "unit": {
+        "sla": {
+          "abbr": "分钟",
+          "label": "分钟",
+          "postfix": ""
+        }
+      }
+    },
+    "user": {
+      "name": "用户",
+      "metrics": {
+        "total_users": "总数",
+        "active_users": "活跃数",
+        "new_this_month": "本月新增数",
+        "inactive_users": "非活跃数"
+      },
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索用户..."
+          },
+          "advanced_filter": {
+            "roleId": {
+              "label": "角色",
+              "placeholder": "选择角色"
+            },
+            "deptId": {
+              "label": "部门",
+              "placeholder": "选择部门"
+            }
+          }
+        },
+        "header": {
+          "user": "用户",
+          "role": "角色",
+          "department": "部门",
+          "status": "状态",
+          "last_login": "上次登录"
+        },
+        "preview": {
+          "header": "用户信息",
+          "tab": {
+            "header": {
+              "profile": "个人资料",
+              "skills": "技能",
+              "area": "分配区域",
+              "groups": "用户组",
+              "audit_log": "审计日志"
+            }
+          }
+        },
+        "group": {
+          "update": {
+            "title": "用户组分配",
+            "success": "用户组更新成功",
+            "error": "无法更新用户组",
+            "pending_backend": "用户组成员尚未保存 — 等待后端支持。",
+            "button": {
+              "save": "保存",
+              "saving": "正在保存..."
+            }
+          }
+        },
+        "skill":{
+          "update":{
+            "title": "技能更新",
+            "success": "用户技能更新成功",
+            "error": "无法更新用户技能",
+            "button": {
+              "save": "保存",
+              "saving": "正在保存..."
+            }
+          }
+        },
+        "area": {
+          "update": {
+            "title": "区域分配更新",
+            "success": "用户区域分配更新成功",
+            "error": "无法更新用户区域分配",
+            "button": {
+              "save": "保存",
+              "saving": "正在保存..."
+            }
+          }
+        }
+      },
+      "unit": {
+        "last_login": {
+          "today": "今天",
+          "yesterday": "昨天",
+          "day": "一天前",
+          "week": "一周前",
+          "month": "一个月前",
+          "year": "一年前"
+        },
+        "status": {
+          "active": "已激活",
+          "inactive": "已失效"
+        }
+      }
+    },
+    "user_group": {
+      "name": "用户组",
+      "metrics": {
+        "total": "用户组总数",
+        "active": "启用的用户组",
+        "members": "成员总数"
+      },
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索用户组..."
+          }
+        },
+        "header": {
+          "name": "用户组",
+          "description": "描述",
+          "members": "成员",
+          "status": "状态",
+          "updatedAt": "最后修改"
+        },
+        "members": {
+          "title": "组成员",
+          "pending_backend": "成员关系尚未保存 — 等待后端支持。",
+          "button": {
+            "save": "保存",
+            "saving": "正在保存..."
+          }
+        }
+      },
+      "form": {
+        "header": {
+          "create": "创建用户组",
+          "update": "编辑用户组"
+        },
+        "grpId": {
+          "label": "用户组 ID",
+          "placeholder": "输入用户组 ID",
+          "required": "用户组 ID 为必填项"
+        },
+        "en": {
+          "label": "名称（英文）",
+          "placeholder": "输入用户组的英文名称",
+          "required": "用户组名称（英文）为必填项"
+        },
+        "th": {
+          "label": "名称（泰文）",
+          "placeholder": "输入用户组的泰文名称",
+          "required": "用户组名称（泰文）为必填项"
+        },
+        "description": {
+          "label": "描述",
+          "placeholder": "输入描述（可选）"
+        }
+      },
+      "action": {
+        "group": {
+          "create": {
+            "success": "用户组创建成功",
+            "error": "无法创建用户组"
+          },
+          "update": {
+            "success": "用户组更新成功",
+            "error": "无法更新用户组"
+          },
+          "delete": {
+            "success": "用户组删除成功",
+            "error": "无法删除用户组"
+          }
+        },
+        "pending_backend": "更改尚未保存 — 用户组管理等待后端支持。",
+        "button": {
+          "save": "保存",
+          "reset": "重置"
+        }
+      },
+      "confirm": {
+        "button": {
+          "cancel": "取消",
+          "confirm": "确认",
+          "saving": "正在保存...",
+          "deleting": "正在删除..."
+        }
+      },
+      "unit": {
+        "member": "成员",
+        "no_members": "暂无成员"
+      }
+    },
+    "role_privilege": {
+      "name": "角色",
+      "metrics": {
+        "total": "角色总数",
+        "active": "活跃角色",
+        "avg": "平均权限"
+      },
+      "list": {
+        "header": {
+          "user": "用户",
+          "permission": "权限",
+          "updatedAt": "最后修改时间",
+          "groupName": "组"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "创建角色",
+          "update": "编辑角色"
+        },
+        "roleName": {
+          "label": "角色名称",
+          "placeholder": "输入角色名称",
+          "required": "角色名称为必填项"
+        }
+      },
+      "confirm": {
+        "delete": {
+          "title": "删除角色确认",
+          "message": "按照确认要删除 _Role_ 吗？此操作无法撤销。"
+        },
+        "button": {
+          "cancel": "取消",
+          "confirm": "确认",
+          "saving": "保存中...",
+          "deleting": "删除中..."
+        }
+      },
+      "action": {
+        "role": {
+          "create": {
+            "success": "角色创建成功",
+            "error": "角色创建失败"
+          },
+          "update": {
+            "success": "角色更新成功",
+            "error": "角色更新失败"
+          },
+          "delete": {
+            "success": "角色删除成功",
+            "error": "角色删除失败"
+          }
+        },
+        "privilege": {
+          "update": {
+            "success": "权限更新成功",
+            "error": "权限更新失败"
+          }
+        },
+        "button": {
+          "save": "保存",
+          "delete": "删除",
+          "reset": "重置"
+        }
+      },
+      "unit": {
+        "more": "更多",
+        "system": "系统"
+      }
+    },
+    "organization": {
+      "name": "组织机构",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索组织..."
+          }
+        },
+        "header": {
+          "dept": {
+            "no_data": "未找到部门"
+          },
+          "comm": {
+            "plural": "指挥部",
+            "singular": "指挥部",
+            "no_data": "该部门下未定义指挥部",
+            "create_child": "添加指挥部"
+          },
+          "stn": {
+            "plural": "站点",
+            "singular": "站点",
+            "no_data": "该指挥部下未定义站点",
+            "create_child": "添加站点"
+          }
+        }
+      },
+      "form": {
+        "dept": {
+          "header": {
+            "create": "创建部门",
+            "update": "编辑部门"
+          },
+          "deptTh": {
+            "label": "名称 (泰语)",
+            "placeholder": "输入泰语部门名称",
+            "required": "部门名称 (泰语) 为必填项"
+          },
+          "deptEn": {
+            "label": "名称 (英语)",
+            "placeholder": "输入英语部门名称",
+            "required": "部门名称 (英语) 为必填项"
+          }
+        },
+        "comm": {
+          "header": {
+            "create": "添加指挥部",
+            "update": "编辑指挥部"
+          },
+          "commandTh": {
+            "label": "名称 (泰语)",
+            "placeholder": "输入泰语指挥部名称",
+            "required": "指挥部名称 (泰语) 为必填项"
+          },
+          "commandEn": {
+            "label": "名称 (英语)",
+            "placeholder": "输入英语指挥部名称",
+            "required": "指挥部名称 (英语) 为必填项"
+          },
+          "commDeptId": {
+            "label": "部门",
+            "placeholder": "选择部门",
+            "required": "部门为必填项"
+          }
+        },
+        "stn": {
+          "header": {
+            "create": "添加站点",
+            "update": "编辑站点"
+          },
+          "stationTh": {
+            "label": "名称 (泰语)",
+            "placeholder": "输入泰语站点名称",
+            "required": "站点名称 (泰语) 为必填项"
+          },
+          "stationEn": {
+            "label": "名称 (英语)",
+            "placeholder": "输入英语站点名称",
+            "required": "站点名称 (英语) 为必填项"
+          },
+          "stnDeptId": {
+            "label": "部门",
+            "placeholder": "选择部门",
+            "required": "部门为必填项"
+          },
+          "stnCommId": {
+            "label": "指挥部",
+            "placeholder": "选择指挥部",
+            "required": "指挥部为必填项"
+          }
+        }
+      },
+      "confirm": {
+        "dept": {
+          "create": {
+            "title": "创建部门确认",
+            "message": "请确认创建 _DEPT_。"
+          },
+          "update": {
+            "title": "更新部门确认",
+            "message": "请确认更新 _DEPT_。"
+          },
+          "delete": {
+            "title": "删除部门确认",
+            "message": "您确定要删除 _DEPT_ 吗？此操作无法撤销。"
+          }
+        },
+        "comm": {
+          "create": {
+            "title": "创建指挥部确认",
+            "message": "请确认创建 _COMM_。"
+          },
+          "update": {
+            "title": "更新指挥部确认",
+            "message": "请确认更新 _COMM_。"
+          },
+          "delete": {
+            "title": "删除指挥部确认",
+            "message": "您确定要删除 _COMM_ 吗？此操作无法撤销。"
+          }
+        },
+        "stn": {
+          "create": {
+            "title": "创建站点确认",
+            "message": "请确认创建 _STN_。"
+          },
+          "update": {
+            "title": "更新站点确认",
+            "message": "请确认更新 _STN_。"
+          },
+          "delete": {
+            "title": "删除站点确认",
+            "message": "您确定要删除 _STN_ 吗？此操作无法撤销。"
+          }
+        },
+        "button": {
+          "cancel": "取消",
+          "confirm": "确认",
+          "saving": "保存中...",
+          "deleting": "删除中..."
+        }
+      },
+      "action": {
+        "dept": {
+          "create": {
+            "success": "部门创建成功",
+            "error": "部门创建失败"
+          },
+          "update": {
+            "success": "部门更新成功",
+            "error": "部门更新失败"
+          },
+          "delete": {
+            "success": "部门删除成功",
+            "error": "部门删除失败"
+          }
+        },
+        "comm": {
+          "create": {
+            "success": "指挥部创建成功",
+            "error": "指挥部创建失败"
+          },
+          "update": {
+            "success": "指挥部更新成功",
+            "error": "指挥部更新失败"
+          },
+          "delete": {
+            "success": "指挥部删除成功",
+            "error": "指挥部删除失败"
+          }
+        },
+        "stn": {
+          "create": {
+            "success": "站点创建成功",
+            "error": "站点创建失败"
+          },
+          "update": {
+            "success": "站点更新成功",
+            "error": "站点更新失败"
+          },
+          "delete": {
+            "success": "站点删除成功",
+            "error": "站点删除失败"
+          }
+        },
+        "button": {
+          "save": "保存",
+          "delete": "删除",
+          "reset": "重置"
+        }
+      }
+    },
+    "service": {
+      "name": "服务",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索类型 / 子类型..."
+          }
+        },
+        "header": {
+          "type": {
+            "no_data": "未找到类型"
+          },
+          "subType": {
+            "plural": "子类型",
+            "singular": "子类型",
+            "no_data": "此类型未定义子类型",
+            "create_child": "添加子类型",
+            "skill_required": {
+              "plural": "所需技能",
+              "singular": "所需技能"
+            }
+          }
+        }
+      },
+      "form": {
+        "type": {
+          "header": {
+            "create": "创建类型",
+            "update": "编辑类型"
+          },
+          "typeTh": {
+            "label": "名称 (泰语)",
+            "placeholder": "请输入泰语类型名称",
+            "required": "类型名称 (泰语) 为必填项"
+          },
+          "typeEn": {
+            "label": "名称 (英语)",
+            "placeholder": "请输入英语类型名称",
+            "required": "类型名称 (英语) 为必填项"
+          }
+        },
+        "sub_type": {
+          "header": {
+            "create": "添加子类型",
+            "update": "编辑子类型"
+          },
+          "sTypeTh": {
+            "label": "名称 (泰语)",
+            "placeholder": "请输入泰语子类型名称",
+            "required": "子类型名称 (泰语) 为必填项"
+          },
+          "sTypeEn": {
+            "label": "名称 (英语)",
+            "placeholder": "请输入英语子类型名称",
+            "required": "子类型名称 (英语) 为必填项"
+          },
+          "sTypeCode": {
+            "label": "子类型代码",
+            "placeholder": "请输入子类型代码",
+            "required": "子类型代码为必填项"
+          },
+          "sTypeTypeId": {
+            "label": "类型",
+            "placeholder": "选择类型",
+            "required": "类型为必填项"
+          },
+          "caseSla": {
+            "label": "SLA (分钟)"
+          },
+          "priority": {
+            "label": "优先级",
+            "placeholder": "选择优先级",
+            "required": "优先级为必填项"
+          },
+          "unitPropLists": {
+            "label": "属性",
+            "placeholder": "选择属性",
+            "required": "属性为必填项"
+          },
+          "userSkillList": {
+            "label": "技能",
+            "placeholder": "选择技能",
+            "required": "技能为必填项"
+          },
+          "wfId": {
+            "label": "工作流",
+            "placeholder": "选择工作流",
+            "required": "工作流为必填项"
+          },
+          "mDeviceType": {
+            "label": "设备类型",
+            "placeholder": "请输入设备类型",
+            "required": "设备类型为必填项"
+          },
+          "mDeviceTypeName": {
+            "label": "设备类型名称",
+            "placeholder": "请输入设备类型名称",
+            "required": "设备类型名称为必填项"
+          },
+          "mWorkOrderType": {
+            "label": "工单类型",
+            "placeholder": "请输入工单类型",
+            "required": "工单类型为必填项"
+          }
+        }
+      },
+      "confirm": {
+        "type": {
+          "create": {
+            "title": "创建类型确认",
+            "message": "请确认以创建 _TYPE_。"
+          },
+          "update": {
+            "title": "更新类型确认",
+            "message": "请确认以更新 _TYPE_。"
+          },
+          "delete": {
+            "title": "删除类型确认",
+            "message": "确定要删除 _TYPE_ 吗？此操作无法撤销。"
+          }
+        },
+        "sub_type": {
+          "create": {
+            "title": "创建子类型确认",
+            "message": "请确认以创建 _SUB_TYPE_。"
+          },
+          "update": {
+            "title": "更新子类型确认",
+            "message": "请确认以更新 _SUB_TYPE_。"
+          },
+          "delete": {
+            "title": "删除子类型确认",
+            "message": "确定要删除 _SUB_TYPE_ 吗？此操作无法撤销。"
+          }
+        },
+        "button": {
+          "cancel": "取消",
+          "confirm": "确认",
+          "saving": "正在保存...",
+          "deleting": "正在删除..."
+        }
+      },
+      "action": {
+        "type": {
+          "create": {
+            "success": "类型创建成功",
+            "error": "类型创建失败"
+          },
+          "update": {
+            "success": "类型更新成功",
+            "error": "类型更新失败"
+          },
+          "delete": {
+            "success": "类型删除成功",
+            "error": "类型删除失败"
+          }
+        },
+        "sub_type": {
+          "create": {
+            "success": "子类型创建成功",
+            "error": "子类型创建失败"
+          },
+          "update": {
+            "success": "子类型更新成功",
+            "error": "子类型更新失败"
+          },
+          "delete": {
+            "success": "子类型删除成功",
+            "error": "子类型删除失败"
+          }
+        },
+        "button": {
+          "save": "保存",
+          "delete": "删除",
+          "reset": "重置"
+        }
+      },
+      "unit": {
+        "minutes": " 分钟"
+      }
+    },
+    "area": {
+      "name": "区域",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索区域..."
+          }
+        },
+        "header": {
+          "province": {
+            "plural": "省份",
+            "singular": "省份",
+            "no_data": "该国未定义省份",
+            "create_child": "添加省份"
+          },
+          "district": {
+            "plural": "区/县",
+            "singular": "区/县",
+            "no_data": "该省未划分任何行政区",
+            "create_child": "添加区/县"
+          }
+        }
+      },
+      "form": {
+        "country": {
+          "header": {
+            "create": "新建国家",
+            "update": "编辑国家"
+          },
+          "countryCode": {
+            "label": "国家代码",
+            "placeholder": "请输入国家代码",
+            "required": "国家代码为必填项"
+          },
+          "countryTh": {
+            "label": "名称（泰文）",
+            "placeholder": "请输入泰文国家名称",
+            "required": "泰文国家名称为必填项"
+          },
+          "countryEn": {
+            "label": "名称（英文）",
+            "placeholder": "请输入英文国家名称",
+            "required": "英文国家名称为必填项"
+          }
+        },
+        "province": {
+          "header": {
+            "create": "添加省份",
+            "update": "编辑省份"
+          },
+          "provinceCountryId": {
+            "label": "国家",
+            "placeholder": "请选择国家",
+            "required": "国家为必填项"
+          },
+          "provinceCode": {
+            "label": "省份代码",
+            "placeholder": "请输入省份代码",
+            "required": "省份代码为必填项"
+          },
+          "provinceTh": {
+            "label": "名称（泰文）",
+            "placeholder": "请输入泰文省份名称",
+            "required": "泰文省份名称为必填项"
+          },
+          "provinceEn": {
+            "label": "名称（英文）",
+            "placeholder": "请输入英文省份名称",
+            "required": "英文省份名称为必填项"
+          }
+        },
+        "district": {
+          "header": {
+            "create": "添加区/县",
+            "update": "编辑区/县"
+          },
+          "districtCountryId": {
+            "label": "国家",
+            "placeholder": "请选择国家",
+            "required": "国家为必填项"
+          },
+          "districtProvId": {
+            "label": "省份",
+            "placeholder": "请选择省份",
+            "required": "省份为必填项"
+          },
+          "districtCode": {
+            "label": "区/县代码",
+            "placeholder": "请输入区/县代码",
+            "required": "区/县代码为必填项"
+          },
+          "districtTh": {
+            "label": "名称（泰文）",
+            "placeholder": "请输入泰文区/县名称",
+            "required": "泰文区/县名称为必填项"
+          },
+          "districtEn": {
+            "label": "名称（英文）",
+            "placeholder": "请输入英文区/县名称",
+            "required": "英文区/县名称为必填项"
+          }
+        }
+      },
+      "confirm": {
+        "country": {
+          "create": {
+            "title": "创建国家确认",
+            "message": "请确认创建 _COUNTRY_。"
+          },
+          "update": {
+            "title": "更新国家确认",
+            "message": "请确认更新 _COUNTRY_。"
+          },
+          "delete": {
+            "title": "删除国家确认",
+            "message": "您确定要删除 _COUNTRY_ 吗？此操作无法撤销。"
+          }
+        },
+        "province": {
+          "create": {
+            "title": "创建省份确认",
+            "message": "请确认创建 _PROVINCE_。"
+          },
+          "update": {
+            "title": "更新省份确认",
+            "message": "请确认更新 _PROVINCE_。"
+          },
+          "delete": {
+            "title": "删除省份确认",
+            "message": "您确定要删除 _PROVINCE_ 吗？此操作无法撤销。"
+          }
+        },
+        "district": {
+          "create": {
+            "title": "创建区/县确认",
+            "message": "请确认创建 _DISTRICT_。"
+          },
+          "update": {
+            "title": "更新区/县确认",
+            "message": "请确认更新 _DISTRICT_。"
+          },
+          "delete": {
+            "title": "删除区/县确认",
+            "message": "您确定要删除 _DISTRICT_ 吗？此操作无法撤销。"
+          }
+        },
+        "button": {
+          "cancel": "取消",
+          "confirm": "确认",
+          "saving": "保存中...",
+          "deleting": "删除中..."
+        }
+      },
+      "action": {
+        "country": {
+          "create": {
+            "success": "国家创建成功",
+            "error": "创建国家失败"
+          },
+          "update": {
+            "success": "国家更新成功",
+            "error": "更新国家失败"
+          },
+          "delete": {
+            "success": "国家删除成功",
+            "error": "删除国家失败"
+          }
+        },
+        "province": {
+          "create": {
+            "success": "省份创建成功",
+            "error": "创建省份失败"
+          },
+          "update": {
+            "success": "省份更新成功",
+            "error": "更新省份失败"
+          },
+          "delete": {
+            "success": "省份删除成功",
+            "error": "删除省份失败"
+          }
+        },
+        "district": {
+          "create": {
+            "success": "区/县创建成功",
+            "error": "创建区/县失败"
+          },
+          "update": {
+            "success": "区/县更新成功",
+            "error": "更新区/县失败"
+          },
+          "delete": {
+            "success": "区/县删除成功",
+            "error": "删除区/县失败"
+          }
+        },
+        "button": {
+          "save": "保存",
+          "delete": "删除",
+          "reset": "重置"
+        }
+      }
+    },
+    "skill": {
+      "name": "技能",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索技能..."
+          }
+        },
+        "header": {
+          "name": "名称",
+          "status": "状态"
+        },
+        "preview": {
+          "header": "技能信息"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "创建技能",
+          "update": "编辑技能"
+        },
+        "th": {
+          "label": "名称（泰语）",
+          "placeholder": "请输入泰语技能名称",
+          "required": "技能名称（泰语）为必填项"
+        },
+        "en": {
+          "label": "名称（英语）",
+          "placeholder": "请输入英语技能名称",
+          "required": "技能名称（英语）为必填项"
+        }
+      },
+      "confirm": {
+        "create": {
+          "title": "创建技能确认",
+          "message": "请确认以创建 _SKILL_"
+        },
+        "update": {
+          "title": "更新技能确认",
+          "message": "请确认以更新 _SKILL_"
+        },
+        "delete": {
+          "title": "删除技能确认",
+          "message": "确定要删除 _SKILL_ 吗？此操作无法撤销"
+        },
+        "button": {
+          "cancel": "取消",
+          "confirm": "确认",
+          "saving": "正在保存...",
+          "deleting": "正在删除..."
+        }
+      },
+      "action": {
+        "create": {
+          "success": "技能创建成功",
+          "error": "技能创建失败"
+        },
+        "update": {
+          "success": "技能更新成功",
+          "error": "技能更新失败"
+        },
+        "button": {
+          "save": "保存",
+          "delete": "删除",
+          "reset": "重置"
+        }
+      }
+    },
+    "unit": {
+      "name": "单位",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索单位..."
+          }
+        },
+        "header": {
+          "unit": "单位编号",
+          "status": "状态",
+          "location": "位置"
+        },
+        "preview": {
+          "header": "单元信息",
+          "tab": {
+            "header": {
+              "overview": "基本信息",
+              "skill": "技能",
+              "location": "地点"
+            },
+            "unitId": "ID",
+            "unitName": "名称",
+            "active": "已激活",
+            "current_user": "当前用户",
+            "locLat": "纬度",
+            "locLon": "经度",
+            "locAccuracy": "精度",
+            "locBearing": "方位角",
+            "locSpeed": "速度",
+            "locSatellites": "卫星",
+            "locProvider": "提供商",
+            "locLastUpdateTime": "最后更新时间",
+            "locStatus": "位置状态"
+          }
+        }
+      },
+      "form": {
+        "basic_information": {
+          "header": "基本信息",
+          "sections": {
+            "unitId": {
+              "label": "单元 ID",
+              "placeholder": "输入单元 ID",
+              "required": "单元 ID 为必填项"
+            },
+            "unitName": {
+              "label": "单元名称",
+              "placeholder": "输入单元名称",
+              "required": "单元名称为必填项"
+            },
+            "unitTypeId": {
+              "label": "单元类型",
+              "placeholder": "选择单元类型"
+            },
+            "unitSourceId": {
+              "label": "单元来源",
+              "placeholder": "选择单元来源"
+            },
+            "username": {
+              "label": "用户名",
+              "placeholder": "选择用户名"
+            },
+            "priority": {
+              "label": "优先级"
+            },
+            "plateNo": {
+              "label": "车牌号",
+              "placeholder": "请输入车牌号"
+            },
+            "breakDuration": {
+              "label": "休息时长（分钟）"
+            }
+          }
+        },
+        "organization_details": {
+          "header": "组织详情",
+          "sections": {
+            "compId": {
+              "label": "公司",
+              "placeholder": "选择公司"
+            },
+            "deptId": {
+              "label": "部门",
+              "placeholder": "选择部门"
+            },
+            "commId": {
+              "label": "指挥部",
+              "placeholder": "选择指挥部"
+            },
+            "stnId": {
+              "label": "站点",
+              "placeholder": "选择站点"
+            },
+            "provinceCode": {
+              "label": "省份",
+              "placeholder": "选择省份"
+            }
+          }
+        },
+        "status_and_health": {
+          "header": "状态和健康状况",
+          "sections": {
+            "healthChk": {
+              "label": "健康检查",
+              "placeholder": "输入健康检查状态"
+            },
+            "healthChkTime": {
+              "label": "健康检查时间",
+              "placeholder": "输入健康检查时间"
+            },
+            "sttId": {
+              "label": "状态 ID",
+              "placeholder": "输入状态 ID"
+            },
+            "active": {
+              "label": "已激活"
+            },
+            "isFreeze": {
+              "label": "已冻结"
+            },
+            "isLogin": {
+              "label": "已登录"
+            },
+            "isOutArea": {
+              "label": "超出区域"
+            }
+          }
+        },
+        "location_information": {
+          "header": "位置信息",
+          "sections": {
+            "locLat": {
+              "label": "纬度",
+              "error": "纬度必须介于 -90 和 90 之间"
+            },
+            "locLon": {
+              "label": "经度",
+              "error": "经度必须介于 -180 和 180 之间"
+            },
+            "locAlt": {
+              "label": "海拔"
+            },
+            "locAccuracy": {
+              "label": "精度"
+            },
+            "locBearing": {
+              "label": "方位角"
+            },
+            "locSpeed": {
+              "label": "速度"
+            },
+            "locSatellites": {
+              "label": "卫星"
+            },
+            "locProvider": {
+              "label": "提供商",
+              "placeholder": "输入位置提供商"
+            },
+            "locGpsTime": {
+              "label": "GPS时间"
+            },
+            "locLastUpdateTime": {
+              "label": "上次更新时间"
+            }
+          }
+        }
+      },
+      "action": {
+        "cancel": "取消",
+        "reset": "重置",
+        "save": "保存",
+        "saving": "正在保存...",
+        "confirmDialog": {
+          "titleCreate": "确认创建单元",
+          "titleUpdate": "确认编辑单元",
+          "descriptionCreate": "请确认创建",
+          "descriptionUpdate": "请确认编辑",
+          "cancel": "取消",
+          "confirm": "确认"
+        },
+        "create": {
+          "success": "单元创建成功",
+          "error": "单元创建失败"
+        },
+        "update": {
+          "success": "单元更新成功",
+          "error": "单元更新失败"
+        }
+      },
+      "unit": {
+        "accuracy": " 仪表",
+        "speed": "公里/小时"
+      }
+    },
+    "inventory": {
+      "name": "备件",
+      "list": {
+        "header": {
+          "name": "部件名称",
+          "stock": "库存",
+          "brandId": "品牌",
+          "categoryId": "类别",
+          "mfd": "年份",
+          "price": "价格",
+          "warranty": "保修",
+          "productId": "所属产品"
+        }
+      },
+      "form": {
+        "attachment": {
+          "label": "备件图片"
+        },
+        "th": {
+          "label": "备件名称 (TH)",
+          "placeholder": "输入泰语备件名称",
+          "required": "必须填写备件名称 (TH)"
+        },
+        "en": {
+          "label": "备件名称 (EN)",
+          "placeholder": "输入英文备件名称",
+          "required": "必须填写备件名称 (EN)"
+        },
+        "categoryId": {
+          "label": "类别",
+          "placeholder": "选择类别",
+          "required": "必须选择类别"
+        },
+        "brandId": {
+          "label": "品牌",
+          "placeholder": "选择品牌",
+          "required": "必须选择品牌"
+        },
+        "mfd": {
+          "label": "年份",
+          "placeholder": "选择年份",
+          "required": "必须填写年份"
+        },
+        "warranty": {
+          "label": "保修期 (天)",
+          "placeholder": "输入保修天数 例如 24",
+          "required": "必须填写保修期 (天)"
+        },
+        "price": {
+          "label": "价格",
+          "placeholder": "输入价格 例如 25000",
+          "required": "必须填写价格"
+        },
+        "productId": {
+          "label": "所属产品",
+          "placeholder": "选择产品",
+          "required": "必须选择产品"
+        }
+      }
+    },
+    "inventory_stock": {
+      "name": "备件库存",
+      "list": {
+        "header": {
+          "serialNumber": "序列号",
+          "partId": "备件",
+          "storeId": "门店",
+          "statusId": "状态"
+        }
+      },
+      "form": {
+        "serialNumber": {
+          "label": "序列号",
+          "placeholder": "输入序列号",
+          "required": "必须填写序列号"
+        },
+        "partId": {
+          "label": "备件",
+          "placeholder": "选择备件",
+          "required": "必须选择备件"
+        },
+        "storeId": {
+          "label": "门店",
+          "placeholder": "选择门店",
+          "required": "必须选择门店"
+        }
+      }
+    },
+    "product": {
+      "name": "产品",
+      "list": {
+        "header": {
+          "name": "产品名称",
+          "productCode": "产品代码",
+          "stock": "库存",
+          "brandId": "品牌",
+          "categoryId": "类别",
+          "mfd": "年份",
+          "price": "价格",
+          "warranty": "保修"
+        }
+      },
+      "form": {
+        "attachment": {
+          "label": "产品图片"
+        },
+        "th": {
+          "label": "产品名称 (TH)",
+          "placeholder": "输入泰语产品名称",
+          "required": "必须填写产品名称 (TH)"
+        },
+        "en": {
+          "label": "产品名称 (EN)",
+          "placeholder": "输入英文产品名称",
+          "required": "必须填写产品名称 (EN)"
+        },
+        "productCode": {
+          "label": "产品代码",
+          "placeholder": "输入产品代码 例如 SED-X200",
+          "required": "必须填写产品代码"
+        },
+        "categoryId": {
+          "label": "类别",
+          "placeholder": "选择类别",
+          "required": "必须选择类别"
+        },
+        "brandId": {
+          "label": "品牌",
+          "placeholder": "选择品牌",
+          "required": "必须选择品牌"
+        },
+        "mfd": {
+          "label": "年份",
+          "placeholder": "选择年份",
+          "required": "必须填写年份"
+        },
+        "warranty": {
+          "label": "保修期 (天)",
+          "placeholder": "输入保修天数 例如 24",
+          "required": "必须填写保修期 (天)"
+        },
+        "price": {
+          "label": "价格",
+          "placeholder": "输入价格 例如 25000",
+          "required": "必须填写价格"
+        }
+      }
+    },
+    "product_service": {
+      "name": "服务",
+      "list": {
+        "header": {
+          "name": "服务名称",
+          "price": "价格",
+          "priority": "优先级"
+        }
+      },
+      "form": {
+        "attachment": {
+          "label": "服务图片"
+        },
+        "th": {
+          "label": "服务名称 (TH)",
+          "placeholder": "输入泰语服务名称",
+          "required": "必须填写服务名称 (TH)"
+        },
+        "en": {
+          "label": "服务名称 (EN)",
+          "placeholder": "输入英文服务名称",
+          "required": "必须填写服务名称 (EN)"
+        },
+        "priority": {
+          "label": "优先级",
+          "placeholder": "输入优先级 例如 1",
+          "required": "必须填写优先级"
+        }
+      }
+    },
+    "product_stock": {
+      "name": "产品库存",
+      "list": {
+        "header": {
+          "serialNumber": "序列号",
+          "productId": "产品",
+          "registerDate": "登记日期",
+          "mfw": "制造保修",
+          "storeId": "门店",
+          "statusId": "状态",
+          "purchaseDate": "购买日期",
+          "endWarrantyDate": "保修结束日期"
+        }
+      },
+      "form": {
+        "serialNumber": {
+          "label": "序列号",
+          "placeholder": "输入序列号",
+          "required": "必须填写序列号"
+        },
+        "productId": {
+          "label": "产品",
+          "placeholder": "选择产品",
+          "required": "必须选择产品"
+        },
+        "storeId": {
+          "label": "门店",
+          "placeholder": "选择门店",
+          "required": "必须选择门店"
+        },
+        "registerDate": {
+          "label": "登记日期",
+          "required": "必须填写登记日期"
+        },
+        "mfw": {
+          "label": "制造保修",
+          "required": "必须填写制造保修"
+        }
+      }
+    },
+    "stock": {
+      "name": "_ENTITY_ 库存",
+      "metrics": {
+        "available": "可用",
+        "status": "状态"
+      },
+      "list": {
+        "header": {
+          "serialNumber": "代码",
+          "createdAt": "创建日期",
+          "updatedAt": "最后调整日期",
+          "action": "操作"
+        }
+      }
+    }
+  },
+  "forms": {
+    "email": "电子邮箱",
+    "password": "密码",
+    "username": "用户名",
+    "name": "姓名",
+    "phone": "电话",
+    "address": "地址",
+    "required": "必填",
+    "invalid_email": "无效的邮箱"
+  },
+  "messages": {
+    "welcome_user": "欢迎 {{name}}",
+    "items_count": "{{count}} 项",
+    "last_updated": "最后更新 {{date}}"
+  },
+  "status": {
+    "active": "启用",
+    "inactive": "禁用",
+    "pending": "待处理",
+    "completed": "完成",
+    "failed": "失败",
+    "status": "状态"
+  },
+  "errors": {
+    "not_found": "页面未找到",
+    "unauthorized": "未授权",
+    "forbidden": "拒绝访问",
+    "server_error": "服务器错误",
+    "network_error": "网络错误",
+    "passwordsMismatch": "密码不匹配！",
+    "readImageFailed": "读取图片文件失败。",
+    "loadOrgData": "加载所需机构数据失败。请重试。",
+    "fetchUserFailed": "获取用户数据失败。",
+    "unknownApi": "发生未知 API 错误。",
+    "submitFailed": "保存数据失败！请重试。",
+    "invalidPassword": "密码必须至少包含 8 个字符、1 个大写字母和 1 个特殊字符。",
+    "invalidEmail": "请输入有效的电子邮件地址。",
+    "invalidMobile": "手机号码必须为 10 位数字。",
+    "invalidCitizenId": "身份证号码必须为 13 位数字。",
+    "invalidAge": "年龄必须在 1 至 115 岁之间。"
+  },
+  "buttons": {
+    "submit": "提交",
+    "reset": "重置",
+    "view_details": "查看详情",
+    "download": "下载"
+  },
+  "notifications": {
+    "new_message": "{{count}} 条新消息",
+    "update_available": "有可用更新"
+  },
+  "userform": {
+    "createUser": "创建用户",
+    "editUser": "编辑用户",
+    "viewUser": "查看用户",
+    "view": "查看",
+    "home": "首页",
+    "userMgmt": "用户管理",
+    "profile": "个人资料",
+    "profilePhoto": "头像",
+    "changePhoto": "更换照片",
+    "allowedTypes": "允许: JPG, PNG, GIF",
+    "orgInfo": "组织信息",
+    "department": "部门",
+    "command": "指挥部",
+    "station": "岗位",
+    "role": "角色",
+    "selectRole": "选择角色",
+    "timestamps": "记录时间",
+    "created": "创建",
+    "updated": "更新",
+    "by": "由",
+    "accountLogin": "账户与登录",
+    "username": "用户名",
+    "displayName": "显示名称",
+    "password": "密码",
+    "confirmPassword": "确认密码",
+    "pwdHint": "密码必须至少8个字符，包含1个大写字母和1个特殊字符。",
+    "personal": "个人信息",
+    "title": "称谓",
+    "firstName": "名",
+    "middleName": "中间名",
+    "lastName": "姓",
+    "email": "邮箱",
+    "mobile": "手机号",
+    "citizenId": "身份证号",
+    "dob": "出生日期",
+    "gender": "性别",
+    "genderMale": "男",
+    "genderFemale": "女",
+    "genderOther": "其他",
+    "activity": "活动",
+    "auditLog": "审计日志",
+    "blood": "血型",
+    "address": "地址",
+    "addressPlaceholderEn": "输入完整地址",
+    "addressPlaceholderTh": "输入完整地址",
+    "cancel": "取消",
+    "back": "返回",
+    "create": "创建用户",
+    "saving": "保存中...",
+    "saveChanges": "保存更改",
+    "viewMode": "查看模式",
+    "switchToEdit": "切换到编辑",
+    "na": "无",
+    "selectTitle": "选择称谓",
+    "selectGender": "选择性别",
+    "auditLogToggle": "显示审计日志",
+    "auditLogDescription": "查看你的活动历史",
+    "auditLogTitle": "审计日志",
+    "cannotLoadUserData": "无法加载用户数据",
+    "viewProfile": "查看个人资料",
+    "selectBlood": "选择血型",
+    "selectDepartment": "选择部门",
+    "selectCommand": "选择指挥部",
+    "selectStation": "选择岗位",
+    "loadingUserData": "正在加载用户数据...",
+    "noUserData": "无用户数据。",
+    "createSuccess": "用户创建成功！",
+    "updateSuccess": "用户更新成功！",
+    "mobileFormat": "格式: 0XX-XXX-XXXX",
+    "citizenIdFormat": "格式: X-XXXX-XXXXX-XX-X",
+    "dobHint": "不允许未来日期，最多115岁",
+    "empId": "员工编号",
+    "userType": "用户类型",
+    "userTypeRegular": "普通用户",
+    "userTypeAdmin": "管理员",
+    "userTypeSuperAdmin": "超级管理员",
+    "userTypeUnknown": "未知",
+    "resetPassword": "重置密码",
+    "resetPasswordDescription": "请联系管理员或客服重置密码",
+    "resetPasswordDescriptionForAdmin": "请输入邮箱地址、用户名和新密码进行重置",
+    "resetPasswordContactEmail": "电子邮件",
+    "resetPasswordContactPhone": "电话",
+    "changePassword": "修改密码",
+    "changePasswordDescription": "输入您的当前密码和新密码来更改您的密码。",
+    "currentPassword": "当前密码",
+    "newPassword": "新密码",
+    "enterCurrentPassword": "输入当前密码",
+    "enterNewPassword": "输入新密码",
+    "confirmNewPassword": "确认新密码",
+    "currentPasswordRequired": "必须输入当前密码",
+    "newPasswordRequired": "必须输入新密码",
+    "passwordMismatch": "密码不一致",
+    "passwordTooShort": "密码至少8个字符",
+    "samePassword": "新密码必须不同于当前密码",
+    "incorrectCurrentPassword": "当前密码错误",
+    "unauthorized": "未经授权的访问",
+    "resetPasswordError": "无法重置密码",
+    "changePasswordError": "无法修改密码",
+    "resetPasswordSuccess": "密码重置成功！",
+    "changePasswordSuccess": "密码修改成功！",
+    "passwordResetSuccessToast": "密码已成功重置！",
+    "passwordChangeSuccessToast": "密码已成功修改！",
+    "passwordsMatch": "密码匹配",
+    "passwordsDoNotMatch": "密码不匹配",
+    "passwordRequirementsNotMet": "密码不符合要求",
+    "userIdRequired": "必须输入用户ID",
+    "resetPasswordFailed": "重置密码失败",
+    "changePasswordFailed": "修改密码失败",
+    "resetting": "重置中...",
+    "changing": "修改中...",
+    "passwordRequirements": "密码必须至少8个字符，包含1个大写字母和1个特殊字符",
+    "passwordValidation": {
+      "minLength": "至少8个字符",
+      "uppercase": "至少1个大写字母",
+      "specialChar": "至少1个特殊字符"
+    },
+    "blood_type": {
+      "A": "A",
+      "B": "B",
+      "AB": "AB",
+      "O": "O"
+    }
+  },
+  "breadcrumb": {
+    "home": "首页",
+    "system_configuration": "系统配置",
+    "audit_log": "审计日志"
+  },
+  "audit_log": {
+    "title": "审计日志",
+    "user_activities": "用户活动",
+    "loading": "加载中...",
+    "search": "搜索",
+    "search_placeholder": "按用户、功能、操作搜索...",
+    "search_data": "搜索数据",
+    "refresh_data": "刷新数据",
+    "filters": "筛选",
+    "date_time_range": "日期与时间范围",
+    "start_date": "开始日期/时间",
+    "end_date": "结束日期/时间",
+    "username": "用户名",
+    "function": "功能",
+    "action": "操作",
+    "status": "状态",
+    "message": "消息",
+    "all_users": "所有用户",
+    "all_functions": "所有功能",
+    "all_actions": "所有操作",
+    "all_status": "所有状态",
+    "success": "成功",
+    "failed": "失败",
+    "warning": "警告",
+    "unknown": "未知",
+    "clear_all": "清除全部",
+    "clear_filters": "清除筛选",
+    "apply_filter": "应用筛选",
+    "refresh": "刷新",
+    "search_users": "搜索用户...",
+    "filters_cleared": "筛选已成功清除",
+    "query_success": "成功加载 {{count}} 条记录",
+    "audit_log_query_success": "成功加载审计日志 {{count}} 条记录",
+    "user_transaction": "用户 / 事务 / 时间",
+    "time": "时间",
+    "loading_data": "正在加载数据...",
+    "error": "错误",
+    "error_message": "请检查控制台或稍后再试。",
+    "no_logs_found": "未找到日志",
+    "no_logs_description": "没有该用户的审计日志",
+    "showing_records": "显示 {{start}}-{{end}}，共 {{total}} 条记录",
+    "transaction_id": "事务ID",
+    "duration": "持续时间",
+    "invalid_username": "提供的用户名无效",
+    "adjust_filters": "请尝试调整筛选条件。",
+    "rows_per_page": "每页行数",
+    "show": "显示",
+    "showing": "正在显示",
+    "of": "的",
+    "logs": "日志",
+    "previous": "上一页",
+    "next": "下一页",
+    "log_details": "日志详情",
+    "full_message": "完整消息",
+    "old_data": "旧数据",
+    "new_data": "新数据",
+    "response_data": "响应数据",
+    "click_to_view_full": "点击查看完整消息",
+    "click_to_expand": "点击展开",
+    "search_and_filter": "搜索并筛选系统审计日志",
+    "logs_found": "条日志",
+    "records_found": "条记录",
+    "entries": "条目",
+    "to": "至",
+    "user_activity_history": "用户活动历史",
+    "total_activities": "总活动数",
+    "avg_duration": "平均持续时间",
+    "no_activities_found": "未找到该用户的活动",
+    "transaction_details": "事务详情",
+    "data_details": "数据详情",
+    "unique_id": "唯一ID",
+    "datetime": "日期与时间",
+    "main_function": "主功能",
+    "all": "全部",
+    "items": "条目",
+    "result_data": "结果",
+    "basic_info": "基本信息",
+    "org_id": "组织ID",
+    "function_name": "功能名称",
+    "sub_function": "子功能"
+  },
+  "case": {
+    "display": {
+      "case_information":"案例信息",
+      "no":"否",
+      "types":"类型",
+      "select_types_placeholder":"选择案例类型",
+      "attach_file":"附加文件",
+      "service_center":"服务中心",
+      "select_service_center":"选择服务中心",
+      "area":"活动区域",
+      "area_placeholder":"输入地点",
+      "location_coordinates":"坐标",
+      "geocode_failed":"无法查找该位置的地址",
+      "map_expand":"查看大地图",
+      "map_basemap":"地图样式",
+      "map_basemap_street":"街道图",
+      "map_basemap_satellite":"卫星图",
+      "map_settings_theme":"主题",
+      "map_settings_theme_light":"浅色",
+      "map_settings_theme_dark":"深色",
+      "map_settings_language":"语言",
+      "map_staff":"人员",
+      "map_staff_hide":"隐藏人员",
+      "map_staff_refresh":"刷新人员位置",
+      "map_staff_refresh_wait":"{{seconds}} 秒后可用",
+      "map_staff_empty":"没有已知位置的人员",
+      "map_staff_error":"无法加载人员位置",
+      "map_staff_unmappable":"{{count}} 名人员没有位置信息",
+      "map_staff_offline":"离线",
+      "map_staff_close":"关闭",
+      "map_staff_coordinates":"坐标",
+      "map_staff_last_update":"位置更新于",
+      "map_staff_stale":"数据过时",
+      "map_staff_in_development":"开发中",
+      "map_staff_group_title":"此处有 {{count}} 名人员",
+      "map_staff_group_hint":"他们在地图上过于靠近，无法区分。请选择一位查看详情。",
+      "map_staff_group_back":"返回此处的 {{count}} 名人员",
+      "map_staff_section_personal_info":"个人信息",
+      "map_staff_section_personal_info_desc":"联系方式、所属单位、技能与组织。",
+      "map_staff_section_tracking":"实时人员追踪",
+      "map_staff_section_tracking_desc":"该人员的实时速度、方向、GPS 精度与定位时间，随上报即时更新，并附有自打开图层以来的移动轨迹。",
+      "map_staff_section_routing":"智能路线规划",
+      "map_staff_section_routing_desc":"计算并绘制处置单位前往事发地点的最优行车路线。",
+      "map_staff_section_workflows":"情境化工作流",
+      "map_staff_section_workflows_desc":"快捷指令：查看案件信息、指派此人员或取消指派。",
+      "map_staff_section_eta_ttl":"ETA / TTL 仪表板",
+      "map_staff_section_eta_ttl_desc":"处置单位的实时预计到达时间与所需时间，并按路况调整。",
+      "map_staff_case_details_button":"查看完整案件详情",
+      "map_place":"地点",
+      "map_staff_assign_button":"指派至此案件",
+      "map_staff_assign_section_button":"指派此人员",
+      "map_staff_cancel_button":"从此案件移除",
+      "map_staff_cancel_section_button":"取消指派",
+      "map_staff_assign_confirm_title":"确认指派",
+      "map_staff_assign_confirm_message":"确定将 {{name}} 指派至案件 {{caseId}}？",
+      "map_staff_cancel_confirm_title":"确认取消指派",
+      "map_staff_cancel_confirm_message":"确定将 {{name}} 从案件 {{caseId}} 移除？该人员将回到可派遣状态。",
+      "map_staff_assign_description":"依据 SOP 派遣阶段将此人员指派至当前案件。",
+      "map_staff_cancel_description":"将此人员从当前案件中撤回。",
+      "map_staff_badge_current_case":"本案件",
+      "map_staff_not_assigned_here":"尚未指派此人员",
+      "map_staff_other_cases":"其他进行中案件 ({{count}})",
+      "map_staff_other_cases_pending":"暂不支持显示其他案件",
+      "map_staff_blocked_assign":"当前 SOP 阶段不允许派遣",
+      "map_staff_blocked_cancel":"当前 SOP 阶段不允许取消指派",
+      "map_staff_submitting":"正在发送指令…",
+      "map_staff_route_calculate": "计算路线",
+      "map_staff_route_recalculate": "重新计算",
+      "map_staff_route_solving": "正在计算…",
+      "map_staff_route_none": "尚未计算路线",
+      "map_staff_route_distance": "距离",
+      "map_staff_route_drive_time": "行驶时间",
+      "map_staff_route_eta": "预计到达时间",
+      "map_staff_route_ttl": "剩余到达时间",
+      "map_staff_route_overdue": "已超出预计时间",
+      "map_staff_route_stale_caveat": "根据过时的位置计算 - 实际路线可能有所不同。",
+      "map_staff_route_km": "{{km}} 公里",
+      "map_staff_route_minutes": "{{minutes}} 分钟",
+      "map_staff_route_err_no_case": "此案件没有可定位的地点",
+      "map_staff_route_err_no_staff": "此人员没有可定位的位置",
+      "map_staff_route_err_failed": "无法计算路线，请重试。",
+      "map_staff_route_err_metrics": "路线服务未返回距离或时间，请重试。",
+      "map_staff_tracking_speed": "速度",
+      "map_staff_tracking_speed_value": "{{speed}} 公里/小时",
+      "map_staff_tracking_stopped": "未移动",
+      "map_staff_tracking_heading": "行进方向",
+      "map_staff_tracking_heading_stopped": "仅在该单位移动时显示",
+      "map_staff_tracking_bearing_value": "{{compass}} {{degrees}}°",
+      "map_staff_tracking_accuracy": "GPS 精度",
+      "map_staff_tracking_accuracy_value": "±{{meters}} 米",
+      "map_staff_tracking_fix_age": "GPS 定位时间",
+      "map_staff_tracking_none": "该人员未随位置一并上报速度、方向或精度。",
+      "map_staff_tracking_trail_show": "显示移动轨迹",
+      "map_staff_tracking_trail_hide": "隐藏移动轨迹",
+      "map_staff_tracking_trail_empty": "尚未记录到移动。轨迹会在人员图层打开期间逐步记录。",
+      "map_staff_tracking_trail_caveat": "该人员自打开人员图层以来经过的路径。这不是永久保存的历史记录，页面重新加载后会重新开始。",
+      "map_staff_compass_n": "北",
+      "map_staff_compass_ne": "东北",
+      "map_staff_compass_e": "东",
+      "map_staff_compass_se": "东南",
+      "map_staff_compass_s": "南",
+      "map_staff_compass_sw": "西南",
+      "map_staff_compass_w": "西",
+      "map_staff_compass_nw": "西北",
+      "map_boundary": "行政区界",
+      "map_boundary_levels": "图层",
+      "map_boundary_error": "无法加载行政区界",
+      "map_boundary_province": "府",
+      "map_boundary_district": "区",
+      "map_boundary_subdistrict": "分区",
+      "map_boundary_province_short": "府",
+      "map_boundary_district_short": "区",
+      "map_boundary_subdistrict_short": "分区",
+      "map_boundary_apply": "应用",
+      "map_boundary_cancel": "取消",
+      "map_boundary_close": "关闭",
+      "map_boundary_select_all": "全选",
+      "map_boundary_clear": "清除",
+      "map_boundary_search": "搜索区域",
+      "map_boundary_loading": "正在加载区域…",
+      "map_boundary_pending": "点击应用以更新地图",
+      "map_boundary_applied": "已显示在地图上",
+      "map_boundary_no_match": "没有匹配的区域",
+      "map_boundary_no_parent": "请先选择上级区域",
+      "contact":"联系方式",
+      "phone_number":"电话号码",
+      "phone_number_placeholder":"输入电话号码",
+      "contact_method":"联系方式",
+      "contact_method_placeholder":"选择联系方式",
+      "iot_device":"物联网设备",
+      "iot_device_placeholde":"物联网设备 ID",
+      "iot_alert_date":"物联网警报日期",
+      "case_detail":"案例详情",
+      "case_detail_placeholder":"输入案例详情",
+      "detail":"详情",
+      "result":"结果",
+      "result_placeholder":"选择结果",
+      "result_detail_placeholder":"结果详情",
+      "cancel_case":"取消",
+      "cancel":"取消",
+      "close_case":"关闭案件",
+      "request_schedule_date":"请求安排日期",
+      "save_change":"保存更改",
+      "save_as_draft":"保存为草稿",
+      "submit":"提交",
+      "Assigned Officer":"指派人员",
+      "Assigned Officers":"指派人员",
+      "schedule_placeholder":"dd/hh/yyyy",
+      "updateAt":"更新时间",
+      "updateBy":"更新者", 
+      "edit":"编辑",
+      "advance_filtering": {
+        "title": "高级过滤",
+        "search_case_type_place_holder": "按案例类型搜索...",
+        "search_detail": "搜索详情",
+        "search_detail_placeholder": "搜索详情...",
+        "start_date_title": "开始日期",
+        "end_date_title": "结束日期",
+        "status_title": "状态",
+        "status_placeholder_all": "所有状态",
+        "create_by_tilte": "创建者",
+        "create_by_tilte_placeholder": "创建者..."
+      }
+    },
+    "sop_card": {
+      "comment": "评论",
+      "edit": "编辑",
+      "cancel_edit": "取消编辑",
+      "attach_file": "附加文件",
+      "assign_officer": "指派人员",
+      "created": "已创建",
+      "create_date": "创建日期",
+      "High Priority": "高优先级",
+      "Medium Priority": "中优先级",
+      "Low Priority": "低优先级"
+    },
+    "assignment": {
+      "case_type": "案例类型",
+      "area": "地点",
+      "status": "状态",
+      "piority": "优先级",
+      "create_by": "创建者",
+      "create_date": "创建日期",
+      "kanban": "看板",
+      "list": "列表",
+      "pageheader": "案例",
+      "search_placeholder": "搜索案例...",
+      "advance_filter": "高级筛选",
+      "add_new_case": "添加新案例",
+      "clear": "清除",
+      "apply_filter": "应用筛选"
+    },
+    "assign_officer_modal": {
+      "title": "将警员分配到案件",
+      "search_placeholder": "按姓名、部门或服务搜索警员...",
+      "recommend_button": "按技能推荐",
+      "allofficer_button": "所有警员",
+      "area": "区域",
+      "status": "状态",
+      "name": "姓名",
+      "skills": "技能",
+      "workloads": "工作量",
+      "no_officer": "没有可用的警员",
+      "not_match_officer": "没有符合您搜索条件的警员",
+      "assign_button": "分配选定的警员",
+      "select": "已选定",
+      "officer": "警员"
+    },
+    "officer_detail": {
+      "personal_title": "个人信息",
+      "fullname": "全名",
+      "username": "用户名",
+      "mobile_number": "手机号码",
+      "email": "邮箱",
+      "service_title": "服务详情",
+      "vehicle": "车辆ID",
+      "address": "地址",
+      "service_progress_title": "服务进度"
+    },
+    "back": "返回",
+    "dnd_text_des": "将文件拖放到此处，或点击选择",
+    "dnd_text_des_on_over": "将文件拖放到此处",
+    "supports": "支持",
+    "images": "图片",
+    "max": "最大",
+    "each": "每个",
+    "download": "下载",
+    "status_allcase": "所有案例",
+    "panel": {
+      "device_info":"设备信息",
+      "device_type":"设备类型",
+      "device_model":"型号",
+      "service_history":"服务历史记录",
+      "details_panel":"查看详情面板",
+      "unlink_confirm_description": "此操作将取消该客户与此案例的关联。案例的联系电话将予以保留。"
+    }
+  },
+  "productDashboard": {
+    "header": {
+      "title": "产品管理仪表盘",
+      "subtitle": "产品、服务、库存、订单和客户运营概览。"
+    },
+    "metrics": {
+      "fromLastMonth": "较上月",
+      "titles": {
+        "product": "产品",
+        "sparePart": "备件",
+        "ordering": "正在下单",
+        "pending": "待处理"
+      }
+    },
+    "moduleOverview": {
+      "title": "概览",
+      "subtitle": "平台功能",
+      "activeRecords": "有效记录",
+      "titles": {
+        "productStock": "产品库存",
+        "sparePartStock": "备件库存",
+        "customers": "客户",
+        "appointments": "预约"
+      }
+    },
+    "topOrdered": {
+      "title": "热门订购",
+      "subtitle": "本月订购最多的备件",
+      "orderedTimes": "已订购 {{count}} 次",
+      "unitPrice": "单价"
+    },
+    "inventoryAlert": {
+      "title": "库存警报",
+      "subtitle": "低库存和待处理请求",
+      "partsBelowMinimum": "{{count}} 个备件低于最低库存水平",
+      "purchaseRequestsWaiting": "{{count}} 个采购申请等待批准"
+    },
+    "revenue": {
+      "title": "预计收入",
+      "subtitle": "每月运营收入",
+      "thisMonth": "本月",
+      "products": "产品"
+    }
+  },
+  "knowledge": {
+    "dashboard": {
+      "page": {
+        "title": "知识库仪表板",
+        "metaTitle": "KB 仪表板 | TailAdmin",
+        "metaDescription": "支持按模块绑定 API、切换 Mock 数据、多语言翻译及深色模式的知识库仪表板",
+        "subtitle": "跟踪内容健康状况、分析搜索需求，并发现需要维护的文章",
+        "badge": "模拟数据预览",
+        "syncLabel": "最近同步",
+        "theme": "主题",
+        "sourceTitle": "数据来源"
+      },
+      "summary": {
+        "coverage": "覆盖率评分",
+        "health": "内容健康度",
+        "searches": "搜索需求",
+        "sla": "响应 SLA"
+      },
+      "metrics": {
+        "published": {
+          "title": "已发布文章",
+          "description": "知识库中可见文章总数"
+        },
+        "approved": {
+          "title": "已批准",
+          "description": "已批准并准备进入发布流程的文章"
+        },
+        "submitted": {
+          "title": "已提交",
+          "description": "已提交至审核流程的文章或请求数量"
+        },
+        "expiringSoon": {
+          "title": "即将到期",
+          "description": "接近到期且需要审核的文章数量"
+        },
+        "expired": {
+          "title": "已过期",
+          "description": "已超过有效期限的文章数量"
+        },
+        "totalViews": {
+          "title": "总浏览量",
+          "description": "当前期间内所有文章的浏览量总数"
+        },
+        "activeUsers": {
+          "title": "活跃用户",
+          "description": "当前活跃的编辑和审核人员数量"
+        },
+        "avgRating": {
+          "title": "平均评分",
+          "description": "读者最近反馈的满意度评分"
+        }
+      },
+      "sections": {
+        "metrics": {
+          "title": "概览指标",
+          "description": "当前知识库工作区的核心 KPI"
+        },
+        "trend": {
+          "title": "浏览趋势",
+          "description": "知识库文章的月度流量趋势"
+        },
+        "categories": {
+          "title": "本周前 5 大热门分类",
+          "description": "根据本周流量占比排名的分类"
+        },
+        "searches": {
+          "title": "本周热门搜索",
+          "description": "本周搜索次数最多的关键词"
+        },
+        "articles": {
+          "title": "精选 / 最新 / 热门文章",
+          "description": "当前仪表板视图中的文章列表",
+          "top": "精选",
+          "latest": "最新",
+          "popular": "热门文章"
+        },
+        "activity": {
+          "title": "低评分文章",
+          "description": "最近的发布与审核活动"
+        },
+        "lowScore": {
+          "title": "低平均评分文章",
+          "description": "评分低于平均水平的文章 —— 建议进行内容审查和优化"
+        },
+        "lowView": {
+          "title": "低浏览量文章",
+          "description": "浏览量最低的文章 —— 建议优化标题、链接或提高可发现性"
+        }
+      },
+      "labels": {
+        "vsLastPeriod": "较上一周期",
+        "share": "占比",
+        "hits": "次",
+        "avgScore": "平均评分",
+        "views": "浏览量",
+        "likes": "点赞",
+        "bookmarks": "收藏",
+        "updated": "更新于",
+        "articles": "文章",
+        "loading": "正在加载仪表板...",
+        "loadFailed": "无法加载仪表板数据",
+        "apiPath": "API 路径",
+        "source": "数据来源",
+        "mock": "模拟数据",
+        "api": "API",
+        "noData": "暂无可显示数据"
+      },
+      "buttons": {
+        "refresh": "刷新",
+        "refreshing": "正在刷新..."
+      },
+      "status": {
+        "published": "已发布",
+        "review": "审核中",
+        "draft": "草稿"
+      },
+      "content": {
+        "categories": {
+          "getting-started": {
+            "label": "快速开始"
+          },
+          "troubleshooting": {
+            "label": "故障排除"
+          },
+          "billing": {
+            "label": "账单管理"
+          },
+          "automation": {
+            "label": "自动化"
+          },
+          "security": {
+            "label": "安全"
+          }
+        },
+        "searches": {
+          "sso": {
+            "label": "SSO 登录"
+          },
+          "reset-password": {
+            "label": "重置密码"
+          },
+          "workflow": {
+            "label": "审批流程"
+          },
+          "mobile-app": {
+            "label": "移动应用设置"
+          },
+          "permissions": {
+            "label": "角色权限"
+          }
+        },
+        "articles": {
+          "kb-101": {
+            "title": "配置 SSO 与域名映射"
+          },
+          "kb-204": {
+            "title": "排查代理间歇性断开连接问题"
+          },
+          "kb-331": {
+            "title": "按团队设置文章审批规则"
+          }
+        },
+        "activity": {
+          "act-1": {
+            "title": "账单系统入门指南已更新",
+            "detail": "已由 Support Enablement 团队审核并重新发布到生产环境。",
+            "at": "12 分钟前"
+          },
+          "act-2": {
+            "title": "权限矩阵文章等待审批",
+            "detail": "发布前正在等待法务部门最终审核。",
+            "at": "48 分钟前"
+          },
+          "act-3": {
+            "title": "搜索意图聚类已重新生成",
+            "detail": "已根据最新周流量重新计算热门搜索关键词。",
+            "at": "1 小时前"
+          }
+        }
+      }
+    },
+    "broadcast": {
+      "page": {
+        "title": "广播消息管理",
+        "metaTitle": "广播管理 | TailAdmin",
+        "metaDescription": "广播管理页面，包含状态摘要筛选、公告列表、模拟数据以及按模块配置的 API 集成。",
+        "subtitle": "在统一工作区中管理公告广播、查看状态分布并监控生效时间安排。"
+      },
+      "sections": {
+        "summary": {
+          "title": "状态概览",
+          "description": "各广播状态的快捷筛选"
+        },
+        "list": {
+          "title": "广播",
+          "description": "当前显示 {{status}} 状态的广播"
+        },
+        "log": {
+          "title": "广播历史",
+          "description": "所有公告共 {{total}} 条记录"
+        }
+      },
+      "labels": {
+        "loading": "正在加载广播数据...",
+        "loadingNotice": "正在从 API 加载通知...",
+        "loadFailed": "无法加载广播数据。",
+        "loadNoticeFailed": "无法从 API 加载通知。",
+        "empty": "当前筛选条件下没有广播记录。",
+        "noResults": "没有符合搜索条件的结果。",
+        "alertDetail": "通知详情",
+        "entryNotice": "首次访问提示",
+        "noticeAcknowledgement": "此确认信息将保存在您的浏览器中。当有新的广播消息时，系统会再次提示您。",
+        "message": "消息内容",
+        "status": "状态",
+        "dateRange": "日期范围",
+        "apiPath": "API 路径",
+        "source": "数据来源",
+        "mock": "模拟数据",
+        "api": "API",
+        "topic": "主题",
+        "title": "公告列表",
+        "continuing": "请先阅读并确认内容后再继续。"
+      },
+      "buttons": {
+        "add": "新增广播",
+        "accept": "接受并继续",
+        "edit": "编辑广播",
+        "delete": "删除广播",
+        "retry": "重试",
+        "cancel": "取消",
+        "create": "创建广播",
+        "update": "保存修改",
+        "saving": "正在保存...",
+        "refresh": "刷新",
+        "refreshing": "正在刷新..."
+      },
+      "form": {
+        "createTitle": "新增广播",
+        "editTitle": "编辑广播",
+        "description": "配置广播消息的标题、状态及生效日期范围。",
+        "title": "广播标题",
+        "message": "消息内容",
+        "status": "状态",
+        "startDate": "开始日期",
+        "endDate": "结束日期",
+        "validationTitle": "请输入标题",
+        "validationMessage": "请输入消息内容",
+        "validationStartDate": "请选择开始日期",
+        "validationEndDate": "请选择结束日期",
+        "validationStartDateRequired": "请选择开始日期以匹配结束日期",
+        "validationEndDateRequired": "请选择结束日期以匹配开始日期",
+        "validationDateOrder": "结束日期必须等于或晚于开始日期"
+      },
+      "confirm": {
+        "delete": "确定删除「{{title}}」吗？",
+        "deleteDescription": "此操作无法撤销。"
+      },
+      "toast": {
+        "createSuccess": "广播创建成功。",
+        "createError": "无法创建广播。",
+        "updateSuccess": "广播更新成功。",
+        "updateError": "无法更新广播。",
+        "deleteSuccess": "广播删除成功。",
+        "deleteError": "无法删除广播。"
+      },
+      "status": {
+        "all": "全部",
+        "scheduled": "已排程",
+        "published": "已发布",
+        "expired": "已过期",
+        "draft": "草稿"
+      },
+      "content": {
+        "items": {
+          "bc-001": {
+            "title": "发布前请检查验证结果",
+            "message": "发布广播给用户之前，请确认所有标签均已正确闭合并正确嵌套。"
+          },
+          "bc-002": {
+            "title": "排程前确认目标受众",
+            "message": "在下一次发布窗口安排广播之前，请确认目标受众群体。"
+          },
+          "bc-003": {
+            "title": "检查链接和附件",
+            "message": "检查所有外部链接和附件，以避免最终公告中出现失效引用。"
+          },
+          "bc-004": {
+            "title": "下一次系统维护窗口发布通知",
+            "message": "下一次系统维护窗口发布通知。"
+          },
+          "bc-005": {
+            "title": "知识库十二月推广活动后广播活动结束",
+            "message": "知识库十二月推广活动后广播活动结束。"
+          },
+          "bc-006": {
+            "title": "提醒编辑审核未发布公告的草稿",
+            "message": "提醒编辑审核未发布公告的草稿。"
+          }
+        }
+      },
+      "pageLog": {
+        "eyebrow": "广播",
+        "title": "广播历史",
+        "metaTitle": "广播历史 | TailAdmin",
+        "metaDescription": "查看所有渠道发送过的历史广播公告。",
+        "subtitle": "浏览并审查所有已发布、已排程或已记录的广播公告。"
+      },
+      "log": {
+        "searchPlaceholder": "按标题或内容搜索...",
+        "publishedAt": "发布时间",
+        "audience": "目标受众",
+        "startDate": "开始日期",
+        "endDate": "结束日期"
+      },
+      "pagination": {
+        "showing": "显示",
+        "to": "-",
+        "of": "共",
+        "items": "条",
+        "prev": "上一页",
+        "next": "下一页"
+      }
+    },
+    "files": {
+      "page": {
+        "title": "文章附件文件",
+        "metaTitle": "文章附件文件 | TailAdmin",
+        "metaDescription": "浏览、上传和管理存储在 MinIO 中的知识库文章文件。",
+        "subtitle": "浏览、上传和管理存储于对象存储中的知识库文章附件。",
+        "eyebrow": "文件管理"
+      },
+      "sections": {
+        "recent": {
+          "title": "所有文件",
+          "description": "所有文件夹中最近访问的文件"
+        },
+        "folders": "文件夹",
+        "files": "文件"
+      },
+      "labels": {
+        "loading": "正在加载文件...",
+        "loadFailed": "无法加载文件。",
+        "empty": "此位置没有找到文件。",
+        "noResults": "没有符合搜索条件的文件。",
+        "files": "文件",
+        "size": "大小",
+        "apiPath": "API 路径",
+        "source": "数据来源",
+        "mock": "模拟数据",
+        "api": "API",
+        "lastOpen": "最近打开",
+        "fileCount": "{{count}} 个文件，{{size}}",
+        "selectedCount": "已选择 {{count}} 个文件",
+        "noneSelected": "未选择任何文件"
+      },
+      "buttons": {
+        "upload": "上传",
+        "uploading": "正在上传...",
+        "download": "下载",
+        "delete": "删除",
+        "retry": "重试",
+        "refresh": "刷新",
+        "refreshing": "正在刷新...",
+        "newFolder": "新建文件夹",
+        "create": "创建",
+        "copyUrl": "复制链接",
+        "cancel": "取消"
+      },
+      "folder": {
+        "namePlaceholder": "文件夹名称…"
+      },
+      "confirm": {
+        "delete": "确定删除“{{name}}”吗？",
+        "deleteFolder": "确定删除文件夹“{{name}}”吗？"
+      },
+      "toast": {
+        "uploadSuccess": "文件上传成功。",
+        "uploadError": "无法上传文件。",
+        "deleteSuccess": "文件删除成功。",
+        "deleteError": "无法删除文件。",
+        "downloadError": "无法获取下载链接。",
+        "folderCreated": "文件夹创建成功。",
+        "folderError": "无法创建文件夹。",
+        "folderDeleteSuccess": "文件夹删除成功。",
+        "folderDeleteError": "无法删除文件夹。",
+        "copySuccess": "链接已复制到剪贴板。",
+        "copyError": "无法复制链接。"
+      },
+      "tree": {
+        "title": "文件夹"
+      }
+    },
+    "articles": {
+      "pageTitle": "文章列表",
+      "pageSubtitle": "浏览和管理知识库中的所有文章",
+      "addArticle": "+ 新增文章",
+      "filter": {
+        "searchTitle": "搜索标题",
+        "searchPlaceholder": "搜索文章标题…",
+        "category": "分类",
+        "categoryPlaceholder": "选择分类",
+        "createdDate": "创建日期",
+        "startCreatedDatePlaceholder": "开始日期",
+        "endCreatedDatePlaceholder": "结束日期",
+        "createdBy": "创建者",
+        "createdByPlaceholder": "选择作者",
+        "status": "状态",
+        "statusPlaceholder": "选择状态",
+        "version": "版本",
+        "versionPlaceholder": "版本",
+        "group": "群组",
+        "groupPlaceholder": "选择群组",
+        "priority": "优先级",
+        "priorityPlaceholder": "选择优先级",
+        "score": "评分",
+        "scorePlaceholder": "评分",
+        "sortBy": "排序方式",
+        "sortByPlaceholder": "排序方式",
+        "resetFilter": "重置"
+      },
+      "status": {
+        "all": "全部",
+        "publish": "已发布",
+        "wait_approve": "待审批",
+        "wait_publish": "待发布",
+        "draft": "草稿",
+        "archived": "已归档",
+        "unpublished": "未发布"
+      },
+      "priority": {
+        "all": "全部",
+        "high": "高",
+        "medium": "中",
+        "low": "低"
+      },
+      "user": {
+        "all": "全部"
+      },
+      "group": {
+        "all": "全部"
+      },
+      "sortBy": {
+        "title_az": "标题 A–Z",
+        "title_za": "标题 Z-A",
+        "createdDate_az": "创建日期 A-Z",
+        "createdDate_za": "创建日期 Z-A"
+      },
+      "meta": {
+        "version": "版本",
+        "lastEdited": "最后编辑",
+        "createDate": "创建日期",
+        "views": "浏览量",
+        "priority": "优先级",
+        "category": "分类",
+        "viewCount": "浏览次数"
+      },
+      "statusBadge": {
+        "publish": "已发布",
+        "wait_approve": "待审批",
+        "wait_publish": "待发布",
+        "draft": "草稿",
+        "archived": "已归档",
+        "unpublished": "未发布"
+      },
+      "loading": "正在加载文章…",
+      "noData": "未找到文章",
+      "total": "总计",
+      "edit": "编辑",
+      "approve": "更改状态",
+      "pagination": {
+        "showing": "显示",
+        "to": "-",
+        "of": "共",
+        "prev": "上一页",
+        "next": "下一页",
+        "items": "条"
+      },
+      "category": {
+        "pageTitle": "分类管理",
+        "pageSubtitle": "以树状结构组织知识库分类，可拖拽重新排序。",
+        "modalTitle": "选择分类",
+        "modalSubtitle": "点击分类以筛选文章",
+        "backToArticles": "返回文章列表",
+        "all": "所有分类",
+        "searchPlaceholder": "搜索分类…",
+        "sortBy": "排序",
+        "addRoot": "新增分类",
+        "add": "新增",
+        "newCategory": "新分类",
+        "newCategoryPlaceholder": "分类名称…",
+        "renamed": "分类已重命名",
+        "deleted": "分类已删除",
+        "added": "分类已新增",
+        "errorGeneric": "发生错误",
+        "confirmDeleteTitle": "删除分类？",
+        "confirmDeleteBody": "所有子分类也将被删除。此分类中的文章将变为未分类状态。",
+        "delete": "删除",
+        "cancel": "取消",
+        "cannotdelete": "无法删除",
+        "dragHint": "拖放以重新排序 • 双击以重命名",
+        "noResults": "没有符合条件的分类",
+        "empty": "暂无分类",
+        "selectButton": "选择分类",
+        "expandAll": "全部展开",
+        "collapseAll": "全部折叠",
+        "refresh": "刷新"
+      },
+      "form": {
+        "createTitle": "创建文章",
+        "editTitle": "编辑文章",
+        "eyebrow": "知识库",
+        "createSub": "填写信息以创建新文章",
+        "editSub": "编辑现有文章信息",
+        "saveBtn": "保存",
+        "saving": "保存中…",
+        "loading": "加载数据中…",
+        "steps": {
+          "create": "创建",
+          "submit": "提交",
+          "approve": "审批",
+          "publish": "发布"
+        },
+        "tabs": {
+          "basic": "基本信息",
+          "basicSub": "基本信息",
+          "content": "内容",
+          "contentSub": "内容",
+          "visibility": "可见性",
+          "visibilitySub": "可见性与设置"
+        },
+        "basic": {
+          "titleLabel": "标题",
+          "titlePlaceholder": "请输入文章标题",
+          "versionLabel": "版本",
+          "descriptionLabel": "文章描述",
+          "descriptionPlaceholder": "请输入简短描述",
+          "priorityLabel": "优先级",
+          "priorityPlaceholder": "选择优先级",
+          "sourceLabel": "来源",
+          "sourcePlaceholder": "输入来源",
+          "reserveDateLabel": "预留日期",
+          "ownershipLabel": "负责人",
+          "ownershipPlaceholder": "输入负责人",
+          "relatedArticlesLabel": "相关文章",
+          "relatedArticlesPlaceholder": "输入后按 Enter…",
+          "groupArticlesPlaceholder": "输入后按 Enter…",
+          "categoryLabel": "分类",
+          "categorySearch": "搜索分类…",
+          "categoryEmpty": "未找到分类",
+          "tagAdd": "添加",
+          "tagPlaceholder": "输入后按 Enter…"
+        },
+        "content": {
+          "attachmentLabel": "附件",
+          "pickFromMinio": "从 MinIO 选择文件",
+          "noFiles": "暂无附件",
+          "contentLabel": "内容"
+        },
+        "visibility": {
+          "startDateLabel": "开始日期",
+          "endDateLabel": "到期日期",
+          "viewableGroupsLabel": "可查看群组",
+          "viewableGroupsPlaceholder": "输入群组名称后按 Enter…",
+          "keywordsLabel": "关键词",
+          "keywordsPlaceholder": "输入关键词后按 Enter…",
+          "tagAdd": "添加",
+          "tagPlaceholder": "输入后按 Enter…"
+        },
+        "nav": {
+          "prev": "上一步",
+          "next": "下一步"
+        },
+        "validation": {
+          "titleRequired": "请输入标题"
+        },
+        "success": "文章保存成功！",
+        "errorGeneric": "发生错误",
+        "picker": {
+          "title": "从 MinIO 选择文件",
+          "subtitle": "选择要附加到文章的文件",
+          "confirm": "确认 {{count}} 个文件",
+          "cancel": "取消",
+          "search": "搜索文件…",
+          "empty": "此文件夹中没有文件",
+          "noResults": "未找到文件",
+          "selectedCount": "已选择 {{count}} 个文件",
+          "noneSelected": "尚未选择文件",
+          "allFiles": "所有文件",
+          "folders": "文件夹",
+          "files": "文件"
+        }
+      },
+      "detail": {
+        "eyebrow": "文章详情",
+        "back": "返回文章列表",
+        "edit": "编辑文章",
+        "loading": "加载文章中…",
+        "notFound": "未找到文章",
+        "content": "内容",
+        "attachments": "附件",
+        "noAttachments": "没有附件",
+        "noContent": "暂无内容",
+        "metadata": "信息",
+        "category": "分类",
+        "group": "群组",
+        "author": "作者",
+        "ownership": "负责人",
+        "source": "来源",
+        "views": "浏览量",
+        "rating": "评分",
+        "score": "分数",
+        "version": "版本及日期",
+        "startDate": "开始日期",
+        "endDate": "到期日期",
+        "createdAt": "创建时间",
+        "updatedAt": "最后更新",
+        "viewableGroups": "可查看群组",
+        "keywords": "关键词",
+        "relatedArticles": "相关文章",
+        "noRelated": "没有相关文章",
+        "activityLog": "活动记录",
+        "accessAndKeywords": "访问权限组与关键词",
+        "actions": {
+          "create": "已创建",
+          "edit": "已编辑",
+          "submit": "已提交审核",
+          "approve": "已审批",
+          "publish": "已发布",
+          "archive": "已归档",
+          "draft": "已保存为草稿"
+        }
+      },
+      "review": {
+        "eyebrow": "文章审核",
+        "title": "审核文章",
+        "back": "返回",
+        "panel": "审核结果",
+        "currentStatus": "当前状态",
+        "decisionLabel": "审核决定",
+        "publish": "已发布",
+        "wait_approve": "待审批",
+        "wait_publish": "待发布",
+        "draft": "草稿",
+        "archived": "已归档",
+        "unpublished": "未发布",
+        "approve": "批准",
+        "approveDesc": "文章已准备好发布",
+        "changes": "要求修改",
+        "changesDesc": "要求作者修改后再审批",
+        "reject": "拒绝",
+        "rejectDesc": "文章不符合要求",
+        "note": "备注 / 评论",
+        "notePlaceholder": "输入审核备注或原因…",
+        "submit": "提交",
+        "submitting": "提交中…",
+        "selectDecision": "请选择审核决定",
+        "success": "审核提交成功",
+        "error": "审核提交失败",
+        "coverImage": "封面图片",
+        "noCover": "无封面图片",
+        "changeLabel": "更改",
+        "changeTitle": "更改封面图片",
+        "notFoundimg": "未找到图片"
+      },
+      "activityLog": {
+        "title": "活动记录",
+        "viewAll": "查看全部记录",
+        "create": "创建文章",
+        "edit": "编辑文章",
+        "submit": "提交文章",
+        "approve": "审批文章",
+        "publish": "发布文章",
+        "archive": "归档文章",
+        "draft": "文章草稿",
+        "to_draf": "移至草稿",
+        "unpublish": "取消发布文章",
+        "reject": "拒绝文章",
+        "change_version": "更改版本",
+        "empty": "暂无活动记录"
+      },
+      "coverImage": {
+        "change": "更换",
+        "delete": "删除",
+        "copy": "复制",
+        "download": "下载",
+        "edit": "编辑",
+        "deleteCoverImage": "删除封面图片",
+        "copyPath": "复制路径",
+        "downloadImage": "下载图片",
+        "editImage": "编辑图片",
+        "deleteConfirmTitle": "删除封面图片？",
+        "deleteConfirmDescription": "确定要删除封面图片吗？此操作无法撤销。",
+        "copyConfirmDescription": "将图片路径复制到剪贴板？",
+        "downloadConfirmDescription": "将封面图片下载到您的设备？",
+        "cancel": "取消",
+        "confirm": "确认",
+        "processing": "处理中...",
+        "clickToEdit": "点击编辑",
+        "clickToAdd": "点击添加图片",
+        "noCoverImage": "暂无封面图片",
+        "copyError": "无法复制到剪贴板",
+        "downloadError": "无法下载图片",
+        "actionFailed": "操作失败",
+        "save": "保存"
+      },
+      "rating": {
+        "title": "评分",
+        "yourRating": "您的评分",
+        "outOf5": "满分 5 分",
+        "stars": "星",
+        "submit": "提交评分",
+        "submitting": "提交中...",
+        "success": "评分提交成功",
+        "error": "评分提交失败"
+      },
+      "comments": {
+        "title": "评论",
+        "noComments": "暂无评论",
+        "writeComment": "输入评论...",
+        "send": "发送",
+        "sending": "发送中...",
+        "reply": "回复",
+        "replies": "条回复",
+        "viewReplies": "查看回复",
+        "hideReplies": "隐藏回复",
+        "delete": "删除",
+        "deleteConfirm": "删除此评论？",
+        "cancel": "取消",
+        "success": "评论添加成功",
+        "error": "评论添加失败"
+      },
+      "actions": {
+        "delete": "删除",
+        "duplicate": "复制",
+        "editContent": "新版本",
+        "certify": "编辑",
+        "deleteConfirmTitle": "删除文章？",
+        "deleteConfirmDesc": "此操作无法撤销。文章将被永久删除。",
+        "cancel": "取消",
+        "confirmDelete": "删除"
+      }
+    },
+    "banner": {
+      "page": {
+        "metaTitle": "横幅管理",
+        "metaDescription": "管理知识库中显示的横幅文章",
+        "eyebrow": "横幅管理",
+        "title": "横幅管理",
+        "subtitle": "管理在知识库中显示为横幅的文章"
+      },
+      "grid": {
+        "title": "当前横幅",
+        "count": "个横幅",
+        "empty": "暂无横幅，请从下方选择文章添加为横幅",
+        "save": "保存排序",
+        "saving": "保存中...",
+        "unsaved": "存在未保存的更改"
+      },
+      "articleList": {
+        "title": "文章",
+        "selectBtn": "设为横幅",
+        "added": "已添加"
+      },
+      "tab": {
+        "newest": "最新",
+        "popular": "浏览最多",
+        "high": "高优先级",
+        "published": "已发布",
+        "review": "审核中"
+      },
+      "toast": {
+        "addSuccess": "横幅添加成功",
+        "addError": "添加横幅失败",
+        "removeSuccess": "横幅已移除",
+        "removeError": "移除横幅失败"
+      }
+    },
+    "source": {
+      "page": {
+        "title": "来源管理",
+        "metaTitle": "来源管理 | TailAdmin",
+        "metaDescription": "管理文章来源主数据，包括新增、编辑和删除来源条目。",
+        "subtitle": "管理知识库中使用的文章来源列表。您可以在此页面新增、编辑或删除来源条目。"
+      },
+      "sections": {
+        "list": {
+          "title": "来源列表",
+          "description": "系统中的所有来源条目"
+        }
+      },
+      "labels": {
+        "loading": "正在加载来源数据...",
+        "loadFailed": "无法加载来源数据。",
+        "empty": "未找到来源条目。",
+        "apiPath": "API 路径",
+        "source": "来源",
+        "mock": "模拟数据",
+        "api": "API",
+        "active": "启用",
+        "inactive": "停用",
+        "nameTh": "名称（泰文）",
+        "nameEn": "名称（英文）",
+        "seq": "排序",
+        "status": "状态",
+        "actions": "操作",
+        "no": "#"
+      },
+      "buttons": {
+        "add": "新增来源",
+        "edit": "编辑",
+        "delete": "删除",
+        "deleteConfirm": "删除来源",
+        "cancel": "取消",
+        "create": "创建来源",
+        "update": "保存更改",
+        "saving": "保存中...",
+        "refresh": "刷新",
+        "refreshing": "刷新中..."
+      },
+      "form": {
+        "createTitle": "新增来源",
+        "editTitle": "编辑来源",
+        "description": "请输入泰文和英文来源名称，并设置显示顺序。",
+        "nameTh": "名称（泰文）",
+        "nameEn": "名称（英文）",
+        "seq": "显示顺序",
+        "isActive": "启用",
+        "validationNameTh": "请输入泰文名称",
+        "validationNameEn": "请输入英文名称",
+        "validationSeq": "显示顺序必须为大于 0 的数字"
+      },
+      "pagination": {
+        "showing": "显示 {{from}}–{{to}}，共 {{total}} 条",
+        "prev": "上一页",
+        "next": "下一页"
+      },
+      "confirm": {
+        "delete": "确定删除“{{name}}”吗？",
+        "deleteDescription": "此操作无法撤销。"
+      },
+      "toast": {
+        "createSuccess": "来源创建成功。",
+        "createError": "无法创建来源。",
+        "updateSuccess": "来源更新成功。",
+        "updateError": "无法更新来源。",
+        "deleteSuccess": "来源删除成功。",
+        "deleteError": "无法删除来源。"
+      }
+    },
+    "case": {
+      "panel": {
+        "title": "产品",
+        "search": "搜索",
+        "notfound": "暂无文章",
+        "copied": "已复制！",
+        "copy": "复制链接",
+        "open": "打开",
+        "lastupdate": "最后更新时间"
+      }
+    }
+  },
+  "customer": {
+    "social": {
+      "already_in_list": "该 {{channel}} 账号已在下方列表中。",
+      "already_linked_other": "该 {{channel}} 账号已关联到其他客户。",
+      "partial_attach": "客户已保存，但有 {{count}} 个联系渠道未能关联。请从客户资料中添加。",
+      "attach_needs_profile": "客户已保存，但联系渠道未能自动关联。请从客户资料中添加。",
+      "link_title": "关联联系渠道",
+      "link_to_customer": "关联到此客户",
+      "search_owner": "选择该账号所属的客户",
+      "conflict_owner": "已关联到 {{owner}}",
+      "identity_required": "请先输入账号 ID。",
+      "channels": "联系渠道",
+      "primary": "主要",
+      "empty": "暂无联系渠道",
+      "partial_index": "渠道列表可能不完整，部分已关联账号无法加载。",
+      "channel": "渠道",
+      "account_id": "账号 ID",
+      "account_name": "账号名称",
+      "photo_url": "头像链接",
+      "email_hint": "仅在客户尚无电子邮件时保存。",
+      "add": "添加联系渠道",
+      "link": "关联账号",
+      "unlink": "取消关联",
+      "unlink_title": "取消关联账号",
+      "unlink_description": "该账号将与此客户永久取消关联，且无法撤销。",
+      "linked": "账号已关联",
+      "updated": "账号已更新",
+      "unlinked": "账号已取消关联",
+      "save_failed": "无法保存账号",
+      "unlink_failed": "无法取消关联账号",
+      "already_linked_here": "该 {{channel}} 账号已关联到此客户。",
+      "already_linked_elsewhere": "该 {{channel}} 账号已关联到 {{owner}}。",
+      "email_not_saved": "渠道已关联，但电子邮件未能保存。",
+      "provider": {
+        "line": "LINE",
+        "facebook": "Facebook",
+        "textchat": "文字聊天",
+        "phone": "电话",
+        "email": "电子邮件"
+      },
+      "idLabel": {
+        "line": "LINE 用户 ID",
+        "facebook": "Facebook ID",
+        "textchat": "聊天 ID",
+        "phone": "电话号码",
+        "email": "电子邮件地址"
+      },
+      "idHint": {
+        "line": "LINE 用户 ID，而非 @账号",
+        "facebook": "Facebook 页面范围用户 ID",
+        "textchat": "网页聊天访客 ID",
+        "phone": "该客户的附加电话号码",
+        "email": "该客户的附加电子邮件地址"
+      }
+    },
+    "note": {
+      "title": "内部备注",
+      "add": "添加内部备注",
+      "save": "保存备注",
+      "saving": "正在保存...",
+      "placeholder": "添加关于此客户的备注...",
+      "category": "类别（可多选）",
+      "empty": "暂无备注",
+      "edited": "已编辑",
+      "created": "备注已添加",
+      "updated": "备注已更新",
+      "deleted": "备注已删除",
+      "load_failed": "无法加载备注",
+      "save_failed": "无法保存备注",
+      "delete_failed": "无法删除备注",
+      "delete_title": "删除备注",
+      "delete_description": "此备注将被永久删除，且无法恢复。",
+      "categories": {
+        "general": "一般",
+        "billing": "账单",
+        "support": "支持",
+        "sales": "销售"
+      }
+    }
+  },
+  "report": {
+    "1": "1.服务汇总报告",
+    "1_1": "1.1 每日服务汇总报告",
+    "1_2": "1.2 每月服务汇总报告",
+    "1_3": "1.3 按日服务对比报告",
+    "1_4": "1.4 按月服务对比报告",
+    "2": "2.服务明细报告",
+    "2_1": "2.1 服务数据明细报告",
+    "2_2": "2.2 按服务类型分类的服务汇总报告",
+    "2_3": "2.3 按服务结果分类的服务汇总报告",
+    "2_4": "2.4 服务明细及服务地点报告",
+    "group": {
+      "case": "案件报告",
+      "order": "订单报告"
+    },
+    "order": {
+      "1": "1.订单汇总报告",
+      "1_1": "1.1 每日订单汇总报告",
+      "1_2": "1.2 产品汇总报告",
+      "1_3": "1.3 备件汇总报告",
+      "2": "2.订单明细报告",
+      "2_1": "2.1 订单明细信息报告",
+      "2_2": "2.2 备件领用汇总报告",
+      "2_3": "2.3 十大销售报告"
+    }
+  }
+}

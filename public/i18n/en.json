@@ -1,0 +1,4392 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "hello": "Hello",
+    "goodbye": "Goodbye",
+    "yes": "Yes",
+    "no": "No",
+    "save": "Save",
+    "saving": "Saving",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "unlink": "Unlink",
+    "edit": "Edit",
+    "edit_entity": "Edit _ENTITY_",
+    "view": "View",
+    "view_entity": "_ENTITY_ Details",
+    "add": "Add",
+    "search": "Search",
+    "loading": "Loading...",
+    "loadingPercentage": "Loading..._percentage_",
+    "loading_translations": "Loading Translations...",
+    "error": "Error",
+    "success": "Success",
+    "back": "Back",
+    "previous": "Previous",
+    "next": "Next",
+    "no_data": "No data available",
+    "show": "Show",
+    "of": "of",
+    "all": "All",
+    "items": "items",
+    "filters": "Filters",
+    "clear_filters": "Clear Filters",
+    "start_date": "Start Date",
+    "end_date": "End Date",
+    "search_placeholder": "Search...",
+    "refresh": "Refresh",
+    "home": "Home",
+    "retry": "Retry",
+    "no_result": "No results found.",
+    "charater": "Characters",
+    "noOption": "No Option.",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "draft": "Draft",
+    "locked": "Locked",
+    "active": "Active",
+    "inactive": "Inactive",
+    "at": "At",
+    "createAt": "Create At",
+    "by": "By",
+    "createBy": "Create By",
+    "at_time": "At",
+    "new_version": "New Version",
+    "version": "Version",
+    "name": "Name",
+    "create": "Create",
+    "create_entity": "Create New _ENTITY_",
+    "change_version": "Change Version",
+    "import": "Import",
+    "export": "Export",
+    "preview": "Preview",
+    "submit": "Submit",
+    "close": "Close",
+    "addField": "Add Field",
+    "remove": "Remove",
+    "hide": "Hide",
+    "download": "Download",
+    "upload": "Upload",
+    "info": "Information",
+    "dob": "Date of Birth",
+    "email": "Email",
+    "phoneNumber": "Phone Number",
+    "address": "Address",
+    "type": "Type",
+    "room": "Room",
+    "floor": "Floor",
+    "using": "Using",
+    "used": "Used",
+    "current": "Current",
+    "report": "Report",
+    "status": "Status",
+    "appointment": "Appointment",
+    "customer": "Customer",
+    "appointDate": "Appoint Date",
+    "appointmentType": "Appointment Type",
+    "serviceType": "Service Type",
+    "note": "Note",
+    "subcase": "Sub-case",
+    "watching": "Watching",
+    "product": "Product",
+    "case": "Cases",
+    "service": "Service",
+    "contact": "Contact",
+    "apply_filter": "Apply Filters",
+    "advanced_filter": "Advance Filter",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other",
+    "select": "Select",
+    "fillData": "Enter",
+    "language": "Language",
+    "change_status_to": "Change Status To",
+    "select_form": "Select Form",
+    "detail": "Detail",
+    "date_range": "Start Date - End Date",
+    "add_product": "Add Product",
+    "add_service": "Add Service",
+    "schedule": "Schedule",
+    "purchase_date": "Purchase Date",
+    "category": "Category",
+    "select_purchase_date": "Select Purchase Date",
+    "product_list": "Product List",
+    "serial_number": "Serial Number",
+    "end_warranty": "End of warranty",
+    "profile": "Profile",
+    "history": "History",
+    "phone_number": "Phone Number",
+    "line": "Line",
+    "facebook": "Facebook",
+    "labor_price": "Labor Price",
+    "service_date": "Service Date",
+    "select_service_date": "Select Service Date",
+    "baht": "Baht",
+    "customer_grade": "Customer Grade",
+    "contact_information": "Contact Informantion",
+    "done": "Done",
+    "notDone": "Not Done",
+    "in_progress": "In Progress",
+    "part": "Spare Part",
+    "store": "Store",
+    "quantity": "Quantity",
+    "required_field": "Please fill in",
+    "required_fields": "Please fill all required fields",
+    "selectSparePart": "Select Spare Part",
+    "selectStore": "Select Store",
+    "brand": "Brand",
+    "request_spare_part": "Request Spare Part",
+    "spare_part": "Spare Part",
+    "view_cart": "View Cart",
+    "cart": "Cart",
+    "request": "Request",
+    "filter": "Filter",
+    "calendar": "Calendar",
+    "list": "List",
+    "more": "more",
+    "requestBy": "Request By",
+    "change": "Change",
+    "skip": "Skip",
+    "billing_info": "Billing Info",
+    "bill_to": "Bill To",
+    "bill_to_placeholder": "Company / Customer name",
+    "bill_addr": "Billing Address",
+    "bill_addr_placeholder": "123 Main St",
+    "shipping_info": "Shipping Info",
+    "ship_to": "Ship To",
+    "ship_to_placeholder": "Destination / Recipient",
+    "ship_by": "Ship By",
+    "ship_by_placeholder": "FedEx / Carrier name",
+    "ship_addr": "Shipping Address",
+    "ship_addr_placeholder": "456 Delivery Ave",
+    "no_parts_added": "No items added yet",
+    "remove_part": "Remove",
+    "add_to_cart": "Add to cart",
+    "remove_from_cart": "Remove from cart",
+    "processing_requests": "Processing...",
+    "update_entity": "Update _ENTITY_",
+    "order": "Order",
+    "ordering": "Ordering",
+    "newOrder": "New Order",
+    "totalItems": "Items",
+    "totalQty": "Total Qty",
+    "currentStep": "Current Step",
+    "createdAt": "Created",
+    "order_items": "Order Items",
+    "want_to_cancel": "Want to cancel",
+    "confirm_edit": "Confirm Edit.",
+    "linked_existing": "Linked Existing",
+    "total_price": "Total price",
+    "price": "Price",
+    "operating_procedure": "Operating Procedure",
+    "item": "item",
+    "bill": "Bill",
+    "shipping": "Shipping",
+    "print": "Print",
+    "cancel_reason": "Cancel Reason"
+  },
+  "auth": {
+    "signin": {
+      "title": "Sign In",
+      "subtitle": "Enter your username, password, and organization to sign in!",
+      "username": {
+        "label": "Username",
+        "placeholder": "Enter your username",
+        "required": "Username is required"
+      },
+      "password": {
+        "label": "Password",
+        "placeholder": "Enter your password",
+        "required": "Password is required",
+        "min": "Password must be at least 6 characters"
+      },
+      "organization": {
+        "label": "Organization",
+        "placeholder": "Enter your organization",
+        "required": "Organization is required"
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "Enter your email",
+        "required": "Email is required",
+        "invalid": "Email is invalid",
+        "error": "Failed to send reset email"
+      },
+      "keep_logged_in": "Keep me logged in",
+      "reset_password": "Forgot password?",
+      "button": "Sign In",
+      "loading": "Signing in...",
+      "demo": {
+        "title": "Demo credentials:",
+        "username": "Username",
+        "password": "Password",
+        "organization": "Organization",
+        "auto_fill": "Auto-fill"
+      },
+      "no_account": "Don't have an account?",
+      "sign_up": "Sign Up",
+      "forgot_password": {
+        "title": "Reset Password",
+        "subtitle": "Enter your email to reset password"
+      },
+      "state": {
+        "is_locked": "Account temporarily locked due to multiple failed attempts. Please try again later.",
+        "network_status": "No internet connection. Please check your connection and try again.",
+        "network_online": "Connected",
+        "network_offline": "Offline - Some features may not work",
+        "is_loading": "Authenticating...",
+        "is_refreshing": "Refreshing session...",
+        "wating": "Please wait",
+        "session_timeout": {
+          "title": "Session Timeout Warning",
+          "subtitle": "Your session will expire in",
+          "description": "seconds.",
+          "login": "Stay Signed In",
+          "logout": "Signed Out",
+          "extending": "Extending...",
+          "extend_failed": "Could not extend your session. Please sign in again."
+        }
+      }
+    },
+    "permission": {
+      "access_denied": {
+        "title": "Access Denied",
+        "subtitle": "You don't have permission to",
+        "description": "Required permission"
+      },
+      "insufficient_permissions": {
+        "title": "Insufficient Permissions",
+        "subtitle": "You don't have all the required permissions for this action.",
+        "description": "Required permissions"
+      }
+    }
+  },
+  "dashboard": {
+    "custom": {
+      "customize": "Customize",
+      "entity_name": "Layout",
+      "layouts": "Layouts",
+      "layout_actions": "Layout actions",
+      "no_saved_layouts": "No saved layouts yet",
+      "new_layout": "New layout",
+      "rename_layout": "Rename layout",
+      "duplicate_layout": "Duplicate layout",
+      "delete_layout": "Delete layout",
+      "layout_name": "Layout name",
+      "layout_name_placeholder": "e.g. Operations Overview",
+      "layout_name_required": "Enter a layout name",
+      "duplicate_suffix": "(copy)",
+      "create": "Create",
+      "rename": "Rename",
+      "duplicate": "Duplicate",
+      "set_default": "Set as default",
+      "default_badge": "Default",
+      "share_layout": "Share with my team",
+      "unshare_layout": "Stop sharing",
+      "shared_badge": "Shared",
+      "read_only": "Read only",
+      "default_layout_name": "Default Dashboard",
+      "unsaved_layout_hint": "Not saved yet",
+      "confirm_delete_title": "Delete layout",
+      "confirm_delete_message": "Delete \"_NAME_\"? This can't be undone.",
+      "confirm_delete_dirty_message": "Delete \"_NAME_\"? Unsaved changes will be lost. This can't be undone.",
+      "confirm_discard_title": "Discard changes",
+      "confirm_discard_message": "You have unsaved changes. Discard them?",
+      "remote_updated": "Updated elsewhere",
+      "remote_updated_hint": "This layout changed on the server. Save to overwrite it, or Discard to load the latest.",
+      "unavailable_title": "Can't load your saved layouts",
+      "unavailable_message": "Showing a temporary layout. Your changes won't be saved until this is fixed.",
+      "done": "Done",
+      "add_widget": "Add Widget",
+      "save": "Save",
+      "saving": "Saving...",
+      "discard": "Discard",
+      "cancel": "Cancel",
+      "apply": "Apply",
+      "unsaved_changes": "Unsaved changes",
+      "no_widgets": "No widgets yet. Turn on Customize to add one.",
+      "unknown_widget": "Unknown widget",
+      "widget_settings": "Widget settings",
+      "widget_title": "Title",
+      "remove_widget": "Remove widget",
+      "drag_handle": "Drag to reorder",
+      "col_span": "Width (columns)",
+      "row_span": "Height (rows)",
+      "month_range": "Months to show",
+      "show_header": "Show header",
+      "connected": "Live",
+      "disconnected": "Not connected",
+      "groups": {
+        "case": "Case Management",
+        "product": "Product Management",
+        "kms": "Knowledge Base",
+        "workspace": "Workspace"
+      },
+      "widgets": {
+        "case_summary_metrics": {
+          "label": "Case Summary",
+          "description": "Total cases and a breakdown by group."
+        },
+        "sla_performance": {
+          "label": "SLA Performance",
+          "description": "In-SLA and over-SLA rates with average response time."
+        },
+        "case_daily_chart": {
+          "label": "Daily Cases",
+          "description": "Cases by status over recent days."
+        },
+        "case_monthly_chart": {
+          "label": "Monthly Cases",
+          "description": "Cases by status over recent months."
+        },
+        "case_status_donut": {
+          "label": "Case Status Overview",
+          "description": "Status split for the most recent period."
+        },
+        "growth_metrics": {
+          "label": "Growth Metrics",
+          "description": "Product, spare part, ordering and pending totals with month-over-month growth."
+        },
+        "module_overview": {
+          "label": "Module Overview",
+          "description": "Active-record counts across stock, spare parts, customers and appointments."
+        },
+        "top_ordered": {
+          "label": "Top Ordered",
+          "description": "Most-ordered spare parts with quantity and unit price."
+        },
+        "revenue": {
+          "label": "Estimated Revenue",
+          "description": "This month's revenue target with a parts/products split."
+        },
+        "inventory_alert": {
+          "label": "Inventory Alert",
+          "description": "Low-stock parts and pending purchase approvals."
+        }
+      }
+    }
+  },
+  "navigation": {
+    "super_app": {
+      "sidebar": {
+        "workspace": {
+          "title": "Workspace",
+          "menu": {
+            "softphone": "Softphone",
+            "chat": {
+              "title": "Chat",
+              "sub_menu": {
+                "lobby": "Lobby (Incoming)",
+                "history": "Chat History"
+              }
+            },
+            "email": "Email",
+            "dashboard": "Dashboard"
+          }
+        },
+        "contact": {
+          "title": "Contacts",
+          "menu": {
+            "list": "Contacts List",
+            "appointment": "Appointment"
+          }
+        },
+        "case": {
+          "title": "Cases",
+          "menu": {
+            "list": "Case List",
+            "assign": "Case Assignment",
+            "dashboard": "Case Dashboard",
+            "custom_dashboard": "Custom Dashboard"
+          }
+        },
+        "product": {
+          "title": "Products",
+          "menu": {
+            "product": "Products List",
+            "inventory": "Spare Parts",
+            "inventory_request": "Orders",
+            "dashboard": "Dashboard"
+          }
+        },
+        "knowledge": {
+          "title": "knowledge base",
+          "menu": {
+            "dashboard": "Dashboard",
+            "broadcast": "Broadcast",
+            "files": "Files",
+            "articles": "Articles",
+            "category": "Category Management",
+            "banner": "Banner Management",
+            "source": "Source Management"
+          }
+        }
+      },
+      "topbar": {
+        "workspace": "Workspace",
+        "contact": "Contacts",
+        "case": "Cases",
+        "product": "Products",
+        "more": {
+          "title": "More",
+          "menu": {
+            "product": {
+              "title": "Products",
+              "sub_menu": {
+                "product": "Product",
+                "product_stock": "Products Stock",
+                "inventory": "Spare Parts",
+                "inventory_stock": "Spare Parts Stock",
+                "inventory_request": "Orders"
+              }
+            },
+            "case": {
+              "title": "Cases",
+              "sub_menu": {
+                "create": "Creation",
+                "schedule": "Schedule",
+                "assign": "Assignment",
+                "history": "History"
+              }
+            },
+            "system_config": {
+              "title": "System Configuration",
+              "sub_menu": {
+                "service_type": "Service Type Management",
+                "unit": "Unit Management",
+                "skill": "Skill Management",
+                "area": "Area Management"
+              }
+            },
+            "user_mgmt": {
+              "title": "User Management",
+              "sub_menu": {
+                "user": "User",
+                "role_privilege": "Role & Privilege",
+                "user_group": "User Group",
+                "org": "Organization",
+                "audit": "Audit Log"
+              }
+            },
+            "contact": {
+              "title": "Contacts",
+              "sub_menu": {
+                "list": "Contacts List",
+                "config": "Contact Configuration",
+                "appointment": "Appointment"
+              }
+            },
+            "dashboard_analytic": {
+              "title": "Dashboard & Analytics",
+              "sub_menu": {
+                "case": "Case",
+                "product": "Product",
+                "custom": "Custom Dashboard"
+              }
+            },
+            "form": {
+              "title": "Form",
+              "sub_menu": {
+                "mgmt": "Management",
+                "builder": "Builder"
+              }
+            },
+            "package_service": {
+              "title": "Package & Service",
+              "sub_menu": {
+                "package": "Packages",
+                "service": "Services"
+              }
+            },
+            "workflow": {
+              "title": "Workflow",
+              "sub_menu": {
+                "mgmt": "Management",
+                "builder": "Builder"
+              }
+            },
+            "report": {
+              "title": "Report",
+              "sub_menu": {
+                "report": "Report",
+                "case": "Case Report",
+                "order": "Order Report"
+              }
+            },
+            "knowledge": {
+              "title": "knowledge base",
+              "sub_menu": {
+                "category": "Category Management",
+                "banner": "Banner Management",
+                "source": "Source Management",
+                "boardcastlog": "Boardcast Log"
+              }
+            }
+          }
+        },
+        "status": {
+          "available": "Available",
+          "offline": "Offline"
+        },
+        "knowlage": "Knowledge base"
+      }
+    },
+    "home": "Home",
+    "topbar": {
+      "search": {
+        "title": "Search",
+        "placeholder": "Search or type command...",
+        "search_button": "Search",
+        "no_results": "No results found"
+      },
+      "settings": {
+        "title": "Settings",
+        "language": "Language",
+        "theme": "Theme",
+        "notification": {
+          "title": "Notifications",
+          "mark_all_as_read": "Mark all as read",
+          "no_notifications": "No notifications found",
+          "search": "Search",
+          "view_all_notifications": "View all notifications"
+        }
+      },
+      "profile": {
+        "edit_profile": "Profile",
+        "account_settings": "Account Settings",
+        "notification": "Notification",
+        "sign_out": "Sign out"
+      }
+    },
+    "sidebar": {
+      "main": {
+        "case_management": {
+          "title": "Case",
+          "nested": {
+            "case_creation": "Creation",
+            "creation_schedule_date": "Schedule Create",
+            "case_assignment": "Assignment",
+            "case_history": {
+              "title": "History",
+              "header": "Case History"
+            }
+          }
+        },
+        "dashboard": {
+          "title": "Dashboard & Analytics",
+          "nested": {
+            "analytics": "Analytics",
+            "call_center": "Call Center",
+            "agent_status": "Agent Status",
+            "service": {
+              "title": "Case",
+              "header": "Case Dashboard"
+            }
+          }
+        },
+        "report": {
+          "title": "Report"
+        },
+        "form_builder": {
+          "title": "Form Builder",
+          "nested": {
+            "form_management": "Form Management",
+            "form_builder": "Form Builder"
+          }
+        },
+        "workflow": {
+          "title": "Workflow",
+          "nested": {
+            "workflow_management": "Workflow Management",
+            "workflow_builder": {
+              "title": "Workflow Builder",
+              "header": "Workflow Builder",
+              "create": {
+                "title": "Create Workflow",
+                "header": "Create Workflow"
+              },
+              "read": {
+                "title": "Workflow Detail",
+                "header": "Workflow Detail"
+              },
+              "update": {
+                "title": "Edit Workflow",
+                "header": "Edit Workflow"
+              }
+            }
+          }
+        },
+        "user_management": {
+          "title": "User Management",
+          "nested": {
+            "user": {
+              "title": "User",
+              "header": "User",
+              "create": {
+                "title": "Create User",
+                "header": "Create User"
+              },
+              "read": {
+                "title": "User's Detail",
+                "header": "User's Detail"
+              },
+              "update": {
+                "title": "Edit User",
+                "header": "Edit User"
+              }
+            },
+            "role_privilege": "Role & Privilege",
+            "user_group": "User Group",
+            "organization": "Organization",
+            "audit_log": "Audit Log",
+            "customer": "Customer"
+          }
+        },
+        "customer": {
+          "title": "Customer"
+        },
+        "appointment": {
+          "title": "Appointment"
+        },
+        "system_configuration": {
+          "title": "System Configuration",
+          "nested": {
+            "service_management": "Service Management",
+            "unit_management": {
+              "title": "Unit Management",
+              "header": "Unit Management",
+              "create": {
+                "title": "Create Unit",
+                "header": "Create Unit"
+              },
+              "read": {
+                "title": "Unit's Detail",
+                "header": "Unit's Detail"
+              },
+              "update": {
+                "title": "Edit Unit",
+                "header": "Edit Unit"
+              }
+            },
+            "skill_management": "Skill Management",
+            "property_management": "Property Management",
+            "area_management": "Area Management"
+          }
+        }
+      },
+      "menu": {
+        "title": "Menu",
+        "dashboard": {
+          "title": "Dashboard",
+          "nested": {
+            "ecommerce": "Ecommerce",
+            "dashboard_framework": "Dashboard Framework"
+          }
+        },
+        "calendar": "Calendar",
+        "user_profile": "User Profile",
+        "forms": {
+          "title": "Forms",
+          "nested": {
+            "form_elements": "Form Elements"
+          }
+        },
+        "tables": {
+          "title": "Tables",
+          "nested": {
+            "basic_tables": "Basic Tables"
+          }
+        },
+        "pages": {
+          "title": "Pages",
+          "nested": {
+            "blank_page": "Blank Page",
+            "404_error": "404 Error"
+          }
+        }
+      },
+      "other": {
+        "title": "Others",
+        "charts": {
+          "title": "Charts",
+          "nested": {
+            "line_chart": "Line Chart",
+            "bar_chart": "Bar Chart"
+          }
+        },
+        "ui_elements": {
+          "title": "UI Elements",
+          "nested": {
+            "alerts": "Alerts",
+            "avatar": "Avatar",
+            "badge": "Badge",
+            "buttons": "Buttons",
+            "buttons_customize": "Buttons (Customize)",
+            "images": "Images",
+            "tabs": "Tabs",
+            "videos": "Videos"
+          }
+        },
+        "authentication": {
+          "title": "Authentication",
+          "nested": {
+            "sign_in": "Sign In",
+            "sign_up": "Sign Up",
+            "authenticate_inspector": "Authenticate Inspector"
+          }
+        },
+        "security": {
+          "title": "Security & Error",
+          "nested": {
+            "error_boundaries": "Error Boundaries",
+            "loading": "Loading & Skeletons",
+            "security_alert": "Security Alert",
+            "offline": "Offline Handling"
+          }
+        },
+        "theme_debugger": {
+          "title": "Theme Debugger"
+        }
+      },
+      "archives": {
+        "title": "Archives",
+        "case_management": {
+          "title": "Case Management",
+          "nested": {
+            "case_history": "Case History"
+          }
+        },
+        "workflow": {
+          "title": "Workflow",
+          "nested": {
+            "workflow_builder_v1": "Workflow Builder v0.1.0",
+            "workflow_builder_v2": "Workflow Builder v0.2.0"
+          }
+        }
+      }
+    }
+  },
+  "crud": {
+    "common": {
+      "processing": "Processing...",
+      "search": "Search",
+      "length_menu": {
+        "show": "Show",
+        "entries": "entries"
+      },
+      "info": "Showing _START_-_END_ of _TOTAL_ entries",
+      "info_empty": "Showing 0 of entries",
+      "info_filtered": "(filtered by _MAX_ entries in total)",
+      "info_postFix": "",
+      "loading_records": "Loading...",
+      "zero_records": "No entries to show",
+      "empty_table": "No data available",
+      "paginate": {
+        "info": "Page _PAGE_ of _TOTAL_",
+        "first": "First",
+        "previous": "Previous",
+        "next": "Next",
+        "last": "Last"
+      },
+      "aria": {
+        "sortAscending": ": enable to sort the column in ascending order",
+        "sortDescending": ": enable to sort the column in descending order"
+      },
+      "search_advanced": "Advanced Filters",
+      "reset_all": "Reset All",
+      "apply_filters": "Apply Filters",
+      "count_filters": "filter_S_ active",
+      "no_filters": "No filters applied",
+      "no_filters_active": "Try adjusting your filters or search terms",
+      "no_records": "Create your first _ENTITY_ to get started",
+      "action": "Action",
+      "create": "Create _ENTITY_",
+      "read": "View",
+      "update": "Edit",
+      "delete": "Delete",
+      "delete_success": "_ENTITY_ deleted successfully",
+      "delete_error": "Failed to delete _ENTITY_",
+      "confirm_modal": {
+        "dialog_title": {
+          "delete": "Delete Confirmation",
+          "status": "Status Change",
+          "other": "Confirmation"
+        },
+        "dialog_subtitle": {
+          "delete": "This action cannot be undone",
+          "status": "",
+          "other": "Please confirm your action"
+        },
+        "dialog_message": {
+          "delete": "Are you sure you want to delete _ENTITY_? This action cannot be undone.",
+          "status": "Change _ENTITY_ status to _NEW_?",
+          "other": "Are you sure you want to proceed?"
+        },
+        "dialog_button": {
+          "cancel": "Cancel",
+          "delete": "Delete",
+          "status": "",
+          "other": "Confirm"
+        }
+      },
+      "permission_denied": "You do not have permission to perform this action.",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search _ENTITY_..."
+          }
+        }
+      },
+      "form": {
+        "attachment": {
+          "label": "_ENTITY_ Image",
+          "placeholder": "Change Photo",
+          "helper": "Allowed: JPG, PNG, GIF"
+        },
+        "action": {
+          "cancel": "Cancel",
+          "reset": "Reset",
+          "save": "Save",
+          "saving": "Saving...",
+          "confirmDialog": {
+            "titleCreate": "Create _ENTITY_ confirmation",
+            "titleUpdate": "Edit _ENTITY_ confirmation",
+            "descriptionCreate": "Please confirm to create _ENTITY_",
+            "descriptionUpdate": "Please confirm to edit _ENTITY_",
+            "cancel": "Cancel",
+            "confirm": "Confirm"
+          },
+          "create": {
+            "success": "_ENTITY_ created successfully",
+            "error": "Failed to create _ENTITY_"
+          },
+          "delete": {
+            "success": "_ENTITY_ deleted successfully",
+            "error": "Failed to delete _ENTITY_"
+          },
+          "update": {
+            "success": "_ENTITY_ updated successfully",
+            "error": "Failed to update _ENTITY_"
+          }
+        }
+      },
+      "unit": {
+        "day": "Day",
+        "month": "Month",
+        "out_of_stock": "Out of Stock",
+        "low_stock": "Low Stock",
+        "in_stock": "In Stock"
+      }
+    },
+    "case_history": {
+      "name": "Case",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search Case..."
+          },
+          "filter": {
+            "status": "Select Status",
+            "priority": "Select Priority"
+          },
+          "advanced_filter": {
+            "start_date": {
+              "label": "Start Date",
+              "placeholder": "Select start date"
+            },
+            "end_date": {
+              "label": "End Date",
+              "placeholder": "Select end date"
+            },
+            "caseType": {
+              "label": "Type",
+              "placeholder": "Select type"
+            },
+            "caseSType": {
+              "label": "Sub-Type",
+              "placeholder": "Select sub-type"
+            },
+            "countryId": {
+              "label": "Country",
+              "placeholder": "Select country"
+            },
+            "provId": {
+              "label": "Province",
+              "placeholder": "Select province"
+            },
+            "distId": {
+              "label": "District",
+              "placeholder": "Select district"
+            },
+            "category": {
+              "label": "Category",
+              "placeholder": "Enter category"
+            },
+            "caseDetail": {
+              "label": "Detail",
+              "placeholder": "Enter detail"
+            },
+            "createBy": {
+              "label": "Create By",
+              "placeholder": "Select username"
+            }
+          }
+        },
+        "header": {
+          "case": "Case #",
+          "detail": "Detail",
+          "status": "Status",
+          "priority": "Priority",
+          "created_by": "Created By",
+          "created_at": "Created At"
+        },
+        "body": {
+          "actions": {
+            "cancel": "Cancel"
+          }
+        },
+        "preview": {
+          "tab": {
+            "header": {
+              "overview": "Overview",
+              "activity": "Activity"
+            }
+          }
+        }
+      }
+    },
+    "workflow": {
+      "name": "Workflow",
+      "builder": {
+        "toolbar": {
+          "header": "Workflow Details",
+          "nodes": {
+            "header": "Add Node",
+            "start": "Start",
+            "process": "Process",
+            "dispatch": "Dispatch",
+            "sla": "SLA",
+            "decision": "Decision",
+            "end": "End"
+          },
+          "actions": {
+            "adding": "Click to add or drag to canvas",
+            "import": "Import Workflow",
+            "preview": "Preview SOP",
+            "save": "Save Workflow",
+            "edit": "Edit Workflow"
+          }
+        },
+        "metadata": {
+          "wfType": {
+            "label": "Type",
+            "options": {
+              "case": "Case",
+              "request": "Request"
+            }
+          },
+          "title": {
+            "label": "Title",
+            "placeholder": "Enter workflow title...",
+            "default": "Untitled Workflow"
+          },
+          "description": {
+            "label": "Description",
+            "placeholder": "Brief description..."
+          },
+          "status": {
+            "label": "Status",
+            "placeholder": "Select Status",
+            "options": {
+              "draft": "Draft",
+              "active": "Active",
+              "inactive": "Inactive",
+              "testing": "Testing"
+            }
+          },
+          "total_sla": "Total SLA",
+          "created_at": "Created At",
+          "created_by": "By"
+        },
+        "node": {
+          "header": "Node Configuration",
+          "description": "Select a node to configure its properties",
+          "validation": {
+            "header": "Validation Errors",
+            "node_required": "Workflow must have at least one _NODE_ node",
+            "action_required": " Workflow must have at least one _ACTION_ action in _NODE_ node",
+            "maximum_connections": "_NODE_ node already has maximum connections",
+            "determine_connections": "_NODE_ node already has both Yes and No connections"
+          },
+          "form": {
+            "label": {
+              "label": "Label"
+            },
+            "description": {
+              "label": "Description",
+              "placeholder": "Enter description..."
+            },
+            "node_type": {
+              "label": "Node Type"
+            },
+            "position": {
+              "label": "Position"
+            },
+            "actions": {
+              "label": "Action",
+              "placeholder": "Select Action"
+            },
+            "form": {
+              "label": "Form",
+              "placeholder": "Select Form"
+            },
+            "sla": {
+              "label": "SLA (Minutes)"
+            },
+            "group": {
+              "label": "Group of Assignee",
+              "placeholder": "Select Groups"
+            },
+            "pic": {
+              "label": "PIC (Person in Charge)",
+              "placeholder": "Select Users"
+            },
+            "conditions": {
+              "label": "Conditions",
+              "placeholder": "Enter condition..."
+            }
+          },
+          "connections": {
+            "header": "Connections",
+            "outgoing": "Outgoing",
+            "incoming": "Incoming"
+          },
+          "stats": {
+            "header": "Workflow Stats",
+            "title": "Title",
+            "status": "Status",
+            "nodes": "Nodes",
+            "connections": "Connections",
+            "start_nodes": "Start Nodes",
+            "end_nodes": "End Nodes"
+          }
+        },
+        "modal": {
+          "import": {
+            "header": "Import Workflow",
+            "file": {
+              "label": "Upload .json file"
+            },
+            "textarea": {
+              "label": "Or paste JSON content",
+              "placeholder": "Paste workflow JSON here..."
+            },
+            "actions": {
+              "import": "Import"
+            }
+          },
+          "preview": {
+            "header": "Preview SOP of Workflow",
+            "description": "Generated form components based on workflow path",
+            "step": "Step",
+            "start": "Workflow Start",
+            "decision": {
+              "header": "Condition",
+              "path": "Choose decision path"
+            },
+            "sla": {
+              "header": "SLA Time",
+              "path": "SLA decision path",
+              "yes": "Met SLA",
+              "no": "Exceeded SLA"
+            },
+            "current_path": "Current path",
+            "end": "Workflow End",
+            "actions": {
+              "close": "Close"
+            },
+            "empty": {
+              "title": "No SOP to Preview",
+              "description": "Add start, process, dispatch, and end nodes with connections to generate SOP previews"
+            }
+          },
+          "save": {
+            "header": "Preview JSON of Workflow and confirm",
+            "actions": {
+              "copy": "Copy",
+              "copied": "Copied",
+              "download": "Download",
+              "confirm": "Confirm",
+              "saving": "Saving..."
+            }
+          },
+          "actions": {
+            "cancel": "Cancel"
+          }
+        }
+      },
+      "metrics": {
+        "total": "Total",
+        "active": "Active",
+        "published": "Published",
+        "locked": "Locked"
+      },
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search workflows..."
+          }
+        },
+        "header": {
+          "title": "Name",
+          "active": "Status",
+          "createdAt": "Created At"
+        },
+        "preview": {
+          "header": "_TITLE_ Workflow",
+          "tab": {
+            "header": {
+              "overview": "Overview",
+              "configuration": "Configuration",
+              "activity": "Activity"
+            },
+            "overview": {
+              "description": "Description",
+              "status": "Status",
+              "version": "Version",
+              "createdAt": "Created At",
+              "createdBy": "by",
+              "updatedAt": "Updated At",
+              "updatedBy": "by"
+            },
+            "configuration": {
+              "header": "Workflow Configuration",
+              "description": "View workflow nodes and connections",
+              "node": "Node",
+              "connection": "Connection",
+              "start_node": "Start Node",
+              "process_node": "Process Node",
+              "dispatch_node": "Dispatch Node",
+              "end_node": "End Node"
+            },
+            "activity": {
+              "header": "Workflow Activity",
+              "no_activity": "No activity recorded for this workflow"
+            }
+          }
+        },
+        "confirm": {
+          "warning": {
+            "title": "Warning: Workflow Modification",
+            "message": "You are attempting to edit _WORKFLOW_, which is currently being used by _SUB_TYPE_. Modifying this may cause errors in existing operational processes. Please ensure your edited workflow meets the requirements, otherwise, the system cannot save the changes"
+          }
+        }
+      },
+      "action": {
+        "create": {
+          "success": "Workflow created successfully",
+          "error": "Failed to create workflow"
+        },
+        "update": {
+          "success": "Workflow updated successfully",
+          "error": "Failed to update workflow"
+        },
+        "delete": {
+          "success": "Workflow deleted successfully",
+          "error": "Failed to delete workflow"
+        },
+        "button": {
+          "edit": "Edit",
+          "delete": "Delete"
+        }
+      },
+      "unit": {
+        "sla": {
+          "abbr": "min.",
+          "label": "minute",
+          "postfix": "s"
+        }
+      }
+    },
+    "user": {
+      "name": "User",
+      "metrics": {
+        "total_users": "Total",
+        "active_users": "Active",
+        "new_this_month": "New This Month",
+        "inactive_users": "Inactive"
+      },
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search users..."
+          },
+          "advanced_filter": {
+            "roleId": {
+              "label": "Role",
+              "placeholder": "Select role"
+            },
+            "deptId": {
+              "label": "Department",
+              "placeholder": "Select department"
+            }
+          }
+        },
+        "header": {
+          "user": "User",
+          "role": "Role",
+          "department": "Department",
+          "status": "Status",
+          "last_login": "Last Login"
+        },
+        "preview": {
+          "header": "User Information",
+          "tab": {
+            "header": {
+              "profile": "Profile",
+              "skills": "Skills",
+              "area": "Assign Area",
+              "groups": "Groups",
+              "audit_log": "Audit Log"
+            }
+          }
+        },
+        "group": {
+          "update": {
+            "title": "Group assignment",
+            "success": "User groups updated successfully",
+            "error": "Failed to update user groups",
+            "pending_backend": "Group membership is not persisted yet — backend support is pending.",
+            "button": {
+              "save": "Save",
+              "saving": "Saving..."
+            }
+          }
+        },
+        "skill": {
+          "update": {
+            "title": "Skills update",
+            "success": "User skills updated successfully",
+            "error": "Failed to update user skills",
+            "button": {
+              "save": "Save",
+              "saving": "Saving..."
+            }
+          }
+        },
+        "area": {
+          "update": {
+            "title": "Area assignment update",
+            "success": "User area updated successfully",
+            "error": "Failed to update user area",
+            "button": {
+              "save": "Save",
+              "saving": "Saving..."
+            }
+          }
+        }
+      },
+      "unit": {
+        "last_login": {
+          "today": "Today",
+          "yesterday": "Yesterday",
+          "day": "day_S_ ago",
+          "week": "week_S_ ago",
+          "month": "month_S_ ago",
+          "year": "year_S_ ago"
+        },
+        "status": {
+          "active": "Active",
+          "inactive": "Inactive"
+        }
+      }
+    },
+    "user_group": {
+      "name": "User Group",
+      "metrics": {
+        "total": "Total Groups",
+        "active": "Active Groups",
+        "members": "Total Members"
+      },
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search groups..."
+          }
+        },
+        "header": {
+          "name": "Group",
+          "description": "Description",
+          "members": "Members",
+          "status": "Status",
+          "updatedAt": "Last Modified"
+        },
+        "members": {
+          "title": "Group members",
+          "pending_backend": "Membership is not persisted yet — backend support is pending.",
+          "button": {
+            "save": "Save",
+            "saving": "Saving..."
+          }
+        }
+      },
+      "form": {
+        "header": {
+          "create": "Create Group",
+          "update": "Edit Group"
+        },
+        "grpId": {
+          "label": "Group ID",
+          "placeholder": "Enter group id",
+          "required": "Group id is required"
+        },
+        "en": {
+          "label": "Name (EN)",
+          "placeholder": "Enter group name in English language",
+          "required": "Group name (English) is required"
+        },
+        "th": {
+          "label": "Name (TH)",
+          "placeholder": "Enter group name in Thai language",
+          "required": "Group name (Thai) is required"
+        },
+        "description": {
+          "label": "Description",
+          "placeholder": "Enter a description (optional)"
+        }
+      },
+      "action": {
+        "group": {
+          "create": {
+            "success": "Group created successfully",
+            "error": "Failed to create group"
+          },
+          "update": {
+            "success": "Group updated successfully",
+            "error": "Failed to update group"
+          },
+          "delete": {
+            "success": "Group deleted successfully",
+            "error": "Failed to delete group"
+          }
+        },
+        "pending_backend": "Changes are not persisted yet — group management is pending backend support.",
+        "button": {
+          "save": "Save",
+          "reset": "Reset"
+        }
+      },
+      "confirm": {
+        "button": {
+          "cancel": "Cancel",
+          "confirm": "Confirm",
+          "saving": "Saving...",
+          "deleting": "Deleting..."
+        }
+      },
+      "unit": {
+        "member": "member_S_",
+        "no_members": "No members"
+      }
+    },
+    "role_privilege": {
+      "name": "Role",
+      "metrics": {
+        "total": "Total Roles",
+        "active": "Active Roles",
+        "avg": "Avg Permissions"
+      },
+      "list": {
+        "header": {
+          "user": "User",
+          "permission": "Permissions",
+          "updatedAt": "Last Modified",
+          "groupName": "Group"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "Create Role",
+          "update": "Edit Role"
+        },
+        "roleName": {
+          "label": "Role Name",
+          "placeholder": "Enter role name",
+          "required": "Role name is required"
+        }
+      },
+      "confirm": {
+        "delete": {
+          "title": "Delete role confirmation",
+          "message": "Are you sure you want to delete _Role_? This action cannot be undone."
+        },
+        "button": {
+          "cancel": "Cancel",
+          "confirm": "Confirm",
+          "saving": "Saving...",
+          "deleting": "Deleting..."
+        }
+      },
+      "action": {
+        "role": {
+          "create": {
+            "success": "Role created successfully",
+            "error": "Failed to create role"
+          },
+          "update": {
+            "success": "Role updated successfully",
+            "error": "Failed to update role"
+          },
+          "delete": {
+            "success": "Role deleted successfully",
+            "error": "Failed to delete role"
+          }
+        },
+        "privilege": {
+          "update": {
+            "success": "Permission updated successfully",
+            "error": "Failed to update permission"
+          }
+        },
+        "button": {
+          "save": "Save",
+          "delete": "Delete",
+          "reset": "Reset"
+        }
+      },
+      "unit": {
+        "more": "more",
+        "system": "System"
+      }
+    },
+    "organization": {
+      "name": "Organization",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search organizations..."
+          }
+        },
+        "header": {
+          "dept": {
+            "no_data": "No department found"
+          },
+          "comm": {
+            "plural": "Commands",
+            "singular": "Command",
+            "no_data": "No command defined for this department",
+            "create_child": "Add Command"
+          },
+          "stn": {
+            "plural": "Stations",
+            "singular": "Station",
+            "no_data": "No station defined for this command",
+            "create_child": "Add Station"
+          }
+        }
+      },
+      "form": {
+        "dept": {
+          "header": {
+            "create": "Create Department",
+            "update": "Edit Department"
+          },
+          "deptTh": {
+            "label": "Name (TH)",
+            "placeholder": "Enter department name in Thai language",
+            "required": "Department name (Thai) is required"
+          },
+          "deptEn": {
+            "label": "Name (EN)",
+            "placeholder": "Enter department name in English language",
+            "required": "Department name (English) is required"
+          }
+        },
+        "comm": {
+          "header": {
+            "create": "Add Command",
+            "update": "Edit Command"
+          },
+          "commandTh": {
+            "label": "Name (TH)",
+            "placeholder": "Enter command name in Thai language",
+            "required": "Command name (Thai) is required"
+          },
+          "commandEn": {
+            "label": "Name (EN)",
+            "placeholder": "Enter command name in English language",
+            "required": "Command name (English) is required"
+          },
+          "commDeptId": {
+            "label": "Department",
+            "placeholder": "Select department",
+            "required": "Department is required"
+          }
+        },
+        "stn": {
+          "header": {
+            "create": "Add Station",
+            "update": "Edit Station"
+          },
+          "stationTh": {
+            "label": "Name (TH)",
+            "placeholder": "Enter station name in Thai language",
+            "required": "Station name (Thai) is required"
+          },
+          "stationEn": {
+            "label": "Name (EN)",
+            "placeholder": "Enter station name in English language",
+            "required": "Station name (English) is required"
+          },
+          "stnDeptId": {
+            "label": "Deparetment",
+            "placeholder": "Select department",
+            "required": "Deparetment is required"
+          },
+          "stnCommId": {
+            "label": "Command",
+            "placeholder": "Select command",
+            "required": "Command is required"
+          }
+        }
+      },
+      "confirm": {
+        "dept": {
+          "create": {
+            "title": "Create department confirmation",
+            "message": "Please confirm to create _DEPT_."
+          },
+          "update": {
+            "title": "Update department confirmation",
+            "message": "Please confirm to update _DEPT_."
+          },
+          "delete": {
+            "title": "Delete department confirmation",
+            "message": "Are you sure you want to delete _DEPT_? This action cannot be undone."
+          }
+        },
+        "comm": {
+          "create": {
+            "title": "Create command confirmation",
+            "message": "Please confirm to create _COMM_."
+          },
+          "update": {
+            "title": "Update command confirmation",
+            "message": "Please confirm to update _COMM_."
+          },
+          "delete": {
+            "title": "Delete command confirmation",
+            "message": "Are you sure you want to delete _COMM_? This action cannot be undone."
+          }
+        },
+        "stn": {
+          "create": {
+            "title": "Create station confirmation",
+            "message": "Please confirm to create _STN_."
+          },
+          "update": {
+            "title": "Update station confirmation",
+            "message": "Please confirm to update _STN_."
+          },
+          "delete": {
+            "title": "Delete station confirmation",
+            "message": "Are you sure you want to delete _STN_? This action cannot be undone."
+          }
+        },
+        "button": {
+          "cancel": "Cancel",
+          "confirm": "Confirm",
+          "saving": "Saving...",
+          "deleting": "Deleting..."
+        }
+      },
+      "action": {
+        "dept": {
+          "create": {
+            "success": "Department created successfully",
+            "error": "Failed to create department"
+          },
+          "update": {
+            "success": "Department updated successfully",
+            "error": "Failed to update department"
+          },
+          "delete": {
+            "success": "Department deleted successfully",
+            "error": "Failed to delete department"
+          }
+        },
+        "comm": {
+          "create": {
+            "success": "Command created successfully",
+            "error": "Failed to create command"
+          },
+          "update": {
+            "success": "Command updated successfully",
+            "error": "Failed to update command"
+          },
+          "delete": {
+            "success": "Command deleted successfully",
+            "error": "Failed to delete command"
+          }
+        },
+        "stn": {
+          "create": {
+            "success": "Station created successfully",
+            "error": "Failed to create station"
+          },
+          "update": {
+            "success": "Station updated successfully",
+            "error": "Failed to update station"
+          },
+          "delete": {
+            "success": "Station deleted successfully",
+            "error": "Failed to delete station"
+          }
+        },
+        "button": {
+          "save": "Save",
+          "delete": "Delete",
+          "reset": "Reset"
+        }
+      }
+    },
+    "service": {
+      "name": "Service",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search types / sub-types..."
+          }
+        },
+        "header": {
+          "type": {
+            "no_data": "No type found"
+          },
+          "subType": {
+            "plural": "Sub-Types",
+            "singular": "Sub-Type",
+            "no_data": "No sub-type defined for this type",
+            "create_child": "Add Sub-Type",
+            "skill_required": {
+              "plural": "Skills required",
+              "singular": "Skill required"
+            }
+          }
+        }
+      },
+      "form": {
+        "type": {
+          "header": {
+            "create": "Create Type",
+            "update": "Edit Type"
+          },
+          "typeTh": {
+            "label": "Name (TH)",
+            "placeholder": "Enter type name in Thai language",
+            "required": "Type name (Thai) is required"
+          },
+          "typeEn": {
+            "label": "Name (EN)",
+            "placeholder": "Enter type name in English language",
+            "required": "Type name (English) is required"
+          }
+        },
+        "sub_type": {
+          "header": {
+            "create": "Add Sub-Type",
+            "update": "Edit Sub-Type"
+          },
+          "sTypeTh": {
+            "label": "Name (TH)",
+            "placeholder": "Enter sub-type name in Thai language",
+            "required": "Sub-type name (Thai) is required"
+          },
+          "sTypeEn": {
+            "label": "Name (EN)",
+            "placeholder": "Enter sub-type name in English language",
+            "required": "Sub-type name (English) is required"
+          },
+          "sTypeCode": {
+            "label": "Sub-Type Code",
+            "placeholder": "Enter sub-type code",
+            "required": "Sub-Type code is required"
+          },
+          "sTypeTypeId": {
+            "label": "Type",
+            "placeholder": "Select type",
+            "required": "Type is required"
+          },
+          "caseSla": {
+            "label": "SLA (Minutes)"
+          },
+          "priority": {
+            "label": "Priority",
+            "placeholder": "Select priority",
+            "required": "Priority is required"
+          },
+          "unitPropLists": {
+            "label": "Properties",
+            "placeholder": "Select properties",
+            "required": "Properties is required"
+          },
+          "userSkillList": {
+            "label": "Skills",
+            "placeholder": "Select skills",
+            "required": "Skills is required"
+          },
+          "wfId": {
+            "label": "Workflow",
+            "placeholder": "Select workflow",
+            "required": "Workflow is required"
+          },
+          "mDeviceType": {
+            "label": "Device Type",
+            "placeholder": "Enter device type",
+            "required": "Device type is required"
+          },
+          "mDeviceTypeName": {
+            "label": "Device Type Name",
+            "placeholder": "Enter device type name",
+            "required": "Device type name is required"
+          },
+          "mWorkOrderType": {
+            "label": "Case Type",
+            "placeholder": "Enter case type",
+            "required": "Case type is required"
+          }
+        }
+      },
+      "confirm": {
+        "type": {
+          "create": {
+            "title": "Create type confirmation",
+            "message": "Please confirm to create _TYPE_."
+          },
+          "update": {
+            "title": "Update type confirmation",
+            "message": "Please confirm to update _TYPE_."
+          },
+          "delete": {
+            "title": "Delete type confirmation",
+            "message": "Are you sure you want to delete _TYPE_? This action cannot be undone."
+          }
+        },
+        "sub_type": {
+          "create": {
+            "title": "Create sub-type confirmation",
+            "message": "Please confirm to create _SUB_TYPE_."
+          },
+          "update": {
+            "title": "Update sub-type confirmation",
+            "message": "Please confirm to update _SUB_TYPE_."
+          },
+          "delete": {
+            "title": "Delete sub-type confirmation",
+            "message": "Are you sure you want to delete _SUB_TYPE_? This action cannot be undone."
+          }
+        },
+        "button": {
+          "cancel": "Cancel",
+          "confirm": "Confirm",
+          "saving": "Saving...",
+          "deleting": "Deleting..."
+        }
+      },
+      "action": {
+        "type": {
+          "create": {
+            "success": "Type created successfully",
+            "error": "Failed to create type"
+          },
+          "update": {
+            "success": "Type updated successfully",
+            "error": "Failed to update type"
+          },
+          "delete": {
+            "success": "Type deleted successfully",
+            "error": "Failed to delete type"
+          }
+        },
+        "sub_type": {
+          "create": {
+            "success": "Sub-type created successfully",
+            "error": "Failed to create sub-type"
+          },
+          "update": {
+            "success": "Sub-type updated successfully",
+            "error": "Failed to update sub-type"
+          },
+          "delete": {
+            "success": "Sub-type deleted successfully",
+            "error": "Failed to delete sub-type"
+          }
+        },
+        "button": {
+          "save": "Save",
+          "delete": "Delete",
+          "reset": "Reset"
+        }
+      },
+      "unit": {
+        "minutes": " min."
+      }
+    },
+    "area": {
+      "name": "Area",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search areas..."
+          }
+        },
+        "header": {
+          "province": {
+            "plural": "Provinces",
+            "singular": "Province",
+            "no_data": "No provinces defined for this country",
+            "create_child": "Add Province"
+          },
+          "district": {
+            "plural": "Districts",
+            "singular": "District",
+            "no_data": "No districts defined for this province",
+            "create_child": "Add District"
+          }
+        }
+      },
+      "form": {
+        "country": {
+          "header": {
+            "create": "Create Country",
+            "update": "Edit Country"
+          },
+          "countryCode": {
+            "label": "Country Code",
+            "placeholder": "Enter country code",
+            "required": "Country code is required"
+          },
+          "countryTh": {
+            "label": "Name (TH)",
+            "placeholder": "Enter country name in Thai language",
+            "required": "Country name (Thai) is required"
+          },
+          "countryEn": {
+            "label": "Name (EN)",
+            "placeholder": "Enter country name in English language",
+            "required": "Country name (English) is required"
+          }
+        },
+        "province": {
+          "header": {
+            "create": "Add Province",
+            "update": "Edit Province"
+          },
+          "provinceCountryId": {
+            "label": "Country",
+            "placeholder": "Select country",
+            "required": "Country is required"
+          },
+          "provinceCode": {
+            "label": "Province Code",
+            "placeholder": "Enter province code",
+            "required": "Province code is required"
+          },
+          "provinceTh": {
+            "label": "Name (TH)",
+            "placeholder": "Enter province name in Thai language",
+            "required": "Province name (Thai) is required"
+          },
+          "provinceEn": {
+            "label": "Name (EN)",
+            "placeholder": "Enter province name in English language",
+            "required": "Province name (English) is required"
+          }
+        },
+        "district": {
+          "header": {
+            "create": "Add District",
+            "update": "Edit District"
+          },
+          "districtCountryId": {
+            "label": "Country",
+            "placeholder": "Select country",
+            "required": "Country is required"
+          },
+          "districtProvId": {
+            "label": "Province",
+            "placeholder": "Select province",
+            "required": "Province is required"
+          },
+          "districtCode": {
+            "label": "District Code",
+            "placeholder": "Enter district code",
+            "required": "District code is required"
+          },
+          "districtTh": {
+            "label": "Name (TH)",
+            "placeholder": "Enter district name in Thai language",
+            "required": "District name (Thai) is required"
+          },
+          "districtEn": {
+            "label": "Name (EN)",
+            "placeholder": "Enter district name in English language",
+            "required": "District name (English) is required"
+          }
+        }
+      },
+      "confirm": {
+        "country": {
+          "create": {
+            "title": "Create country confirmation",
+            "message": "Please confirm to create _COUNTRY_."
+          },
+          "update": {
+            "title": "Update country confirmation",
+            "message": "Please confirm to update _COUNTRY_."
+          },
+          "delete": {
+            "title": "Delete country confirmation",
+            "message": "Are you sure you want to delete _COUNTRY_? This action cannot be undone."
+          }
+        },
+        "province": {
+          "create": {
+            "title": "Create province confirmation",
+            "message": "Please confirm to create _PROVINCE_."
+          },
+          "update": {
+            "title": "Update province confirmation",
+            "message": "Please confirm to update _PROVINCE_."
+          },
+          "delete": {
+            "title": "Delete province confirmation",
+            "message": "Are you sure you want to delete _PROVINCE_? This action cannot be undone."
+          }
+        },
+        "district": {
+          "create": {
+            "title": "Create district confirmation",
+            "message": "Please confirm to create _DISTRICT_."
+          },
+          "update": {
+            "title": "Update district confirmation",
+            "message": "Please confirm to update _DISTRICT_."
+          },
+          "delete": {
+            "title": "Delete district confirmation",
+            "message": "Are you sure you want to delete _DISTRICT_? This action cannot be undone."
+          }
+        },
+        "button": {
+          "cancel": "Cancel",
+          "confirm": "Confirm",
+          "saving": "Saving...",
+          "deleting": "Deleting..."
+        }
+      },
+      "action": {
+        "country": {
+          "create": {
+            "success": "Country created successfully",
+            "error": "Failed to create country"
+          },
+          "update": {
+            "success": "Country updated successfully",
+            "error": "Failed to update country"
+          },
+          "delete": {
+            "success": "Country deleted successfully",
+            "error": "Failed to delete country"
+          }
+        },
+        "province": {
+          "create": {
+            "success": "Province created successfully",
+            "error": "Failed to create province"
+          },
+          "update": {
+            "success": "Province updated successfully",
+            "error": "Failed to update province"
+          },
+          "delete": {
+            "success": "Province deleted successfully",
+            "error": "Failed to delete province"
+          }
+        },
+        "district": {
+          "create": {
+            "success": "District created successfully",
+            "error": "Failed to create district"
+          },
+          "update": {
+            "success": "District updated successfully",
+            "error": "Failed to update district"
+          },
+          "delete": {
+            "success": "District deleted successfully",
+            "error": "Failed to delete district"
+          }
+        },
+        "button": {
+          "save": "Save",
+          "delete": "Delete",
+          "reset": "Reset"
+        }
+      }
+    },
+    "skill": {
+      "name": "Skill",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search skills..."
+          }
+        },
+        "header": {
+          "name": "Name",
+          "status": "Status"
+        },
+        "preview": {
+          "header": "Skill Information"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "Create Skill",
+          "update": "Edit Skill"
+        },
+        "th": {
+          "label": "Name (TH)",
+          "placeholder": "Enter skill name in Thai language",
+          "required": "Skill name (Thai) is required"
+        },
+        "en": {
+          "label": "Name (EN)",
+          "placeholder": "Enter skill name in English language",
+          "required": "Skill name (English) is required"
+        }
+      },
+      "confirm": {
+        "create": {
+          "title": "Create skill confirmation",
+          "message": "Please confirm to create _SKILL_."
+        },
+        "update": {
+          "title": "Update skill confirmation",
+          "message": "Please confirm to update _SKILL_."
+        },
+        "delete": {
+          "title": "Delete skill confirmation",
+          "message": "Are you sure you want to delete _SKILL_? This action cannot be undone."
+        },
+        "button": {
+          "cancel": "Cancel",
+          "confirm": "Confirm",
+          "saving": "Saving...",
+          "deleting": "Deleting..."
+        }
+      },
+      "action": {
+        "create": {
+          "success": "Skill created successfully",
+          "error": "Failed to create skill"
+        },
+        "update": {
+          "success": "Skill updated successfully",
+          "error": "Failed to update skill"
+        },
+        "button": {
+          "save": "Save",
+          "delete": "Delete",
+          "reset": "Reset"
+        }
+      }
+    },
+    "unit": {
+      "name": "Unit",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search units..."
+          }
+        },
+        "header": {
+          "unit": "Unit #",
+          "status": "Status",
+          "location": "Location"
+        },
+        "preview": {
+          "header": "Unit Information",
+          "tab": {
+            "header": {
+              "overview": "Basic Info",
+              "skill": "Skills",
+              "location": "Location"
+            },
+            "unitId": "ID",
+            "unitName": "Name",
+            "active": "Status",
+            "current_user": "Currently Active User",
+            "locLat": "Latitude",
+            "locLon": "Longitude",
+            "locAccuracy": "GPS Accuracy",
+            "locBearing": "Bearing",
+            "locSpeed": "Speed",
+            "locSatellites": "Satellites",
+            "locProvider": "Provider",
+            "locLastUpdateTime": "Last Update",
+            "locStatus": "Location Status"
+          }
+        }
+      },
+      "form": {
+        "basic_information": {
+          "header": "Basic Information",
+          "sections": {
+            "unitId": {
+              "label": "Unit ID",
+              "placeholder": "Enter unit ID",
+              "required": "Unit ID is required"
+            },
+            "unitName": {
+              "label": "Unit Name",
+              "placeholder": "Enter unit name",
+              "required": "Unit name is required"
+            },
+            "unitTypeId": {
+              "label": "Unit Type",
+              "placeholder": "Select unit type"
+            },
+            "unitSourceId": {
+              "label": "Unit Source",
+              "placeholder": "Select unit's source"
+            },
+            "username": {
+              "label": "Username",
+              "placeholder": "Select username"
+            },
+            "priority": {
+              "label": "Priority"
+            },
+            "plateNo": {
+              "label": "Plate Number",
+              "placeholder": "Enter plate number"
+            },
+            "breakDuration": {
+              "label": "Break Duration (min.)"
+            }
+          }
+        },
+        "organization_details": {
+          "header": "Organization Details",
+          "sections": {
+            "compId": {
+              "label": "Company",
+              "placeholder": "Select company"
+            },
+            "deptId": {
+              "label": "Department",
+              "placeholder": "Select department"
+            },
+            "commId": {
+              "label": "Command",
+              "placeholder": "Select command"
+            },
+            "stnId": {
+              "label": "Station",
+              "placeholder": "Select station"
+            },
+            "provinceCode": {
+              "label": "Province",
+              "placeholder": "Select province"
+            }
+          }
+        },
+        "status_and_health": {
+          "header": "Status and Health",
+          "sections": {
+            "healthChk": {
+              "label": "Health Check",
+              "placeholder": "Enter health check status"
+            },
+            "healthChkTime": {
+              "label": "Health Check Time",
+              "placeholder": "Enter health check time"
+            },
+            "sttId": {
+              "label": "Status ID",
+              "placeholder": "Enter status ID"
+            },
+            "active": {
+              "label": "Active"
+            },
+            "isFreeze": {
+              "label": "Is Frozen"
+            },
+            "isLogin": {
+              "label": "Is Logged In"
+            },
+            "isOutArea": {
+              "label": "Is Out of Area"
+            }
+          }
+        },
+        "location_information": {
+          "header": "Location Information",
+          "sections": {
+            "locLat": {
+              "label": "Latitude",
+              "error": "Latitude must be between -90 and 90"
+            },
+            "locLon": {
+              "label": "Longitude",
+              "error": "Longitude must be between -180 and 180"
+            },
+            "locAlt": {
+              "label": "Altitude"
+            },
+            "locAccuracy": {
+              "label": "Accuracy"
+            },
+            "locBearing": {
+              "label": "Bearing"
+            },
+            "locSpeed": {
+              "label": "Speed"
+            },
+            "locSatellites": {
+              "label": "Satellites"
+            },
+            "locProvider": {
+              "label": "Provider",
+              "placeholder": "Enter location provider"
+            },
+            "locGpsTime": {
+              "label": "GPS Time"
+            },
+            "locLastUpdateTime": {
+              "label": "Last Update Time"
+            }
+          }
+        }
+      },
+      "action": {
+        "cancel": "Cancel",
+        "reset": "Reset",
+        "save": "Save",
+        "saving": "Saving...",
+        "confirmDialog": {
+          "titleCreate": "Confirm Create Unit",
+          "titleUpdate": "Confirm Edit Unit",
+          "descriptionCreate": "Please confirm to create ",
+          "descriptionUpdate": "Please confirm to edit ",
+          "cancel": "Cancel",
+          "confirm": "Confirm"
+        },
+        "create": {
+          "success": "Unit created successfully",
+          "error": "Failed to create unit"
+        },
+        "update": {
+          "success": "Unit updated successfully",
+          "error": "Failed to update unit"
+        }
+      },
+      "unit": {
+        "accuracy": "m",
+        "speed": "km/h"
+      }
+    },
+    "inventory": {
+      "name": "Spare Parts",
+      "list": {
+        "header": {
+          "name": "Part Name",
+          "stock": "Stock",
+          "brandId": "Brand",
+          "categoryId": "Category",
+          "mfd": "Year",
+          "price": "Price",
+          "warranty": "Warranty",
+          "productId": "Belong to Product"
+        }
+      },
+      "form": {
+        "attachment": {
+          "label": "Spare Part Image"
+        },
+        "th": {
+          "label": "Spare Part Name (TH)",
+          "placeholder": "Enter spare part name in Thai",
+          "required": "Spare Part Name (TH) is required"
+        },
+        "en": {
+          "label": "Spare Part Name (EN)",
+          "placeholder": "Enter spare part name in English",
+          "required": "Spare Part Name (EN) is required"
+        },
+        "categoryId": {
+          "label": "Category",
+          "placeholder": "Select category",
+          "required": "Category is required"
+        },
+        "brandId": {
+          "label": "Brand",
+          "placeholder": "Select brand",
+          "required": "Brand is required"
+        },
+        "mfd": {
+          "label": "Year",
+          "placeholder": "Select year",
+          "required": "Year is required"
+        },
+        "warranty": {
+          "label": "Warranty (Days)",
+          "placeholder": "Enter warranty days e.g., 24",
+          "required": "Warranty (Days) is required"
+        },
+        "price": {
+          "label": "Price",
+          "placeholder": "Enter price e.g., 25000",
+          "required": "Price is required"
+        },
+        "productId": {
+          "label": "Belong to",
+          "placeholder": "Select product",
+          "required": "Product is required"
+        }
+      }
+    },
+    "inventory_stock": {
+      "name": "Spare Parts Stock",
+      "list": {
+        "header": {
+          "serialNumber": "Serial No.",
+          "partId": "Spare Part",
+          "storeId": "Store",
+          "statusId": "Status"
+        }
+      },
+      "form": {
+        "serialNumber": {
+          "label": "Serial No.",
+          "placeholder": "Enter serial no.",
+          "required": "Serial No. is required"
+        },
+        "partId": {
+          "label": "Spare Part",
+          "placeholder": "Select spare part",
+          "required": "Spare part is required"
+        },
+        "storeId": {
+          "label": "Store",
+          "placeholder": "Select store",
+          "required": "Store is required"
+        }
+      }
+    },
+    "product": {
+      "name": "Product",
+      "list": {
+        "header": {
+          "name": "Product Name",
+          "productCode": "Product Code",
+          "stock": "Stock",
+          "brandId": "Brand",
+          "categoryId": "Category",
+          "mfd": "Year",
+          "price": "Price",
+          "warranty": "Warranty"
+        }
+      },
+      "form": {
+        "attachment": {
+          "label": "Product Image"
+        },
+        "th": {
+          "label": "Product Name (TH)",
+          "placeholder": "Enter product name in Thai",
+          "required": "Product Name (TH) is required"
+        },
+        "en": {
+          "label": "Product Name (EN)",
+          "placeholder": "Enter product name in English",
+          "required": "Product Name (EN) is required"
+        },
+        "productCode": {
+          "label": "Product Code",
+          "placeholder": "Enter product code e.g., SED-X200",
+          "required": "Product Code is required"
+        },
+        "categoryId": {
+          "label": "Category",
+          "placeholder": "Select category",
+          "required": "Category is required"
+        },
+        "brandId": {
+          "label": "Brand",
+          "placeholder": "Select brand",
+          "required": "Brand is required"
+        },
+        "mfd": {
+          "label": "Year",
+          "placeholder": "Select year",
+          "required": "Year is required"
+        },
+        "warranty": {
+          "label": "Warranty (Days)",
+          "placeholder": "Enter warranty days e.g., 24",
+          "required": "Warranty (Days) is required"
+        },
+        "price": {
+          "label": "Price",
+          "placeholder": "Enter price e.g., 25000",
+          "required": "Price is required"
+        }
+      }
+    },
+    "product_service": {
+      "name": "Services",
+      "list": {
+        "header": {
+          "name": "Service Name",
+          "price": "Price",
+          "priority": "Priority"
+        }
+      },
+      "form": {
+        "attachment": {
+          "label": "Service Image"
+        },
+        "th": {
+          "label": "Service Name (TH)",
+          "placeholder": "Enter service name in Thai",
+          "required": "Service Name (TH) is required"
+        },
+        "en": {
+          "label": "Service Name (EN)",
+          "placeholder": "Enter service name in English",
+          "required": "Service Name (EN) is required"
+        },
+        "priority": {
+          "label": "Priority",
+          "placeholder": "Enter priority e.g., 1",
+          "required": "Priority is required"
+        }
+      }
+    },
+    "product_stock": {
+      "name": "Product Stock",
+      "list": {
+        "header": {
+          "serialNumber": "Serial No.",
+          "productId": "Product",
+          "registerDate": "Registered Date",
+          "mfw": "Manufacturing Warranty",
+          "storeId": "Store",
+          "statusId": "Status",
+          "purchaseDate": "Purchased Date",
+          "endWarrantyDate": "End of Warranty"
+        }
+      },
+      "form": {
+        "serialNumber": {
+          "label": "Serial No.",
+          "placeholder": "Enter serial no.",
+          "required": "Serial No. is required"
+        },
+        "productId": {
+          "label": "Product",
+          "placeholder": "Select product",
+          "required": "Product is required"
+        },
+        "storeId": {
+          "label": "Store",
+          "placeholder": "Select store",
+          "required": "Store is required"
+        },
+        "registerDate": {
+          "label": "Registered Date",
+          "required": "Registered is required"
+        },
+        "mfw": {
+          "label": "Manufacturing Warranty",
+          "required": "Manufacturing Warranty is required"
+        }
+      }
+    },
+    "stock": {
+      "name": "_ENTITY_ Stock",
+      "metrics": {
+        "available": "Available",
+        "status": "Status"
+      },
+      "list": {
+        "header": {
+          "serialNumber": "Code",
+          "createdAt": "Created Date",
+          "updatedAt": "Last Adjusted Date",
+          "action": "Action"
+        }
+      }
+    }
+  },
+  "forms": {
+    "email": "Email",
+    "password": "Password",
+    "username": "Username",
+    "name": "Name",
+    "landline": "Landline",
+    "phone": "Phone",
+    "address": "Address",
+    "required": "Required",
+    "invalid_email": "Invalid email"
+  },
+  "messages": {
+    "welcome_user": "Welcome {{name}}",
+    "items_count": "{{count}} items",
+    "last_updated": "Last updated {{date}}"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "completed": "Completed",
+    "failed": "Failed",
+    "status": "Status"
+  },
+  "errors": {
+    "not_found": "Page not found",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Forbidden",
+    "server_error": "Server error",
+    "network_error": "Network error",
+    "passwordsMismatch": "Passwords do not match!",
+    "readImageFailed": "Failed to read image file.",
+    "loadOrgData": "Failed to load required organization data. Please try again.",
+    "fetchUserFailed": "Failed to fetch user data.",
+    "unknownApi": "An unknown API error occurred.",
+    "submitFailed": "Failed to save data! Please try again.",
+    "invalidPassword": "Password must be at least 8 characters, 1 uppercase character, and 1 special character.",
+    "invalidEmail": "Please enter a valid email address.",
+    "invalidMobile": "Mobile phone number must be 10 digits.",
+    "invalidCitizenId": "National ID card number must be 13 digits.",
+    "invalidAge": "Age must be between 1 and 115 years old."
+  },
+  "buttons": {
+    "submit": "Submit",
+    "reset": "Reset",
+    "view_details": "View details",
+    "download": "Download"
+  },
+  "notifications": {
+    "new_message": "{{count}} new messages",
+    "update_available": "Update available"
+  },
+  "userform": {
+    "createUser": "Create User",
+    "editUser": "Edit User",
+    "viewUser": "View User",
+    "view": "View",
+    "home": "Home",
+    "userMgmt": "User Management",
+    "profile": "Profile",
+    "profilePhoto": "Profile Photo",
+    "changePhoto": "Change Photo",
+    "allowedTypes": "Allowed: JPG, PNG, GIF",
+    "orgInfo": "Organizational Info",
+    "department": "Department",
+    "command": "Command",
+    "station": "Station",
+    "role": "Role",
+    "selectRole": "Select Role",
+    "timestamps": "Record Timestamps",
+    "created": "Create",
+    "updated": "Update",
+    "by": "By",
+    "accountLogin": "Account & Login",
+    "username": "Username",
+    "displayName": "Display Name",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "pwdHint": "Password must be at least 7 characters, 1 uppercase letter, and 1 special character.",
+    "personal": "Personal Details",
+    "title": "Title",
+    "firstName": "First Name",
+    "middleName": "Middle Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "mobile": "Mobile No.",
+    "citizenId": "Citizen ID",
+    "dob": "Date of Birth",
+    "gender": "Gender",
+    "genderMale": "Male",
+    "genderFemale": "Female",
+    "genderOther": "Other",
+    "activity": "Activity",
+    "auditLog": "Audit Log",
+    "blood": "Blood Group",
+    "address": "Address",
+    "addressPlaceholderEn": "Enter full address",
+    "addressPlaceholderTh": "Enter full address",
+    "cancel": "Cancel",
+    "back": "Back",
+    "create": "Create User",
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "viewMode": "View Mode",
+    "switchToEdit": "Switch to Edit",
+    "na": "N/A",
+    "selectTitle": "Select Title",
+    "selectGender": "Select Gender",
+    "auditLogToggle": "Show Audit Log",
+    "auditLogDescription": "View your activity history",
+    "auditLogTitle": "Audit Log",
+    "cannotLoadUserData": "Cannot load user data",
+    "viewProfile": "View Profile",
+    "selectBlood": "Select Blood Group",
+    "selectDepartment": "Select Department",
+    "selectCommand": "Select Command",
+    "selectStation": "Select Station",
+    "loadingUserData": "Loading user data...",
+    "noUserData": "No user data available.",
+    "createSuccess": "User created successfully!",
+    "updateSuccess": "User updated successfully!",
+    "mobileFormat": "Format: 0XX-XXX-XXXX",
+    "citizenIdFormat": "Format: X-XXXX-XXXXX-XX-X",
+    "dobHint": "No future dates, max 115 years old",
+    "empId": "Employee ID",
+    "userType": "User Type",
+    "userTypeRegular": "Regular User",
+    "userTypeAdmin": "Admin User",
+    "userTypeSuperAdmin": "Super Admin",
+    "userTypeUnknown": "Unknown",
+    "resetPassword": "Reset Password",
+    "resetPasswordDescription": "Contact administrator or support to reset your password.",
+    "resetPasswordDescriptionForAdmin": "Enter email, username, and new password to reset.",
+    "resetPasswordContactEmail": "Email",
+    "resetPasswordContactPhone": "Phone",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "changePasswordDescription": "Enter your current password and new password to change your password.",
+    "newPassword": "New Password",
+    "enterCurrentPassword": "Enter current password",
+    "enterNewPassword": "Enter new password",
+    "confirmNewPassword": "Confirm new password",
+    "currentPasswordRequired": "Current password is required",
+    "newPasswordRequired": "New password is required",
+    "passwordMismatch": "Passwords do not match",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "samePassword": "New password must be different from current password",
+    "incorrectCurrentPassword": "Current password is incorrect",
+    "unauthorized": "Unauthorized access",
+    "resetPasswordError": "Unable to reset password",
+    "changePasswordError": "Unable to change password",
+    "resetPasswordSuccess": "Password reset successfully!",
+    "changePasswordSuccess": "Password changed successfully!",
+    "passwordResetSuccessToast": "Password has been reset successfully!",
+    "passwordChangeSuccessToast": "Password has been changed successfully!",
+    "passwordsMatch": "Passwords match",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordRequirementsNotMet": "Password does not meet requirements",
+    "userIdRequired": "User ID is required",
+    "resetPasswordFailed": "Failed to reset password",
+    "changePasswordFailed": "Failed to change password",
+    "resetting": "Resetting...",
+    "changing": "Changing...",
+    "passwordRequirements": "Password must be at least 8 characters, 1 uppercase letter, and 1 special character",
+    "passwordValidation": {
+      "minLength": "At least 8 characters",
+      "uppercase": "At least 1 uppercase letter",
+      "specialChar": "At least 1 special character"
+    },
+    "blood_type": {
+      "A": "A",
+      "B": "B",
+      "AB": "AB",
+      "O": "O"
+    },
+    "preferences": "Preferences",
+    "select_contact": "Select Contact.",
+    "specificForm": "Custom Form"
+  },
+  "breadcrumb": {
+    "home": "Home",
+    "system_configuration": "System Configuration",
+    "audit_log": "Audit Log"
+  },
+  "audit_log": {
+    "title": "Audit Log",
+    "user_activities": "User Activities",
+    "loading": "Loading...",
+    "search": "Search",
+    "search_placeholder": "Search by user, function, action...",
+    "search_data": "Search Data",
+    "refresh_data": "Refresh Data",
+    "filters": "Filters",
+    "date_time_range": "Date & Time Range",
+    "start_date": "Start Date/Time",
+    "end_date": "End Date/Time",
+    "username": "Username",
+    "function": "Function",
+    "action": "Action",
+    "status": "Status",
+    "message": "Message",
+    "all_users": "All Users",
+    "all_functions": "All Functions",
+    "all_actions": "All Actions",
+    "all_status": "All Status",
+    "success": "Success",
+    "failed": "Failed",
+    "warning": "Warning",
+    "unknown": "Unknown",
+    "clear_all": "Clear All",
+    "clear_filters": "Clear Filters",
+    "apply_filter": "Apply Filter",
+    "refresh": "Refresh",
+    "search_users": "Search users...",
+    "filters_cleared": "Filters cleared successfully",
+    "query_success": "Successfully loaded {{count}} records",
+    "audit_log_query_success": "Successfully loaded audit log {{count}} records",
+    "user_transaction": "User / Transaction / Time",
+    "time": "Time",
+    "loading_data": "Loading Data...",
+    "error": "Error",
+    "error_message": "Please check the console or try again later.",
+    "no_logs_found": "No Logs Found",
+    "no_logs_description": "No audit logs found for this user",
+    "showing_records": "Showing {{start}}-{{end}} of {{total}} records",
+    "transaction_id": "Transaction ID",
+    "duration": "Duration",
+    "invalid_username": "Invalid username provided",
+    "adjust_filters": "Try adjusting your filters.",
+    "rows_per_page": "Rows per page",
+    "show": "Show",
+    "showing": "Showing",
+    "of": "of",
+    "logs": "logs",
+    "previous": "Previous",
+    "next": "Next",
+    "log_details": "Log Details",
+    "full_message": "Full Message",
+    "old_data": "Old Data",
+    "new_data": "New Data",
+    "response_data": "Response Data",
+    "click_to_view_full": "Click to view full message",
+    "click_to_expand": "Click to expand",
+    "search_and_filter": "Search and filter system audit logs",
+    "logs_found": "logs found",
+    "records_found": "records found",
+    "entries": "entries",
+    "to": "to",
+    "user_activity_history": "User Activity History",
+    "total_activities": "Total Activities",
+    "avg_duration": "Average Duration",
+    "no_activities_found": "No activities found for this user",
+    "transaction_details": "Transaction Details",
+    "data_details": "Data Details",
+    "unique_id": "Unique ID",
+    "datetime": "Date & Time",
+    "main_function": "Main Function",
+    "all": "All",
+    "items": "items",
+    "result_data": "Result",
+    "basic_info": "Basic Information",
+    "org_id": "Organization ID",
+    "function_name": "Function Name",
+    "sub_function": "Sub Function"
+  },
+  "case": {
+    "display": {
+      "audit": "Audit",
+      "case_information": "Case Informantion",
+      "no": "No",
+      "types": "Types",
+      "select_types_placeholder": "Select CaseType",
+      "attach_file": "Attach File",
+      "service_center": "Service Center",
+      "select_service_center": "Select Service Center",
+      "area": "Event Area",
+      "area_placeholder": "Enter Location",
+      "location_coordinates": "Coordinates",
+      "geocode_failed": "Could not look up the address for that location",
+      "map_expand": "View larger map",
+      "map_basemap": "Map style",
+      "map_basemap_street": "Street",
+      "map_basemap_satellite": "Satellite",
+      "map_settings_theme": "Theme",
+      "map_settings_theme_light": "Light",
+      "map_settings_theme_dark": "Dark",
+      "map_settings_language": "Language",
+      "map_staff": "Staff",
+      "map_staff_hide": "Hide staff",
+      "map_staff_refresh": "Refresh staff positions",
+      "map_staff_refresh_wait": "Available in {{seconds}}s",
+      "map_staff_empty": "No staff with a known position",
+      "map_staff_error": "Could not load staff positions",
+      "map_staff_unmappable": "{{count}} staff have no reported position",
+      "map_staff_offline": "Offline",
+      "map_staff_close": "Close",
+      "map_staff_coordinates": "Coordinates",
+      "map_staff_last_update": "Position updated",
+      "map_staff_stale": "Outdated",
+      "map_staff_in_development": "In development",
+      "map_staff_group_title": "{{count}} staff here",
+      "map_staff_group_hint": "They are too close together to tell apart on the map. Pick one to see their details.",
+      "map_staff_group_back": "Back to the {{count}} staff here",
+      "map_staff_section_personal_info": "Personal Information",
+      "map_staff_section_personal_info_desc": "Contact details, unit, skills and organisation.",
+      "map_staff_section_tracking": "Real-Time Staff Tracking",
+      "map_staff_section_tracking_desc": "Live speed, direction, GPS accuracy and fix age for this staff member, updating as they report, plus the trail of where they have been since the layer was opened.",
+      "map_staff_section_routing": "Smart Routing Engine",
+      "map_staff_section_routing_desc": "Calculates and draws the best driving route from the responding unit to the incident.",
+      "map_staff_section_workflows": "Contextual Workflows",
+      "map_staff_section_workflows_desc": "Quick commands: review the case, assign this staff member, or cancel the assignment.",
+      "map_staff_section_eta_ttl": "ETA / TTL Dashboard",
+      "map_staff_section_eta_ttl_desc": "Live estimated time of arrival and time to arrive for the responding unit, adjusted for traffic.",
+      "map_staff_case_details_button": "View full case details",
+      "map_place": "Place",
+      "map_staff_assign_button": "Assign to this case",
+      "map_staff_assign_section_button": "Assign this staff member",
+      "map_staff_cancel_button": "Remove from this case",
+      "map_staff_cancel_section_button": "Cancel assignment",
+      "map_staff_assign_confirm_title": "Confirm assignment",
+      "map_staff_assign_confirm_message": "Assign {{name}} to case {{caseId}}?",
+      "map_staff_cancel_confirm_title": "Confirm removal",
+      "map_staff_cancel_confirm_message": "Remove {{name}} from case {{caseId}}? They return to the available pool.",
+      "map_staff_assign_description": "Dispatch this staff member to the open case using the SOP dispatch stage.",
+      "map_staff_cancel_description": "Withdraw this staff member from the open case.",
+      "map_staff_badge_current_case": "This case",
+      "map_staff_not_assigned_here": "Not assigned to this case yet",
+      "map_staff_other_cases": "Other active cases ({{count}})",
+      "map_staff_other_cases_pending": "Other cases are not available yet",
+      "map_staff_blocked_assign": "The current SOP stage does not allow dispatching",
+      "map_staff_blocked_cancel": "The current SOP stage does not allow removal",
+      "map_staff_submitting": "Sending command…",
+      "map_staff_route_calculate": "Calculate route",
+      "map_staff_route_recalculate": "Recalculate",
+      "map_staff_route_solving": "Calculating…",
+      "map_staff_route_none": "No route calculated yet",
+      "map_staff_route_distance": "Distance",
+      "map_staff_route_drive_time": "Drive time",
+      "map_staff_route_eta": "Estimated arrival",
+      "map_staff_route_ttl": "Time to arrive",
+      "map_staff_route_overdue": "Overdue",
+      "map_staff_route_stale_caveat": "Based on an outdated position - actual route may differ.",
+      "map_staff_route_km": "{{km}} km",
+      "map_staff_route_minutes": "{{minutes}} min",
+      "map_staff_route_err_no_case": "This case has no mappable location",
+      "map_staff_route_err_no_staff": "This staff member has no mappable position",
+      "map_staff_route_err_failed": "Could not calculate the route. Try again.",
+      "map_staff_route_err_metrics": "The route service did not return distance or time. Try again.",
+      "map_staff_tracking_speed": "Speed",
+      "map_staff_tracking_speed_value": "{{speed}} km/h",
+      "map_staff_tracking_stopped": "Not moving",
+      "map_staff_tracking_heading": "Heading",
+      "map_staff_tracking_heading_stopped": "Shown only while the unit is moving",
+      "map_staff_tracking_bearing_value": "{{compass}} {{degrees}}°",
+      "map_staff_tracking_accuracy": "GPS accuracy",
+      "map_staff_tracking_accuracy_value": "±{{meters}} m",
+      "map_staff_tracking_fix_age": "GPS fix taken",
+      "map_staff_tracking_none": "This staff member reported no speed, heading or accuracy with their position.",
+      "map_staff_tracking_trail_show": "Show movement trail",
+      "map_staff_tracking_trail_hide": "Hide movement trail",
+      "map_staff_tracking_trail_empty": "No movement recorded yet. The trail builds up while the staff layer is open.",
+      "map_staff_tracking_trail_caveat": "Where this staff member has been since the staff layer was opened. Not a saved history — it starts over when the page is reloaded.",
+      "map_staff_compass_n": "N",
+      "map_staff_compass_ne": "NE",
+      "map_staff_compass_e": "E",
+      "map_staff_compass_se": "SE",
+      "map_staff_compass_s": "S",
+      "map_staff_compass_sw": "SW",
+      "map_staff_compass_w": "W",
+      "map_staff_compass_nw": "NW",
+      "map_boundary": "Boundaries",
+      "map_boundary_levels": "Layers",
+      "map_boundary_error": "Could not load administrative boundaries",
+      "map_boundary_province": "Province",
+      "map_boundary_district": "District",
+      "map_boundary_subdistrict": "Sub-district",
+      "map_boundary_province_short": "Prov",
+      "map_boundary_district_short": "Dist",
+      "map_boundary_subdistrict_short": "Sub",
+      "map_boundary_apply": "Apply",
+      "map_boundary_cancel": "Cancel",
+      "map_boundary_close": "Close",
+      "map_boundary_select_all": "All",
+      "map_boundary_clear": "None",
+      "map_boundary_search": "Search areas",
+      "map_boundary_loading": "Loading areas…",
+      "map_boundary_pending": "Apply to update the map",
+      "map_boundary_applied": "Showing on the map",
+      "map_boundary_no_match": "No areas match",
+      "map_boundary_no_parent": "Select a parent area first",
+      "contact": "Contact",
+      "phone_number": "Phone Number",
+      "phone_number_placeholder": "Enter Phone Number",
+      "contact_method": "Contact Method",
+      "contact_method_placeholder": "Select Contact Method",
+      "iot_device": "IoT Device",
+      "iot_device_placeholde": "IoT Device ID",
+      "iot_alert_date": "IoT Alert Date",
+      "case_detail": "Case Details",
+      "case_detail_placeholder": "Enter Case Details",
+      "detail": "Detail",
+      "result": "Result",
+      "result_placeholder": "Select Result",
+      "result_detail_placeholder": "Result Details",
+      "cancel_case": "Cancel",
+      "cancel": "Cancel",
+      "close_case": "Close Case",
+      "request_schedule_date": "Request Schedule Date",
+      "save_change": "Save Changes",
+      "save_as_draft": "Save As Draft",
+      "submit": "Submit",
+      "Assigned Officer": "Assigned Officer",
+      "Assigned Officers": "Assigned Officers",
+      "schedule_placeholder": "mm/dd/yyyy",
+      "schedule_placeholder_time": "mm/dd/yyyy hh:mm",
+      "updateAt": "Update At",
+      "updateBy": "Update By",
+      "edit": "Edit",
+      "cancel_case_detail": "Confirm to cancel this case?",
+      "cancel_case_title": "Cancel Case",
+      "close_case_detail": "Confirm to close this case?",
+      "close_case_title": "Close Case",
+      "cancel_case_assignment_title": "Cancel Assignment",
+      "cancel_case_assignment_detail": "Confirm to cancel the assignment for",
+      "advance_filtering": {
+        "title": "Advanced filtering",
+        "search_case_type_place_holder": "Search by case type...",
+        "search_detail": "Search for details",
+        "search_detail_placeholder": "Search for details...",
+        "start_date_title": "Start date",
+        "end_date_title": "End date",
+        "status_title": "Status",
+        "status_placeholder_all": "All statuses",
+        "create_by_tilte": "Created by",
+        "create_by_tilte_placeholder": "Created by...",
+        "phone": "Phone Number",
+        "phone_number_placeholder": "Enter Phone Number..."
+      },
+      "toast": {
+        "close_case_success": "Close Case Success.",
+        "close_case_fail": "Close Case fail.",
+        "cancel_case_success": "Cancel Case Success.",
+        "cancel_case_fail": "Cancel Case fail.",
+        "cancel_unit_success": "Cancel Officer Success.",
+        "cancel_unit_fail": "Cancel Officer fail.",
+        "save_change_sucess": "Update Case Success.",
+        "save_change_fail": "Update Case fail.",
+        "dispatch_success": "Dispatch Success.",
+        "dispatch_fail": "Dispatch fail.",
+        "add_case_success": "Add Case Success.",
+        "savedaft_success": "SaveDraft Success.",
+        "add_case_fail": "Add Case fail.",
+        "savedaft_fail": "SaveDraft fail.",
+        "missing_close_case_data": "Missing Close Details Data.",
+        "upload_file_success": "Upload file Success.",
+        "upload_file_fail": "Upload file fail.",
+        "loading_case": "Loading Case.",
+        "loading_case_success": "Loading Case Successfully.",
+        "loading_case_fail": "Loading Case Failed."
+      }
+    },
+    "sop_card": {
+      "comment": "Comment",
+      "edit": "Edit",
+      "cancel_edit": "Cancel Edit",
+      "attach_file": "Attach File",
+      "assign_officer": "Assign Officer",
+      "created": "Created",
+      "create_date": "Create Date",
+      "High Priority": "High Priority",
+      "Critical Priority": "Critical Priority",
+      "Medium Priority": "Medium Priority",
+      "Low Priority": "Low Priority",
+      "send_activity": "Comment",
+      "fail_send_activity": "Failed to add comment. Please try again.",
+      "due": "Due",
+      "comment_modal_title": "History",
+      "request_spare_part": "Request Spare Part",
+      "no_comment": "No Comment"
+    },
+    "assignment": {
+      "case_type": "Case Type",
+      "area": "Location",
+      "status": "Status",
+      "piority": "Piority",
+      "create_by": "Create By",
+      "create_date": "Create Date",
+      "kanban": "kanban",
+      "list": "List",
+      "pageheader": "Cases",
+      "search_placeholder": "Search Cases...",
+      "advance_filter": "Advacnce Filtering",
+      "add_new_case": "Add New Case",
+      "clear": "Clear",
+      "apply_filter": "Apply Filters"
+    },
+    "assign_officer_modal": {
+      "title": "Assign Officers to Case",
+      "search_placeholder": "Search officers by name, department, or service...",
+      "recommend_button": "Recommend By Skills",
+      "allofficer_button": "All Officers",
+      "area": "Area",
+      "status": "Status",
+      "name": "Name",
+      "skills": "Skills",
+      "workloads": "Work Loads",
+      "no_officer": "No officers available",
+      "not_match_officer": "No officers match your search",
+      "assign_button": "Assign Selected Officers",
+      "select": "Selected",
+      "officer": "officer",
+      "end_of_action": "Done"
+    },
+    "officer_detail": {
+      "personal_title": "Personal Details",
+      "assignee_title": "Assignee Details",
+      "fullname": "FULL NAME",
+      "username": "USERNAME",
+      "mobile_number": "Mobile Number",
+      "email": "EMAIL",
+      "service_title": "Service Details",
+      "vehicle": "Unit ID",
+      "address": "Address",
+      "service_progress_title": "Service Progress"
+    },
+    "back": "Back",
+    "dnd_text_des": "Drag and drop files here, or click to select",
+    "dnd_text_des_on_over": "Drop files here",
+    "supports": "Supports",
+    "images": "Images",
+    "max": "max",
+    "each": "each",
+    "download": "Download",
+    "status_allcase": "All Cases",
+    "panel": {
+      "device_info": "Device Info",
+      "device_type": "Device Type",
+      "device_model": "Model",
+      "service_history": "Service History",
+      "details_panel": "View Details Panel",
+      "brand": "Brand",
+      "iot_device_serial_number": "Serial Number",
+      "iot_device_name": "Device Name",
+      "customer_search": "Search customer.",
+      "appointmentType_search": "Search Appointment Type.",
+      "serviceType_search": "Search Service Type.",
+      "unlink_confirm_description": "This will remove the customer link from this case. The case's contact number will be kept."
+    }
+  },
+  "time": {
+    "s": "s",
+    "m": "m",
+    "h": "h",
+    "d": "d",
+    "y": "y",
+    "OVERDUE": "OVERDUE",
+    "TIMEREMAINING": "TIME REMAINING",
+    "Hours": "Hours",
+    "Minutes": "Minutes",
+    "Seconds": "Seconds",
+    "Years": "Years",
+    "Months": "Months",
+    "Days": "Days",
+    "Overdue": "Overdue"
+  },
+  "progress": {
+    "sla": "SLA",
+    "actual": "Actual",
+    "overdue_by": "Overdue",
+    "faster_by": "Faster by",
+    "in_progress": "In Progress",
+    "pending": "Pending",
+    "no_sla": "No SLA defined",
+    "used": "been used",
+    "completed_progress": "Completion Rate",
+    "total_sla": "Total SLA"
+  },
+  "form_builder": {
+    "create": "Create Form",
+    "form_management": "Form Management",
+    "form_not_found": "Form Not Found",
+    "desc_filter_not_found": "Try adjusting your filters or search terms",
+    "confirm_publish": "Are you sure you want to publish this form?",
+    "confirm_unpublish": "Are you sure you want to unpublish this form?",
+    "remove_workflow": "This form is currently in use. Please remove it from the workflows below before unpublishing.",
+    "export_form": "Export Form",
+    "export_description": "Download this form as a JSON file",
+    "form_name": "Form Name",
+    "import_form": "Import Form",
+    "import_description": "Upload a JSON file to import form configuration",
+    "select_file": "Select JSON File",
+    "selected_file": "Selected File",
+    "file_size": "Size",
+    "invalid_file_type": "Please select a valid JSON file",
+    "invalid_import_data": "Invalid form data",
+    "import_success": "Form imported successfully",
+    "import_error": "Error importing form"
+  },
+  "dynamicForm": {
+    "pageTitle": "Dynamic Form Builder",
+    "saveDrafts": "Save Drafts",
+    "saveChange": "Save Change",
+    "saveForm": "Save Form",
+    "preview": {
+      "noFields": "No fields added yet. Click \"Edit\" to start adding.",
+      "versionPrefix": "v."
+    },
+    "toasts": {
+      "noFormName": "Please enter a form name.",
+      "noFields": "There are no elements in the form.",
+      "somethingWentWrong": "Something went wrong.",
+      "unexpectedError": "An unexpected error occurred.",
+      "correctErrors": "Please correct the errors before submitting.",
+      "draftLoaded": "Draft loaded successfully:",
+      "noDraftFound": "No draft found in localStorage.",
+      "parseDraftError": "Failed to parse draft from localStorage:",
+      "moveBetweenGroupsNotAllowed": "Moving items between different groups is not allowed."
+    }
+  },
+  "formEdit": {
+    "confirmPublish": {
+      "title": "Confirm Publish?",
+      "description": "Confirm Publish?"
+    },
+    "formSettings": {
+      "title": "Form Settings",
+      "formNameLabel": "Form Name:",
+      "formNamePlaceholder": "Enter form name",
+      "formIdLabel": "Form ID:",
+      "formIdPlaceholder": "Enter unique form ID",
+      "version": "Version :",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "gridColumns": "Desktop Grid Columns:",
+      "formType": "Form Type"
+    },
+    "layoutEditor": {
+      "title": "Form Layout Editor",
+      "hideAll": "Hide All",
+      "showAll": "Show All",
+      "noFields": "No fields added yet. Use the buttons above to add new fields."
+    },
+    "settingsModal": {
+      "title": "Settings for:",
+      "fieldType": "Field Type:",
+      "saveButton": "Save Rules",
+      "unsupportedRule": "Unsupported rule: {ruleName}"
+    },
+    "rules": {
+      "searchCountries": "Search countries...",
+      "minLength": "Min Length:",
+      "maxLength": "Max Length:",
+      "minnumber": "Min number:",
+      "maxnumber": "Max number:",
+      "minSelections": "Min Selections:",
+      "maxSelections": "Max Selections:",
+      "maxFileSize": "Max File Size (MB):",
+      "minFiles": "Min Files:",
+      "maxFiles": "Max Files:",
+      "contain": "Contain:",
+      "allowedCountries": "Allowed Countries:",
+      "allowedFileTypes": "Allowed File Types:",
+      "minLocalDate": "Min Local Date:",
+      "maxLocalDate": "Max Local Date:",
+      "minDate": "Min Date:",
+      "maxDate": "Max Date:",
+      "validEmailFormat": "Valid Email Format",
+      "hasUppercase": "Has Uppercase",
+      "hasLowercase": "Has Lowercase",
+      "hasNumber": "Has Number",
+      "hasSpecialChar": "Has Special Char",
+      "noWhitespace": "No Whitespace",
+      "futureDateOnly": "Future Date Only",
+      "pastDateOnly": "Past Date Only"
+    }
+  },
+  "formElement": {
+    "dragHandleTitle": "Drag to reorder",
+    "form_elements": "Form Elements",
+    "removeFieldTitle": "Remove field",
+    "toggleVisibility": "Toggle visibility",
+    "showLabel": "Show Label",
+    "labelText": "Label Text:",
+    "labelPlaceholder": "Edit field label",
+    "idLabel": "ID:",
+    "idPlaceholder": "Edit field id",
+    "idTitle": "Edit Field ID",
+    "placeholderLabel": "Placeholder:",
+    "placeholderPlaceholder": "Edit field placeholder",
+    "placeholderTitle": "Edit Field Placeholder",
+    "required": "Required",
+    "enableSearch": "Enable Search",
+    "containsPersonalData": "Contains personal data",
+    "piiStrategy": {
+      "lastN": "Last 4 digits",
+      "email": "Email format",
+      "yearOnly": "Year only",
+      "full": "Fully hidden"
+    },
+    "gridColumns": "Desktop Grid Columns:",
+    "columnSpan": "Desktop Column Span:",
+    "newOption": "New option",
+    "groupedFields": "Grouped Fields",
+    "formForOption": "Form for \"{optionValue}\""
+  },
+  "formType": {
+    "textInput": "Text",
+    "numberInput": "Number",
+    "textAreaInput": "Text Area",
+    "emailInput": "Email",
+    "multiCheckbox": "Multi-Checkbox",
+    "singleSelect": "Single-Select",
+    "image": "Image",
+    "dndImage": "DnD Image",
+    "multiImage": "Multi-Image",
+    "dndMultiImage": "DnD Multi-Image",
+    "passwordInput": "Password",
+    "date": "Date",
+    "dateTime": "Date & Time",
+    "radio": "Radio",
+    "group": "Group",
+    "dynamicField": "Dynamic Field",
+    "phoneNumber": "Phone Number"
+  },
+  "formViewer": {
+    "emptyValue": "-",
+    "noImageUploaded": "No image uploaded",
+    "noImagesUploaded": "No images uploaded",
+    "emptyGroup": "No fields in this group.",
+    "dynamicFieldDetails": "Details for \"{{value}}\"",
+    "unsupportedFieldType": "Unsupported field type: {{type}}"
+  },
+  "customer": {
+    "social": {
+      "already_in_list": "This {{channel}} account is already in the list below.",
+      "already_linked_other": "This {{channel}} account is already linked to another customer.",
+      "partial_attach": "The customer was saved, but {{count}} contact channel(s) could not be linked. Add them from the customer's profile.",
+      "attach_needs_profile": "The customer was saved, but the contact channels could not be linked automatically. Add them from the customer's profile.",
+      "link_title": "Link Contact Channel",
+      "link_to_customer": "Link to this customer",
+      "search_owner": "Choose the customer this account belongs to",
+      "conflict_owner": "Already linked to {{owner}}",
+      "identity_required": "Enter the account ID first.",
+      "channels": "Contact Channels",
+      "primary": "Primary",
+      "empty": "No contact channels yet",
+      "partial_index": "The channel list may be incomplete — some linked accounts could not be loaded.",
+      "channel": "Channel",
+      "account_id": "Account ID",
+      "account_name": "Account Name",
+      "photo_url": "Photo URL",
+      "email_hint": "Saved to the customer's email only if they do not already have one.",
+      "add": "Add Contact Channel",
+      "link": "Link Account",
+      "unlink": "Unlink",
+      "unlink_title": "Unlink Account",
+      "unlink_description": "This account will be permanently unlinked from this customer. This cannot be undone.",
+      "linked": "Account linked",
+      "updated": "Account updated",
+      "unlinked": "Account unlinked",
+      "save_failed": "Could not save the account",
+      "unlink_failed": "Could not unlink the account",
+      "already_linked_here": "This {{channel}} account is already linked to this customer.",
+      "already_linked_elsewhere": "This {{channel}} account is already linked to {{owner}}.",
+      "email_not_saved": "The channel was linked, but the email could not be saved.",
+      "provider": {
+        "line": "LINE",
+        "facebook": "Facebook",
+        "textchat": "Text Chat",
+        "phone": "Phone",
+        "email": "Email"
+      },
+      "idLabel": {
+        "line": "LINE User ID",
+        "facebook": "Facebook ID",
+        "textchat": "Chat ID",
+        "phone": "Phone Number",
+        "email": "Email Address"
+      },
+      "idHint": {
+        "line": "The LINE user ID, not the @handle",
+        "facebook": "The Facebook page-scoped user ID",
+        "textchat": "The web chat visitor ID",
+        "phone": "An additional phone number for this customer",
+        "email": "An additional email address for this customer"
+      }
+    },
+    "userType": {
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "platinum": "Platinum"
+    },
+    "searchPlaceHolder": "Search Name,Mobile Number,Email",
+    "info": "Customer Information",
+    "note": {
+      "title": "Internal Notes",
+      "add": "Add Internal Note",
+      "save": "Save Note",
+      "saving": "Saving...",
+      "placeholder": "Add a note about this customer...",
+      "category": "Categories",
+      "empty": "No notes yet",
+      "edited": "edited",
+      "created": "Note added",
+      "updated": "Note updated",
+      "deleted": "Note deleted",
+      "load_failed": "Could not load notes",
+      "save_failed": "Could not save the note",
+      "delete_failed": "Could not delete the note",
+      "delete_title": "Delete Note",
+      "delete_description": "This note will be permanently deleted. This cannot be undone.",
+      "categories": {
+        "general": "General",
+        "billing": "Billing",
+        "support": "Support",
+        "sales": "Sales"
+      }
+    }
+  },
+  "report": {
+    "1": "1.Service Summary Report",
+    "1_1": "1.1 Daily Service Summary Report",
+    "1_2": "1.2 Monthly Service Summary Report",
+    "1_3": "1.3 Service Comparison Report by Day",
+    "1_4": "1.4 Service Comparison Report by Month",
+    "2": "2.Service Detail Report",
+    "2_1": "2.1 Service Data Detail Report",
+    "2_2": "2.2 Service Summary Report Classified by Service Type",
+    "2_3": "2.3 Service Summary Report Classified by Service Outcome",
+    "2_4": "2.4 Service Detail Report and Service Location",
+    "group": {
+      "case": "Case Report",
+      "order": "Order Report"
+    },
+    "order": {
+      "1": "1.Order Summary Report",
+      "1_1": "1.1 Daily Order Summary Report",
+      "1_2": "1.2 Product Summary Report",
+      "1_3": "1.3 Parts Summary Report",
+      "2": "2.Order Detail Report",
+      "2_1": "2.1 Order Detail Information Report",
+      "2_2": "2.2 Parts/Component Requisition Summary Report",
+      "2_3": "2.3 Top 10 Sales Report"
+    }
+  },
+  "form_manager": {
+    "confirm_publish": "Do you want to publish this form?",
+    "confirm_unpublish": "Do you want to unpublish this form?",
+    "delete_form_desc": "Do you want to Delete this form?"
+  },
+  "toast": {
+    "delete_form_success": "Delete Form Successfully."
+  },
+  "apiSetUp": {
+    "fetchcaseTypeFail": "Failed to load case type data",
+    "fetchDeptCommandStationFail": "Failed to load department data",
+    "fetchCaseStatusFail": "Failed to load case status data",
+    "fetchCaseResultFail": "Failed to load case result data",
+    "fetchUnitStatusFail": "Failed to load unit status data",
+    "fetchAreaFail": "Failed to load responsible area data"
+  },
+  "address": {
+    "no": "House No.",
+    "room": "Room",
+    "floor": "Floor",
+    "building": "Building",
+    "street": "Street/Road",
+    "subDistrict": "Sub-district",
+    "district": "District",
+    "province": "Province",
+    "postalCode": "Postal Code",
+    "country": "Country",
+    "sameAsRegistered": "Same As Registered",
+    "currentAddress": "Current Address",
+    "registered": "Registered Address"
+  },
+  "input": {
+    "notEnterEmailError": "Please enter an email address",
+    "invalidEmailError": "Invalid email format",
+    "notEnterMobileNumberError": "Please enter a mobile number",
+    "notEnterPhoneNumberError": "Please enter a phone number",
+    "invalidMobileNumberInput": "Invalid mobile number",
+    "notEnterSpecifyForm": "Please enter Custom Form Data"
+  },
+  "appointment": {
+    "searchPlaceHolder": "Search by customer name, phone, product, service, or notes",
+    "pending": "Pending",
+    "upcoming": "Upcoming",
+    "delete_warning": "Are you sure you want to delete this appointment?"
+  },
+  "customerProduct": {
+    "haveWarranty": "Active",
+    "endOfWarranty": "Inactive"
+  },
+  "customerConfigure": {
+    "pageTitle": "Customer Form Configuration",
+    "subtitle": "Choose which fields to display in the customer creation form",
+    "saveConfig": "Save Configuration",
+    "saving": "Saving...",
+    "saveSuccess": "Configuration saved successfully",
+    "saveError": "Failed to save configuration",
+    "personalDetails": "Personal Details",
+    "personalDetailsDesc": "Basic personal information fields",
+    "contactPreferences": "Contact & Preferences",
+    "contactPreferencesDesc": "Contact channels and user preferences",
+    "registeredAddress": "Registered Address",
+    "registeredAddressDesc": "Home or registered address fields",
+    "currentAddress": "Current Address",
+    "currentAddressDesc": "Current living address fields",
+    "fields": {
+      "social": "Contact Channels",
+      "title": "Title",
+      "firstName": "First Name",
+      "middleName": "Middle Name",
+      "lastName": "Last Name",
+      "displayName": "Display Name",
+      "citizenId": "Citizen ID",
+      "dob": "Date of Birth",
+      "blood": "Blood Type",
+      "gender": "Gender",
+      "photo": "Profile Photo",
+      "userType": "User Type",
+      "languagePreference": "Language Preference",
+      "contractPreference": "Contact Preference",
+      "note": "Note",
+      "dynamicForm": "Custom Form",
+      "no": "House No.",
+      "room": "Room",
+      "floor": "Floor",
+      "building": "Building",
+      "street": "Street",
+      "subDistrict": "Sub-district",
+      "district": "District",
+      "province": "Province",
+      "postalCode": "Postal Code",
+      "country": "Country",
+      "road": "Road",
+      "lat": "Latitude",
+      "lon": "Longitude"
+    }
+  },
+  "requestSparePart": {
+    "pleaseSelectBrand": "Please select a brand",
+    "pleaseSelectProduct": "Please select a product",
+    "skipProduct": "Skip (no product)",
+    "pleaseSelectSparePart": "Please select a spare part",
+    "requestSparePart": "Add to Order",
+    "createOrder": "Create Order",
+    "orderCreated": "Order created successfully!",
+    "orderFailed": "Failed to create order"
+  },
+  "productDashboard": {
+    "header": {
+      "title": "Product Management Dashboard",
+      "subtitle": "Overview of products, services, inventory, requests, and customer operations."
+    },
+    "metrics": {
+      "fromLastMonth": "From last month",
+      "titles": {
+        "product": "Product",
+        "sparePart": "Spare Part",
+        "ordering": "Ordering",
+        "pending": "Pending"
+      }
+    },
+    "moduleOverview": {
+      "title": "Overview",
+      "subtitle": "Platform Capabilities",
+      "activeRecords": "Active records",
+      "titles": {
+        "productStock": "Product Stock",
+        "sparePartStock": "Spare Part Stock",
+        "customers": "Customers",
+        "appointments": "Appointments"
+      }
+    },
+    "topOrdered": {
+      "title": "Top Ordered",
+      "subtitle": "Most ordered spare parts this month",
+      "orderedTimes": "Ordered {{count}} times",
+      "unitPrice": "Unit price"
+    },
+    "inventoryAlert": {
+      "title": "Inventory Alert",
+      "subtitle": "Low stock and pending requests",
+      "partsBelowMinimum": "{{count}} spare parts below minimum stock level",
+      "purchaseRequestsWaiting": "{{count}} purchase requests waiting for approval"
+    },
+    "revenue": {
+      "title": "Estimated Revenue",
+      "subtitle": "Monthly operational revenue",
+      "thisMonth": "This Month",
+      "products": "Products"
+    }
+  },
+  "knowledge": {
+    "dashboard": {
+      "page": {
+        "title": "Knowledge Base Dashboard",
+        "metaTitle": "Knowledge Dashboard",
+        "metaDescription": "Knowledge base dashboard with per-block API wiring, mock switching, translations, and dark mode.",
+        "subtitle": "Track content health, discover search demand, and surface articles that need attention.",
+        "badge": "Mock data preview",
+        "syncLabel": "Last sync",
+        "theme": "Theme",
+        "sourceTitle": "Data source"
+      },
+      "summary": {
+        "coverage": "Coverage score",
+        "health": "Content health",
+        "searches": "Search demand",
+        "sla": "Response SLA"
+      },
+      "metrics": {
+        "published": {
+          "title": "Articles Published",
+          "description": "Total visible knowledge base articles"
+        },
+        "approved": {
+          "title": "Approved",
+          "description": "Articles approved and ready for publishing workflow"
+        },
+        "submitted": {
+          "title": "Submitted",
+          "description": "Articles or requests submitted into the review flow"
+        },
+        "expiringSoon": {
+          "title": "Expiring Soon",
+          "description": "Articles approaching the expiry window and needing review"
+        },
+        "expired": {
+          "title": "Expired",
+          "description": "Articles that already passed the expiry threshold"
+        },
+        "totalViews": {
+          "title": "Total Views",
+          "description": "All article views captured in the selected period"
+        },
+        "activeUsers": {
+          "title": "Active Users",
+          "description": "Editors and reviewers active in the workspace"
+        },
+        "avgRating": {
+          "title": "AVG Rating",
+          "description": "Reader sentiment from recent article feedback"
+        }
+      },
+      "sections": {
+        "metrics": {
+          "title": "Overview metrics",
+          "description": "Core KPIs from the current knowledge base workspace"
+        },
+        "trend": {
+          "title": "Views Trend",
+          "description": "Monthly article traffic across the knowledge base"
+        },
+        "categories": {
+          "title": "Top 5 Category For This Week",
+          "description": "Weekly category ranking by article traffic share"
+        },
+        "searches": {
+          "title": "Top Search For This Week",
+          "description": "Most searched keywords in the current week"
+        },
+        "articles": {
+          "title": "Top Articles / Latest / Popular",
+          "description": "Top article list ordered for the current dashboard view",
+          "top": "Top",
+          "latest": "Latest",
+          "popular": "Popular"
+        },
+        "activity": {
+          "title": "Low Rating Articles",
+          "description": "Recent publishing and review activity"
+        },
+        "lowScore": {
+          "title": "Low Average Score Articles",
+          "description": "Articles with below-average reader ratings — flagged for content review and improvement."
+        },
+        "lowView": {
+          "title": "Low Viewer Articles",
+          "description": "Articles with the fewest views — consider improving titles, links, or discoverability."
+        }
+      },
+      "labels": {
+        "vsLastPeriod": "vs last period",
+        "share": "share",
+        "hits": "hits",
+        "views": "views",
+        "likes": "likes",
+        "bookmarks": "bookmarks",
+        "avgScore": "Avg Score",
+        "updated": "Updated",
+        "articles": "articles",
+        "loading": "Loading dashboard...",
+        "loadFailed": "Unable to load dashboard data.",
+        "apiPath": "API path",
+        "source": "Source",
+        "mock": "Mock",
+        "api": "API",
+        "noData": "No data available"
+      },
+      "buttons": {
+        "refresh": "Refresh",
+        "refreshing": "Refreshing..."
+      },
+      "status": {
+        "published": "Published",
+        "review": "In review",
+        "draft": "Draft"
+      },
+      "content": {
+        "categories": {
+          "getting-started": {
+            "label": "Getting Started"
+          },
+          "troubleshooting": {
+            "label": "Troubleshooting"
+          },
+          "billing": {
+            "label": "Billing"
+          },
+          "automation": {
+            "label": "Automation"
+          },
+          "security": {
+            "label": "Security"
+          }
+        },
+        "searches": {
+          "sso": {
+            "label": "SSO login"
+          },
+          "reset-password": {
+            "label": "Reset password"
+          },
+          "workflow": {
+            "label": "Approval workflow"
+          },
+          "mobile-app": {
+            "label": "Mobile app setup"
+          },
+          "permissions": {
+            "label": "Role permission"
+          }
+        },
+        "articles": {
+          "kb-101": {
+            "title": "Configure SSO and domain mapping"
+          },
+          "kb-204": {
+            "title": "Troubleshoot intermittent agent disconnects"
+          },
+          "kb-331": {
+            "title": "Set up article approval rules by team"
+          }
+        },
+        "activity": {
+          "act-1": {
+            "title": "Billing onboarding guide updated",
+            "detail": "Reviewed by Support Enablement and republished to production.",
+            "at": "12 min ago"
+          },
+          "act-2": {
+            "title": "Permission matrix article awaiting approval",
+            "detail": "Waiting for final legal review before publication.",
+            "at": "48 min ago"
+          },
+          "act-3": {
+            "title": "Search intent cluster regenerated",
+            "detail": "Top search keywords recalculated from the latest weekly traffic.",
+            "at": "1 hr ago"
+          }
+        }
+      }
+    },
+    "broadcast": {
+      "page": {
+        "title": "Broadcast Manager",
+        "metaTitle": "Broadcast Manager | TailAdmin",
+        "metaDescription": "Broadcast manager page with summary filters, list block, mock data, and per-block API wiring.",
+        "subtitle": "Manage announcement broadcasts, review status distribution, and monitor active schedules from one workspace."
+      },
+      "sections": {
+        "summary": {
+          "title": "Status Overview",
+          "description": "Quick filters for each broadcast state"
+        },
+        "list": {
+          "title": "Broadcast",
+          "description": "Showing broadcasts for {{status}}"
+        },
+        "log": {
+          "title": "Broadcast History",
+          "description": "{{total}} total records across all announcements"
+        }
+      },
+      "labels": {
+        "loading": "Loading broadcast data...",
+        "loadingNotice": "Loading notice from API...",
+        "loadFailed": "Unable to load broadcast data.",
+        "loadNoticeFailed": "Unable to load notice from API.",
+        "empty": "No broadcasts found for this filter.",
+        "noResults": "No results match your search.",
+        "alertDetail": "Alert Detail",
+        "entryNotice": "First Visit Notice",
+        "noticeAcknowledgement": "This acknowledgement is stored in your browser. You will be prompted again when new broadcasts are available.",
+        "message": "Message",
+        "status": "Status",
+        "dateRange": "Date Range",
+        "apiPath": "API path",
+        "source": "Source",
+        "mock": "Mock",
+        "api": "API",
+        "topic": " topics",
+        "title": "Notice Items",
+        "continuing": "to review before continuing."
+      },
+      "buttons": {
+        "add": "Add Broadcast",
+        "accept": "Accept and continue",
+        "edit": "Edit broadcast",
+        "delete": "Delete broadcast",
+        "retry": "Retry",
+        "cancel": "Cancel",
+        "create": "Create Broadcast",
+        "update": "Save Changes",
+        "saving": "Saving...",
+        "refresh": "Refresh",
+        "refreshing": "Refreshing..."
+      },
+      "form": {
+        "createTitle": "Create Broadcast",
+        "editTitle": "Edit Broadcast",
+        "description": "Configure title, status, and active dates for the broadcast message.",
+        "title": "Broadcast title",
+        "message": "Message",
+        "status": "Status",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "validationTitle": "Please enter a title",
+        "validationMessage": "Please enter a message",
+        "validationStartDate": "Please select a start date",
+        "validationEndDate": "Please select an end date",
+        "validationStartDateRequired": "Please select a start date to pair with the end date",
+        "validationEndDateRequired": "Please select an end date to pair with the start date",
+        "validationDateOrder": "End date must be the same day or later than start date"
+      },
+      "confirm": {
+        "delete": "Delete \"{{title}}\"?",
+        "deleteDescription": "This action cannot be undone."
+      },
+      "toast": {
+        "createSuccess": "Broadcast created successfully.",
+        "createError": "Unable to create the broadcast.",
+        "updateSuccess": "Broadcast updated successfully.",
+        "updateError": "Unable to update the broadcast.",
+        "deleteSuccess": "Broadcast deleted successfully.",
+        "deleteError": "Unable to delete the broadcast."
+      },
+      "status": {
+        "all": "All",
+        "scheduled": "Scheduled",
+        "published": "Published",
+        "expired": "Expired",
+        "draft": "Draft"
+      },
+      "content": {
+        "items": {
+          "bc-001": {
+            "title": "Check validation involves making sure all your tags are properly closed and nested.",
+            "message": "Check validation involves making sure all your tags are properly closed and nested before publishing the broadcast to users."
+          },
+          "bc-002": {
+            "title": "Confirm recipient segment before scheduling.",
+            "message": "Confirm the audience segment before scheduling the broadcast for the next release window."
+          },
+          "bc-003": {
+            "title": "Review links and attachments.",
+            "message": "Review all outbound links and attachments to avoid broken references in the final announcement."
+          },
+          "bc-004": {
+            "title": "Platform release notice for the next scheduled maintenance window.",
+            "message": "Platform release notice for the next scheduled maintenance window."
+          },
+          "bc-005": {
+            "title": "Broadcast campaign ended after the December knowledge push.",
+            "message": "Broadcast campaign ended after the December knowledge push."
+          },
+          "bc-006": {
+            "title": "Draft reminder for editors to review unpublished announcements.",
+            "message": "Draft reminder for editors to review unpublished announcements."
+          }
+        }
+      },
+      "pageLog": {
+        "eyebrow": "Broadcast",
+        "title": "Broadcast History",
+        "metaTitle": "Broadcast History | TailAdmin",
+        "metaDescription": "Review all historical broadcast announcements sent across all channels.",
+        "subtitle": "Browse and review all historical broadcast announcements that have been sent, scheduled, or recorded across all channels."
+      },
+      "log": {
+        "searchPlaceholder": "Search by title or message...",
+        "publishedAt": "Published At",
+        "audience": "Audience",
+        "startDate": "Start Date",
+        "endDate": "End Date"
+      },
+      "pagination": {
+        "showing": "Showing",
+        "to": "-",
+        "of": "of",
+        "items": "items",
+        "prev": "Previous",
+        "next": "Next"
+      }
+    },
+    "files": {
+      "page": {
+        "title": "Files For Articles",
+        "metaTitle": "Files For Articles | TailAdmin",
+        "metaDescription": "Browse, upload, and manage files stored in MinIO for knowledge base articles.",
+        "subtitle": "Browse, upload, and manage files attached to knowledge base articles stored in object storage.",
+        "eyebrow": "File Manager"
+      },
+      "sections": {
+        "recent": {
+          "title": "All Files",
+          "description": "Most recently accessed files across all folders"
+        },
+        "folders": "Folders",
+        "files": "Files"
+      },
+      "labels": {
+        "loading": "Loading files...",
+        "loadFailed": "Unable to load files.",
+        "empty": "No files found in this location.",
+        "noResults": "No files match your search.",
+        "files": "files",
+        "size": "size",
+        "apiPath": "API path",
+        "source": "Source",
+        "mock": "Mock",
+        "api": "API",
+        "lastOpen": "last open",
+        "fileCount": "{{count}} files, {{size}}",
+        "selectedCount": "{{count}} file(s) selected",
+        "noneSelected": "No files selected"
+      },
+      "buttons": {
+        "upload": "Upload",
+        "uploading": "Uploading...",
+        "download": "Download",
+        "delete": "Delete",
+        "retry": "Retry",
+        "refresh": "Refresh",
+        "refreshing": "Refreshing...",
+        "newFolder": "New Folder",
+        "create": "Create",
+        "copyUrl": "Copy URL",
+        "cancel": "Cancel"
+      },
+      "folder": {
+        "namePlaceholder": "Folder name…"
+      },
+      "confirm": {
+        "delete": "Delete \"{{name}}\"?",
+        "deleteFolder": "Delete folder \"{{name}}\"?"
+      },
+      "toast": {
+        "uploadSuccess": "File uploaded successfully.",
+        "uploadError": "Unable to upload file.",
+        "deleteSuccess": "File deleted.",
+        "deleteError": "Unable to delete file.",
+        "downloadError": "Unable to get download link.",
+        "folderCreated": "Folder created.",
+        "folderError": "Unable to create folder.",
+        "folderDeleteSuccess": "Folder deleted.",
+        "folderDeleteError": "Unable to delete folder.",
+        "copySuccess": "URL copied to clipboard.",
+        "copyError": "Unable to copy URL."
+      },
+      "tree": {
+        "title": "Folders"
+      }
+    },
+    "articles": {
+      "pageTitle": "Articles List",
+      "pageSubtitle": "Browse and manage all knowledge base articles",
+      "addArticle": "+ Add Article",
+      "filter": {
+        "searchTitle": "Search Title",
+        "searchPlaceholder": "Search article title…",
+        "category": "Category",
+        "categoryPlaceholder": "Select Category",
+        "createdDate": "Created Date",
+        "startCreatedDatePlaceholder": "Start Date",
+        "endCreatedDatePlaceholder": "End Date",
+        "createdBy": "Created By",
+        "createdByPlaceholder": "Select Author",
+        "status": "Status",
+        "statusPlaceholder": "Select Status",
+        "version": "Version",
+        "versionPlaceholder": "Version",
+        "group": "Group",
+        "groupPlaceholder": "Select Group",
+        "priority": "Priority",
+        "priorityPlaceholder": "Select Priority",
+        "score": "Score",
+        "scorePlaceholder": "Score",
+        "sortBy": "Sort By",
+        "sortByPlaceholder": "Sort By",
+        "resetFilter": "Reset"
+      },
+      "status": {
+        "all": "All",
+        "publish": "Published",
+        "wait_approve": "Wait Approve",
+        "wait_publish": "Wait Publish",
+        "draft": "Draft",
+        "archived": "Archived",
+        "unpublished": "Un Published"
+      },
+      "priority": {
+        "all": "All",
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "user": {
+        "all": "All"
+      },
+      "group": {
+        "all": "All"
+      },
+      "sortBy": {
+        "title_az": "Title A–Z",
+        "title_za": "Title Z-A",
+        "createdDate_az": "Created Date A-Z",
+        "createdDate_za": "Created Date Z-A"
+      },
+      "meta": {
+        "version": "Version",
+        "lastEdited": "Last Edited",
+        "createDate": "Created Date",
+        "views": "Views",
+        "priority": "Priority",
+        "category": "Category",
+        "viewCount": "views"
+      },
+      "statusBadge": {
+        "publish": "Published",
+        "wait_approve": "Wait Approve",
+        "wait_publish": "Wait Publish",
+        "draft": "Draft",
+        "archived": "Archived",
+        "unpublished": "Un Published"
+      },
+      "loading": "Loading articles…",
+      "noData": "No articles found",
+      "total": "total",
+      "edit": "Edit",
+      "approve": "Change Status",
+      "pagination": {
+        "showing": "Showing",
+        "to": "-",
+        "of": "of",
+        "prev": "Previous",
+        "next": "Next",
+        "items": "items"
+      },
+      "category": {
+        "pageTitle": "Category Manager",
+        "pageSubtitle": "Organize your knowledge base categories in a tree structure. Drag to reorder.",
+        "modalTitle": "Select Category",
+        "modalSubtitle": "Click a category to filter articles",
+        "backToArticles": "Back to Articles",
+        "all": "All Categories",
+        "searchPlaceholder": "Search categories…",
+        "sortBy": "Sort",
+        "addRoot": "Add Category",
+        "add": "Add",
+        "newCategory": "New Category",
+        "newCategoryPlaceholder": "Category name…",
+        "renamed": "Category renamed",
+        "deleted": "Category deleted",
+        "added": "Category added",
+        "errorGeneric": "Something went wrong",
+        "confirmDeleteTitle": "Delete Category?",
+        "confirmDeleteBody": "All child categories will also be removed. Articles in this category will become uncategorized.",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "cannotdelete": "Cannot delete",
+        "dragHint": "Drag and drop to reorganize • Double-click to rename",
+        "noResults": "No categories match your search",
+        "empty": "No categories yet",
+        "selectButton": "Select Category",
+        "expandAll": "Expand all",
+        "collapseAll": "Collapse all",
+        "refresh": "Refresh"
+      },
+      "form": {
+        "createTitle": "Create Article",
+        "editTitle": "Edit Article",
+        "eyebrow": "Knowledge Base",
+        "createSub": "Fill in the details to create a new article",
+        "editSub": "Edit the existing article information",
+        "saveBtn": "Save",
+        "saving": "Saving…",
+        "loading": "Loading data…",
+        "steps": {
+          "create": "Create",
+          "submit": "Submit",
+          "approve": "Approve",
+          "publish": "Publish"
+        },
+        "tabs": {
+          "basic": "Basic Info",
+          "basicSub": "Basic Info",
+          "content": "Content",
+          "contentSub": "Content",
+          "visibility": "Visibility",
+          "visibilitySub": "Visibility & Settings"
+        },
+        "basic": {
+          "titleLabel": "Title",
+          "titlePlaceholder": "Enter article title",
+          "versionLabel": "Version",
+          "descriptionLabel": "Article Description",
+          "descriptionPlaceholder": "Enter a short description",
+          "priorityLabel": "Priority",
+          "priorityPlaceholder": "Select Priority",
+          "sourceLabel": "Source",
+          "sourcePlaceholder": "Enter source",
+          "reserveDateLabel": "Reserve Date",
+          "ownershipLabel": "Ownership",
+          "ownershipPlaceholder": "Enter owner",
+          "relatedArticlesLabel": "Related Articles",
+          "relatedArticlesPlaceholder": "Type and press Enter…",
+          "groupArticlesPlaceholder": "Type and press Enter…",
+          "categoryLabel": "Category",
+          "categorySearch": "Search categories…",
+          "categoryEmpty": "No categories found",
+          "tagAdd": "Add",
+          "tagPlaceholder": "Type and press Enter…"
+        },
+        "content": {
+          "attachmentLabel": "File Attachment",
+          "pickFromMinio": "Select files from MinIO",
+          "noFiles": "No files attached",
+          "contentLabel": "Content"
+        },
+        "visibility": {
+          "startDateLabel": "Start Date",
+          "endDateLabel": "Expiration Date",
+          "viewableGroupsLabel": "Viewable Groups",
+          "viewableGroupsPlaceholder": "Type group name and press Enter…",
+          "keywordsLabel": "Keywords",
+          "keywordsPlaceholder": "Type keyword and press Enter…",
+          "tagAdd": "Add",
+          "tagPlaceholder": "Type and press Enter…"
+        },
+        "nav": {
+          "prev": "Previous",
+          "next": "Next"
+        },
+        "validation": {
+          "titleRequired": "Please enter a title"
+        },
+        "success": "Article saved successfully!",
+        "errorGeneric": "Something went wrong",
+        "picker": {
+          "title": "Select Files from MinIO",
+          "subtitle": "Select files to attach to this article",
+          "confirm": "Confirm {{count}} file(s)",
+          "cancel": "Cancel",
+          "search": "Search files…",
+          "empty": "No files in this folder",
+          "noResults": "No files found",
+          "selectedCount": "{{count}} file(s) selected",
+          "noneSelected": "No files selected yet",
+          "allFiles": "All Files",
+          "folders": "Folders",
+          "files": "Files"
+        }
+      },
+      "detail": {
+        "eyebrow": "Article Detail",
+        "back": "Back to Articles",
+        "edit": "Edit Article",
+        "loading": "Loading article…",
+        "notFound": "Article not found",
+        "content": "Content",
+        "attachments": "Attachments",
+        "noAttachments": "No attachments",
+        "noContent": "No content available",
+        "metadata": "Information",
+        "category": "Category",
+        "group": "Group",
+        "author": "Author",
+        "ownership": "Ownership",
+        "source": "Source",
+        "views": "Views",
+        "rating": "Rating",
+        "score": "Score",
+        "version": "Version & Dates",
+        "startDate": "Start Date",
+        "endDate": "Expiration Date",
+        "createdAt": "Created",
+        "updatedAt": "Last Updated",
+        "viewableGroups": "Viewable Groups",
+        "keywords": "Keywords",
+        "relatedArticles": "Related Articles",
+        "noRelated": "No related articles",
+        "activityLog": "Activity Log",
+        "accessAndKeywords": "Access & Keywords",
+        "actions": {
+          "create": "Created",
+          "edit": "Edited",
+          "submit": "Submitted for Review",
+          "approve": "Approved",
+          "publish": "Published",
+          "archive": "Archived",
+          "draft": "Saved as Draft"
+        }
+      },
+      "review": {
+        "eyebrow": "Article Review",
+        "title": "Review Article",
+        "back": "Back",
+        "panel": "Review Decision",
+        "currentStatus": "Current Status",
+        "decisionLabel": "Decision",
+        "publish": "Published",
+        "wait_approve": "Wait Approve",
+        "wait_publish": "Wait Publish",
+        "draft": "Draft",
+        "archived": "Archived",
+        "unpublished": "Un Published",
+        "approve": "Approve",
+        "approveDesc": "Article is ready for publishing",
+        "changes": "Request Changes",
+        "changesDesc": "Ask author to revise before approval",
+        "reject": "Reject",
+        "rejectDesc": "Article does not meet requirements",
+        "note": "Notes / Comments",
+        "notePlaceholder": "Enter review notes or reasons…",
+        "submit": "Submit",
+        "submitting": "Submitting…",
+        "selectDecision": "Please select a decision",
+        "success": "Review submitted successfully",
+        "error": "Failed to submit review",
+        "coverImage": "Cover Image",
+        "noCover": "No cover image",
+        "changeLabel": "Change",
+        "changeTitle": "Change cover image",
+        "notFoundimg": "Image not found"
+      },
+      "activityLog": {
+        "title": "Activity Log",
+        "viewAll": "View all activity",
+        "create": "Create Article",
+        "edit": "Edit Article",
+        "submit": "Submit Article",
+        "approve": "Approved Article",
+        "publish": "Publish Article",
+        "archive": "Archive Article",
+        "draft": "Draft Article",
+        "to_draf": "To Draft Article",
+        "unpublish": "Unpublish Article",
+        "reject": "Reject Article",
+        "change_version": "Change Version",
+        "empty": "No activity"
+      },
+      "coverImage": {
+        "change": "Change",
+        "delete": "Delete",
+        "copy": "Copy",
+        "download": "Download",
+        "edit": "Edit",
+        "deleteCoverImage": "Delete Cover Image",
+        "copyPath": "Copy Path",
+        "downloadImage": "Download Image",
+        "editImage": "Edit Image",
+        "deleteConfirmTitle": "Delete Cover Image?",
+        "deleteConfirmDescription": "Are you sure you want to delete the cover image? This action cannot be undone.",
+        "copyConfirmDescription": "Copy the image path to clipboard?",
+        "downloadConfirmDescription": "Download the cover image to your device?",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "processing": "Processing...",
+        "clickToEdit": "Click to edit",
+        "clickToAdd": "Click to add image",
+        "noCoverImage": "No cover image",
+        "copyError": "Unable to copy to clipboard",
+        "downloadError": "Unable to download image",
+        "actionFailed": "Action failed",
+        "save": "Save"
+      },
+      "rating": {
+        "title": "Rating",
+        "yourRating": "Your Rating",
+        "outOf5": "out of 5",
+        "stars": "stars",
+        "submit": "Submit Rating",
+        "submitting": "Submitting...",
+        "success": "Rating submitted successfully",
+        "error": "Failed to submit rating"
+      },
+      "comments": {
+        "title": "Comments",
+        "noComments": "No comments yet",
+        "writeComment": "Write a comment...",
+        "send": "Send",
+        "sending": "Sending...",
+        "reply": "Reply",
+        "replies": "replies",
+        "viewReplies": "View replies",
+        "hideReplies": "Hide replies",
+        "delete": "Delete",
+        "deleteConfirm": "Delete this comment?",
+        "cancel": "Cancel",
+        "success": "Comment added successfully",
+        "error": "Failed to add comment"
+      },
+      "actions": {
+        "delete": "Delete",
+        "duplicate": "Copy",
+        "editContent": "New Version",
+        "certify": "Edit",
+        "deleteConfirmTitle": "Delete Article?",
+        "deleteConfirmDesc": "This action cannot be undone. The article will be permanently deleted.",
+        "cancel": "Cancel",
+        "confirmDelete": "Delete"
+      }
+    },
+    "banner": {
+      "page": {
+        "metaTitle": "Banner Management",
+        "metaDescription": "Manage banner articles displayed on the Knowledge Base",
+        "eyebrow": "Banner Management",
+        "title": "Banner Management",
+        "subtitle": "Manage articles displayed as banners on the Knowledge Base"
+      },
+      "grid": {
+        "title": "Current Banners",
+        "count": "banners",
+        "empty": "No banners yet. Select articles below to add banners.",
+        "save": "Save Order",
+        "saving": "Saving…",
+        "unsaved": "Unsaved changes"
+      },
+      "articleList": {
+        "title": "Articles",
+        "selectBtn": "Select Banner",
+        "added": "Added"
+      },
+      "tab": {
+        "newest": "Latest",
+        "popular": "Most Viewed",
+        "high": "High Priority",
+        "published": "Published",
+        "review": "In Review"
+      },
+      "toast": {
+        "addSuccess": "Banner added successfully",
+        "addError": "Failed to add banner",
+        "removeSuccess": "Banner removed",
+        "removeError": "Failed to remove banner"
+      }
+    },
+    "source": {
+      "page": {
+        "title": "Source Manager",
+        "metaTitle": "Source Manager | TailAdmin",
+        "metaDescription": "Manage article source master data — add, edit, and remove source entries.",
+        "subtitle": "Manage the list of article sources used across the knowledge base. Add, edit, or remove source entries from this workspace."
+      },
+      "sections": {
+        "list": {
+          "title": "Source List",
+          "description": "All source entries in the system"
+        }
+      },
+      "labels": {
+        "loading": "Loading source data...",
+        "loadFailed": "Unable to load source data.",
+        "empty": "No source entries found.",
+        "apiPath": "API path",
+        "source": "Source",
+        "mock": "Mock",
+        "api": "API",
+        "active": "Active",
+        "inactive": "Inactive",
+        "nameTh": "Name (TH)",
+        "nameEn": "Name (EN)",
+        "seq": "Order",
+        "status": "Status",
+        "actions": "Actions",
+        "no": "#"
+      },
+      "buttons": {
+        "add": "Add Source",
+        "edit": "Edit",
+        "delete": "Delete",
+        "deleteConfirm": "Delete source",
+        "cancel": "Cancel",
+        "create": "Create Source",
+        "update": "Save Changes",
+        "saving": "Saving...",
+        "refresh": "Refresh",
+        "refreshing": "Refreshing..."
+      },
+      "form": {
+        "createTitle": "Add Source",
+        "editTitle": "Edit Source",
+        "description": "Fill in the source name in Thai and English, and set display order.",
+        "nameTh": "Name (Thai)",
+        "nameEn": "Name (English)",
+        "seq": "Display order",
+        "isActive": "Active",
+        "validationNameTh": "Please enter a Thai name",
+        "validationNameEn": "Please enter an English name",
+        "validationSeq": "Display order must be a positive number"
+      },
+      "pagination": {
+        "showing": "Showing {{from}}–{{to}} of {{total}}",
+        "prev": "Previous",
+        "next": "Next"
+      },
+      "confirm": {
+        "delete": "Delete \"{{name}}\"?",
+        "deleteDescription": "This action cannot be undone."
+      },
+      "toast": {
+        "createSuccess": "Source created successfully.",
+        "createError": "Unable to create the source.",
+        "updateSuccess": "Source updated successfully.",
+        "updateError": "Unable to update the source.",
+        "deleteSuccess": "Source deleted successfully.",
+        "deleteError": "Unable to delete the source."
+      }
+    },
+    "case": {
+      "panel": {
+        "title": "Knowledge repository",
+        "search": "Search KB",
+        "notfound": "No articles found.",
+        "copied": "Copied!",
+        "copy": "Copy Link",
+        "open": "Open",
+        "lastupdate": "Last Update Time"
+      }
+    }
+  }
+}

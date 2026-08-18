@@ -1,0 +1,332 @@
+{
+  "1.1.2": {
+    "date": "2026-01-19",
+    "segment": "PATCH",
+    "notes": "fix hide section sop meta when len is 0 in api data.",
+    "author": "Phanuphong Manopkawee"
+  },
+  "1.1.1": {
+    "date": "2026-01-19",
+    "segment": "PATCH",
+    "notes": "fixed turn off enablelable in dynamicform make empty space for title",
+    "author": "Phanuphong Manopkawee"
+  },
+  "1.1.0": {
+    "date": "2026-01-16",
+    "segment": "PATCH",
+    "notes": "add sopMetaData",
+    "author": "Phanuphong Manopkawee"
+  },
+  "1.0.1": {
+    "date": "2026-01-15",
+    "segment": "PATCH",
+    "notes": "fix: system configuration:\n- Fix mDeviceTypeName not saving to backend when create/edit service management.",
+    "author": "Wisarud Techa"
+  },
+  "1.0.0": {
+    "date": "2026-01-15",
+    "segment": "MAJOR",
+    "notes": "Initial Production Release.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.22": {
+    "date": "2026-01-13",
+    "segment": "PATCH",
+    "notes": "fix: history:\n- Add image section into Preview History component.\n- Fix UI keep re-render while pointing on the screen.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.21": {
+    "date": "2026-01-12",
+    "segment": "PATCH",
+    "notes": "perf: i18n, auth, history, workflow:\n- Update i18n in Skill Management.\n- Change default organization in login page.\n- Change category to detail in advanced filter in case history.\n- Add warning and confirm dialog before continue to edit.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.20": {
+    "date": "2026-01-12",
+    "segment": "PATCH",
+    "notes": "fix: permission for case assign in case detail.",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.5.19": {
+    "date": "2026-01-08",
+    "segment": "PATCH",
+    "notes": "fix: refresh token, sessionTimeoutWarning:\n- Set send request to API for refresh token when session timeout and display warning dialog by config.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.18": {
+    "date": "2026-01-07",
+    "segment": "PATCH",
+    "notes": "fix: shortcut menu:\n- Hide shortcut menu for System Admin that display only on local or development.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.17": {
+    "date": "2026-01-06",
+    "segment": "PATCH",
+    "notes": "fix: work order, dashboard, user management:\n- Fix defect when switching between cases, the previous data (SOP, assignee, unit info) remains visible even when the new selection has no data.\n- Hide non-functional buttons in dashboard.\n- Fix user management filter not working properly, hide unnecessary action button in tabs that no need to use.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.16": {
+    "date": "2026-01-06",
+    "segment": "PATCH",
+    "notes": "remove workload mocks in assignment popup.",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.5.15": {
+    "date": "2025-12-24",
+    "segment": "PATCH",
+    "notes": "feat: user's skill assignment:\n- Create assign skill to user (batch).",
+    "author": "Wisarud Techa"
+  },
+  "0.5.14": {
+    "date": "2025-12-23",
+    "segment": "PATCH",
+    "notes": "fix: DF_41:\n- Send Work Order statusId all to API if dropdown not selected in Work Order History filter.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.13": {
+    "date": "2025-12-21",
+    "segment": "PATCH",
+    "notes": "fixed toast noti show success when case api return fail.",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.5.12": {
+    "date": "2025-12-22",
+    "segment": "PATCH",
+    "notes": "remove distId param in case api",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.5.11": {
+    "date": "2025-12-22",
+    "segment": "PATCH",
+    "notes": "fix: schudule header in light mode",
+    "author": "Wisarud Techa"
+  },
+  "0.5.10": {
+    "date": "2025-12-19",
+    "segment": "PATCH",
+    "notes": "fix: DF_40 (usr mgmt):\n- Update i18n (TH/EN/CN).\n- Enhance isSystemAdmin function.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.9": {
+    "date": "2025-12-17",
+    "segment": "PATCH",
+    "notes": "fix: DF_53,DF_55(single-sign-on):\n- Check MDSS's Token, if they were deleted (logout), then remove cookie in Work Order too (force logout).\n- Fix defect in SSO login flow that cause infinite loop redirecting to MDSS login page.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.8": {
+    "date": "2025-12-17",
+    "segment": "PATCH",
+    "notes": "fix: DF_52(single-sign-on):\n- Check MDSS's Token, if they were deleted (logout), then remove cookie in Work Order too (force logout).",
+    "author": "Wisarud Techa"
+  },
+  "0.5.7": {
+    "date": "2025-12-16",
+    "segment": "PATCH",
+    "notes": "fix: defect:\n- DF_40.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.6": {
+    "date": "2025-12-16",
+    "segment": "PATCH",
+    "notes": "fix: schudule doest not lock when date now are today.",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.5.5": {
+    "date": "2025-12-16",
+    "segment": "PATCH",
+    "notes": "fix: noti api setup if api are fail.",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.5.4": {
+    "date": "2025-12-16",
+    "segment": "PATCH",
+    "notes": "fix: defect:\n- DF_43,DF_51.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.3": {
+    "date": "2025-12-15",
+    "segment": "PATCH",
+    "notes": "fix: defect:\n- DF_42,DF_43,DF_47,DF_48,DF_49,DF_50.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.2": {
+    "date": "2025-12-15",
+    "segment": "PATCH",
+    "notes": "fixed defect 44-45.",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.5.1": {
+    "date": "2025-12-12",
+    "segment": "PATCH",
+    "notes": "feat: sso (single-sign-on):\n- Change ThemeContext default from light to dark.",
+    "author": "Wisarud Techa"
+  },
+  "0.5.0": {
+    "date": "2025-12-12",
+    "segment": "MINOR",
+    "notes": "feat: sso (single-sign-on):\n- Enhance ProtectedRoute to verify instead display LoginForm if site access from 3rd-party.",
+    "author": "Wisarud Techa"
+  },
+  "0.4.16": {
+    "date": "2025-12-12",
+    "segment": "PATCH",
+    "notes": "perf: usr mgmt, sys config:\n- Update i18n (TH/EN/CN).\n- Update components UI.\n- Enhance isSystemAdmin function.",
+    "author": "Wisarud Techa"
+  },
+  "0.4.15": {
+    "date": "2025-12-11",
+    "segment": "PATCH",
+    "notes": "perf: usr mgmt, sys config:\n- Update i18n (TH/EN/CN).\n- Update components UI.",
+    "author": "Wisarud Techa"
+  },
+  "0.4.14": {
+    "date": "2025-12-09",
+    "segment": "PATCH",
+    "notes": "perf: unit, user, service management:\n- Update i18n (TH/EN/CN).\n- Add mDeviceTypeName into ServiceManagement component.\n- Enhance set caseSLA by workflow selection in ServiceManagement component.\n- Update input field UI in unit-form components.\n- Enhance children dropdown selection relate with own parent.\n- Update display UI in UnitManagement component.\n- Update User Form UI.",
+    "author": "Wisarud Techa"
+  },
+  "0.4.13": {
+    "date": "2025-12-05",
+    "segment": "PATCH",
+    "notes": "fixed : fixed done can cancedl and schedule can only be ackno",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.4.12": {
+    "date": "2025-12-04",
+    "segment": "PATCH",
+    "notes": "fixed : create case schedule bug.",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.4.11": {
+    "date": "2025-12-04",
+    "segment": "PATCH",
+    "notes": "fixed : toast still loading",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.4.10": {
+    "date": "2025-12-04",
+    "segment": "PATCH",
+    "notes": "feat: area management:\n- Add area with hierarchy view into page.",
+    "author": "Wisarud Techa"
+  },
+  "0.4.9": {
+    "date": "2025-12-03",
+    "segment": "PATCH",
+    "notes": "fix: defect:\n- DF_02.",
+    "author": "Wisarud Techa"
+  },
+  "0.4.8": {
+    "date": "2025-12-02",
+    "segment": "PATCH",
+    "notes": "fix: defect:\n- DF_02,DF_08,DF_09,DF_12,DF_20,DF_28,DF_29,DF_30.",
+    "author": "Wisarud Techa"
+  },
+  "0.4.7": {
+    "date": "2025-12-02",
+    "segment": "PATCH",
+    "notes": "fix: report and save daft bug",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.4.6": {
+    "date": "2025-12-02",
+    "segment": "PATCH",
+    "notes": "fix: defect:\n- DF-38",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.4.5": {
+    "date": "2025-12-01",
+    "segment": "PATCH",
+    "notes": "fix: defect:\n- DF_11,DF_20,DF_22,DF_27,DF_32.",
+    "author": "Wisarud Techa"
+  },
+  "0.4.4": {
+    "date": "2025-11-28",
+    "segment": "PATCH",
+    "notes": "fix: defect, work order history:\n- DF_03,DF_05,DF_33,DF_34,DF_36,DF_37.\n- Remove role of currently logged in user from filter of loading/searching work orders.",
+    "author": "Wisarud Techa"
+  },
+  "0.4.3": {
+    "date": "2025-11-28",
+    "segment": "PATCH",
+    "notes": "fix: case assignment rerender in advance filter.",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.4.2": {
+    "date": "2025-11-27",
+    "segment": "PATCH",
+    "notes": "fix: user management + role and permission:\n- Fix defect DF_06-07.\n- Enhance permission gate to protect user not have permission to access CRUD components.\n- Enhance user management page UI same as other crud page.",
+    "author": "Wisarud Techa"
+  },
+  "0.4.1": {
+    "date": "2025-11-27",
+    "segment": "PATCH",
+    "notes": "add video view && fixed loading case bug in case assignment in list view",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.3.5": {
+    "date": "2025-11-27",
+    "segment": "PATCH",
+    "notes": "fix: work order history:\n- Add responsibility area and role of currently logged in user  to filter of loading/searching work orders.",
+    "author": "Wisarud Techa"
+  },
+  "0.3.4": {
+    "date": "2025-11-26",
+    "segment": "PATCH",
+    "notes": "fix bug loading case in case assingment in list view",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.3.3": {
+    "date": "2025-11-26",
+    "segment": "PATCH",
+    "notes": "fix: user management, priority label and color:\n- Fix department filter not working in user management.\n-Add i18n in user management (not complete yet).\n- Add critical priority label and color.",
+    "author": "Wisarud Techa"
+  },
+  "0.3.2": {
+    "date": "2025-11-26",
+    "segment": "PATCH",
+    "notes": "fixed : color",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.3.1": {
+    "date": "2025-11-26",
+    "segment": "MINOR",
+    "notes": "add: delete form",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.2.3": {
+    "date": "2025-11-25",
+    "segment": "MINOR",
+    "notes": "fix: change lable status in form manager",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.2.2": {
+    "date": "2025-11-25",
+    "segment": "PATCH",
+    "notes": "fix: UI FormManager",
+    "author": "Phanuphong Manopkawee"
+  },
+  "0.2.1": {
+    "date": "2025-11-25",
+    "segment": "PATCH",
+    "notes": "fix: DF_10, DF_20-21 :\n- Add empId input box.\n- Handle lowerCase string for search.\n- Change status dropdown of Fail value from 1 to -1 and remove Warning status.",
+    "author": "Wisarud Techa"
+  },
+  "0.2.0": {
+    "date": "2025-11-24",
+    "segment": "MINOR",
+    "notes": "feat: change log:\n- Add change log viewer (version and detail).",
+    "author": "Wisarud Techa"
+  },
+  "0.1.1": {
+    "date": "2025-11-24",
+    "segment": "PATCH",
+    "notes": "fix: service dashboard:\n- Change in SLA overview from percentage to total number on SLA performance.\n- Set max percentage range on progress bar not over 100%\n- Change work order rate (%) from new to success on work order status overview.",
+    "author": "Wisarud Techa"
+  },
+  "0.1.0": {
+    "date": "2025-11-24",
+    "segment": "PATCH",
+    "notes": "- add retry button in case detail\n- fixed re auth in jasper\n- add report auther\n- fixed height officer skill modal in mobile\n- edit form type confix",
+    "author": "Phanuphong Manopkawee"
+  }
+}

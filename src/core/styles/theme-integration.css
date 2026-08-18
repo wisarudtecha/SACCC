@@ -1,0 +1,341 @@
+/* /src/styles/theme-integration.css */
+
+/**
+ * CSS Integration for Case Management System Theme
+ * Integrates _variables.css design tokens with enhanced ThemeContext
+ * 
+ * Usage:
+ * 1. Import this after _variables.css
+ * 2. Import before Tailwind CSS
+ * 3. Use with enhanced ThemeContext
+ */
+
+/* Import your design tokens */
+@import './_variables.css';
+
+/* ========================================
+   Base Theme Classes & Custom Properties
+   ======================================== */
+
+:root {
+  /* Runtime theme properties (set by ThemeContext) */
+  --theme-primary: var(--brand-mioc-primary-0);
+  --theme-secondary: var(--brand-mioc-secondary-0);
+  --theme-accent: var(--brand-metthier-primary-0);
+  --theme-background: var(--greyscale-white-0);
+  --theme-surface: var(--tile-primary-background-default-0);
+  --theme-text: var(--label-paragraph-0);
+  --theme-border: var(--border-default);
+}
+
+/* ========================================
+   Light Theme (Default)
+   ======================================== */
+
+.theme-light {
+  --theme-primary: var(--brand-mioc-primary-0);
+  --theme-secondary: var(--brand-mioc-secondary-0);
+  --theme-accent: var(--brand-metthier-primary-0);
+  --theme-background: var(--greyscale-white-0);
+  --theme-surface: var(--tile-primary-background-default-0);
+  --theme-text: var(--label-h1-0);
+  --theme-border: var(--tile-primary-border-default-0);
+  
+  /* Component-specific overrides */
+  --theme-button-primary-bg: var(--button-primary-background-default-0);
+  --theme-button-primary-fg: var(--button-primary-foreground-default-0);
+  --theme-button-secondary-bg: var(--button-secondary-background-default-0);
+  --theme-button-secondary-fg: var(--button-secondary-foreground-default-0);
+  --theme-input-bg: var(--greyscale-white-0);
+  --theme-input-border: var(--tile-primary-border-default-0);
+  --theme-modal-bg: var(--greyscale-white-0);
+  --theme-modal-overlay: var(--opacity-black-50);
+}
+
+/* ========================================
+   Dark Theme
+   ======================================== */
+
+.theme-dark {
+  --theme-primary: var(--brand-mioc-primary-0);
+  --theme-secondary: var(--brand-mioc-secondary-100);
+  --theme-accent: var(--brand-metthier-primary-100);
+  --theme-background: var(--core-background-default-0);
+  --theme-surface: var(--modal-background-default-0);
+  --theme-text: var(--label-paragraph-0);
+  --theme-border: var(--border-default);
+  
+  /* Component-specific overrides */
+  --theme-button-primary-bg: var(--button-primary-background-default-0);
+  --theme-button-primary-fg: var(--button-primary-foreground-default-0);
+  --theme-button-secondary-bg: var(--button-secondary-background-default-0);
+  --theme-button-secondary-fg: var(--button-secondary-foreground-default-0);
+  --theme-input-bg: var(--input-primary-background-default-0);
+  --theme-input-border: var(--tile-primary-border-default-100);
+  --theme-modal-bg: var(--modal-background-default-0);
+  --theme-modal-overlay: var(--opacity-black-70);
+}
+
+/* ========================================
+   MIOC Brand Theme
+   ======================================== */
+
+.theme-mioc {
+  --theme-primary: var(--brand-mioc-primary-0);
+  --theme-secondary: var(--brand-mioc-secondary-0);
+  --theme-accent: var(--brand-mioc-primary-100);
+  --theme-background: var(--brand-mioc-primary-200);
+  --theme-surface: var(--greyscale-white-0);
+  --theme-text: var(--brand-mioc-secondary-100);
+  --theme-border: var(--brand-mioc-secondary-0);
+  
+  /* MIOC-specific styling */
+  --theme-button-primary-bg: var(--brand-mioc-primary-0);
+  --theme-button-primary-fg: var(--brand-mioc-secondary-100);
+  --theme-button-secondary-bg: var(--greyscale-white-0);
+  --theme-button-secondary-fg: var(--brand-mioc-primary-0);
+  --theme-input-bg: var(--greyscale-white-0);
+  --theme-input-border: var(--brand-mioc-secondary-0);
+  --theme-modal-bg: var(--greyscale-white-0);
+  --theme-modal-overlay: var(--opacity-secondary-50);
+}
+
+/* ========================================
+   Metthier Brand Theme
+   ======================================== */
+
+.theme-metthier {
+  --theme-primary: var(--brand-metthier-primary-0);
+  --theme-secondary: var(--brand-metthier-secondary-0);
+  --theme-accent: var(--brand-metthier-primary-100);
+  --theme-background: var(--greyscale-white-0);
+  --theme-surface: var(--tile-primary-background-default-0);
+  --theme-text: var(--brand-metthier-secondary-0);
+  --theme-border: var(--brand-metthier-secondary-100);
+  
+  /* Metthier-specific styling */
+  --theme-button-primary-bg: var(--brand-metthier-primary-0);
+  --theme-button-primary-fg: var(--greyscale-white-0);
+  --theme-button-secondary-bg: var(--greyscale-white-0);
+  --theme-button-secondary-fg: var(--brand-metthier-primary-0);
+  --theme-input-bg: var(--greyscale-white-0);
+  --theme-input-border: var(--brand-metthier-secondary-100);
+  --theme-modal-bg: var(--greyscale-white-0);
+  --theme-modal-overlay: var(--opacity-black-50);
+}
+
+/* ========================================
+   Status & Priority Color Classes
+   ======================================== */
+
+/* Case Status Colors */
+.status-success { color: var(--status-success-0); }
+.status-warning { color: var(--status-warning-0); }
+.status-error { color: var(--status-error-0); }
+.status-info { color: var(--status-info-0); }
+.status-critical { color: var(--status-critical-0); }
+.status-disabled { color: var(--status-disabled-0); }
+.status-vip { color: var(--status-vip); }
+
+/* Background variants */
+.bg-status-success { background-color: var(--status-success-0); }
+.bg-status-warning { background-color: var(--status-warning-0); }
+.bg-status-error { background-color: var(--status-error-0); }
+.bg-status-info { background-color: var(--status-info-0); }
+.bg-status-critical { background-color: var(--status-critical-0); }
+.bg-status-disabled { background-color: var(--status-disabled-0); }
+
+/* Case Priority Colors */
+.priority-high { color: var(--status-high-0); }
+.priority-critical { color: var(--status-critical-0); }
+.priority-normal { color: var(--theme-primary); }
+.priority-low { color: var(--status-disabled-0); }
+
+/* ========================================
+   Component Base Classes
+   ======================================== */
+
+/* Base Button Styles */
+.btn-base {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background-color: var(--theme-button-primary-bg);
+  color: var(--theme-button-primary-fg);
+  border-color: var(--theme-button-primary-bg);
+}
+
+.btn-primary:hover {
+  background-color: var(--button-primary-background-hover-0);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-button-primary);
+}
+
+.btn-secondary {
+  background-color: var(--theme-button-secondary-bg);
+  color: var(--theme-button-secondary-fg);
+  border-color: var(--button-secondary-border-default-0);
+}
+
+.btn-secondary:hover {
+  border-color: var(--button-secondary-border-hover-0);
+  color: var(--button-secondary-foreground-hover-0);
+}
+
+.btn-emergency {
+  background-color: var(--button-emergency-background-default);
+  color: var(--button-emergency-foreground-font);
+  border-color: var(--button-emergency-background-default);
+}
+
+.btn-emergency:hover {
+  background-color: var(--button-emergency-background-hover);
+}
+
+/* Base Input Styles */
+.input-base {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--theme-input-border);
+  background-color: var(--theme-input-bg);
+  color: var(--theme-text);
+  transition: all 0.2s ease-in-out;
+  width: 100%;
+}
+
+.input-base:focus {
+  outline: none;
+  border-color: var(--theme-primary);
+  box-shadow: 0 0 0 3px var(--opacity-primary-20);
+}
+
+.input-base::placeholder {
+  color: var(--input-primary-foreground-default-0);
+}
+
+/* Base Card Styles */
+.card-base {
+  background-color: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+}
+
+.card-hover:hover {
+  border-color: var(--tile-primary-border-hover-0);
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Base Modal Styles */
+.modal-overlay {
+  background-color: var(--theme-modal-overlay);
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background-color: var(--theme-modal-bg);
+  border: 1px solid var(--modal-border-default-0);
+  border-radius: 0.75rem;
+  color: var(--theme-text);
+}
+
+/* ========================================
+   Tailwind CSS Integration
+   ======================================== */
+
+/* Custom Tailwind utilities for theme integration */
+@layer utilities {
+  .text-theme-primary { color: var(--theme-primary) !important; }
+  .text-theme-secondary { color: var(--theme-secondary) !important; }
+  .text-theme-accent { color: var(--theme-accent) !important; }
+  .text-theme { color: var(--theme-text) !important; }
+  
+  .bg-theme-primary { background-color: var(--theme-primary) !important; }
+  .bg-theme-secondary { background-color: var(--theme-secondary) !important; }
+  .bg-theme-accent { background-color: var(--theme-accent) !important; }
+  .bg-theme { background-color: var(--theme-background) !important; }
+  .bg-theme-surface { background-color: var(--theme-surface) !important; }
+  
+  .border-theme-primary { border-color: var(--theme-primary) !important; }
+  .border-theme { border-color: var(--theme-border) !important; }
+  
+  /* Case Management Specific Utilities */
+  .gradient-primary { background: var(--card-primary-background-default-0); }
+  .gradient-info { background: var(--card-primary-background-info-0); }
+  .gradient-warning { background: var(--card-primary-background-warning-0); }
+  .gradient-error { background: var(--card-primary-background-error-0); }
+}
+
+/* ========================================
+   Responsive Theme Adjustments
+   ======================================== */
+
+@media (max-width: 768px) {
+  .btn-base {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+  }
+  
+  .card-base {
+    padding: 1rem;
+  }
+  
+  .input-base {
+    padding: 0.625rem 0.875rem;
+  }
+}
+
+/* ========================================
+   Animation & Transitions
+   ======================================== */
+
+.theme-transition {
+  transition: background-color 0.3s ease-in-out, 
+              color 0.3s ease-in-out, 
+              border-color 0.3s ease-in-out;
+}
+
+/* Loading states */
+.loading-skeleton {
+  background: linear-gradient(90deg, var(--theme-border) 25%, transparent 50%, var(--theme-border) 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ========================================
+   Print Styles (for case reports)
+   ======================================== */
+
+@media print {
+  .theme-light,
+  .theme-dark,
+  .theme-mioc,
+  .theme-metthier {
+    --theme-background: white;
+    --theme-text: black;
+    --theme-border: #ccc;
+  }
+  
+  .card-base {
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+}

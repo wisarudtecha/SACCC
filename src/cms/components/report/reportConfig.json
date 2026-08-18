@@ -1,0 +1,108 @@
+[
+    {
+        "id": "case",
+        "title": "report.group.case",
+        "sections": [
+            {
+                "id": "1",
+                "title": "report.1",
+                "child": [
+                    {
+                        "id": "1_1",
+                        "title": "report.1_1",
+                        "url": "jasperserver/flow.html?_flowId=viewReportFlow&_flowId=viewReportFlow&ParentFolderUri=%2Fรายงาน%2Fรายงานเหตุ%2F1.+รายงานสรุปงานบริการ&reportUnit=%2Fรายงาน%2Fรายงานเหตุ%2F1.+รายงานสรุปงานบริการ%2FCASE__1_1x&standAlone=true"
+                    },
+                    {
+                        "id": "1_2",
+                        "title": "report.1_2",
+                        "url": "jasperserver/flow.html?_flowId=viewReportFlow&_flowId=viewReportFlow&ParentFolderUri=%2Fรายงาน%2Fรายงานเหตุ%2F1.+รายงานสรุปงานบริการ&reportUnit=%2Fรายงาน%2Fรายงานเหตุ%2F1.+รายงานสรุปงานบริการ%2FCASE__1_2x&standAlone=true"
+                    },
+                    {
+                        "id": "1_3",
+                        "title": "report.1_3",
+                        "url": "jasperserver/flow.html?_flowId=viewReportFlow&_flowId=viewReportFlow&ParentFolderUri=%2Fรายงาน%2Fรายงานเหตุ%2F1.+รายงานสรุปงานบริการ&reportUnit=%2Fรายงาน%2Fรายงานเหตุ%2F1.+รายงานสรุปงานบริการ%2FCASE__1_3x&standAlone=true"
+                    },
+                    {
+                        "id": "1_4",
+                        "title": "report.1_4",
+                        "url": "jasperserver/flow.html?_flowId=viewReportFlow&_flowId=viewReportFlow&ParentFolderUri=%2Fรายงาน%2Fรายงานเหตุ%2F1.+รายงานสรุปงานบริการ&reportUnit=%2Fรายงาน%2Fรายงานเหตุ%2F1.+รายงานสรุปงานบริการ%2FCASE__1_4x&standAlone=true"
+                    }
+                ]
+            },
+            {
+                "id": "2",
+                "title": "report.2",
+                "child": [
+                    {
+                        "id": "2_1",
+                        "title": "report.2_1",
+                        "url": "jasperserver/flow.html?_flowId=viewReportFlow&_flowId=viewReportFlow&ParentFolderUri=%2Fรายงาน%2Fรายงานเหตุ%2F2.+รายงานรายละเอียดงานบริการ&reportUnit=%2Fรายงาน%2Fรายงานเหตุ%2F2.+รายงานรายละเอียดงานบริการ%2FCASE__2_1x&standAlone=true"
+                    },
+                    {
+                        "id": "2_2",
+                        "title": "report.2_2",
+                        "url": "jasperserver/flow.html?_flowId=viewReportFlow&_flowId=viewReportFlow&ParentFolderUri=%2Fรายงาน%2Fรายงานเหตุ%2F2.+รายงานรายละเอียดงานบริการ&reportUnit=%2Fรายงาน%2Fรายงานเหตุ%2F2.+รายงานรายละเอียดงานบริการ%2FCASE__2_2x&standAlone=true"
+                    },
+                    {
+                        "id": "2_3",
+                        "title": "report.2_3",
+                        "url": "jasperserver/flow.html?_flowId=viewReportFlow&_flowId=viewReportFlow&ParentFolderUri=%2Fรายงาน%2Fรายงานเหตุ%2F2.+รายงานรายละเอียดงานบริการ&reportUnit=%2Fรายงาน%2Fรายงานเหตุ%2F2.+รายงานรายละเอียดงานบริการ%2FCASE__2_3x&standAlone=true"
+                    },
+                    {
+                        "id": "2_4",
+                        "title": "report.2_4",
+                        "url": "jasperserver/flow.html?_flowId=viewReportFlow&_flowId=viewReportFlow&ParentFolderUri=%2Fรายงาน%2Fรายงานเหตุ%2F2.+รายงานรายละเอียดงานบริการ&reportUnit=%2Fรายงาน%2Fรายงานเหตุ%2F2.+รายงานรายละเอียดงานบริการ%2FCASE__2_4x&standAlone=true"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "order",
+        "title": "report.group.order",
+        "sections": [
+            {
+                "id": "order_1",
+                "title": "report.order.1",
+                "child": [
+                    {
+                        "id": "order_1_1",
+                        "title": "report.order.1_1",
+                        "url": "jasperserver/flow.html?_flowId=viewReportFlow&_flowId=viewReportFlow&ParentFolderUri=%2Fรายงาน%2Fรายงานคำสั่งซื้อ%2F1.+รายงานสรุปคำสั่งซื้อ&reportUnit=%2Fรายงาน%2Fรายงานคำสั่งซื้อ%2F1.+รายงานสรุปคำสั่งซื้อ%2FCRM__1_1x&standAlone=true"
+                    },
+                    {
+                        "id": "order_1_2",
+                        "title": "report.order.1_2",
+                        "url": "jasperserver/flow.html?_flowId=viewReportFlow&_flowId=viewReportFlow&ParentFolderUri=%2Fรายงาน%2Fรายงานคำสั่งซื้อ%2F1.+รายงานสรุปคำสั่งซื้อ&reportUnit=%2Fรายงาน%2Fรายงานคำสั่งซื้อ%2F1.+รายงานสรุปคำสั่งซื้อ%2FCRM__1_2x&standAlone=true"
+                    },
+                    {
+                        "id": "order_1_3",
+                        "title": "report.order.1_3",
+                        "url": "jasperserver/flow.html?_flowId=viewReportFlow&_flowId=viewReportFlow&ParentFolderUri=%2Fรายงาน%2Fรายงานคำสั่งซื้อ%2F1.+รายงานสรุปคำสั่งซื้อ&reportUnit=%2Fรายงาน%2Fรายงานคำสั่งซื้อ%2F1.+รายงานสรุปคำสั่งซื้อ%2FCRM__1_3x&standAlone=true"
+                    }
+                ]
+            },
+            {
+                "id": "order_2",
+                "title": "report.order.2",
+                "child": [
+                    {
+                        "id": "order_2_1",
+                        "title": "report.order.2_1",
+                        "url": "jasperserver/flow.html?_flowId=viewReportFlow&_flowId=viewReportFlow&ParentFolderUri=%2Fรายงาน%2Fรายงานคำสั่งซื้อ%2F2.+รายงานรายละเอียดคำสั่งซื้อ&reportUnit=%2Fรายงาน%2Fรายงานคำสั่งซื้อ%2F2.+รายงานรายละเอียดคำสั่งซื้อ%2FCRM__2_1x&standAlone=true"
+                    },
+                    {
+                        "id": "order_2_2",
+                        "title": "report.order.2_2",
+                        "url": "jasperserver/flow.html?_flowId=viewReportFlow&_flowId=viewReportFlow&ParentFolderUri=%2Fรายงาน%2Fรายงานคำสั่งซื้อ%2F2.+รายงานรายละเอียดคำสั่งซื้อ&reportUnit=%2Fรายงาน%2Fรายงานคำสั่งซื้อ%2F2.+รายงานรายละเอียดคำสั่งซื้อ%2FCRM__2_2x&standAlone=true"
+                    },
+                    {
+                        "id": "order_2_3",
+                        "title": "report.order.2_3",
+                        "url": "jasperserver/flow.html?_flowId=viewReportFlow&_flowId=viewReportFlow&ParentFolderUri=%2Fรายงาน%2Fรายงานคำสั่งซื้อ%2F2.+รายงานรายละเอียดคำสั่งซื้อ&reportUnit=%2Fรายงาน%2Fรายงานคำสั่งซื้อ%2F2.+รายงานรายละเอียดคำสั่งซื้อ%2FCRM__2_3x&standAlone=true"
+                    }
+                ]
+            }
+        ]
+    }
+]

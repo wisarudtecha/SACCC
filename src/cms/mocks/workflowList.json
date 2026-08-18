@@ -1,0 +1,151 @@
+[
+  {
+    "id": "1",
+    "name": "Customer Onboarding",
+    "description": "Automated workflow for new customer registration and setup",
+    "status": "active",
+    "createdAt": "2025-01-15T10:30:00Z",
+    "lastRun": "2025-06-11T08:15:00Z",
+    "runCount": 234,
+    "category": "Customer Management"
+  },
+  {
+    "id": "2",
+    "name": "Invoice Processing",
+    "description": "Handle incoming invoices and route for approval",
+    "status": "active",
+    "createdAt": "2025-02-20T14:20:00Z",
+    "lastRun": "2025-06-10T16:45:00Z",
+    "runCount": 1456
+  },
+  {
+    "id": "3",
+    "name": "Data Backup",
+    "description": "Daily backup of critical system data",
+    "status": "inactive",
+    "createdAt": "2025-01-05T09:00:00Z",
+    "lastRun": "2025-06-08T02:00:00Z",
+    "runCount": 89
+  },
+  {
+    "id": "4",
+    "name": "Email Campaign",
+    "description": "Automated marketing email sequences for leads",
+    "status": "draft",
+    "createdAt": "2025-06-10T11:30:00Z",
+    "runCount": 0
+  },
+  {
+    "id": "5",
+    "name": "Quality Assurance",
+    "description": "Automated testing and quality checks for production releases",
+    "status": "active",
+    "createdAt": "2025-03-12T13:45:00Z",
+    "lastRun": "2025-06-11T07:30:00Z",
+    "runCount": 567
+  },
+  {
+    "id": "6",
+    "name": "User Analytics",
+    "description": "Track and analyze user behavior patterns",
+    "status": "active",
+    "createdAt": "2025-04-01T12:00:00Z",
+    "lastRun": "2025-06-12T09:20:00Z",
+    "runCount": 892,
+    "category": "Analytics"
+  },
+  {
+    "id": "7",
+    "name": "Inventory Management",
+    "description": "Monitor and manage inventory levels automatically",
+    "status": "active",
+    "createdAt": "2025-05-15T16:30:00Z",
+    "lastRun": "2025-06-11T14:10:00Z",
+    "runCount": 124,
+    "category": "Operations"
+  },
+  {
+    "id": "8",
+    "name": "Security Audit",
+    "description": "Regular security checks and vulnerability assessments",
+    "status": "inactive",
+    "createdAt": "2025-02-28T08:45:00Z",
+    "lastRun": "2025-06-05T22:30:00Z",
+    "runCount": 67,
+    "category": "Security"
+  },
+  {
+    "id": "9",
+    "name": "Customer Onboarding",
+    "description": "Automated workflow for new customer registration and setup",
+    "status": "active",
+    "createdAt": "2025-01-15T10:30:00Z",
+    "lastRun": "2025-06-11T08:15:00Z",
+    "runCount": 234
+  },
+  {
+    "id": "10",
+    "name": "Invoice Processing",
+    "description": "Handle incoming invoices and route for approval",
+    "status": "active",
+    "createdAt": "2025-02-20T14:20:00Z",
+    "lastRun": "2025-06-10T16:45:00Z",
+    "runCount": 1456
+  },
+  {
+    "id": "11",
+    "name": "Data Backup",
+    "description": "Daily backup of critical system data",
+    "status": "inactive",
+    "createdAt": "2025-01-05T09:00:00Z",
+    "lastRun": "2025-06-08T02:00:00Z",
+    "runCount": 89
+  },
+  {
+    "id": "12",
+    "name": "Email Campaign",
+    "description": "Automated marketing email sequences for leads",
+    "status": "draft",
+    "createdAt": "2025-06-10T11:30:00Z",
+    "runCount": 0
+  },
+  {
+    "id": "13",
+    "name": "Quality Assurance",
+    "description": "Automated testing and quality checks for production releases",
+    "status": "active",
+    "createdAt": "2025-03-12T13:45:00Z",
+    "lastRun": "2025-06-11T07:30:00Z",
+    "runCount": 567
+  },
+  {
+    "id": "14",
+    "name": "User Analytics",
+    "description": "Track and analyze user behavior patterns",
+    "status": "active",
+    "createdAt": "2025-04-01T12:00:00Z",
+    "lastRun": "2025-06-12T09:20:00Z",
+    "runCount": 892,
+    "category": "Analytics"
+  },
+  {
+    "id": "15",
+    "name": "Inventory Management",
+    "description": "Monitor and manage inventory levels automatically",
+    "status": "active",
+    "createdAt": "2025-05-15T16:30:00Z",
+    "lastRun": "2025-06-11T14:10:00Z",
+    "runCount": 124,
+    "category": "Operations"
+  },
+  {
+    "id": "16",
+    "name": "Security Audit",
+    "description": "Regular security checks and vulnerability assessments",
+    "status": "inactive",
+    "createdAt": "2025-02-28T08:45:00Z",
+    "lastRun": "2025-06-05T22:30:00Z",
+    "runCount": 67,
+    "category": "Security"
+  }
+]

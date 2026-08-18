@@ -1,0 +1,78 @@
+/* src/global.css */
+/* Custom Scrollbar */
+@layer utilities {
+  /* Chrome, Edge, Safari */
+  /* .scrollbar-custom::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  } */
+
+  /* .scrollbar-custom::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  } */
+
+  /* .scrollbar-custom::-webkit-scrollbar-thumb {
+    @apply bg-slate-400 dark:bg-slate-600 rounded-full;
+  } */
+
+  /* .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-500 dark:bg-slate-500;
+  } */
+
+  /* Firefox */
+  /* .scrollbar-custom {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(148 163 184) transparent; 
+  } */
+
+  /* .dark .scrollbar-custom {
+    scrollbar-color: rgb(71 85 105) transparent;
+  } */
+
+  /* SaaS Dashboard Modern Style */
+  .scrollbar-modern::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-modern::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #6366f1, #8b5cf6);
+    border-radius: 9999px;
+  }
+
+  .scrollbar-modern::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* Smooth + Overlay Style */
+  .scrollbar-fade::-webkit-scrollbar-thumb {
+    background-color: rgba(100, 116, 139, 0.6);
+    transition: background-color 0.3s ease;
+  }
+
+  .scrollbar-fade:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(100, 116, 139, 1);
+  }
+}
+
+/* ArcGIS MapView focus outline.
+
+   The SDK paints a 2px brand-blue ring over the whole map whenever its surface
+   takes focus, and the surface carries tabindex="0" (see DOMContainer in
+   @arcgis/core), so ANY click on the map focuses it and lights the ring.
+
+   Killed for pointer focus, restored for keyboard focus - the case the outline
+   actually exists for, since the map is pannable with the arrow keys.
+
+   Both selectors are deliberately prefixed with `.esri-view` to reach (0,4,0)
+   and outrank the SDK's own `.esri-view .esri-view-surface:focus:after`, which
+   is (0,3,0). Matching that specificity is not enough: the Esri stylesheet is
+   injected at runtime with the lazy map chunk, so it always lands after this
+   file and would win any tie. */
+.esri-view .esri-view-surface:focus::after {
+  outline: none;
+}
+
+.esri-view .esri-view-surface:focus-visible::after {
+  outline: var(--esri-view-outline);
+  outline-offset: var(--esri-view-outline-offset);
+}

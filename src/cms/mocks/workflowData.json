@@ -1,0 +1,88 @@
+{
+  "nodes": [
+    {
+      "id": "start-1",
+      "type": "start",
+      "position": { "x": 100, "y": 200 },
+      "data": { "label": "Start Process", "description": "Workflow entry point" }
+    },
+    {
+      "id": "process-1",
+      "type": "process",
+      "position": { "x": 300, "y": 200 },
+      "data": { 
+        "label": "Review Application",
+        "description": "Review submitted application",
+        "config": {
+          "action": "review_application",
+          "formId": "application_form",
+          "sla": "24",
+          "pic": "john_doe"
+        }
+      }
+    },
+    {
+      "id": "decision-1",
+      "type": "decision",
+      "position": { "x": 500, "y": 200 },
+      "data": { 
+        "label": "Approve?",
+        "description": "Decision to approve or reject",
+        "config": { "condition": "application.score > 70" }
+      }
+    },
+    {
+      "id": "process-2",
+      "type": "process",
+      "position": { "x": 700, "y": 150 },
+      "data": { 
+        "label": "Send Approval",
+        "description": "Send approval notification",
+        "config": {
+          "action": "send_notification",
+          "formId": "approval_form",
+          "sla": "2",
+          "group": "admin"
+        }
+      }
+    },
+    {
+      "id": "process-3",
+      "type": "process",
+      "position": { "x": 700, "y": 250 },
+      "data": { 
+        "label": "Send Rejection",
+        "description": "Send rejection notification",
+        "config": {
+          "action": "send_notification",
+          "formId": "rejection_form",
+          "sla": "2",
+          "group": "admin"
+        }
+      }
+    },
+    {
+      "id": "end-1",
+      "type": "end",
+      "position": { "x": 700, "y": 200 },
+      "data": { "label": "End Process", "description": "Workflow completion" }
+    }
+  ],
+  "connections": [
+    { "id": "conn-1", "source": "start-1", "target": "process-1" },
+    { "id": "conn-2", "source": "process-1", "target": "decision-1" },
+    { "id": "conn-3", "source": "decision-1", "target": "process-2", "label": "yes" },
+    { "id": "conn-4", "source": "decision-1", "target": "process-3", "label": "no" },
+    { "id": "conn-5", "source": "process-2", "target": "end-1" },
+    { "id": "conn-6", "source": "process-3", "target": "end-1" }
+  ],
+  "metadata": {
+    "title": "Workflow",
+    "description": "Loaded from URL",
+    "status": "active",
+    "createdAt": "2025-06-01T10:00:00Z",
+    "casePriority": "high",
+    "caseCategory": "incident",
+    "targetCaseStatus": "resolved"
+  }
+}

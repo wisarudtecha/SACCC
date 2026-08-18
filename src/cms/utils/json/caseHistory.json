@@ -1,0 +1,2342 @@
+[
+    {
+      "id": 10,
+      "createBy": "Phanuphong",
+      "title": "010 - ระบบแจ้งเตือนขัดข้อง",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "20 minutes ago",
+      "comments": 2,
+      "priority": 6,
+      "category": "In Progress",
+      "status": "In Progress",
+      "categoryColor": "bg-blue-500",
+      "priorityColor": "border-l-green-500",
+      "formData": {
+        "formId": "form_1750652352497",
+        "formName": "Create Cese",
+        "formColSpan": 2,
+        "formFieldJson": [
+          {
+            "id": "field_1750652553625_ualtx7l",
+            "label": "1. Service Type:",
+            "type": "select",
+            "value": "Repair",
+            "options": [
+              "Maintenance",
+              "Repair",
+              "Installation"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652560678_m7lgawm",
+            "label": "Contact Method: ",
+            "type": "select",
+            "value": "Email",
+            "options": [
+              "Phone number",
+              "Email",
+              "Live Chat"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652761342_apexdkb",
+            "label": "2. Request Service Date:",
+            "type": "dateLocal",
+            "value": "2025-08-01",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652788237_gnpi53t",
+            "label": "3. Service Location & Destination:",
+            "type": "InputGroup",
+            "value": [
+              {
+                "id": "field_1750652791262_wx4b337",
+                "label": "Radio Button Form",
+                "type": "radio",
+                "value": "Service Location",
+                "options": [
+                  "Service Location",
+                  "Destination Point"
+                ],
+                "newOptionText": "",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true
+              },
+              {
+                "id": "field_1750652794413_1xuasx4",
+                "label": "Text Area Form",
+                "type": "textAreaInput",
+                "value": "789 Tech Park, Innovation City",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true,
+                "placeholder": "Address"
+              }
+            ],
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652936086_kr5etkw",
+            "label": "Priority Level:",
+            "type": "radio",
+            "value": "High",
+            "options": [
+              "Low",
+              "Normal",
+              "High"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653047006_ypfyff5",
+            "label": "4. Service Center:",
+            "type": "select",
+            "value": "Service Center1",
+            "options": [
+              "Service Center1",
+              "Service Center2"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653200552_jk2s6jm",
+            "label": "5. Customer Name:",
+            "type": "textInput",
+            "value": "Olivia White",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer full name"
+          },
+          {
+            "id": "field_1750653108822_g4sqsdk",
+            "label": "6. Customer Phone:",
+            "type": "textInput",
+            "value": "0812345678",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer Phone Number"
+          },
+          {
+            "id": "field_1750653455160_0a66gqd",
+            "label": "8. Vehicle Information:",
+            "type": "textInput",
+            "value": "Nissan Leaf 2024",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Vehicle Detail"
+          },
+          {
+            "id": "field_1750653455415_9mh0t5b",
+            "label": "9. Assembly Information:",
+            "type": "textInput",
+            "value": "Software update required",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Assembly Detail"
+          },
+          {
+            "id": "field_1750653566064_s5uoack",
+            "label": "Photos:",
+            "type": "multiImage",
+            "value": [],
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653567887_o6cg8nk",
+            "label": "7. Service Details: *",
+            "type": "textAreaInput",
+            "value": "System alerts not functioning as expected.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653568456_po50lv0",
+            "label": "10. Assembly Procedure:",
+            "type": "textAreaInput",
+            "value": "Checked sensor connections and re-calibrated.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          }
+        ]
+      },
+      "assignee": [
+        {
+          "name": "Alice Green",
+          "color": "bg-blue-500"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "createBy": "Phanuphong",
+      "title": "011 - เครื่องปรับอากาศเสีย",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "1 hour ago",
+      "comments": 0,
+      "priority": 8,
+      "category": "Resolved",
+      "status": "Resolved",
+      "categoryColor": "bg-green-500",
+      "priorityColor": "border-l-red-500",
+      "formData": {
+        "formId": "form_1750652352497",
+        "formName": "Create Cese",
+        "formColSpan": 2,
+        "formFieldJson": [
+          {
+            "id": "field_1750652553625_ualtx7l",
+            "label": "1. Service Type:",
+            "type": "select",
+            "value": "Maintenance",
+            "options": [
+              "Maintenance",
+              "Repair",
+              "Installation"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652560678_m7lgawm",
+            "label": "Contact Method: ",
+            "type": "select",
+            "value": "Phone number",
+            "options": [
+              "Phone number",
+              "Email",
+              "Live Chat"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652761342_apexdkb",
+            "label": "2. Request Service Date:",
+            "type": "dateLocal",
+            "value": "2025-08-05",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652788237_gnpi53t",
+            "label": "3. Service Location & Destination:",
+            "type": "InputGroup",
+            "value": [
+              {
+                "id": "field_1750652791262_wx4b337",
+                "label": "Radio Button Form",
+                "type": "radio",
+                "value": "Destination Point",
+                "options": [
+                  "Service Location",
+                  "Destination Point"
+                ],
+                "newOptionText": "",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true
+              },
+              {
+                "id": "field_1750652794413_1xuasx4",
+                "label": "Text Area Form",
+                "type": "textAreaInput",
+                "value": "101 Commerce Street, Downtown District",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true,
+                "placeholder": "Address"
+              }
+            ],
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652936086_kr5etkw",
+            "label": "Priority Level:",
+            "type": "radio",
+            "value": "Normal",
+            "options": [
+              "Low",
+              "Normal",
+              "High"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653047006_ypfyff5",
+            "label": "4. Service Center:",
+            "type": "select",
+            "value": "Service Center2",
+            "options": [
+              "Service Center1",
+              "Service Center2"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653200552_jk2s6jm",
+            "label": "5. Customer Name:",
+            "type": "textInput",
+            "value": "Samuel Green",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer full name"
+          },
+          {
+            "id": "field_1750653108822_g4sqsdk",
+            "label": "6. Customer Phone:",
+            "type": "textInput",
+            "value": "0898765432",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer Phone Number"
+          },
+          {
+            "id": "field_1750653455160_0a66gqd",
+            "label": "8. Vehicle Information:",
+            "type": "textInput",
+            "value": "Tesla Cybertruck 2025",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Vehicle Detail"
+          },
+          {
+            "id": "field_1750653455415_9mh0t5b",
+            "label": "9. Assembly Information:",
+            "type": "textInput",
+            "value": "Compressor issue",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Assembly Detail"
+          },
+          {
+            "id": "field_1750653566064_s5uoack",
+            "label": "Photos:",
+            "type": "multiImage",
+            "value": [],
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653567887_o6cg8nk",
+            "label": "7. Service Details: *",
+            "type": "textAreaInput",
+            "value": "Air conditioning unit not cooling properly.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653568456_po50lv0",
+            "label": "10. Assembly Procedure:",
+            "type": "textAreaInput",
+            "value": "Replaced faulty capacitor and recharged refrigerant.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          }
+        ]
+      },
+      "assignee": [
+        {
+          "name": "Bob Smith",
+          "color": "bg-green-500"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "createBy": "Phanuphong",
+      "title": "012 - เครือข่ายไร้สายช้า",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "5 hours ago",
+      "comments": 4,
+      "priority": 5,
+      "category": "Closed",
+      "status": "Closed",
+      "categoryColor": "bg-gray-500",
+      "priorityColor": "border-l-blue-500",
+      "formData": {
+        "formId": "form_1750652352497",
+        "formName": "Create Cese",
+        "formColSpan": 2,
+        "formFieldJson": [
+          {
+            "id": "field_1750652553625_ualtx7l",
+            "label": "1. Service Type:",
+            "type": "select",
+            "value": "Installation",
+            "options": [
+              "Maintenance",
+              "Repair",
+              "Installation"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652560678_m7lgawm",
+            "label": "Contact Method: ",
+            "type": "select",
+            "value": "Live Chat",
+            "options": [
+              "Phone number",
+              "Email",
+              "Live Chat"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652761342_apexdkb",
+            "label": "2. Request Service Date:",
+            "type": "dateLocal",
+            "value": "2025-08-08",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652788237_gnpi53t",
+            "label": "3. Service Location & Destination:",
+            "type": "InputGroup",
+            "value": [
+              {
+                "id": "field_1750652791262_wx4b337",
+                "label": "Radio Button Form",
+                "type": "radio",
+                "value": "Service Location",
+                "options": [
+                  "Service Location",
+                  "Destination Point"
+                ],
+                "newOptionText": "",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true
+              },
+              {
+                "id": "field_1750652794413_1xuasx4",
+                "label": "Text Area Form",
+                "type": "textAreaInput",
+                "value": "456 Enterprise Drive, Tech Hub",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true,
+                "placeholder": "Address"
+              }
+            ],
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652936086_kr5etkw",
+            "label": "Priority Level:",
+            "type": "radio",
+            "value": "Low",
+            "options": [
+              "Low",
+              "Normal",
+              "High"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653047006_ypfyff5",
+            "label": "4. Service Center:",
+            "type": "select",
+            "value": "Service Center1",
+            "options": [
+              "Service Center1",
+              "Service Center2"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653200552_jk2s6jm",
+            "label": "5. Customer Name:",
+            "type": "textInput",
+            "value": "Isabella Brown",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer full name"
+          },
+          {
+            "id": "field_1750653108822_g4sqsdk",
+            "label": "6. Customer Phone:",
+            "type": "textInput",
+            "value": "0876543210",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer Phone Number"
+          },
+          {
+            "id": "field_1750653455160_0a66gqd",
+            "label": "8. Vehicle Information:",
+            "type": "textInput",
+            "value": "Ford Explorer 2023",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Vehicle Detail"
+          },
+          {
+            "id": "field_1750653455415_9mh0t5b",
+            "label": "9. Assembly Information:",
+            "type": "textInput",
+            "value": "Network configuration",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Assembly Detail"
+          },
+          {
+            "id": "field_1750653566064_s5uoack",
+            "label": "Photos:",
+            "type": "multiImage",
+            "value": [],
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653567887_o6cg8nk",
+            "label": "7. Service Details: *",
+            "type": "textAreaInput",
+            "value": "Slow internet speeds and frequent disconnections.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653568456_po50lv0",
+            "label": "10. Assembly Procedure:",
+            "type": "textAreaInput",
+            "value": "Updated router firmware and optimized channel settings.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          }
+        ]
+      },
+      "assignee": [
+        {
+          "name": "Charlie Brown",
+          "color": "bg-purple-500"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "createBy": "Phanuphong",
+      "title": "013 - ซอฟต์แวร์ติดขัด",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "1 day ago",
+      "comments": 7,
+      "priority": 9,
+      "category": "On Hold",
+      "status": "On Hold",
+      "categoryColor": "bg-orange-500",
+      "priorityColor": "border-l-orange-500",
+      "formData": {
+        "formId": "form_1750652352497",
+        "formName": "Create Cese",
+        "formColSpan": 2,
+        "formFieldJson": [
+          {
+            "id": "field_1750652553625_ualtx7l",
+            "label": "1. Service Type:",
+            "type": "select",
+            "value": "Repair",
+            "options": [
+              "Maintenance",
+              "Repair",
+              "Installation"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652560678_m7lgawm",
+            "label": "Contact Method: ",
+            "type": "select",
+            "value": "Email",
+            "options": [
+              "Phone number",
+              "Email",
+              "Live Chat"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652761342_apexdkb",
+            "label": "2. Request Service Date:",
+            "type": "dateLocal",
+            "value": "2025-08-10",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652788237_gnpi53t",
+            "label": "3. Service Location & Destination:",
+            "type": "InputGroup",
+            "value": [
+              {
+                "id": "field_1750652791262_wx4b337",
+                "label": "Radio Button Form",
+                "type": "radio",
+                "value": "Destination Point",
+                "options": [
+                  "Service Location",
+                  "Destination Point"
+                ],
+                "newOptionText": "",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true
+              },
+              {
+                "id": "field_1750652794413_1xuasx4",
+                "label": "Text Area Form",
+                "type": "textAreaInput",
+                "value": "789 Pine Avenue, Coastal Town",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true,
+                "placeholder": "Address"
+              }
+            ],
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652936086_kr5etkw",
+            "label": "Priority Level:",
+            "type": "radio",
+            "value": "High",
+            "options": [
+              "Low",
+              "Normal",
+              "High"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653047006_ypfyff5",
+            "label": "4. Service Center:",
+            "type": "select",
+            "value": "Service Center2",
+            "options": [
+              "Service Center1",
+              "Service Center2"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653200552_jk2s6jm",
+            "label": "5. Customer Name:",
+            "type": "textInput",
+            "value": "William Jones",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer full name"
+          },
+          {
+            "id": "field_1750653108822_g4sqsdk",
+            "label": "6. Customer Phone:",
+            "type": "textInput",
+            "value": "0801234567",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer Phone Number"
+          },
+          {
+            "id": "field_1750653455160_0a66gqd",
+            "label": "8. Vehicle Information:",
+            "type": "textInput",
+            "value": "Mercedes-Benz S-Class 2022",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Vehicle Detail"
+          },
+          {
+            "id": "field_1750653455415_9mh0t5b",
+            "label": "9. Assembly Information:",
+            "type": "textInput",
+            "value": "Software bug fixing",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Assembly Detail"
+          },
+          {
+            "id": "field_17506535660...",
+            "label": "Photos:",
+            "type": "multiImage",
+            "value": [],
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653567887_o6cg8nk",
+            "label": "7. Service Details: *",
+            "type": "textAreaInput",
+            "value": "Software applications freezing frequently.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653568456_po50lv0",
+            "label": "10. Assembly Procedure:",
+            "type": "textAreaInput",
+            "value": "Performed system diagnostics and applied patches.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          }
+        ]
+      },
+      "assignee": [
+        {
+          "name": "Diana Prince",
+          "color": "bg-red-500"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "createBy": "Phanuphong",
+      "title": "014 - ฮาร์ดแวร์ขัดข้อง",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "2 days ago",
+      "comments": 3,
+      "priority": 7,
+      "category": "In Progress",
+      "status": "In Progress",
+      "categoryColor": "bg-blue-500",
+      "priorityColor": "border-l-blue-500",
+      "formData": {
+        "formId": "form_1750652352497",
+        "formName": "Create Cese",
+        "formColSpan": 2,
+        "formFieldJson": [
+          {
+            "id": "field_1750652553625_ualtx7l",
+            "label": "1. Service Type:",
+            "type": "select",
+            "value": "Repair",
+            "options": [
+              "Maintenance",
+              "Repair",
+              "Installation"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652560678_m7lgawm",
+            "label": "Contact Method: ",
+            "type": "select",
+            "value": "Phone number",
+            "options": [
+              "Phone number",
+              "Email",
+              "Live Chat"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652761342_apexdkb",
+            "label": "2. Request Service Date:",
+            "type": "dateLocal",
+            "value": "2025-08-15",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652788237_gnpi53t",
+            "label": "3. Service Location & Destination:",
+            "type": "InputGroup",
+            "value": [
+              {
+                "id": "field_1750652791262_wx4b337",
+                "label": "Radio Button Form",
+                "type": "radio",
+                "value": "Service Location",
+                "options": [
+                  "Service Location",
+                  "Destination Point"
+                ],
+                "newOptionText": "",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true
+              },
+              {
+                "id": "field_1750652794413_1xuasx4",
+                "label": "Text Area Form",
+                "type": "textAreaInput",
+                "value": "555 Industrial Avenue, Manufacturing Plant",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true,
+                "placeholder": "Address"
+              }
+            ],
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652936086_kr5etkw",
+            "label": "Priority Level:",
+            "type": "radio",
+            "value": "Normal",
+            "options": [
+              "Low",
+              "Normal",
+              "High"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653047006_ypfyff5",
+            "label": "4. Service Center:",
+            "type": "select",
+            "value": "Service Center1",
+            "options": [
+              "Service Center1",
+              "Service Center2"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653200552_jk2s6jm",
+            "label": "5. Customer Name:",
+            "type": "textInput",
+            "value": "Sophia Miller",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer full name"
+          },
+          {
+            "id": "field_1750653108822_g4sqsdk",
+            "label": "6. Customer Phone:",
+            "type": "textInput",
+            "value": "0867890123",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer Phone Number"
+          },
+          {
+            "id": "field_1750653455160_0a66gqd",
+            "label": "8. Vehicle Information:",
+            "type": "textInput",
+            "value": "Audi A4 2023",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Vehicle Detail"
+          },
+          {
+            "id": "field_1750653455415_9mh0t5b",
+            "label": "9. Assembly Information:",
+            "type": "textInput",
+            "value": "Malfunctioning server rack",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Assembly Detail"
+          },
+          {
+            "id": "field_1750653566064_s5uoack",
+            "label": "Photos:",
+            "type": "multiImage",
+            "value": [],
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653567887_o6cg8nk",
+            "label": "7. Service Details: *",
+            "type": "textAreaInput",
+            "value": "Server hardware showing critical errors.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653568456_po50lv0",
+            "label": "10. Assembly Procedure:",
+            "type": "textAreaInput",
+            "value": "Replaced faulty server components and tested system stability.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          }
+        ]
+      },
+      "assignee": [
+        {
+          "name": "Alice Green",
+          "color": "bg-blue-500"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "createBy": "Phanuphong",
+      "title": "015 - ไฟดับในอาคาร",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "1 week ago",
+      "comments": 10,
+      "priority": 10,
+      "category": "Resolved",
+      "status": "Resolved",
+      "categoryColor": "bg-green-500",
+      "priorityColor": "border-l-purple-500",
+      "formData": {
+        "formId": "form_1750652352497",
+        "formName": "Create Cese",
+        "formColSpan": 2,
+        "formFieldJson": [
+          {
+            "id": "field_1750652553625_ualtx7l",
+            "label": "1. Service Type:",
+            "type": "select",
+            "value": "Installation",
+            "options": [
+              "Maintenance",
+              "Repair",
+              "Installation"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652560678_m7lgawm",
+            "label": "Contact Method: ",
+            "type": "select",
+            "value": "Live Chat",
+            "options": [
+              "Phone number",
+              "Email",
+              "Live Chat"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652761342_apexdkb",
+            "label": "2. Request Service Date:",
+            "type": "dateLocal",
+            "value": "2025-08-18",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652788237_gnpi53t",
+            "label": "3. Service Location & Destination:",
+            "type": "InputGroup",
+            "value": [
+              {
+                "id": "field_1750652791262_wx4b337",
+                "label": "Radio Button Form",
+                "type": "radio",
+                "value": "Service Location",
+                "options": [
+                  "Service Location",
+                  "Destination Point"
+                ],
+                "newOptionText": "",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true
+              },
+              {
+                "id": "field_1750652794413_1xuasx4",
+                "label": "Text Area Form",
+                "type": "textAreaInput",
+                "value": "789 Corporate Road, Business Park",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true,
+                "placeholder": "Address"
+              }
+            ],
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652936086_kr5etkw",
+            "label": "Priority Level:",
+            "type": "radio",
+            "value": "High",
+            "options": [
+              "Low",
+              "Normal",
+              "High"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653047006_ypfyff5",
+            "label": "4. Service Center:",
+            "type": "select",
+            "value": "Service Center2",
+            "options": [
+              "Service Center1",
+              "Service Center2"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653200552_jk2s6jm",
+            "label": "5. Customer Name:",
+            "type": "textInput",
+            "value": "Daniel White",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer full name"
+          },
+          {
+            "id": "field_1750653108822_g4sqsdk",
+            "label": "6. Customer Phone:",
+            "type": "textInput",
+            "value": "0845678901",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer Phone Number"
+          },
+          {
+            "id": "field_1750653455160_0a66gqd",
+            "label": "8. Vehicle Information:",
+            "type": "textInput",
+            "value": "Hyundai Kona Electric 2024",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Vehicle Detail"
+          },
+          {
+            "id": "field_1750653455415_9mh0t5b",
+            "label": "9. Assembly Information:",
+            "type": "textInput",
+            "value": "Electrical wiring inspection",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Assembly Detail"
+          },
+          {
+            "id": "field_1750653566064_s5uoack",
+            "label": "Photos:",
+            "type": "multiImage",
+            "value": [],
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653567887_o6cg8nk",
+            "label": "7. Service Details: *",
+            "type": "textAreaInput",
+            "value": "Entire building experienced a power outage.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653568456_po50lv0",
+            "label": "10. Assembly Procedure:",
+            "type": "textAreaInput",
+            "value": "Inspected main breaker and restored power.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          }
+        ]
+      },
+      "assignee": [
+        {
+          "name": "Bob Smith",
+          "color": "bg-green-500"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "createBy": "Phanuphong",
+      "title": "016 - ระบบโทรศัพท์มีปัญหา",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "2 weeks ago",
+      "comments": 6,
+      "priority": 11,
+      "category": "Closed",
+      "status": "Closed",
+      "categoryColor": "bg-gray-500",
+      "priorityColor": "border-l-orange-500",
+      "formData": {
+        "formId": "form_1750652352497",
+        "formName": "Create Cese",
+        "formColSpan": 2,
+        "formFieldJson": [
+          {
+            "id": "field_1750652553625_ualtx7l",
+            "label": "1. Service Type:",
+            "type": "select",
+            "value": "Repair",
+            "options": [
+              "Maintenance",
+              "Repair",
+              "Installation"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652560678_m7lgawm",
+            "label": "Contact Method: ",
+            "type": "select",
+            "value": "Email",
+            "options": [
+              "Phone number",
+              "Email",
+              "Live Chat"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652761342_apexdkb",
+            "label": "2. Request Service Date:",
+            "type": "dateLocal",
+            "value": "2025-08-20",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652788237_gnpi53t",
+            "label": "3. Service Location & Destination:",
+            "type": "InputGroup",
+            "value": [
+              {
+                "id": "field_1750652791262_wx4b337",
+                "label": "Radio Button Form",
+                "type": "radio",
+                "value": "Destination Point",
+                "options": [
+                  "Service Location",
+                  "Destination Point"
+                ],
+                "newOptionText": "",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true
+              },
+              {
+                "id": "field_1750652794413_1xuasx4",
+                "label": "Text Area Form",
+                "type": "textAreaInput",
+                "value": "333 Entertainment Center, Concert Hall",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true,
+                "placeholder": "Address"
+              }
+            ],
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652936086_kr5etkw",
+            "label": "Priority Level:",
+            "type": "radio",
+            "value": "Normal",
+            "options": [
+              "Low",
+              "Normal",
+              "High"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653047006_ypfyff5",
+            "label": "4. Service Center:",
+            "type": "select",
+            "value": "Service Center2",
+            "options": [
+              "Service Center1",
+              "Service Center2"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653200552_jk2s6jm",
+            "label": "5. Customer Name:",
+            "type": "textInput",
+            "value": "Grace Harris",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer full name"
+          },
+          {
+            "id": "field_1750653108822_g4sqsdk",
+            "label": "6. Customer Phone:",
+            "type": "textInput",
+            "value": "0845678901",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer Phone Number"
+          },
+          {
+            "id": "field_1750653455160_0a66gqd",
+            "label": "8. Vehicle Information:",
+            "type": "textInput",
+            "value": "Volkswagen ID.4 2023",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Vehicle Detail"
+          },
+          {
+            "id": "field_1750653455415_9mh0t5b",
+            "label": "9. Assembly Information:",
+            "type": "textInput",
+            "value": "PBX configuration",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Assembly Detail"
+          },
+          {
+            "id": "field_1750653566064_s5uoack",
+            "label": "Photos:",
+            "type": "multiImage",
+            "value": [],
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653567887_o6cg8nk",
+            "label": "7. Service Details: *",
+            "type": "textAreaInput",
+            "value": "Phone system experiencing call drops and static.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653568456_po50lv0",
+            "label": "10. Assembly Procedure:",
+            "type": "textAreaInput",
+            "value": "Checked phone lines and reconfigured PBX settings.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          }
+        ]
+      },
+      "assignee": [
+        {
+          "name": "Charlie Brown",
+          "color": "bg-purple-500"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "createBy": "Phanuphong",
+      "title": "017 - ปัญหาการเชื่อมต่อฐานข้อมูล",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "3 weeks ago",
+      "comments": 9,
+      "priority": 12,
+      "category": "On Hold",
+      "status": "On Hold",
+      "categoryColor": "bg-orange-500",
+      "priorityColor": "border-l-red-500",
+      "formData": {
+        "formId": "form_1750652352497",
+        "formName": "Create Cese",
+        "formColSpan": 2,
+        "formFieldJson": [
+          {
+            "id": "field_1750652553625_ualtx7l",
+            "label": "1. Service Type:",
+            "type": "select",
+            "value": "Repair",
+            "options": [
+              "Maintenance",
+              "Repair",
+              "Installation"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652560678_m7lgawm",
+            "label": "Contact Method: ",
+            "type": "select",
+            "value": "Live Chat",
+            "options": [
+              "Phone number",
+              "Email",
+              "Live Chat"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652761342_apexdkb",
+            "label": "2. Request Service Date:",
+            "type": "dateLocal",
+            "value": "2025-09-01",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652788237_gnpi53t",
+            "label": "3. Service Location & Destination:",
+            "type": "InputGroup",
+            "value": [
+              {
+                "id": "field_1750652791262_wx4b337",
+                "label": "Radio Button Form",
+                "type": "radio",
+                "value": "Service Location",
+                "options": [
+                  "Service Location",
+                  "Destination Point"
+                ],
+                "newOptionText": "",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true
+              },
+              {
+                "id": "field_1750652794413_1xuasx4",
+                "label": "Text Area Form",
+                "type": "textAreaInput",
+                "value": "222 Data Center, Server Room",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true,
+                "placeholder": "Address"
+              }
+            ],
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652936086_kr5etkw",
+            "label": "Priority Level:",
+            "type": "radio",
+            "value": "High",
+            "options": [
+              "Low",
+              "Normal",
+              "High"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653047006_ypfyff5",
+            "label": "4. Service Center:",
+            "type": "select",
+            "value": "Service Center1",
+            "options": [
+              "Service Center1",
+              "Service Center2"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653200552_jk2s6jm",
+            "label": "5. Customer Name:",
+            "type": "textInput",
+            "value": "Noah Taylor",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer full name"
+          },
+          {
+            "id": "field_1750653108822_g4sqsdk",
+            "label": "6. Customer Phone:",
+            "type": "textInput",
+            "value": "0856789012",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer Phone Number"
+          },
+          {
+            "id": "field_1750653455160_0a66gqd",
+            "label": "8. Vehicle Information:",
+            "type": "textInput",
+            "value": "Chevrolet Bolt EV 2024",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Vehicle Detail"
+          },
+          {
+            "id": "field_1750653455415_9mh0t5b",
+            "label": "9. Assembly Information:",
+            "type": "textInput",
+            "value": "Database server access",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Assembly Detail"
+          },
+          {
+            "id": "field_1750653566064_s5uoack",
+            "label": "Photos:",
+            "type": "multiImage",
+            "value": [],
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653567887_o6cg8nk",
+            "label": "7. Service Details: *",
+            "type": "textAreaInput",
+            "value": "Unable to connect to the central database.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653568456_po50lv0",
+            "label": "10. Assembly Procedure:",
+            "type": "textAreaInput",
+            "value": "Verified database credentials and network connectivity.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          }
+        ]
+      },
+      "assignee": [
+        {
+          "name": "Diana Prince",
+          "color": "bg-red-500"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "createBy": "Phanuphong",
+      "title": "018 - ซอฟต์แวร์ไม่ตอบสนอง",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "1 month ago",
+      "comments": 1,
+      "priority": 1,
+      "category": "In Progress",
+      "status": "In Progress",
+      "categoryColor": "bg-blue-500",
+      "priorityColor": "border-l-blue-500",
+      "formData": {
+        "formId": "form_1750652352497",
+        "formName": "Create Cese",
+        "formColSpan": 2,
+        "formFieldJson": [
+          {
+            "id": "field_1750652553625_ualtx7l",
+            "label": "1. Service Type:",
+            "type": "select",
+            "value": "Maintenance",
+            "options": [
+              "Maintenance",
+              "Repair",
+              "Installation"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652560678_m7lgawm",
+            "label": "Contact Method: ",
+            "type": "select",
+            "value": "Email",
+            "options": [
+              "Phone number",
+              "Email",
+              "Live Chat"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652761342_apexdkb",
+            "label": "2. Request Service Date:",
+            "type": "dateLocal",
+            "value": "2025-09-05",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652788237_gnpi53t",
+            "label": "3. Service Location & Destination:",
+            "type": "InputGroup",
+            "value": [
+              {
+                "id": "field_1750652791262_wx4b337",
+                "label": "Radio Button Form",
+                "type": "radio",
+                "value": "Destination Point",
+                "options": [
+                  "Service Location",
+                  "Destination Point"
+                ],
+                "newOptionText": "",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true
+              },
+              {
+                "id": "field_1750652794413_1xuasx4",
+                "label": "Text Area Form",
+                "type": "textAreaInput",
+                "value": "888 Data Center, Server Farm",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true,
+                "placeholder": "Address"
+              }
+            ],
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652936086_kr5etkw",
+            "label": "Priority Level:",
+            "type": "radio",
+            "value": "Low",
+            "options": [
+              "Low",
+              "Normal",
+              "High"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653047006_ypfyff5",
+            "label": "4. Service Center:",
+            "type": "select",
+            "value": "Service Center2",
+            "options": [
+              "Service Center1",
+              "Service Center2"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653200552_jk2s6jm",
+            "label": "5. Customer Name:",
+            "type": "textInput",
+            "value": "Ethan Clark",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer full name"
+          },
+          {
+            "id": "field_1750653108822_g4sqsdk",
+            "label": "6. Customer Phone:",
+            "type": "textInput",
+            "value": "0834567890",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer Phone Number"
+          },
+          {
+            "id": "field_1750653455160_0a66gqd",
+            "label": "8. Vehicle Information:",
+            "type": "textInput",
+            "value": "Toyota RAV4 Prime 2023",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Vehicle Detail"
+          },
+          {
+            "id": "field_1750653455415_9mh0t5b",
+            "label": "9. Assembly Information:",
+            "type": "textInput",
+            "value": "Application freeze",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Assembly Detail"
+          },
+          {
+            "id": "field_1750653566064_s5uoack",
+            "label": "Photos:",
+            "type": "multiImage",
+            "value": [],
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653567887_o6cg8nk",
+            "label": "7. Service Details: *",
+            "type": "textAreaInput",
+            "value": "Software applications are unresponsive.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653568456_po50lv0",
+            "label": "10. Assembly Procedure:",
+            "type": "textAreaInput",
+            "value": "Restarted applications and ran integrity checks.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          }
+        ]
+      },
+      "assignee": [
+        {
+          "name": "Alice Green",
+          "color": "bg-blue-500"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "createBy": "Phanuphong",
+      "title": "019 - ระบบความปลอดภัยถูกบุกรุก",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "3 hours ago",
+      "comments": 8,
+      "priority": 12,
+      "category": "Resolved",
+      "status": "Resolved",
+      "categoryColor": "bg-green-500",
+      "priorityColor": "border-l-green-500",
+      "formData": {
+        "formId": "form_1750652352497",
+        "formName": "Create Cese",
+        "formColSpan": 2,
+        "formFieldJson": [
+          {
+            "id": "field_1750652553625_ualtx7l",
+            "label": "1. Service Type:",
+            "type": "select",
+            "value": "Repair",
+            "options": [
+              "Maintenance",
+              "Repair",
+              "Installation"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652560678_m7lgawm",
+            "label": "Contact Method: ",
+            "type": "select",
+            "value": "Email",
+            "options": [
+              "Phone number",
+              "Email",
+              "Live Chat"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652761342_apexdkb",
+            "label": "2. Request Service Date:",
+            "type": "dateLocal",
+            "value": "2025-09-10",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652788237_gnpi53t",
+            "label": "3. Service Location & Destination:",
+            "type": "InputGroup",
+            "value": [
+              {
+                "id": "field_1750652791262_wx4b337",
+                "label": "Radio Button Form",
+                "type": "radio",
+                "value": "Destination Point",
+                "options": [
+                  "Service Location",
+                  "Destination Point"
+                ],
+                "newOptionText": "",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true
+              },
+              {
+                "id": "field_1750652794413_1xuasx4",
+                "label": "Text Area Form",
+                "type": "textAreaInput",
+                "value": "999 Security Tower, Cyber City",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true,
+                "placeholder": "Address"
+              }
+            ],
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652936086_kr5etkw",
+            "label": "Priority Level:",
+            "type": "radio",
+            "value": "High",
+            "options": [
+              "Low",
+              "Normal",
+              "High"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653047006_ypfyff5",
+            "label": "4. Service Center:",
+            "type": "select",
+            "value": "Service Center2",
+            "options": [
+              "Service Center1",
+              "Service Center2"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653200552_jk2s6jm",
+            "label": "5. Customer Name:",
+            "type": "textInput",
+            "value": "Mia Wilson",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer full name"
+          },
+          {
+            "id": "field_1750653108822_g4sqsdk",
+            "label": "6. Customer Phone:",
+            "type": "textInput",
+            "value": "0823456789",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer Phone Number"
+          },
+          {
+            "id": "field_1750653455160_0a66gqd",
+            "label": "8. Vehicle Information:",
+            "type": "textInput",
+            "value": "Porsche Taycan 2025",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Vehicle Detail"
+          },
+          {
+            "id": "field_1750653455415_9mh0t5b",
+            "label": "9. Assembly Information:",
+            "type": "textInput",
+            "value": "Firewall configuration",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Assembly Detail"
+          },
+          {
+            "id": "field_1750653566064_s5uoack",
+            "label": "Photos:",
+            "type": "multiImage",
+            "value": [],
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653567887_o6cg8nk",
+            "label": "7. Service Details: *",
+            "type": "textAreaInput",
+            "value": "Detected unauthorized access attempts to the network.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653568456_po50lv0",
+            "label": "10. Assembly Procedure:",
+            "type": "textAreaInput",
+            "value": "Applied security patches and monitored network activity.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          }
+        ]
+      },
+      "assignee": [
+        {
+          "name": "Bob Smith",
+          "color": "bg-green-500"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "createBy": "Phanuphong",
+      "title": "020 - พลังงานสำรองต่ำ",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "1 week ago",
+      "comments": 2,
+      "priority": 1,
+      "category": "Closed",
+      "status": "Closed",
+      "categoryColor": "bg-gray-500",
+      "priorityColor": "border-l-blue-500",
+      "formData": {
+        "formId": "form_1750652352497",
+        "formName": "Create Cese",
+        "formColSpan": 2,
+        "formFieldJson": [
+          {
+            "id": "field_1750652553625_ualtx7l",
+            "label": "1. Service Type:",
+            "type": "select",
+            "value": "Maintenance",
+            "options": [
+              "Maintenance",
+              "Repair",
+              "Installation"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652560678_m7lgawm",
+            "label": "Contact Method: ",
+            "type": "select",
+            "value": "Phone number",
+            "options": [
+              "Phone number",
+              "Email",
+              "Live Chat"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652761342_apexdkb",
+            "label": "2. Request Service Date:",
+            "type": "dateLocal",
+            "value": "2025-09-12",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652788237_gnpi53t",
+            "label": "3. Service Location & Destination:",
+            "type": "InputGroup",
+            "value": [
+              {
+                "id": "field_1750652791262_wx4b337",
+                "label": "Radio Button Form",
+                "type": "radio",
+                "value": "Destination Point",
+                "options": [
+                  "Service Location",
+                  "Destination Point"
+                ],
+                "newOptionText": "",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true
+              },
+              {
+                "id": "field_1750652794413_1xuasx4",
+                "label": "Text Area Form",
+                "type": "textAreaInput",
+                "value": "111 Research Lab, University Campus",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true,
+                "placeholder": "Address"
+              }
+            ],
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652936086_kr5etkw",
+            "label": "Priority Level:",
+            "type": "radio",
+            "value": "Normal",
+            "options": [
+              "Low",
+              "Normal",
+              "High"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653047006_ypfyff5",
+            "label": "4. Service Center:",
+            "type": "select",
+            "value": "Service Center1",
+            "options": [
+              "Service Center1",
+              "Service Center2"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653200552_jk2s6jm",
+            "label": "5. Customer Name:",
+            "type": "textInput",
+            "value": "Lily Evans",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer full name"
+          },
+          {
+            "id": "field_1750653108822_g4sqsdk",
+            "label": "6. Customer Phone:",
+            "type": "textInput",
+            "value": "0811223344",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer Phone Number"
+          },
+          {
+            "id": "field_1750653455160_0a66gqd",
+            "label": "8. Vehicle Information:",
+            "type": "textInput",
+            "value": "Toyota Prius 2024",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Vehicle Detail"
+          },
+          {
+            "id": "field_1750653455415_9mh0t5b",
+            "label": "9. Assembly Information:",
+            "type": "textInput",
+            "value": "UPS battery replacement",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Assembly Detail"
+          },
+          {
+            "id": "field_1750653566064_s5uoack",
+            "label": "Photos:",
+            "type": "multiImage",
+            "value": [],
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653567887_o6cg8nk",
+            "label": "7. Service Details: *",
+            "type": "textAreaInput",
+            "value": "Uninterruptible Power Supply (UPS) showing low battery.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653568456_po50lv0",
+            "label": "10. Assembly Procedure:",
+            "type": "textAreaInput",
+            "value": "Replaced UPS batteries and tested power output.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          }
+        ]
+      },
+      "assignee": [
+        {
+          "name": "Charlie Brown",
+          "color": "bg-purple-500"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "createBy": "Phanuphong",
+      "title": "021 - ระบบปฏิบัติการล้มเหลว",
+      "description": "Phaholyothin 13 Rd., Samsen Nai, Phayathai Bangkok 10400",
+      "date": "4 months ago",
+      "comments": 5,
+      "priority": 10,
+      "category": "On Hold",
+      "status": "On Hold",
+      "categoryColor": "bg-orange-500",
+      "priorityColor": "border-l-purple-500",
+      "formData": {
+        "formId": "form_1750652352497",
+        "formName": "Create Cese",
+        "formColSpan": 2,
+        "formFieldJson": [
+          {
+            "id": "field_1750652553625_ualtx7l",
+            "label": "1. Service Type:",
+            "type": "select",
+            "value": "Repair",
+            "options": [
+              "Maintenance",
+              "Repair",
+              "Installation"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652560678_m7lgawm",
+            "label": "Contact Method: ",
+            "type": "select",
+            "value": "Email",
+            "options": [
+              "Phone number",
+              "Email",
+              "Live Chat"
+            ],
+            "newOptionText": "",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652761342_apexdkb",
+            "label": "2. Request Service Date:",
+            "type": "dateLocal",
+            "value": "2025-09-15",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652788237_gnpi53t",
+            "label": "3. Service Location & Destination:",
+            "type": "InputGroup",
+            "value": [
+              {
+                "id": "field_1750652791262_wx4b337",
+                "label": "Radio Button Form",
+                "type": "radio",
+                "value": "Service Location",
+                "options": [
+                  "Service Location",
+                  "Destination Point"
+                ],
+                "newOptionText": "",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true
+              },
+              {
+                "id": "field_1750652794413_1xuasx4",
+                "label": "Text Area Form",
+                "type": "textAreaInput",
+                "value": "333 Corporate HQ, Executive Suites",
+                "required": false,
+                "colSpan": 2,
+                "isChild": true,
+                "placeholder": "Address"
+              }
+            ],
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750652936086_kr5etkw",
+            "label": "Priority Level:",
+            "type": "radio",
+            "value": "High",
+            "options": [
+              "Low",
+              "Normal",
+              "High"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653047006_ypfyff5",
+            "label": "4. Service Center:",
+            "type": "select",
+            "value": "Service Center2",
+            "options": [
+              "Service Center1",
+              "Service Center2"
+            ],
+            "newOptionText": "",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653200552_jk2s6jm",
+            "label": "5. Customer Name:",
+            "type": "textInput",
+            "value": "Olivia White",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer full name"
+          },
+          {
+            "id": "field_1750653108822_g4sqsdk",
+            "label": "6. Customer Phone:",
+            "type": "textInput",
+            "value": "0812345678",
+            "required": true,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Customer Phone Number"
+          },
+          {
+            "id": "field_1750653455160_0a66gqd",
+            "label": "8. Vehicle Information:",
+            "type": "textInput",
+            "value": "Tesla Model S 2025",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Vehicle Detail"
+          },
+          {
+            "id": "field_1750653455415_9mh0t5b",
+            "label": "9. Assembly Information:",
+            "type": "textInput",
+            "value": "OS reinstallation",
+            "required": false,
+            "colSpan": 1,
+            "isChild": false,
+            "placeholder": "Assembly Detail"
+          },
+          {
+            "id": "field_1750653566064_s5uoack",
+            "label": "Photos:",
+            "type": "multiImage",
+            "value": [],
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653567887_o6cg8nk",
+            "label": "7. Service Details: *",
+            "type": "textAreaInput",
+            "value": "Operating system failing to boot or crashing.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          },
+          {
+            "id": "field_1750653568456_po50lv0",
+            "label": "10. Assembly Procedure:",
+            "type": "textAreaInput",
+            "value": "Reinstalled OS and restored from backup.",
+            "required": false,
+            "colSpan": 2,
+            "isChild": false
+          }
+        ]
+      },
+      "assignee": [
+        {
+          "name": "Diana Prince",
+          "color": "bg-red-500"
+        }
+      ]
+    }
+]

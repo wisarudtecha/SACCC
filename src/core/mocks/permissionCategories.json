@@ -1,0 +1,51 @@
+[
+  {
+    "id": "user_management",
+    "name": "User Management",
+    "description": "User account and profile management",
+    "icon": "UserIcon",
+    "color": "text-blue-600"
+  },
+  {
+    "id": "case_management",
+    "name": "Case Management",
+    "description": "Case handling and workflow operations",
+    "icon": "FileIcon",
+    "color": "text-green-600"
+  },
+  {
+    "id": "system_admin",
+    "name": "System Administration",
+    "description": "System configuration and maintenance",
+    "icon": "PencilIcon",
+    "color": "text-purple-600"
+  },
+  {
+    "id": "data_access",
+    "name": "Data Access",
+    "description": "Data viewing and export capabilities",
+    "icon": "BoxIconLine",
+    "color": "text-orange-600"
+  },
+  {
+    "id": "reporting",
+    "name": "Reporting & Analytics",
+    "description": "Report generation and analytics",
+    "icon": "PieChartIcon",
+    "color": "text-indigo-600"
+  },
+  {
+    "id": "communication",
+    "name": "Communication",
+    "description": "Email, notifications, and messaging",
+    "icon": "EnvelopeIcon",
+    "color": "text-pink-600"
+  },
+  {
+    "id": "security",
+    "name": "Security & Compliance",
+    "description": "Security settings and audit controls",
+    "icon": "LockIcon",
+    "color": "text-red-600"
+  }
+]

@@ -1,0 +1,43 @@
+[
+  {
+    "id": "layout-mock-1",
+    "name": "Operations Overview",
+    "isShared": false,
+    "isDefault": true,
+    "orgId": "mock-org",
+    "createdBy": "mock-user",
+    "lastModified": "2026-07-14T00:00:00.000Z",
+    "widgets": [
+      {
+        "id": "widget-mock-summary",
+        "widgetKey": "case-summary-metrics",
+        "position": { "order": 0, "colSpan": 3, "rowSpan": 1 },
+        "config": { "showHeader": true }
+      },
+      {
+        "id": "widget-mock-sla",
+        "widgetKey": "sla-performance",
+        "position": { "order": 1, "colSpan": 1, "rowSpan": 1 },
+        "config": { "showHeader": true }
+      },
+      {
+        "id": "widget-mock-daily",
+        "widgetKey": "case-daily-chart",
+        "position": { "order": 2, "colSpan": 3, "rowSpan": 2 },
+        "config": { "showHeader": true }
+      },
+      {
+        "id": "widget-mock-donut",
+        "widgetKey": "case-status-donut",
+        "position": { "order": 3, "colSpan": 1, "rowSpan": 2 },
+        "config": { "showHeader": true }
+      },
+      {
+        "id": "widget-mock-monthly",
+        "widgetKey": "case-monthly-chart",
+        "position": { "order": 4, "colSpan": 4, "rowSpan": 2 },
+        "config": { "showHeader": true, "monthRange": 6 }
+      }
+    ]
+  }
+]

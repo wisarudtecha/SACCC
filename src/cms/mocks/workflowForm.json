@@ -1,0 +1,79 @@
+{
+  "new": {
+    "fields": [
+      { "name": "applicant_name", "type": "text", "label": "Applicant Name", "required": true },
+      { "name": "email", "type": "email", "label": "Email Address", "required": true },
+      { "name": "phone", "type": "tel", "label": "Phone Number", "required": true },
+      { "name": "application_type", "type": "select", "label": "Application Type", 
+        "options": ["Personal", "Business", "Non-profit"], "required": true },
+      { "name": "description", "type": "textarea", "label": "Description", "required": false }
+    ]
+  },
+  "disp": {
+    "fields": [
+      { "name": "approval_status", "type": "radio", "label": "Approval Status", 
+        "options": ["Approved", "Rejected", "Pending"], "required": true },
+      { "name": "comments", "type": "textarea", "label": "Comments", "required": false },
+      { "name": "approver_signature", "type": "text", "label": "Approver Signature", "required": true }
+    ]
+  },
+  "accept": {
+    "fields": [
+      { "name": "review_score", "type": "number", "label": "Review Score (1-10)", "required": true },
+      { "name": "review_comments", "type": "textarea", "label": "Review Comments", "required": true },
+      { "name": "recommendations", "type": "checkbox", "label": "Recommendations", 
+        "options": ["Approve", "Request Changes", "Schedule Follow-up"], "required": false }
+    ]
+  },
+  "arrival": {
+    "fields": [
+      { "name": "rating", "type": "number", "label": "Rating (1-5)", "required": true },
+      { "name": "feedback_text", "type": "textarea", "label": "Feedback", "required": true },
+      { "name": "improvement_areas", "type": "checkbox", "label": "Areas for Improvement", 
+        "options": ["Speed", "Quality", "Communication", "Documentation"], "required": false }
+    ]
+  },
+  "resolve": {
+    "fields": [
+      { "name": "request_type", "type": "select", "label": "Request Type", 
+        "options": ["Information", "Service", "Support", "Change"], "required": true },
+      { "name": "priority", "type": "radio", "label": "Priority", 
+        "options": ["Low", "Medium", "High", "Critical"], "required": true },
+      { "name": "details", "type": "textarea", "label": "Request Details", "required": true }
+    ]
+  },
+  "complete": {
+    "fields": [
+      { "name": "applicant_name", "type": "text", "label": "Applicant Name", "required": true },
+      { "name": "email", "type": "email", "label": "Email Address", "required": true },
+      { "name": "phone", "type": "tel", "label": "Phone Number", "required": true },
+      { "name": "application_type", "type": "select", "label": "Application Type", 
+        "options": ["Personal", "Business", "Non-profit"], "required": true },
+      { "name": "description", "type": "textarea", "label": "Description", "required": false }
+    ]
+  },
+  "alert": {
+    "fields": [
+      { "name": "approval_status", "type": "radio", "label": "Approval Status", 
+        "options": ["Approved", "Rejected", "Pending"], "required": true },
+      { "name": "comments", "type": "textarea", "label": "Comments", "required": false },
+      { "name": "approver_signature", "type": "text", "label": "Approver Signature", "required": true }
+    ]
+  },
+  "assign": {
+    "fields": [
+      { "name": "review_score", "type": "number", "label": "Review Score (1-10)", "required": true },
+      { "name": "review_comments", "type": "textarea", "label": "Review Comments", "required": true },
+      { "name": "recommendations", "type": "checkbox", "label": "Recommendations", 
+        "options": ["Approve", "Request Changes", "Schedule Follow-up"], "required": false }
+    ]
+  },
+  "fix": {
+    "fields": [
+      { "name": "rating", "type": "number", "label": "Rating (1-5)", "required": true },
+      { "name": "feedback_text", "type": "textarea", "label": "Feedback", "required": true },
+      { "name": "improvement_areas", "type": "checkbox", "label": "Areas for Improvement", 
+        "options": ["Speed", "Quality", "Communication", "Documentation"], "required": false }
+    ]
+  }
+}

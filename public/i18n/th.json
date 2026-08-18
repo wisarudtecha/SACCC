@@ -1,0 +1,4423 @@
+{
+  "common": {
+    "welcome": "ยินดีต้อนรับ",
+    "hello": "สวัสดี",
+    "goodbye": "ลาก่อน",
+    "yes": "ใช่",
+    "no": "ไม่",
+    "save": "บันทึก",
+    "saving": "กำลังบันทึก",
+    "cancel": "ยกเลิก",
+    "confirm": "ยืนยัน",
+    "delete": "ลบ",
+    "unlink": "ยกเลิกการเชื่อมโยง",
+    "edit": "แก้ไข",
+    "edit_entity": "แก้ไข_ENTITY_",
+    "view": "ดู",
+    "view_entity": "รายละเอียด_ENTITY_",
+    "add": "เพิ่ม",
+    "search": "ค้นหา",
+    "loading": "กำลังโหลด...",
+    "loadingPercentage": "กำลังโหลด..._percentage_",
+    "loading_translations": "กำลังโหลดภาษา...",
+    "error": "เกิดข้อผิดพลาด",
+    "success": "สำเร็จ",
+    "back": "ย้อนกลับ",
+    "previous": "ก่อนหน้า",
+    "next": "ถัดไป",
+    "no_data": "ไม่มีข้อมูล",
+    "show": "แสดง",
+    "of": "จาก",
+    "all": "ทั้งหมด",
+    "items": "รายการ",
+    "filters": "ตัวกรอง",
+    "clear_filters": "ล้างตัวกรอง",
+    "start_date": "วันที่เริ่ม",
+    "end_date": "วันที่สิ้นสุด",
+    "search_placeholder": "ค้นหา...",
+    "refresh": "รีเฟรช",
+    "home": "หน้าหลัก",
+    "retry": "ลองใหม่อีกครั้ง",
+    "no_result": "ไม่เจอผลลัพธ์",
+    "charater": "ตัวอักษร",
+    "noOption": "ไม่มีตัวเลือก",
+    "publish": "เผยเพร่",
+    "unpublish": "ปิดการเผยแพร่",
+    "draft": "แบบร่าง",
+    "locked": "ล็อก",
+    "active": "เปิดใช้งาน",
+    "inactive": "ปิดการใช้งาน",
+    "at": "เมื่อ",
+    "createAt": "สร้างเมื่อ",
+    "by": "โดย",
+    "createBy": "สร้างโดย",
+    "at_time": "ตอน",
+    "new_version": "เวอร์ชั่นใหม่",
+    "version": "เวอร์ชั่น",
+    "name": "ชื่อ",
+    "create": "สร้าง",
+    "create_entity": "สร้าง_ENTITY_ใหม่",
+    "change_version": "เปลื่ยนเวอร์ชั่น",
+    "import": "นำเข้า",
+    "export": "ส่งออก",
+    "preview": "แสดงตัวอย่าง",
+    "submit": "ส่ง",
+    "close": "ปิด",
+    "addField": "เพิ่มฟิลด์",
+    "remove": "ลบ",
+    "hide": "ซ่อน",
+    "download": "ดาวน์โหลด",
+    "upload": "อัปโหลด",
+    "info": "ข้อมูล",
+    "dob": "วันเกิด",
+    "email": "อีเมล",
+    "phoneNumber": "หมายเลขโทรศัพท์",
+    "address": "ที่อยู่",
+    "type": "ประเภท",
+    "room": "ห้อง",
+    "floor": "ชั้น",
+    "using": "กำลังใช้",
+    "used": "ใช้อยู่",
+    "current": "ปัจุบัน",
+    "report": "รายงาน",
+    "status": "สถานะ",
+    "appointment": "การนัดหมาย",
+    "customer": "ลูกค้า",
+    "appointDate": "วันนัดหมาย",
+    "appointmentType": "ประเภทนัดหมาย",
+    "serviceType": "ประเภทบริการ",
+    "note": "บันทึก",
+    "subcase": "เคสย่อย",
+    "watching": "กำลังดู",
+    "product": "ผลิตภัณฑ์",
+    "case": "ใบงาน",
+    "service": "บริการ",
+    "contact": "ติดต่อ",
+    "apply_filter": "เพิ่มตัวกรอง",
+    "advanced_filter": "ตัวกรองขั้นสูง",
+    "male": "ชาย",
+    "female": "หญิง",
+    "other": "อื่นๆ",
+    "select": "เลือก",
+    "fillData": "เติม",
+    "language": "ภาษา",
+    "change_status_to": "เปลี่ยนสถานะเป็น",
+    "select_form": "เลือกแบบฟอร์ม",
+    "detail": "รายละเอียด",
+    "date_range": "วันที่เริ่ม - วันที่สิ้นสุด",
+    "add_product": "เพิ่มผลิตภัณฑ์",
+    "add_service": "เพิ่มบริการ",
+    "schedule": "นัดหมาย",
+    "purchase_date": "วันที่ซื้อ",
+    "category": "ประเภท",
+    "select_purchase_date": "เลือกวันที่ซื้อ",
+    "product_list": "รายการผลิตภัณฑ์",
+    "serial_number": "หมายเลขซีเรียล",
+    "end_warranty": "วันหมดอายุ",
+    "profile": "โปรไฟล์",
+    "history": "ประวัติ",
+    "phone_number": "เบอร์โทรศัพท์",
+    "line": "ไลน์",
+    "facebook": "เฟซบุ๊ก",
+    "labor_price": "ค่าแรง",
+    "service_date": "วันบริการ",
+    "select_service_date": "เลือกวันบริการ",
+    "baht": "บาท",
+    "customer_grade": "เกรดลูกค้า",
+    "contact_information": "ข้อมูลติดต่อ",
+    "done": "เสร็จสิ้น",
+    "notDone": "ยังไม่เสร็จสิ้น",
+    "in_progress": "กำลังดำเนินการ",
+    "part": "อะไหล่",
+    "store": "ร้านค้า",
+    "quantity": "จำนวน",
+    "required_field": "กรุณากรอกข้อมูล",
+    "required_fields": "กรุณากรอกข้อมูลให้ครบถ้วน",
+    "selectSparePart": "เลือกอะไหล่",
+    "selectStore": "เลือกร้านค้า",
+    "brand": "ยี่ห้อ",
+    "request_spare_part": "ขอชิ้นส่วนอะไหล่",
+    "spare_part": "อะไหล่",
+    "view_cart": "ดูตะกร้า",
+    "cart": "ตะกร้า",
+    "request": "คำขอ",
+    "filter": "ตัวกรอง",
+    "calendar": "ปฏิทิน",
+    "list": "รายการ",
+    "more": "เพิ่มเติม",
+    "requestBy": "ขอโดย",
+    "change": "เปลี่ยน",
+    "skip": "ข้าม",
+    "billing_info": "ข้อมูลการเรียกเก็บเงิน",
+    "bill_to": "เรียกเก็บจาก",
+    "bill_to_placeholder": "ชื่อบริษัท / ลูกค้า",
+    "bill_addr": "ที่อยู่สำหรับออกใบเสร็จ",
+    "bill_addr_placeholder": "123 ถนนหลัก",
+    "shipping_info": "ข้อมูลการจัดส่ง",
+    "ship_to": "จัดส่งถึง",
+    "ship_to_placeholder": "ปลายทาง / ผู้รับ",
+    "ship_by": "จัดส่งโดย",
+    "ship_by_placeholder": "FedEx / ชื่อผู้ขนส่ง",
+    "ship_addr": "ที่อยู่จัดส่ง",
+    "ship_addr_placeholder": "456 ถนนจัดส่ง",
+    "no_parts_added": "ยังไม่มีรายการสินค้า",
+    "remove_part": "ลบ",
+    "add_to_cart": "เพิ่มลงตะกร้า",
+    "remove_from_cart": "ลบออกจากตะกร้า",
+    "processing_requests": "กำลังดำเนินการ...",
+    "update_entity": "อัพเดท_ENTITY_",
+    "order": "ออเดอร์",
+    "ordering": "กำลังออเดอร์",
+    "newOrder": "สร้างออเดอร์ใหม่",
+    "totalItems": "รายการสินค้า",
+    "totalQty": "จำนวนรวม",
+    "currentStep": "ขั้นตอนปัจจุบัน",
+    "createdAt": "สร้างเมื่อ",
+    "order_items": "รายการในออเดอร์",
+    "want_to_cancel": "ต้องการยกเลิก",
+    "confirm_edit": "ยืนยันการแก้ไข",
+    "linked_existing": "ใช้ข้อมูลที่มีอยู่",
+    "total_price": "ราคารวม",
+    "price": "ราคา",
+    "operating_procedure": "ขั้นตอนการปฏิบัติงาน",
+    "item": "ชิ้น",
+    "bill": "บิล",
+    "shipping": "จัดส่ง",
+    "print": "พิมพ์",
+    "cancel_reason": "เหตุผลที่ยกเลิก"
+  },
+  "auth": {
+    "signin": {
+      "title": "เข้าสู่ระบบ",
+      "subtitle": "กรอกชื่อผู้ใช้ รหัสผ่าน และองค์กรเพื่อเข้าสู่ระบบ!",
+      "username": {
+        "label": "ชื่อผู้ใช้",
+        "placeholder": "กรอกชื่อผู้ใช้ของคุณ",
+        "required": "จำเป็นต้องมีชื่อผู้ใช้"
+      },
+      "password": {
+        "label": "รหัสผ่าน",
+        "placeholder": "กรอกรหัสผ่านของคุณ",
+        "required": "จำเป็นต้องมีรหัสผ่าน",
+        "min": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร"
+      },
+      "organization": {
+        "label": "องค์กร",
+        "placeholder": "กรอกชื่อองค์กรของคุณ",
+        "required": "จำเป็นต้องมีชื่อองค์กร"
+      },
+      "email": {
+        "label": "อีเมล",
+        "placeholder": "กรอกอีเมลของคุณ",
+        "required": "จำเป็นต้องมีอีเมล",
+        "invalid": "อีเมลไม่ถูกต้อง",
+        "error": "ไม่สามารถส่งอีเมลรีเซ็ตได้"
+      },
+      "keep_logged_in": "จดจำการเข้าสู่ระบบ",
+      "reset_password": "ลืมรหัสผ่าน?",
+      "button": "เข้าสู่ระบบ",
+      "loading": "กำลังเข้าสู่ระบบ...",
+      "demo": {
+        "title": "บัญชีสาธิต:",
+        "username": "ชื่อผู้ใช้",
+        "password": "รหัสผ่าน",
+        "organization": "องค์กร",
+        "auto_fill": "กรอกอัตโนมัติ"
+      },
+      "no_account": "ยังไม่มีบัญชี?",
+      "sign_up": "สมัครสมาชิก",
+      "forgot_password": {
+        "title": "รีเซ็ตรหัสผ่าน",
+        "subtitle": "กรอกอีเมล์ของคุณเพื่อรีเซ็ตรหัสผ่าน"
+      },
+      "state": {
+        "is_locked": "บัญชีถูกล็อคชั่วคราวเนื่องจากพยายามหลายครั้งไม่สำเร็จ โปรดลองอีกครั้งในภายหลัง",
+        "network_status": "ไม่มีการเชื่อมต่ออินเทอร์เน็ต โปรดตรวจสอบการเชื่อมต่อและลองอีกครั้ง",
+        "network_online": "เชื่อมต่อแล้ว",
+        "network_offline": "ออฟไลน์ - คุณสมบัติบางอย่างอาจไม่ทำงาน",
+        "is_loading": "กำลังตรวจสอบความถูกต้อง...",
+        "is_refreshing": "กำลังรีเฟรชเซสชั่น...",
+        "wating": "โปรดรอ",
+        "session_timeout": {
+          "title": "คำเตือนการหมดเวลาเซสชั่น",
+          "subtitle": "เซสชันของคุณจะหมดอายุใน",
+          "description": "วินาที",
+          "login": "ต่ออายุ",
+          "logout": "ออกจากระบบ",
+          "extending": "กำลังต่ออายุ...",
+          "extend_failed": "ไม่สามารถต่ออายุเซสชันได้ กรุณาเข้าสู่ระบบอีกครั้ง"
+        }
+      }
+    },
+    "permission": {
+      "access_denied": {
+        "title": "การเข้าถึงถูกปฏิเสธ",
+        "subtitle": "คุณไม่มีสิทธิ์ในการ",
+        "description": "ต้องได้รับอนุญาต"
+      },
+      "insufficient_permissions": {
+        "title": "สิทธิ์อนุญาตไม่เพียงพอ",
+        "subtitle": "คุณไม่มีสิทธิ์ที่จำเป็นทั้งหมดสำหรับการดำเนินการนี้",
+        "description": "ต้องได้รับอนุญาต"
+      }
+    }
+  },
+  "dashboard": {
+    "custom": {
+      "customize": "ปรับแต่ง",
+      "entity_name": "เลย์เอาต์",
+      "layouts": "เลย์เอาต์",
+      "layout_actions": "การจัดการเลย์เอาต์",
+      "no_saved_layouts": "ยังไม่มีเลย์เอาต์ที่บันทึกไว้",
+      "new_layout": "สร้างเลย์เอาต์ใหม่",
+      "rename_layout": "เปลี่ยนชื่อเลย์เอาต์",
+      "duplicate_layout": "ทำสำเนาเลย์เอาต์",
+      "delete_layout": "ลบเลย์เอาต์",
+      "layout_name": "ชื่อเลย์เอาต์",
+      "layout_name_placeholder": "เช่น ภาพรวมการปฏิบัติงาน",
+      "layout_name_required": "กรุณาระบุชื่อเลย์เอาต์",
+      "duplicate_suffix": "(สำเนา)",
+      "create": "สร้าง",
+      "rename": "เปลี่ยนชื่อ",
+      "duplicate": "ทำสำเนา",
+      "set_default": "ตั้งเป็นค่าเริ่มต้น",
+      "default_badge": "ค่าเริ่มต้น",
+      "share_layout": "แชร์ให้ทีม",
+      "unshare_layout": "หยุดแชร์",
+      "shared_badge": "แชร์แล้ว",
+      "read_only": "อ่านอย่างเดียว",
+      "default_layout_name": "แดชบอร์ดเริ่มต้น",
+      "unsaved_layout_hint": "ยังไม่ได้บันทึก",
+      "confirm_delete_title": "ลบเลย์เอาต์",
+      "confirm_delete_message": "ต้องการลบ \"_NAME_\" หรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
+      "confirm_delete_dirty_message": "ต้องการลบ \"_NAME_\" หรือไม่? การเปลี่ยนแปลงที่ยังไม่ได้บันทึกจะสูญหาย และไม่สามารถย้อนกลับได้",
+      "confirm_discard_title": "ยกเลิกการเปลี่ยนแปลง",
+      "confirm_discard_message": "คุณมีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก ต้องการยกเลิกหรือไม่?",
+      "remote_updated": "มีการอัปเดตจากที่อื่น",
+      "remote_updated_hint": "เลย์เอาต์นี้ถูกแก้ไขบนเซิร์ฟเวอร์ กดบันทึกเพื่อเขียนทับ หรือยกเลิกการเปลี่ยนแปลงเพื่อโหลดเวอร์ชันล่าสุด",
+      "unavailable_title": "ไม่สามารถโหลดเลย์เอาต์ที่บันทึกไว้",
+      "unavailable_message": "กำลังแสดงเลย์เอาต์ชั่วคราว การเปลี่ยนแปลงจะยังไม่ถูกบันทึกจนกว่าปัญหานี้จะได้รับการแก้ไข",
+      "done": "เสร็จสิ้น",
+      "add_widget": "เพิ่มวิดเจ็ต",
+      "save": "บันทึก",
+      "saving": "กำลังบันทึก...",
+      "discard": "ยกเลิกการเปลี่ยนแปลง",
+      "cancel": "ยกเลิก",
+      "apply": "ใช้งาน",
+      "unsaved_changes": "มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก",
+      "no_widgets": "ยังไม่มีวิดเจ็ต เปิดโหมดปรับแต่งเพื่อเพิ่ม",
+      "unknown_widget": "ไม่รู้จักวิดเจ็ตนี้",
+      "widget_settings": "ตั้งค่าวิดเจ็ต",
+      "widget_title": "ชื่อ",
+      "remove_widget": "ลบวิดเจ็ต",
+      "drag_handle": "ลากเพื่อจัดเรียง",
+      "col_span": "ความกว้าง (คอลัมน์)",
+      "row_span": "ความสูง (แถว)",
+      "month_range": "จำนวนเดือนที่แสดง",
+      "show_header": "แสดงหัวข้อ",
+      "connected": "เชื่อมต่อแล้ว",
+      "disconnected": "ไม่ได้เชื่อมต่อ",
+      "groups": {
+        "case": "การจัดการเคส",
+        "product": "การจัดการสินค้า",
+        "kms": "ฐานความรู้",
+        "workspace": "พื้นที่ทำงาน"
+      },
+      "widgets": {
+        "case_summary_metrics": {
+          "label": "สรุปเคส",
+          "description": "จำนวนเคสทั้งหมดและแยกตามกลุ่ม"
+        },
+        "sla_performance": {
+          "label": "ประสิทธิภาพการทำงาน",
+          "description": "อัตราการปฏิบัติตาม SLA และเวลาเฉลี่ยในการแก้ปัญหา"
+        },
+        "case_daily_chart": {
+          "label": "เคสรายวัน",
+          "description": "เคสแยกตามสถานะในช่วงวันที่ผ่านมา"
+        },
+        "case_monthly_chart": {
+          "label": "เคสรายเดือน",
+          "description": "เคสแยกตามสถานะในช่วงเดือนที่ผ่านมา"
+        },
+        "case_status_donut": {
+          "label": "ภาพรวมสถานะเคส",
+          "description": "สัดส่วนสถานะของช่วงเวลาล่าสุด"
+        },
+        "growth_metrics": {
+          "label": "ตัวชี้วัดการเติบโต",
+          "description": "ยอดรวมสินค้า อะไหล่ การสั่งซื้อ และรายการค้าง พร้อมการเติบโตเทียบเดือนก่อน"
+        },
+        "module_overview": {
+          "label": "ภาพรวมโมดูล",
+          "description": "จำนวนรายการที่ใช้งานของสต็อก อะไหล่ ลูกค้า และการนัดหมาย"
+        },
+        "top_ordered": {
+          "label": "สั่งซื้อมากที่สุด",
+          "description": "อะไหล่ที่ถูกสั่งมากที่สุด พร้อมจำนวนและราคาต่อหน่วย"
+        },
+        "revenue": {
+          "label": "รายได้โดยประมาณ",
+          "description": "เป้ารายได้ของเดือนนี้ พร้อมสัดส่วนอะไหล่/สินค้า"
+        },
+        "inventory_alert": {
+          "label": "แจ้งเตือนคลังสินค้า",
+          "description": "อะไหล่ที่ต่ำกว่าขั้นต่ำและคำขอซื้อที่รออนุมัติ"
+        }
+      }
+    }
+  },
+  "navigation": {
+    "super_app": {
+      "sidebar": {
+        "workspace": {
+          "title": "พื้นที่ทำงาน",
+          "menu": {
+            "softphone": "โทรศัพท์",
+            "chat": {
+              "title": "แชต",
+              "sub_menu": {
+                "lobby": "ห้องรับ (ขาเข้า)",
+                "history": "ประวัติการแชต"
+              }
+            },
+            "email": "อีเมล",
+            "dashboard": "แดชบอร์ด"
+          }
+        },
+        "contact": {
+          "title": "รายชื่อผู้ติดต่อ",
+          "menu": {
+            "list": "รายชื่อผู้ติดต่อ",
+            "appointment": "การนัดหมาย"
+          }
+        },
+        "case": {
+          "title": "เคส",
+          "menu": {
+            "list": "รายการเคส",
+            "assign": "มอบหมายเคส",
+            "dashboard": "แดชบอร์ดเคส",
+            "custom_dashboard": "แดชบอร์ดที่กำหนดเอง"
+          }
+        },
+        "product": {
+          "title": "สินค้า",
+          "menu": {
+            "product": "รายการสินค้า",
+            "inventory": "อะไหล่",
+            "inventory_request": "ออเดอร์",
+            "dashboard": "แดชบอร์ด"
+          }
+        },
+        "knowledge": {
+          "title": "คลังความรู้",
+          "menu": {
+            "dashboard": "แดชบอร์ด",
+            "broadcast": "ประกาศ",
+            "files": "ไฟล์",
+            "articles": "บทความ",
+            "category": "จัดการหมวดหมู่",
+            "banner": "จัดการแบนเนอร์",
+            "source": "จัดการแหล่งที่มา"
+          }
+        }
+      },
+      "topbar": {
+        "workspace": "พื้นที่ทำงาน",
+        "contact": "ผู้ติดต่อ",
+        "case": "เคส",
+        "product": "สินค้า",
+        "more": {
+          "title": "เพิ่มเติม",
+          "menu": {
+            "product": {
+              "title": "สินค้า",
+              "sub_menu": {
+                "product": "สินค้า",
+                "product_stock": "สต็อกสินค้า",
+                "inventory": "อะไหล่",
+                "inventory_stock": "สต็อกอะไหล่",
+                "inventory_request": "ออเดอร์"
+              }
+            },
+            "case": {
+              "title": "เคส",
+              "sub_menu": {
+                "create": "สร้าง",
+                "schedule": "ตารางเวลา",
+                "assign": "มอบหมาย",
+                "history": "ประวัติ"
+              }
+            },
+            "system_config": {
+              "title": "การตั้งค่าระบบ",
+              "sub_menu": {
+                "service_type": "การจัดการประเภทบริการ",
+                "unit": "การจัดการหน่วย",
+                "skill": "การจัดการทักษะ",
+                "area": "การจัดการพื้นที่"
+              }
+            },
+            "user_mgmt": {
+              "title": "การจัดการผู้ใช้",
+              "sub_menu": {
+                "user": "การจัดการผู้ใช้",
+                "role_privilege": "บทบาทและสิทธิ์",
+                "user_group": "กลุ่มผู้ใช้",
+                "org": "องค์กร",
+                "audit": "บันทึกการตรวจสอบ"
+              }
+            },
+            "contact": {
+              "title": "ผู้ติดต่อ",
+              "sub_menu": {
+                "list": "รายชื่อผู้ติดต่อ",
+                "config": "การตั้งค่าผู้ติดต่อ",
+                "appointment": "การนัดหมาย"
+              }
+            },
+            "dashboard_analytic": {
+              "title": "แดชบอร์ดและการวิเคราะห์",
+              "sub_menu": {
+                "case": "เคส",
+                "product": "สินค้า",
+                "custom": "แดชบอร์ดที่กำหนดเอง"
+              }
+            },
+            "form": {
+              "title": "ฟอร์ม",
+              "sub_menu": {
+                "mgmt": "การจัดการ",
+                "builder": "ตัวสร้าง"
+              }
+            },
+            "package_service": {
+              "title": "แพ็กเกจและบริการ",
+              "sub_menu": {
+                "package": "แพ็กเกจ",
+                "service": "บริการ"
+              }
+            },
+            "workflow": {
+              "title": "เวิร์กโฟลว์",
+              "sub_menu": {
+                "mgmt": "การจัดการ",
+                "builder": "ตัวสร้าง"
+              }
+            },
+            "report": {
+              "title": "รายงาน",
+              "sub_menu": {
+                "report": "รายงาน",
+                "case": "รายงานเหตุ",
+                "order": "รายงานคำสั่งซื้อ"
+              }
+            },
+            "knowledge": {
+              "title": "คลังความรู้",
+              "sub_menu": {
+                "category": "จัดการหมวดหมู่",
+                "banner": "จัดการแบนเนอร์",
+                "source": "จัดการแหล่งที่มา",
+                "boardcastlog": "ประวัติการเผยแพร่"
+              }
+            }
+          }
+        },
+        "status": {
+          "available": "พร้อมใช้งาน",
+          "offline": "ออฟไลน์"
+        },
+        "knowlage": "คลังความรู้"
+      }
+    },
+    "home": "หน้าหลัก",
+    "topbar": {
+      "search": {
+        "title": "ค้นหา",
+        "placeholder": "ค้นหาหรือพิมพ์คำสั่ง...",
+        "search_button": "ค้นหา",
+        "no_results": "ไม่พบผลลัพธ์"
+      },
+      "settings": {
+        "title": "การตั้งค่า",
+        "language": "ภาษา",
+        "theme": "ธีม",
+        "notification": {
+          "title": "การแจ้งเตือน",
+          "mark_all_as_read": "ทำเครื่องหมายทั้งหมดว่าอ่านแล้ว",
+          "no_notifications": "ไม่พบการแจ้งเตือน",
+          "search": "ค้นหา",
+          "view_all_notifications": "ดูการแจ้งเตือนทั้งหมด"
+        }
+      },
+      "profile": {
+        "edit_profile": "โปรไฟล์",
+        "account_settings": "การตั้งค่าบัญชี",
+        "notification": "การแจ้งเตือน",
+        "sign_out": "ออกจากระบบ"
+      }
+    },
+    "sidebar": {
+      "main": {
+        "case_management": {
+          "title": "การจัดการเคส",
+          "nested": {
+            "case_creation": "สร้างเคส",
+            "creation_schedule_date": "สร้างเคสแบบนัดหมาย",
+            "case_assignment": "มอบหมายเคส",
+            "case_history": {
+              "title": "ประวัติเคส",
+              "header": "ประวัติเคส"
+            }
+          }
+        },
+        "dashboard": {
+          "title": "แดชบอร์ดและการวิเคราะห์",
+          "nested": {
+            "analytics": "การวิเคราะห์",
+            "call_center": "ศูนย์บริการ",
+            "agent_status": "สถานะเจ้าหน้าที่",
+            "service": {
+              "title": "เคส",
+              "header": "สรุปเคส"
+            }
+          }
+        },
+        "report": {
+          "title": "รายงาน"
+        },
+        "form_builder": {
+          "title": "ตัวสร้างฟอร์ม",
+          "nested": {
+            "form_management": "การจัดการฟอร์ม",
+            "form_builder": "สร้างฟอร์ม"
+          }
+        },
+        "workflow": {
+          "title": "เวิร์กโฟลว์",
+          "nested": {
+            "workflow_management": "การจัดการเวิร์กโฟลว์",
+            "workflow_builder": {
+              "title": "สร้างเวิร์กโฟลว์",
+              "header": "_MODE_เวิร์กโฟลว์",
+              "create": {
+                "title": "สร้างเวิร์กโฟลว์",
+                "header": "สร้างเวิร์กโฟลว์"
+              },
+              "read": {
+                "title": "รายละเอียดเวิร์กโฟลว์",
+                "header": "รายละเอียดเวิร์กโฟลว์"
+              },
+              "update": {
+                "title": "แก้ไขเวิร์กโฟลว์",
+                "header": "แก้ไขเวิร์กโฟลว์"
+              }
+            }
+          }
+        },
+        "user_management": {
+          "title": "การจัดการผู้ใช้",
+          "nested": {
+            "user": {
+              "title": "ผู้ใช้",
+              "header": "ผู้ใช้",
+              "create": {
+                "title": "สร้างผู้ใช้",
+                "header": "สร้างผู้ใช้"
+              },
+              "read": {
+                "title": "รายละเอียดผู้ใช้",
+                "header": "รายละเอียดผู้ใช้"
+              },
+              "update": {
+                "title": "แก้ไขผู้ใช้",
+                "header": "แก้ไขผู้ใช้"
+              }
+            },
+            "role_privilege": "บทบาทและสิทธิ์",
+            "user_group": "กลุ่มผู้ใช้",
+            "organization": "องค์กร",
+            "audit_log": "บันทึกการตรวจสอบ",
+            "customer": "ลูกค้า"
+          }
+        },
+        "customer": {
+          "title": "ลูกค้าสัมพันธ์"
+        },
+        "appointment": {
+          "title": "นัดหมาย"
+        },
+        "system_configuration": {
+          "title": "การกำหนดค่าระบบ",
+          "nested": {
+            "service_management": "การจัดการบริการ",
+            "unit_management": {
+              "title": "การจัดการหน่วย",
+              "header": "การจัดการหน่วย",
+              "create": {
+                "title": "สร้างหน่วย",
+                "header": "สร้างหน่วย"
+              },
+              "read": {
+                "title": "รายละเอียดหน่วย",
+                "header": "รายละเอียดหน่วย"
+              },
+              "update": {
+                "title": "แก้ไขหน่วย",
+                "header": "แก้ไขหน่วย"
+              }
+            },
+            "skill_management": "การจัดการทักษะ",
+            "property_management": "การจัดการคุณสมบัติ",
+            "area_management": "การจัดการพื้นที่"
+          }
+        }
+      },
+      "menu": {
+        "title": "เมนู",
+        "dashboard": {
+          "title": "แดชบอร์ด",
+          "nested": {
+            "ecommerce": "อีคอมเมิร์ซ",
+            "dashboard_framework": "แดชบอร์ด Framework"
+          }
+        },
+        "calendar": "ปฏิทิน",
+        "user_profile": "โปรไฟล์ผู้ใช้",
+        "forms": {
+          "title": "ฟอร์ม",
+          "nested": {
+            "form_elements": "องค์ประกอบฟอร์ม"
+          }
+        },
+        "tables": {
+          "title": "ตาราง",
+          "nested": {
+            "basic_tables": "ตารางพื้นฐาน"
+          }
+        },
+        "pages": {
+          "title": "เพจ",
+          "nested": {
+            "blank_page": "หน้าว่าง",
+            "404_error": "ข้อผิดพลาด 404"
+          }
+        }
+      },
+      "other": {
+        "title": "อื่นๆ",
+        "charts": {
+          "title": "แผนภูมิ",
+          "nested": {
+            "line_chart": "แผนภูมิเส้น",
+            "bar_chart": "แผนภูมิแท่ง"
+          }
+        },
+        "ui_elements": {
+          "title": "องค์ประกอบ UI",
+          "nested": {
+            "alerts": "การแจ้งเตือน",
+            "avatar": "อวาตาร์",
+            "badge": "ป้าย",
+            "buttons": "ปุ่ม",
+            "buttons_customize": "ปุ่ม (ปรับแต่ง)",
+            "images": "รูปภาพ",
+            "tabs": "แท็บ",
+            "videos": "วิดีโอ"
+          }
+        },
+        "authentication": {
+          "title": "การยืนยันตัวตน",
+          "nested": {
+            "sign_in": "เข้าสู่ระบบ",
+            "sign_up": "สมัครสมาชิก",
+            "authenticate_inspector": "ตรวจสอบรับรองความถูกต้อง"
+          }
+        },
+        "security": {
+          "title": "ความปลอดภัย",
+          "nested": {
+            "error_boundaries": "ข้อผิดพลาด",
+            "loading": "การโหลด",
+            "security_alert": "การแจ้งเตือนความปลอดภัย",
+            "offline": "การทำงานออฟไลน์"
+          }
+        },
+        "theme_debugger": {
+          "title": "ดีบักธีม"
+        }
+      },
+      "archives": {
+        "title": "คลังเก็บ",
+        "case_management": {
+          "title": "การจัดการเคส",
+          "nested": {
+            "case_history": "ประวัติเคส"
+          }
+        },
+        "workflow": {
+          "title": "เวิร์กโฟลว์",
+          "nested": {
+            "workflow_builder_v1": "เวิร์กโฟลว์ Builder v0.1.0",
+            "workflow_builder_v2": "เวิร์กโฟลว์ Builder v0.2.0"
+          }
+        }
+      }
+    }
+  },
+  "crud": {
+    "common": {
+      "processing": "กำลังประมวลผล...",
+      "search": "ค้นหา",
+      "length_menu": {
+        "show": "แสดง",
+        "entries": "รายการ"
+      },
+      "info": "กำลังแสดง _START_-_END_ จาก _TOTAL_ รายการ",
+      "info_empty": "แสดง 0 รายการ",
+      "info_filtered": "(กรองตาม _MAX_ รายการทั้งหมด)",
+      "info_postFix": "",
+      "loading_records": "กำลังโหลด...",
+      "zero_records": "ไม่มีรายการที่จะแสดง",
+      "empty_table": "ไม่มีข้อมูล",
+      "paginate": {
+        "info": "หน้า _PAGE_ จาก _TOTAL_",
+        "first": "หน้าแรก",
+        "previous": "ก่อนหน้า",
+        "next": "ถัดไป",
+        "last": "หน้าสุดท้าย"
+      },
+      "aria": {
+        "sortAscending": ": เปิดใช้งาน เรียงลำดับคอลัมน์จากน้อยไปมาก",
+        "sortDescending": ": เปิดใช้งานเพื่อเรียงลำดับคอลัมน์จากมากไปน้อย"
+      },
+      "search_advanced": "ตัวกรองขั้นสูง",
+      "reset_all": "ล้างตัวกรอง",
+      "apply_filters": "ใช้ตัวกรอง",
+      "count_filters": "ตัวกรอง ทำงานอยู่",
+      "no_filters": "ไม่มีการใช้ตัวกรอง",
+      "no_filters_active": "ลองปรับตัวกรองหรือเงื่อนไขการค้นหาของคุณ",
+      "no_records": "สร้าง_ENTITY_แรกของคุณเพื่อเริ่มต้น",
+      "action": "การดำเนินการ",
+      "create": "สร้าง_ENTITY_",
+      "read": "แสดง",
+      "update": "แก้ไข",
+      "delete": "ลบ",
+      "delete_success": "ลบ_ENTITY_สำเร็จแล้ว",
+      "delete_error": "ลบ_ENTITY_ล้มเหลว",
+      "confirm_modal": {
+        "dialog_title": {
+          "delete": "ยืนยันการลบ",
+          "status": "เปลี่ยนสถานะ",
+          "other": "ยืนยัน"
+        },
+        "dialog_subtitle": {
+          "delete": "การดำเนินการนี้ไม่สามารถย้อนกลับได้",
+          "status": "",
+          "other": "โปรดยืนยันการดำเนินการของคุณ"
+        },
+        "dialog_message": {
+          "delete": "คุณแน่ใจหรือไม่ว่าต้องการลบ _ENTITY_? การดำเนินการนี้ไม่สามารถย้อนกลับได้",
+          "status": "เปลี่ยนสถานะ _ENTITY_ เป็น_NEW_?",
+          "other": "คุณแน่ใจหรือไม่ว่าต้องการดำเนินการต่อ?"
+        },
+        "dialog_button": {
+          "cancel": "ยกเลิก",
+          "delete": "ลบ",
+          "status": "",
+          "other": "ยืนยัน"
+        }
+      },
+      "permission_denied": "คุณไม่มีสิทธิ์ในการดำเนินการนี้",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "ค้นหา _ENTITY_..."
+          }
+        }
+      },
+      "form": {
+        "attachment": {
+          "label": "รูปภาพ _ENTITY_",
+          "placeholder": "เปลี่ยนรูปภาพ",
+          "helper": "อนุญาต: JPG, PNG, GIF"
+        },
+        "action": {
+          "cancel": "ยกเลิก",
+          "reset": "รีเซ็ต",
+          "save": "บันทึก",
+          "saving": "กำลังบันทึก...",
+          "confirmDialog": {
+            "titleCreate": "ยืนยันการสร้าง _ENTITY_",
+            "titleUpdate": "ยืนยันการแก้ไข _ENTITY_",
+            "descriptionCreate": "โปรดยืนยันการสร้าง _ENTITY_",
+            "descriptionUpdate": "โปรดยืนยันการแก้ไข _ENTITY_",
+            "cancel": "ยกเลิก",
+            "confirm": "ยืนยัน"
+          },
+          "create": {
+            "success": "สร้าง _ENTITY_ เรียบร้อยแล้ว",
+            "error": "ไม่สามารถสร้าง _ENTITY_ ได้"
+          },
+          "delete": {
+            "success": "ลบ _ENTITY_ เรียบร้อยแล้ว",
+            "error": "ไม่สามารถลบ _ENTITY_ ได้"
+          },
+          "update": {
+            "success": "อัปเดต _ENTITY_ เรียบร้อยแล้ว",
+            "error": "ไม่สามารถอัปเดต _ENTITY_ ได้"
+          }
+        }
+      },
+      "unit": {
+        "day": "วัน",
+        "month": "เดือน",
+        "out_of_stock": "สินค้าหมด",
+        "low_stock": "สินค้าน้อย",
+        "in_stock": "มีสินค้า"
+      }
+    },
+    "case_history": {
+      "name": "เคส",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "ค้นหาเคส..."
+          },
+          "filter": {
+            "status": "เลือกสถานะ",
+            "priority": "เลือกลำดับความสำคัญ"
+          },
+          "advanced_filter": {
+            "start_date": {
+              "label": "วันที่เริ่มต้น",
+              "placeholder": "กรอกวันที่เริ่มต้น"
+            },
+            "end_date": {
+              "label": "วันที่สิ้นสุด",
+              "placeholder": "กรอกวันที่สิ้นสุด"
+            },
+            "caseType": {
+              "label": "ประเภท",
+              "placeholder": "เลือกประเภท"
+            },
+            "caseSType": {
+              "label": "ประเภทย่อย",
+              "placeholder": "เลือกประเภทย่อย"
+            },
+            "countryId": {
+              "label": "ประเทศ",
+              "placeholder": "เลือกประเทศ"
+            },
+            "provId": {
+              "label": "จังหวัด",
+              "placeholder": "เลือกจังหวัด"
+            },
+            "distId": {
+              "label": "เขต/อำเภอ",
+              "placeholder": "เลือกเขต/อำเภอ"
+            },
+            "category": {
+              "label": "หมวดหมู่",
+              "placeholder": "กรอกหมวดหมู่"
+            },
+            "caseDetail": {
+              "label": "รายละเอียด",
+              "placeholder": "กรอกรายละเอียด"
+            },
+            "createBy": {
+              "label": "สร้างโดย",
+              "placeholder": "เลือกชื่อผู้ใช้"
+            }
+          }
+        },
+        "header": {
+          "case": "หมายเลขเคส",
+          "detail": "รายละเอียด",
+          "status": "สถานะ",
+          "priority": "ความสำคัญ",
+          "created_by": "สร้างโดย",
+          "created_at": "สร้างเมื่อ"
+        },
+        "body": {
+          "actions": {
+            "cancel": "ยกเลิก"
+          }
+        },
+        "preview": {
+          "tab": {
+            "header": {
+              "overview": "ภาพรวม",
+              "activity": "บันทึกกิจกรรม"
+            }
+          }
+        }
+      }
+    },
+    "workflow": {
+      "name": "เวิร์กโฟลว์",
+      "builder": {
+        "toolbar": {
+          "header": "รายละเอียดเวิร์กโฟลว์",
+          "nodes": {
+            "header": "เพิ่มโหนด",
+            "start": "เริ่มต้น",
+            "process": "กระบวนการ",
+            "dispatch": "สั่งการ",
+            "sla": "SLA",
+            "decision": "การตัดสินใจ",
+            "end": "สิ้นสุด"
+          },
+          "actions": {
+            "adding": "คลิกเพื่อเพิ่มหรือลากลงบนผืนผ้าใบ",
+            "import": "นำเข้าเวิร์กโฟลว์",
+            "preview": "ดูตัวอย่าง SOP",
+            "save": "บันทึกเวิร์กโฟลว์",
+            "edit": "แก้ไขเวิร์กโฟลว์"
+          }
+        },
+        "metadata": {
+          "wfType": {
+            "label": "ประเภทเวิร์กโฟลว์",
+            "options": {
+              "case": "เคส",
+              "request": "เบิกอะไหล่"
+            }
+          },
+          "title": {
+            "label": "ชื่อเวิร์กโฟลว์",
+            "placeholder": "กรอกชื่อเวิร์กโฟลว์...",
+            "default": "เวิร์กโฟลว์ที่ไม่มีชื่อ"
+          },
+          "description": {
+            "label": "คำอธิบาย",
+            "placeholder": "คำอธิบายสั้นๆ..."
+          },
+          "status": {
+            "label": "สถานะ",
+            "placeholder": "เลือกสถานะ",
+            "options": {
+              "draft": "ร่าง",
+              "active": "ใช้งาน",
+              "inactive": "ไม่ใช้งาน",
+              "testing": "ทดสอบ"
+            }
+          },
+          "total_sla": "SLA รวม",
+          "created_at": "สร้างเมื่อ",
+          "created_by": "โดย"
+        },
+        "node": {
+          "header": "การตั้งค่าโหนด",
+          "description": "เลือกโหนดเพื่อกำหนดค่าคุณสมบัติ",
+          "validation": {
+            "header": "ข้อผิดพลาดในการตรวจสอบ",
+            "node_required": "เวิร์กโฟลว์ต้องมีอย่างน้อย หนึ่งโหนด _NODE_",
+            "action_required": "เวิร์กโฟลว์ต้องมีอย่างน้อย หนึ่งการกระทำ _ACTION_ ในโหนด _NODE_",
+            "maximum_connections": "โหนด_NODE_มีการเชื่อมต่อสูงสุดแล้ว",
+            "determine_connections": "โหนด_NODE_มีการเชื่อมต่อ ทั้งแบบใช่และไม่ใช่แล้ว"
+          },
+          "form": {
+            "label": {
+              "label": "ป้ายชื่อ"
+            },
+            "description": {
+              "label": "คำอธิบาย",
+              "placeholder": "กรอกคำอธิบาย..."
+            },
+            "node_type": {
+              "label": "ประเภทโหนด"
+            },
+            "position": {
+              "label": "ตำแหน่ง"
+            },
+            "actions": {
+              "label": "การกระทำ",
+              "placeholder": "เลือกการกระทำ"
+            },
+            "form": {
+              "label": "แบบฟอร์ม",
+              "placeholder": "เลือกแบบฟอร์ม"
+            },
+            "sla": {
+              "label": "SLA (นาที)"
+            },
+            "group": {
+              "label": "กลุ่มผู้รับผิดชอบ",
+              "placeholder": "เลือกกลุ่ม"
+            },
+            "pic": {
+              "label": "ผู้รับผิดชอบ (PIC)",
+              "placeholder": "เลือกผู้ใช้"
+            },
+            "conditions": {
+              "label": "เงื่อนไข",
+              "placeholder": "กรอกเงื่อนไข..."
+            }
+          },
+          "connections": {
+            "header": "การเชื่อมต่อ",
+            "outgoing": "ขาออก",
+            "incoming": "ขาเข้า"
+          },
+          "stats": {
+            "header": "สถิติเวิร์กโฟลว์",
+            "title": "ชื่อเวิร์กโฟลว์",
+            "status": "สถานะ",
+            "nodes": "โหนด",
+            "connections": "การเชื่อมต่อ",
+            "start_nodes": "โหนดเริ่มต้น",
+            "end_nodes": "โหนดสิ้นสุด"
+          }
+        },
+        "modal": {
+          "import": {
+            "header": "นำเข้าเวิร์กโฟลว์",
+            "file": {
+              "label": "อัปโหลดไฟล์ .json"
+            },
+            "textarea": {
+              "label": "หรือวางเนื้อหา JSON",
+              "placeholder": "วาง JSON ของเวิร์กโฟลว์ที่นี่..."
+            },
+            "actions": {
+              "import": "นำเข้า"
+            }
+          },
+          "preview": {
+            "header": "ดูตัวอย่าง SOP ของเวิร์กโฟลว์",
+            "description": "สร้างส่วนประกอบฟอร์มตามเส้นทางเวิร์กโฟลว์",
+            "step": "ขั้นตอนที่",
+            "start": "เริ่มเวิร์กโฟลว์",
+            "decision": {
+              "header": "เงื่อนไข",
+              "path": "เลือกเส้นทางการตัดสินใจ"
+            },
+            "sla": {
+              "header": "เวลา SLA",
+              "path": "เส้นทางการตัดสินใจ SLA",
+              "yes": "เป็นไปตาม SLA",
+              "no": "เกิน SLA"
+            },
+            "current_path": "เส้นทางปัจจุบัน",
+            "end": "สิ้นสุดเวิร์กโฟลว์",
+            "actions": {
+              "close": "ปิด"
+            },
+            "empty": {
+              "title": "ไม่มีตัวอย่าง SOP ให้ดู",
+              "description": "เพิ่มโหนดเริ่มต้น กระบวนการ การสั่งการ และจุดสิ้นสุดพร้อมการเชื่อมต่อเพื่อสร้างตัวอย่าง SOP"
+            }
+          },
+          "save": {
+            "header": "ดูตัวอย่าง JSON ของเวิร์กโฟลว์และยืนยัน",
+            "actions": {
+              "copy": "คัดลอก",
+              "copied": "คัดลอกแล้ว",
+              "download": "ดาวน์โหลด",
+              "confirm": "ยืนยัน",
+              "saving": "กำลังบันทึก..."
+            }
+          },
+          "actions": {
+            "cancel": "ยกเลิก"
+          }
+        }
+      },
+      "metrics": {
+        "total": "ทั้งหมด",
+        "active": "ใช้งานอยู่",
+        "published": "เผยแพร่แล้ว",
+        "locked": "ล็อคอยู่"
+      },
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "ค้นหาเวิร์กโฟลว์..."
+          }
+        },
+        "header": {
+          "title": "ชื่อ",
+          "active": "สถานะ",
+          "createdAt": "สร้างเมื่อ"
+        },
+        "preview": {
+          "header": "เวิร์กโฟลว์ _TITLE_",
+          "tab": {
+            "header": {
+              "overview": "ภาพรวม",
+              "configuration": "การตั้งค่า",
+              "activity": "กิจกรรม"
+            },
+            "overview": {
+              "desc": "คำอธิบาย",
+              "status": "สถานะ",
+              "versions": "เวอร์ชัน",
+              "createdAt": "สร้างเมื่อ",
+              "createdBy": "โดย",
+              "updatedAt": "อัปเดตเมื่อ",
+              "updatedBy": "โดย"
+            },
+            "configuration": {
+              "header": "การตั้งค่าเวิร์กโฟลว์",
+              "description": "ดูโหนดและการเชื่อมต่อของเวิร์กโฟลว์",
+              "node": "โหนด",
+              "connection": "การเชื่อมต่อ",
+              "start_node": "โหนดเริ่มต้น",
+              "process_node": "โหนดกระบวนการ",
+              "dispatch_node": "โหนดจ่ายงาน",
+              "end_node": "โหนดสิ้นสุด"
+            },
+            "activity": {
+              "header": "กิจกรรมของเวิร์กโฟลว์",
+              "no_activity": "ไม่มีบันทึกกิจกรรมสำหรับเวิร์กโฟลว์นี้"
+            }
+          }
+        },
+        "confirm": {
+          "warning": {
+            "title": "คำเตือน: การแก้ไขเวิร์กโฟลว์",
+            "message": "คุณกำลังพยายามแก้ไข _WORKFLOW_ ซึ่งกำลังถูกใช้งานอยู่โดย _SUB_TYPE_ การเปลี่ยนแปลงโครงสร้างอาจทำให้กระบวนการของงานที่มีอยู่ทำงานผิดพลาดได้ โปรดตรวจสอบให้แน่ใจว่าเวิร์กโฟลว์ฉบับแก้ไขของคุณเป็นไปตามข้อกำหนด มิเช่นนั้นระบบจะไม่สามารถบันทึกได้"
+          }
+        }
+      },
+      "action": {
+        "create": {
+          "success": "สร้างเวิร์กโฟลว์สำเร็จ",
+          "error": "ไม่สามารถสร้างเวิร์กโฟลว์ได้"
+        },
+        "update": {
+          "success": "อัปเดตเวิร์กโฟลว์สำเร็จ",
+          "error": "ไม่สามารถอัปเดตเวิร์กโฟลว์ได้"
+        },
+        "delete": {
+          "success": "ลบเวิร์กโฟลว์สำเร็จ",
+          "error": "ไม่สามารถลบเวิร์กโฟลว์ได้"
+        },
+        "button": {
+          "edit": "แก้ไข",
+          "delete": "ลบ"
+        }
+      },
+      "unit": {
+        "sla": {
+          "abbr": "นาที",
+          "label": "นาที",
+          "postfix": ""
+        }
+      }
+    },
+    "user": {
+      "name": "ผู้ใช้",
+      "metrics": {
+        "total_users": "ทั้งหมด",
+        "active_users": "ที่ใช้งานอยู่",
+        "new_this_month": "ผู้ใช้ใหม่ในเดือนนี้",
+        "inactive_users": "ที่ไม่ได้ใช้งาน"
+      },
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "ค้นหาผู้ใช้..."
+          },
+          "advanced_filter": {
+            "roleId": {
+              "label": "บทบาท",
+              "placeholder": "เลือกบทบาท"
+            },
+            "deptId": {
+              "label": "แผนก",
+              "placeholder": "เลือกแผนก"
+            }
+          }
+        },
+        "header": {
+          "user": "ผู้ใช้",
+          "role": "บทบาท",
+          "department": "แผนก",
+          "status": "สถานะ",
+          "last_login": "เข้าสู่ระบบครั้งล่าสุด"
+        },
+        "preview": {
+          "header": "ข้อมูลผู้ใช้",
+          "tab": {
+            "header": {
+              "profile": "โปรไฟล์",
+              "skills": "ทักษะ",
+              "area": "กำหนดพื้นที่",
+              "groups": "กลุ่ม",
+              "audit_log": "บันทึกการตรวจสอบ"
+            }
+          }
+        },
+        "group": {
+          "update": {
+            "title": "การกำหนดกลุ่ม",
+            "success": "ปรับปรุงกลุ่มของผู้ใช้เรียบร้อยแล้ว",
+            "error": "ไม่สามารถปรับปรุงกลุ่มของผู้ใช้",
+            "pending_backend": "ยังไม่บันทึกการเป็นสมาชิกกลุ่ม — อยู่ระหว่างรอการรองรับจากระบบหลังบ้าน",
+            "button": {
+              "save": "บันทึก",
+              "saving": "กำลังบันทึก..."
+            }
+          }
+        },
+        "skill": {
+          "update": {
+            "title": "ปรับปรุงทักษะ",
+            "success": "ปรับปรุงทักษะผู้ใช้เรียบร้อยแล้ว",
+            "error": "ไม่สามารถปรับปรุงทักษะผู้ใช้",
+            "button": {
+              "save": "บันทึก",
+              "saving": "กำลังบันทึก..."
+            }
+          }
+        },
+        "area": {
+          "update": {
+            "title": "ปรับปรุงพื้นที่รับผิดชอบ",
+            "success": "ปรับปรุงพื้นที่รับผิดชอบผู้ใช้เรียบร้อยแล้ว",
+            "error": "ไม่สามารถปรับปรุงพื้นที่รับผิดชอบผู้ใช้",
+            "button": {
+              "save": "บันทึก",
+              "saving": "กำลังบันทึก..."
+            }
+          }
+        }
+      },
+      "unit": {
+        "last_login": {
+          "today": "วันนี้",
+          "yesterday": "เมื่อวาน",
+          "day": "วันที่แล้ว",
+          "week": "สัปดาห์ที่แล้ว",
+          "month": "เดือนที่แล้ว",
+          "year": "ปีที่แล้ว"
+        },
+        "status": {
+          "active": "ใช้งานอยู่",
+          "inactive": "ไม่ได้ใช้งาน"
+        }
+      }
+    },
+    "user_group": {
+      "name": "กลุ่มผู้ใช้",
+      "metrics": {
+        "total": "จำนวนกลุ่มทั้งหมด",
+        "active": "กลุ่มที่ใช้งาน",
+        "members": "จำนวนสมาชิกทั้งหมด"
+      },
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "ค้นหากลุ่ม..."
+          }
+        },
+        "header": {
+          "name": "กลุ่ม",
+          "description": "คำอธิบาย",
+          "members": "สมาชิก",
+          "status": "สถานะ",
+          "updatedAt": "แก้ไขล่าสุด"
+        },
+        "members": {
+          "title": "สมาชิกในกลุ่ม",
+          "pending_backend": "ยังไม่บันทึกการเป็นสมาชิก — อยู่ระหว่างรอการรองรับจากระบบหลังบ้าน",
+          "button": {
+            "save": "บันทึก",
+            "saving": "กำลังบันทึก..."
+          }
+        }
+      },
+      "form": {
+        "header": {
+          "create": "สร้างกลุ่ม",
+          "update": "แก้ไขกลุ่ม"
+        },
+        "grpId": {
+          "label": "รหัสกลุ่ม",
+          "placeholder": "กรอกรหัสกลุ่ม",
+          "required": "จำเป็นต้องระบุรหัสกลุ่ม"
+        },
+        "en": {
+          "label": "ชื่อ (อังกฤษ)",
+          "placeholder": "กรอกชื่อกลุ่มเป็นภาษาอังกฤษ",
+          "required": "จำเป็นต้องระบุชื่อกลุ่ม (อังกฤษ)"
+        },
+        "th": {
+          "label": "ชื่อ (ไทย)",
+          "placeholder": "กรอกชื่อกลุ่มเป็นภาษาไทย",
+          "required": "จำเป็นต้องระบุชื่อกลุ่ม (ไทย)"
+        },
+        "description": {
+          "label": "คำอธิบาย",
+          "placeholder": "กรอกคำอธิบาย (ไม่บังคับ)"
+        }
+      },
+      "action": {
+        "group": {
+          "create": {
+            "success": "สร้างกลุ่มเรียบร้อยแล้ว",
+            "error": "ไม่สามารถสร้างกลุ่ม"
+          },
+          "update": {
+            "success": "แก้ไขกลุ่มเรียบร้อยแล้ว",
+            "error": "ไม่สามารถแก้ไขกลุ่ม"
+          },
+          "delete": {
+            "success": "ลบกลุ่มเรียบร้อยแล้ว",
+            "error": "ไม่สามารถลบกลุ่ม"
+          }
+        },
+        "pending_backend": "ยังไม่บันทึกการเปลี่ยนแปลง — การจัดการกลุ่มอยู่ระหว่างรอการรองรับจากระบบหลังบ้าน",
+        "button": {
+          "save": "บันทึก",
+          "reset": "รีเซ็ต"
+        }
+      },
+      "confirm": {
+        "button": {
+          "cancel": "ยกเลิก",
+          "confirm": "ยืนยัน",
+          "saving": "กำลังบันทึก...",
+          "deleting": "กำลังลบ..."
+        }
+      },
+      "unit": {
+        "member": "สมาชิก",
+        "no_members": "ไม่มีสมาชิก"
+      }
+    },
+    "role_privilege": {
+      "name": "บทบาท",
+      "metrics": {
+        "total": "บทบาททั้งหมด",
+        "active": "บทบาทที่ใช้งานอยู่",
+        "avg": "จำนวนเฉลี่ยของสิทธิ์"
+      },
+      "list": {
+        "header": {
+          "user": "ผู้ใช้",
+          "permission": "สิทธิ์การใช้งาน",
+          "updatedAt": "แก้ไขล่าสุด",
+          "groupName": "กลุ่ม"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "สร้างบทบาท",
+          "update": "แก้ไขบทบาท"
+        },
+        "roleName": {
+          "label": "ชื่อบทบาท",
+          "placeholder": "ระบุชื่อบทบาท",
+          "required": "กรุณาระบุชื่อบทบาท"
+        }
+      },
+      "confirm": {
+        "delete": {
+          "title": "ยืนยันการลบบทบาท",
+          "message": "คุณแน่ใจหรือไม่ว่าต้องการลบ _Role_? การกระทำนี้ไม่สามารถย้อนกลับได้"
+        },
+        "button": {
+          "cancel": "ยกเลิก",
+          "confirm": "ยืนยัน",
+          "saving": "กำลังบันทึก...",
+          "deleting": "กำลังลบ..."
+        }
+      },
+      "action": {
+        "role": {
+          "create": {
+            "success": "สร้างบทบาทสำเร็จ",
+            "error": "ไม่สามารถสร้างบทบาทได้"
+          },
+          "update": {
+            "success": "อัปเดตบทบาทสำเร็จ",
+            "error": "ไม่สามารถอัปเดตบทบาทได้"
+          },
+          "delete": {
+            "success": "ลบบทบาทสำเร็จ",
+            "error": "ไม่สามารถลบบทบาทได้"
+          }
+        },
+        "privilege": {
+          "update": {
+            "success": "อัปเดตสิทธิ์การใช้งานสำเร็จ",
+            "error": "ไม่สามารถอัปเดตสิทธิ์การใช้งานได้"
+          }
+        },
+        "button": {
+          "save": "บันทึก",
+          "delete": "ลบ",
+          "reset": "รีเซ็ต"
+        }
+      },
+      "unit": {
+        "more": "เพิ่มเติม",
+        "system": "ระบบ"
+      }
+    },
+    "organization": {
+      "name": "หน่วยงาน",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "ค้นหาหน่วยงาน..."
+          }
+        },
+        "header": {
+          "dept": {
+            "no_data": "ไม่พบแผนก"
+          },
+          "comm": {
+            "plural": "กลุ่มสั่งการ",
+            "singular": "กลุ่มสั่งการ",
+            "no_data": "ไม่มีกลุ่มสั่งการในแผนกนี้",
+            "create_child": "เพิ่มกลุ่มสั่งการ"
+          },
+          "stn": {
+            "plural": "สถานี",
+            "singular": "สถานี",
+            "no_data": "ไม่มีสถานีในกลุ่มสั่งการนี้",
+            "create_child": "เพิ่มสถานี"
+          }
+        }
+      },
+      "form": {
+        "dept": {
+          "header": {
+            "create": "สร้างแผนก",
+            "update": "แก้ไขแผนก"
+          },
+          "deptTh": {
+            "label": "ชื่อ (ไทย)",
+            "placeholder": "ระบุชื่อแผนกเป็นภาษาไทย",
+            "required": "กรุณาระบุชื่อแผนก (ไทย)"
+          },
+          "deptEn": {
+            "label": "ชื่อ (อังกฤษ)",
+            "placeholder": "ระบุชื่อแผนกเป็นภาษาอังกฤษ",
+            "required": "กรุณาระบุชื่อแผนก (อังกฤษ)"
+          }
+        },
+        "comm": {
+          "header": {
+            "create": "เพิ่มกลุ่มสั่งการ",
+            "update": "แก้ไขกลุ่มสั่งการ"
+          },
+          "commandTh": {
+            "label": "ชื่อ (ไทย)",
+            "placeholder": "ระบุชื่อกลุ่มสั่งการเป็นภาษาไทย",
+            "required": "กรุณาระบุชื่อกลุ่มสั่งการ (ไทย)"
+          },
+          "commandEn": {
+            "label": "ชื่อ (อังกฤษ)",
+            "placeholder": "ระบุชื่อกลุ่มสั่งการเป็นภาษาอังกฤษ",
+            "required": "กรุณาระบุชื่อกลุ่มสั่งการ (อังกฤษ)"
+          },
+          "commDeptId": {
+            "label": "แผนก",
+            "placeholder": "เลือกแผนก",
+            "required": "กรุณาระบุแผนก"
+          }
+        },
+        "stn": {
+          "header": {
+            "create": "เพิ่มสถานี",
+            "update": "แก้ไขสถานี"
+          },
+          "stationTh": {
+            "label": "ชื่อ (ไทย)",
+            "placeholder": "ระบุชื่อสถานีเป็นภาษาไทย",
+            "required": "กรุณาระบุชื่อสถานี (ไทย)"
+          },
+          "stationEn": {
+            "label": "ชื่อ (อังกฤษ)",
+            "placeholder": "ระบุชื่อสถานีเป็นภาษาอังกฤษ",
+            "required": "กรุณาระบุชื่อสถานี (อังกฤษ)"
+          },
+          "stnDeptId": {
+            "label": "แผนก",
+            "placeholder": "เลือกแผนก",
+            "required": "กรุณาระบุแผนก"
+          },
+          "stnCommId": {
+            "label": "กลุ่มสั่งการ",
+            "placeholder": "เลือกกลุ่มสั่งการ",
+            "required": "กรุณาระบุกลุ่มสั่งการ"
+          }
+        }
+      },
+      "confirm": {
+        "dept": {
+          "create": {
+            "title": "ยืนยันการสร้างแผนก",
+            "message": "กรุณายืนยันเพื่อสร้าง _DEPT_"
+          },
+          "update": {
+            "title": "ยืนยันการแก้ไขแผนก",
+            "message": "กรุณายืนยันเพื่ออัปเดต _DEPT_"
+          },
+          "delete": {
+            "title": "ยืนยันการลบแผนก",
+            "message": "คุณแน่ใจหรือไม่ว่าต้องการลบ _DEPT_? การกระทำนี้ไม่สามารถย้อนกลับได้"
+          }
+        },
+        "comm": {
+          "create": {
+            "title": "ยืนยันการสร้างกลุ่มสั่งการ",
+            "message": "กรุณายืนยันเพื่อสร้าง _COMM_"
+          },
+          "update": {
+            "title": "ยืนยันการแก้ไขกลุ่มสั่งการ",
+            "message": "กรุณายืนยันเพื่ออัปเดต _COMM_"
+          },
+          "delete": {
+            "title": "ยืนยันการลบกลุ่มสั่งการ",
+            "message": "คุณแน่ใจหรือไม่ว่าต้องการลบ _COMM_? การกระทำนี้ไม่สามารถย้อนกลับได้"
+          }
+        },
+        "stn": {
+          "create": {
+            "title": "ยืนยันการสร้างสถานี",
+            "message": "กรุณายืนยันเพื่อสร้าง _STN_"
+          },
+          "update": {
+            "title": "ยืนยันการแก้ไขสถานี",
+            "message": "กรุณายืนยันเพื่ออัปเดต _STN_"
+          },
+          "delete": {
+            "title": "ยืนยันการลบสถานี",
+            "message": "คุณแน่ใจหรือไม่ว่าต้องการลบ _STN_? การกระทำนี้ไม่สามารถย้อนกลับได้"
+          }
+        },
+        "button": {
+          "cancel": "ยกเลิก",
+          "confirm": "ยืนยัน",
+          "saving": "กำลังบันทึก...",
+          "deleting": "กำลังลบ..."
+        }
+      },
+      "action": {
+        "dept": {
+          "create": {
+            "success": "สร้างแผนกสำเร็จ",
+            "error": "ไม่สามารถสร้างแผนกได้"
+          },
+          "update": {
+            "success": "อัปเดตแผนกสำเร็จ",
+            "error": "ไม่สามารถอัปเดตแผนกได้"
+          },
+          "delete": {
+            "success": "ลบแผนกสำเร็จ",
+            "error": "ไม่สามารถลบแผนกได้"
+          }
+        },
+        "comm": {
+          "create": {
+            "success": "สร้างกลุ่มสั่งการสำเร็จ",
+            "error": "ไม่สามารถสร้างกลุ่มสั่งการได้"
+          },
+          "update": {
+            "success": "อัปเดตกลุ่มสั่งการสำเร็จ",
+            "error": "ไม่สามารถอัปเดตกลุ่มสั่งการได้"
+          },
+          "delete": {
+            "success": "ลบกลุ่มสั่งการสำเร็จ",
+            "error": "ไม่สามารถลบกลุ่มสั่งการได้"
+          }
+        },
+        "stn": {
+          "create": {
+            "success": "สร้างสถานีสำเร็จ",
+            "error": "ไม่สามารถสร้างสถานีได้"
+          },
+          "update": {
+            "success": "อัปเดตสถานีสำเร็จ",
+            "error": "ไม่สามารถอัปเดตสถานีได้"
+          },
+          "delete": {
+            "success": "ลบสถานีสำเร็จ",
+            "error": "ไม่สามารถลบสถานีได้"
+          }
+        },
+        "button": {
+          "save": "บันทึก",
+          "delete": "ลบ",
+          "reset": "รีเซ็ต"
+        }
+      }
+    },
+    "service": {
+      "name": "บริการ",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "ค้นหาประเภท / ประเภทย่อย..."
+          }
+        },
+        "header": {
+          "type": {
+            "no_data": "ไม่พบประเภท"
+          },
+          "subType": {
+            "plural": "ประเภทย่อย",
+            "singular": "ประเภทย่อย",
+            "no_data": "ไม่มีประเภทย่อยกำหนดไว้สำหรับประเภทนี้",
+            "create_child": "เพิ่มประเภทย่อย",
+            "skill_required": {
+              "plural": "ทักษะที่จำเป็น",
+              "singular": "ทักษะที่จำเป็น"
+            }
+          }
+        }
+      },
+      "form": {
+        "type": {
+          "header": {
+            "create": "สร้างประเภท",
+            "update": "แก้ไขประเภท"
+          },
+          "typeTh": {
+            "label": "ชื่อ (ภาษาไทย)",
+            "placeholder": "ระบุชื่อประเภทเป็นภาษาไทย",
+            "required": "กรุณาระบุชื่อประเภท (ภาษาไทย)"
+          },
+          "typeEn": {
+            "label": "ชื่อ (ภาษาอังกฤษ)",
+            "placeholder": "ระบุชื่อประเภทเป็นภาษาอังกฤษ",
+            "required": "กรุณาระบุชื่อประเภท (ภาษาอังกฤษ)"
+          }
+        },
+        "sub_type": {
+          "header": {
+            "create": "เพิ่มประเภทย่อย",
+            "update": "แก้ไขประเภทย่อย"
+          },
+          "sTypeTh": {
+            "label": "ชื่อ (ภาษาไทย)",
+            "placeholder": "ระบุชื่อประเภทย่อยเป็นภาษาไทย",
+            "required": "กรุณาระบุชื่อประเภทย่อย (ภาษาไทย)"
+          },
+          "sTypeEn": {
+            "label": "ชื่อ (ภาษาอังกฤษ)",
+            "placeholder": "ระบุชื่อประเภทย่อยเป็นภาษาอังกฤษ",
+            "required": "กรุณาระบุชื่อประเภทย่อย (ภาษาอังกฤษ)"
+          },
+          "sTypeCode": {
+            "label": "รหัสประเภทย่อย",
+            "placeholder": "ระบุรหัสประเภทย่อย",
+            "required": "กรุณาระบุรหัสประเภทย่อย"
+          },
+          "sTypeTypeId": {
+            "label": "ประเภท",
+            "placeholder": "เลือกประเภท",
+            "required": "กรุณาเลือกประเภท"
+          },
+          "caseSla": {
+            "label": "SLA (นาที)"
+          },
+          "priority": {
+            "label": "ความสำคัญ",
+            "placeholder": "เลือกระดับความสำคัญ",
+            "required": "กรุณาเลือกความสำคัญ"
+          },
+          "unitPropLists": {
+            "label": "คุณสมบัติ",
+            "placeholder": "เลือกคุณสมบัติ",
+            "required": "กรุณาเลือกคุณสมบัติ"
+          },
+          "userSkillList": {
+            "label": "ทักษะ",
+            "placeholder": "เลือกทักษะ",
+            "required": "กรุณาเลือกทักษะ"
+          },
+          "wfId": {
+            "label": "เวิร์กโฟลว์",
+            "placeholder": "เลือกเวิร์กโฟลว์",
+            "required": "กรุณาเลือกเวิร์กโฟลว์"
+          },
+          "mDeviceType": {
+            "label": "ประเภทอุปกรณ์",
+            "placeholder": "ระบุประเภทอุปกรณ์",
+            "required": "กรุณาระบุประเภทอุปกรณ์"
+          },
+          "mDeviceTypeName": {
+            "label": "ชื่อประเภทอุปกรณ์",
+            "placeholder": "ระบุชื่อประเภทอุปกรณ์",
+            "required": "กรุณาระบุชื่อประเภทอุปกรณ์"
+          },
+          "mWorkOrderType": {
+            "label": "ประเภทใบงาน",
+            "placeholder": "ระบุประเภทใบงาน",
+            "required": "กรุณาระบุประเภทใบงาน"
+          }
+        }
+      },
+      "confirm": {
+        "type": {
+          "create": {
+            "title": "ยืนยันการสร้างประเภท",
+            "message": "โปรดยืนยันเพื่อสร้าง _TYPE_"
+          },
+          "update": {
+            "title": "ยืนยันการแก้ไขประเภท",
+            "message": "โปรดยืนยันเพื่อแก้ไข _TYPE_"
+          },
+          "delete": {
+            "title": "ยืนยันการลบประเภท",
+            "message": "คุณแน่ใจหรือไม่ว่าต้องการลบ _TYPE_? การดำเนินการนี้ไม่สามารถย้อนกลับได้"
+          }
+        },
+        "sub_type": {
+          "create": {
+            "title": "ยืนยันการสร้างประเภทย่อย",
+            "message": "โปรดยืนยันเพื่อสร้าง _SUB_TYPE_"
+          },
+          "update": {
+            "title": "ยืนยันการแก้ไขประเภทย่อย",
+            "message": "โปรดยืนยันเพื่อแก้ไข _SUB_TYPE_"
+          },
+          "delete": {
+            "title": "ยืนยันการลบประเภทย่อย",
+            "message": "คุณแน่ใจหรือไม่ว่าต้องการลบ _SUB_TYPE_? การดำเนินการนี้ไม่สามารถย้อนกลับได้"
+          }
+        },
+        "button": {
+          "cancel": "ยกเลิก",
+          "confirm": "ยืนยัน",
+          "saving": "กำลังบันทึก...",
+          "deleting": "กำลังลบ..."
+        }
+      },
+      "action": {
+        "type": {
+          "create": {
+            "success": "สร้างประเภทสำเร็จ",
+            "error": "ไม่สามารถสร้างประเภทได้"
+          },
+          "update": {
+            "success": "แก้ไขประเภทสำเร็จ",
+            "error": "ไม่สามารถแก้ไขประเภทได้"
+          },
+          "delete": {
+            "success": "ลบประเภทสำเร็จ",
+            "error": "ไม่สามารถลบประเภทได้"
+          }
+        },
+        "sub_type": {
+          "create": {
+            "success": "สร้างประเภทย่อยสำเร็จ",
+            "error": "ไม่สามารถสร้างประเภทย่อยได้"
+          },
+          "update": {
+            "success": "แก้ไขประเภทย่อยสำเร็จ",
+            "error": "ไม่สามารถแก้ไขประเภทย่อยได้"
+          },
+          "delete": {
+            "success": "ลบประเภทย่อยสำเร็จ",
+            "error": "ไม่สามารถลบประเภทย่อยได้"
+          }
+        },
+        "button": {
+          "save": "บันทึก",
+          "delete": "ลบ",
+          "reset": "รีเซ็ต"
+        }
+      },
+      "unit": {
+        "minutes": " นาที"
+      }
+    },
+    "area": {
+      "name": "พื้นที่",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "ค้นหาพื้นที่..."
+          }
+        },
+        "header": {
+          "province": {
+            "plural": "จังหวัด",
+            "singular": "จังหวัด",
+            "no_data": "ไม่มีจังหวัดสำหรับประเทศนี้",
+            "create_child": "เพิ่มจังหวัด"
+          },
+          "district": {
+            "plural": "เขต",
+            "singular": "เขต",
+            "no_data": "ไม่มีเขตการปกครองสำหรับจังหวัดนี้",
+            "create_child": "เพิ่มเขต"
+          }
+        }
+      },
+      "form": {
+        "country": {
+          "header": {
+            "create": "สร้างประเทศ",
+            "update": "แก้ไขประเทศ"
+          },
+          "countryCode": {
+            "label": "รหัสประเทศ",
+            "placeholder": "กรอกรหัสประเทศ",
+            "required": "กรุณากรอกรหัสประเทศ"
+          },
+          "countryTh": {
+            "label": "ชื่อ (ไทย)",
+            "placeholder": "กรอกชื่อประเทศเป็นภาษาไทย",
+            "required": "กรุณากรอกชื่อประเทศ (ไทย)"
+          },
+          "countryEn": {
+            "label": "ชื่อ (อังกฤษ)",
+            "placeholder": "กรอกชื่อประเทศเป็นภาษาอังกฤษ",
+            "required": "กรุณากรอกชื่อประเทศ (อังกฤษ)"
+          }
+        },
+        "province": {
+          "header": {
+            "create": "เพิ่มจังหวัด",
+            "update": "แก้ไขจังหวัด"
+          },
+          "provinceCountryId": {
+            "label": "ประเทศ",
+            "placeholder": "เลือกประเทศ",
+            "required": "กรุณาเลือกประเทศ"
+          },
+          "provinceCode": {
+            "label": "รหัสจังหวัด",
+            "placeholder": "กรอกรหัสจังหวัด",
+            "required": "กรุณากรอกรหัสจังหวัด"
+          },
+          "provinceTh": {
+            "label": "ชื่อ (ไทย)",
+            "placeholder": "กรอกชื่อจังหวัดเป็นภาษาไทย",
+            "required": "กรุณากรอกชื่อจังหวัด (ไทย)"
+          },
+          "provinceEn": {
+            "label": "ชื่อ (อังกฤษ)",
+            "placeholder": "กรอกชื่อจังหวัดเป็นภาษาอังกฤษ",
+            "required": "กรุณากรอกชื่อจังหวัด (อังกฤษ)"
+          }
+        },
+        "district": {
+          "header": {
+            "create": "เพิ่มเขต",
+            "update": "แก้ไขเขต"
+          },
+          "districtCountryId": {
+            "label": "ประเทศ",
+            "placeholder": "เลือกประเทศ",
+            "required": "กรุณาเลือกประเทศ"
+          },
+          "districtProvId": {
+            "label": "จังหวัด",
+            "placeholder": "เลือกจังหวัด",
+            "required": "กรุณาเลือกจังหวัด"
+          },
+          "districtCode": {
+            "label": "รหัสเขต",
+            "placeholder": "กรอกรหัสเขต",
+            "required": "กรุณากรอกรหัสเขต"
+          },
+          "districtTh": {
+            "label": "ชื่อ (ไทย)",
+            "placeholder": "กรอกชื่อเขตเป็นภาษาไทย",
+            "required": "กรุณากรอกชื่อเขต (ไทย)"
+          },
+          "districtEn": {
+            "label": "ชื่อ (อังกฤษ)",
+            "placeholder": "กรอกชื่อเขตเป็นภาษาอังกฤษ",
+            "required": "กรุณากรอกชื่อเขต (อังกฤษ)"
+          }
+        }
+      },
+      "confirm": {
+        "country": {
+          "create": {
+            "title": "ยืนยันการสร้างประเทศ",
+            "message": "กรุณายืนยันการสร้าง _COUNTRY_"
+          },
+          "update": {
+            "title": "ยืนยันการแก้ไขประเทศ",
+            "message": "กรุณายืนยันการแก้ไข _COUNTRY_"
+          },
+          "delete": {
+            "title": "ยืนยันการลบประเทศ",
+            "message": "คุณแน่ใจหรือไม่ว่าต้องการลบ _COUNTRY_? การดำเนินการนี้ไม่สามารถย้อนกลับได้"
+          }
+        },
+        "province": {
+          "create": {
+            "title": "ยืนยันการสร้างจังหวัด",
+            "message": "กรุณายืนยันการสร้าง _PROVINCE_"
+          },
+          "update": {
+            "title": "ยืนยันการแก้ไขจังหวัด",
+            "message": "กรุณายืนยันการแก้ไข _PROVINCE_"
+          },
+          "delete": {
+            "title": "ยืนยันการลบจังหวัด",
+            "message": "คุณแน่ใจหรือไม่ว่าต้องการลบ _PROVINCE_? การดำเนินการนี้ไม่สามารถย้อนกลับได้"
+          }
+        },
+        "district": {
+          "create": {
+            "title": "ยืนยันการสร้างเขต",
+            "message": "กรุณายืนยันการสร้าง _DISTRICT_"
+          },
+          "update": {
+            "title": "ยืนยันการแก้ไขเขต",
+            "message": "กรุณายืนยันการแก้ไข _DISTRICT_"
+          },
+          "delete": {
+            "title": "ยืนยันการลบเขต",
+            "message": "คุณแน่ใจหรือไม่ว่าต้องการลบ _DISTRICT_? การดำเนินการนี้ไม่สามารถย้อนกลับได้"
+          }
+        },
+        "button": {
+          "cancel": "ยกเลิก",
+          "confirm": "ยืนยัน",
+          "saving": "กำลังบันทึก...",
+          "deleting": "กำลังลบ..."
+        }
+      },
+      "action": {
+        "country": {
+          "create": {
+            "success": "สร้างประเทศสำเร็จ",
+            "error": "ไม่สามารถสร้างประเทศได้"
+          },
+          "update": {
+            "success": "แก้ไขประเทศสำเร็จ",
+            "error": "ไม่สามารถแก้ไขประเทศได้"
+          },
+          "delete": {
+            "success": "ลบประเทศสำเร็จ",
+            "error": "ไม่สามารถลบประเทศได้"
+          }
+        },
+        "province": {
+          "create": {
+            "success": "สร้างจังหวัดสำเร็จ",
+            "error": "ไม่สามารถสร้างจังหวัดได้"
+          },
+          "update": {
+            "success": "แก้ไขจังหวัดสำเร็จ",
+            "error": "ไม่สามารถแก้ไขจังหวัดได้"
+          },
+          "delete": {
+            "success": "ลบจังหวัดสำเร็จ",
+            "error": "ไม่สามารถลบจังหวัดได้"
+          }
+        },
+        "district": {
+          "create": {
+            "success": "สร้างเขตสำเร็จ",
+            "error": "ไม่สามารถสร้างเขตได้"
+          },
+          "update": {
+            "success": "แก้ไขเขตสำเร็จ",
+            "error": "ไม่สามารถแก้ไขเขตได้"
+          },
+          "delete": {
+            "success": "ลบเขตสำเร็จ",
+            "error": "ไม่สามารถลบเขตได้"
+          }
+        },
+        "button": {
+          "save": "บันทึก",
+          "delete": "ลบ",
+          "reset": "รีเซ็ต"
+        }
+      }
+    },
+    "skill": {
+      "name": "ทักษะ",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "ค้นหาทักษะ..."
+          }
+        },
+        "header": {
+          "name": "ชื่อ",
+          "status": "สถานะ"
+        },
+        "preview": {
+          "header": "ข้อมูลทักษะ"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "สร้างทักษะ",
+          "update": "แก้ไขทักษะ"
+        },
+        "th": {
+          "label": "ชื่อ (ภาษาไทย)",
+          "placeholder": "กรอกชื่อทักษะเป็นภาษาไทย",
+          "required": "ต้องกรอกชื่อทักษะ"
+        },
+        "en": {
+          "label": "ชื่อ (ภาษาอังกฤษ)",
+          "placeholder": "กรอกชื่อทักษะเป็นภาษาอังกฤษ",
+          "required": "ต้องกรอกชื่อทักษะ"
+        }
+      },
+      "confirm": {
+        "create": {
+          "title": "ยืนยันการสร้างทักษะ",
+          "message": "โปรดยืนยันเพื่อสร้าง _SKILL_"
+        },
+        "update": {
+          "title": "ยืนยันการแก้ไขทักษะ",
+          "message": "โปรดยืนยันเพื่อแก้ไข _SKILL_"
+        },
+        "delete": {
+          "title": "ยืนยันการลบทักษะ",
+          "message": "คุณแน่ใจหรือไม่ว่าต้องการลบ _SKILL_? การดำเนินการนี้ไม่สามารถย้อนกลับได้"
+        },
+        "button": {
+          "cancel": "ยกเลิก",
+          "confirm": "ยืนยัน",
+          "saving": "กำลังบันทึก...",
+          "deleting": "กำลังลบ..."
+        }
+      },
+      "action": {
+        "create": {
+          "success": "สร้างทักษะสำเร็จ",
+          "error": "สร้างทักษะไม่สำเร็จ"
+        },
+        "update": {
+          "success": "อัปเดตทักษะสำเร็จ",
+          "error": "อัปเดตทักษะไม่สำเร็จ"
+        },
+        "button": {
+          "save": "บันทึก",
+          "delete": "ลบ",
+          "reset": "รีเซ็ต"
+        }
+      }
+    },
+    "unit": {
+      "name": "หน่วย",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "ค้นหาหน่วย..."
+          }
+        },
+        "header": {
+          "unit": "หน่วย",
+          "status": "สถานะ",
+          "location": "สถานที่"
+        },
+        "preview": {
+          "header": "ข้อมูลหน่วย",
+          "tab": {
+            "header": {
+              "overview": "ข้อมูลพื้นฐาน",
+              "skill": "ทักษะ",
+              "location": "สถานที่"
+            },
+            "unitId": "ไอดี",
+            "unitName": "ชื่อ",
+            "active": "สถานะ",
+            "current_user": "ผู้ใช้งานปัจจุบัน",
+            "locLat": "ละติจูด",
+            "locLon": "ลองจิจูด",
+            "locAccuracy": "ความแม่นยำ",
+            "locBearing": "ตำแหน่งทิศทาง",
+            "locSpeed": "ความเร็ว",
+            "locSatellites": "ดาวเทียม",
+            "locProvider": "ผู้ให้บริการ",
+            "locLastUpdateTime": "เวลาอัปเดตล่าสุด",
+            "locStatus": "สถานะสถานที่"
+          }
+        }
+      },
+      "form": {
+        "basic_information": {
+          "header": "ข้อมูลพื้นฐาน",
+          "sections": {
+            "unitId": {
+              "label": "รหัสหน่วย",
+              "placeholder": "กรอกรหัสหน่วย",
+              "required": "ต้องกรอกรหัสหน่วย"
+            },
+            "unitName": {
+              "label": "ชื่อหน่วย",
+              "placeholder": "กรอกชื่อหน่วย",
+              "required": "ต้องกรอกชื่อหน่วย"
+            },
+            "unitTypeId": {
+              "label": "ประเภทหน่วย",
+              "placeholder": "เลือกประเภทหน่วย"
+            },
+            "unitSourceId": {
+              "label": "แหล่งที่มาของหน่วย",
+              "placeholder": "เลือกแหล่งที่มาของหน่วย"
+            },
+            "username": {
+              "label": "ชื่อผู้ใช้",
+              "placeholder": "เลือกชื่อผู้ใช้"
+            },
+            "priority": {
+              "label": "ความสำคัญ"
+            },
+            "plateNo": {
+              "label": "เลขป้ายทะเบียน",
+              "placeholder": "กรอกเลขป้ายทะเบียน"
+            },
+            "breakDuration": {
+              "label": "ระยะเวลาการพัก (นาที)"
+            }
+          }
+        },
+        "organization_details": {
+          "header": "รายละเอียดองค์กร",
+          "sections": {
+            "compId": {
+              "label": "หน่วยงาน",
+              "placeholder": "เลือกหน่วยงาน"
+            },
+            "deptId": {
+              "label": "แผนก",
+              "placeholder": "เลือกแผนก"
+            },
+            "commId": {
+              "label": "กลุ่มสั่งการ",
+              "placeholder": "เลือกกลุ่มสั่งการ"
+            },
+            "stnId": {
+              "label": "สถานี",
+              "placeholder": "เลือกสถานี"
+            },
+            "provinceCode": {
+              "label": "จังหวัด",
+              "placeholder": "เลือกจังหวัด"
+            }
+          }
+        },
+        "status_and_health": {
+          "header": "สถานะ",
+          "sections": {
+            "healthChk": {
+              "label": "ตรวจสอบสถานะระบบ",
+              "placeholder": "กรอกการตรวจสอบสถานะระบบ"
+            },
+            "healthChkTime": {
+              "label": "เวลาตรวจสอบสถานะระบบ",
+              "placeholder": "กรอกเวลาตรวจสอบสถานะระบบ"
+            },
+            "sttId": {
+              "label": "สถานะ",
+              "placeholder": "กรอกสถานะ"
+            },
+            "active": {
+              "label": "ใช้งานอยู่"
+            },
+            "isFreeze": {
+              "label": "ไม่ตอบสนอง"
+            },
+            "isLogin": {
+              "label": "เข้าสู่ระบบแล้ว"
+            },
+            "isOutArea": {
+              "label": "อยู่นอกพื้นที่"
+            }
+          }
+        },
+        "location_information": {
+          "header": "ข้อมูลตำแหน่ง",
+          "sections": {
+            "locLat": {
+              "label": "ละติจูด",
+              "error": "ละติจูดต้องอยู่ระหว่าง -90 ถึง 90"
+            },
+            "locLon": {
+              "label": "ลองจิจูด",
+              "error": "ลองจิจูดต้องอยู่ระหว่าง -180 ถึง 180"
+            },
+            "locAlt": {
+              "label": "ระดับความสูง"
+            },
+            "locAccuracy": {
+              "label": "ความแม่นยำ"
+            },
+            "locBearing": {
+              "label": "Bearing"
+            },
+            "locSpeed": {
+              "label": "ความเร็ว"
+            },
+            "locSatellites": {
+              "label": "ดาวเทียม"
+            },
+            "locProvider": {
+              "label": "ผู้ให้บริการ",
+              "placeholder": "ระบุผู้ให้บริการตำแหน่ง"
+            },
+            "locGpsTime": {
+              "label": "เวลา GPS"
+            },
+            "locLastUpdateTime": {
+              "label": "เวลาอัปเดตล่าสุด"
+            }
+          }
+        }
+      },
+      "action": {
+        "cancel": "ยกเลิก",
+        "reset": "รีเซ็ต",
+        "save": "บันทึก",
+        "saving": "กำลังบันทึก...",
+        "confirmDialog": {
+          "titleCreate": "ยืนยันการสร้างหน่วย",
+          "titleUpdate": "ยืนยันการแก้ไขหน่วย",
+          "descriptionCreate": "กรุณายืนยันการสร้าง",
+          "descriptionUpdate": "กรุณายืนยันการแก้ไข",
+          "cancel": "ยกเลิก",
+          "confirm": "ยืนยัน"
+        },
+        "create": {
+          "success": "สร้างหน่วยสำเร็จ",
+          "error": "สร้างหน่วยไม่สำเร็จ"
+        },
+        "update": {
+          "success": "อัปเดตหน่วยสำเร็จ",
+          "error": "อัปเดตหน่วยไม่สำเร็จ"
+        }
+      },
+      "unit": {
+        "accuracy": " ม.",
+        "speed": "กม./ชม."
+      }
+    },
+    "inventory": {
+      "name": "อะไหล่",
+      "list": {
+        "header": {
+          "name": "ชื่ออะไหล่",
+          "stock": "สต็อก",
+          "brandId": "แบรนด์",
+          "categoryId": "หมวดหมู่",
+          "mfd": "ปี",
+          "price": "ราคา",
+          "warranty": "การรับประกัน",
+          "productId": "เป็นของสินค้า"
+        }
+      },
+      "form": {
+        "attachment": {
+          "label": "รูปภาพอะไหล่"
+        },
+        "th": {
+          "label": "ชื่ออะไหล่ (TH)",
+          "placeholder": "กรอกชื่ออะไหล่เป็นภาษาไทย",
+          "required": "ต้องระบุชื่ออะไหล่ (TH)"
+        },
+        "en": {
+          "label": "ชื่ออะไหล่ (EN)",
+          "placeholder": "กรอกชื่ออะไหล่เป็นภาษาอังกฤษ",
+          "required": "ต้องระบุชื่ออะไหล่ (EN)"
+        },
+        "categoryId": {
+          "label": "หมวดหมู่",
+          "placeholder": "เลือกหมวดหมู่",
+          "required": "ต้องระบุหมวดหมู่"
+        },
+        "brandId": {
+          "label": "แบรนด์",
+          "placeholder": "เลือกแบรนด์",
+          "required": "ต้องระบุแบรนด์"
+        },
+        "mfd": {
+          "label": "ปี",
+          "placeholder": "เลือกปี",
+          "required": "ต้องระบุปี"
+        },
+        "warranty": {
+          "label": "การรับประกัน (วัน)",
+          "placeholder": "กรอกจำนวนวันรับประกัน เช่น 24",
+          "required": "ต้องระบุการรับประกัน (วัน)"
+        },
+        "price": {
+          "label": "ราคา",
+          "placeholder": "กรอกราคา เช่น 25000",
+          "required": "ต้องระบุราคา"
+        },
+        "productId": {
+          "label": "เป็นของสินค้า",
+          "placeholder": "เลือกสินค้า",
+          "required": "ต้องระบุสินค้า"
+        }
+      }
+    },
+    "inventory_stock": {
+      "name": "สต็อกอะไหล่",
+      "list": {
+        "header": {
+          "serialNumber": "หมายเลขซีเรียล",
+          "partId": "อะไหล่",
+          "storeId": "ร้านค้า",
+          "statusId": "สถานะ"
+        }
+      },
+      "form": {
+        "serialNumber": {
+          "label": "หมายเลขซีเรียล",
+          "placeholder": "กรอกหมายเลขซีเรียล",
+          "required": "ต้องระบุหมายเลขซีเรียล"
+        },
+        "partId": {
+          "label": "อะไหล่",
+          "placeholder": "เลือกอะไหล่",
+          "required": "ต้องระบุอะไหล่"
+        },
+        "storeId": {
+          "label": "ร้านค้า",
+          "placeholder": "เลือกร้านค้า",
+          "required": "ต้องระบุร้านค้า"
+        }
+      }
+    },
+    "product": {
+      "name": "สินค้า",
+      "list": {
+        "header": {
+          "name": "ชื่อสินค้า",
+          "productCode": "รหัสสินค้า",
+          "stock": "สต็อก",
+          "brandId": "แบรนด์",
+          "categoryId": "หมวดหมู่",
+          "mfd": "ปี",
+          "price": "ราคา",
+          "warranty": "การรับประกัน"
+        }
+      },
+      "form": {
+        "attachment": {
+          "label": "รูปภาพสินค้า"
+        },
+        "th": {
+          "label": "ชื่อสินค้า (TH)",
+          "placeholder": "กรอกชื่อสินค้าเป็นภาษาไทย",
+          "required": "ต้องระชื่อสินค้า (TH)"
+        },
+        "en": {
+          "label": "ชื่อสินค้า (EN)",
+          "placeholder": "กรอกชื่อสินค้าเป็นภาษาอังกฤษ",
+          "required": "ต้องระบุชื่อสินค้า (EN)"
+        },
+        "productCode": {
+          "label": "รหัสสินค้า",
+          "placeholder": "กรอกรหัสสินค้า เช่น SED-X200",
+          "required": "ต้องระบุรหัสสินค้า"
+        },
+        "categoryId": {
+          "label": "หมวดหมู่",
+          "placeholder": "เลือกหมวดหมู่",
+          "required": "ต้องระบุหมวดหมู่"
+        },
+        "brandId": {
+          "label": "แบรนด์",
+          "placeholder": "เลือกแบรนด์",
+          "required": "ต้องระบุแบรนด์"
+        },
+        "mfd": {
+          "label": "ปี",
+          "placeholder": "เลือกปี",
+          "required": "ต้องระบุปี"
+        },
+        "warranty": {
+          "label": "การรับประกัน (วัน)",
+          "placeholder": "กรอกจำนวนวันรับประกัน เช่น 24",
+          "required": "ต้องระบุการรับประกัน (วัน)"
+        },
+        "price": {
+          "label": "ราคา",
+          "placeholder": "กรอกราคา เช่น 25000",
+          "required": "ต้องระบุราคา"
+        }
+      }
+    },
+    "product_service": {
+      "name": "บริการ",
+      "list": {
+        "header": {
+          "name": "ชื่อบริการ",
+          "price": "ราคา",
+          "priority": "ลำดับความสำคัญ"
+        }
+      },
+      "form": {
+        "attachment": {
+          "label": "รูปภาพบริการ"
+        },
+        "th": {
+          "label": "ชื่อบริการ (TH)",
+          "placeholder": "กรอกชื่อบริการเป็นภาษาไทย",
+          "required": "ต้องระบุชื่อบริการ (TH)"
+        },
+        "en": {
+          "label": "ชื่อบริการ (EN)",
+          "placeholder": "กรอกชื่อบริการเป็นภาษาอังกฤษ",
+          "required": "ต้องระบุชื่อบริการ (EN)"
+        },
+        "priority": {
+          "label": "ลำดับความสำคัญ",
+          "placeholder": "กรอกลำดับ เช่น 1",
+          "required": "ต้องระบุลำดับความสำคัญ"
+        }
+      }
+    },
+    "product_stock": {
+      "name": "สต็อกสินค้า",
+      "list": {
+        "header": {
+          "serialNumber": "หมายเลขซีเรียล",
+          "productId": "สินค้า",
+          "registerDate": "วันที่ลงทะเบียน",
+          "mfw": "การรับประกันการผลิต",
+          "storeId": "ร้านค้า",
+          "statusId": "สถานะ",
+          "purchaseDate": "วันที่ซื้อ",
+          "endWarrantyDate": "สิ้นสุดการรับประกัน"
+        }
+      },
+      "form": {
+        "serialNumber": {
+          "label": "หมายเลขซีเรียล",
+          "placeholder": "กรอกหมายเลขซีเรียล",
+          "required": "ต้องระบุหมายเลขซีเรียล"
+        },
+        "productId": {
+          "label": "สินค้า",
+          "placeholder": "เลือกสินค้า",
+          "required": "ต้องระบุสินค้า"
+        },
+        "storeId": {
+          "label": "ร้านค้า",
+          "placeholder": "เลือกร้านค้า",
+          "required": "ต้องระบุร้านค้า"
+        },
+        "registerDate": {
+          "label": "วันที่ลงทะเบียน",
+          "required": "ต้องระบุวันที่ลงทะเบียน"
+        },
+        "mfw": {
+          "label": "การรับประกันการผลิต",
+          "required": "ต้องระบุการรับประกันการผลิต"
+        }
+      }
+    },
+    "stock": {
+      "name": "สต็อก _ENTITY_",
+      "metrics": {
+        "available": "พร้อมใช้",
+        "status": "สถานะ"
+      },
+      "list": {
+        "header": {
+          "serialNumber": "รหัส",
+          "createdAt": "วันที่สร้าง",
+          "updatedAt": "วันที่ปรับล่าสุด",
+          "action": "การกระทำ"
+        }
+      }
+    }
+  },
+  "forms": {
+    "email": "อีเมล",
+    "password": "รหัสผ่าน",
+    "username": "ชื่อผู้ใช้",
+    "name": "ชื่อ",
+    "phone": "เบอร์โทรศัพท์",
+    "landline": "โทรศัพท์บ้าน",
+    "address": "ที่อยู่",
+    "required": "จำเป็นต้องกรอก",
+    "invalid_email": "อีเมลไม่ถูกต้อง"
+  },
+  "messages": {
+    "welcome_user": "ยินดีต้อนรับ {{name}}",
+    "items_count": "มี {{count}} รายการ",
+    "last_updated": "อัปเดตล่าสุด {{date}}"
+  },
+  "status": {
+    "active": "ใช้งาน",
+    "inactive": "ไม่ใช้งาน",
+    "pending": "รอดำเนินการ",
+    "completed": "เสร็จสมบูรณ์",
+    "failed": "ล้มเหลว",
+    "status": "สถานะ"
+  },
+  "errors": {
+    "not_found": "ไม่พบหน้า",
+    "unauthorized": "ไม่ได้รับอนุญาต",
+    "forbidden": "ห้ามเข้าถึง",
+    "server_error": "ข้อผิดพลาดของเซิร์ฟเวอร์",
+    "network_error": "ข้อผิดพลาดเครือข่าย",
+    "passwordsMismatch": "รหัสผ่านไม่ตรงกัน!",
+    "readImageFailed": "อ่านไฟล์รูปภาพไม่สำเร็จ",
+    "loadOrgData": "ไม่สามารถโหลดข้อมูลหน่วยงานที่จำเป็น โปรดลองอีกครั้ง",
+    "fetchUserFailed": "ไม่สามารถดึงข้อมูลผู้ใช้",
+    "unknownApi": "เกิดข้อผิดพลาดจาก API ที่ไม่ทราบสาเหตุ",
+    "submitFailed": "บันทึกข้อมูลไม่สำเร็จ! โปรดลองอีกครั้ง",
+    "invalidPassword": "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร ตัวใหญ่ 1 ตัว และอักขระพิเศษ 1 ตัว",
+    "invalidEmail": "โปรดกรอกอีเมลที่ถูกต้อง",
+    "invalidMobile": "เบอร์มือถือต้องเป็นตัวเลข 10 หลัก",
+    "invalidCitizenId": "เลขบัตรประชาชนต้องเป็นตัวเลข 13 หลัก",
+    "invalidAge": "อายุต้องอยู่ระหว่าง 1-115 ปี"
+  },
+  "buttons": {
+    "submit": "ส่ง",
+    "reset": "รีเซ็ต",
+    "view_details": "ดูรายละเอียด",
+    "download": "ดาวน์โหลด"
+  },
+  "notifications": {
+    "new_message": "ข้อความใหม่จาก {{sender}}",
+    "task_completed": "{{task}} เสร็จสมบูรณ์"
+  },
+  "userform": {
+    "createUser": "สร้างผู้ใช้",
+    "editUser": "แก้ไขผู้ใช้",
+    "viewUser": "ดูรายละเอียดผู้ใช้",
+    "view": "ดูรายละเอียดผู้ใช้",
+    "home": "หน้าแรก",
+    "userMgmt": "จัดการผู้ใช้",
+    "profile": "โปรไฟล์",
+    "profilePhoto": "รูปโปรไฟล์",
+    "changePhoto": "เปลี่ยนรูป",
+    "allowedTypes": "รองรับ: JPG, PNG, GIF",
+    "orgInfo": "ข้อมูลหน่วยงาน",
+    "department": "แผนก",
+    "command": "กอง/สังกัด",
+    "station": "สถานี",
+    "role": "สิทธิ์ใช้งาน",
+    "selectRole": "เลือกสิทธิ์ใช้งาน",
+    "timestamps": "เวลาบันทึกข้อมูล",
+    "created": "สร้าง",
+    "updated": "แก้ไข",
+    "by": "โดย",
+    "accountLogin": "บัญชีและการเข้าสู่ระบบ",
+    "username": "ชื่อผู้ใช้",
+    "displayName": "ชื่อที่แสดง",
+    "password": "รหัสผ่าน",
+    "confirmPassword": "ยืนยันรหัสผ่าน",
+    "pwdHint": "รหัสผ่านอย่างน้อย 7 ตัวอักษร ตัวใหญ่ 1 ตัว และอักขระพิเศษ 1 ตัว",
+    "personal": "ข้อมูลส่วนบุคคล",
+    "title": "คำนำหน้า",
+    "firstName": "ชื่อ",
+    "middleName": "ชื่อกลาง",
+    "lastName": "นามสกุล",
+    "email": "อีเมล",
+    "mobile": "เบอร์มือถือ",
+    "citizenId": "เลขบัตรประชาชน",
+    "dob": "วันเกิด",
+    "gender": "เพศ",
+    "genderMale": "ชาย",
+    "genderFemale": "หญิง",
+    "genderOther": "อื่น ๆ",
+    "activity": "กิจกรรม",
+    "auditLog": "บันทึกการใช้งาน",
+    "blood": "กรุ๊ปเลือด",
+    "address": "ที่อยู่",
+    "addressPlaceholderEn": "กรอกที่อยู่",
+    "addressPlaceholderTh": "กรอกที่อยู่",
+    "cancel": "ยกเลิก",
+    "back": "ย้อนกลับ",
+    "create": "สร้างผู้ใช้",
+    "saving": "กำลังบันทึก...",
+    "saveChanges": "บันทึกการเปลี่ยนแปลง",
+    "viewMode": "โหมดดูข้อมูล",
+    "switchToEdit": "สลับไปแก้ไข",
+    "na": "ไม่มี",
+    "selectTitle": "เลือกคำนำหน้า",
+    "selectGender": "เลือกเพศ",
+    "auditLogToggle": "แสดง Audit Log",
+    "auditLogDescription": "ดูประวัติการใช้งานของคุณ",
+    "auditLogTitle": "Audit Log",
+    "cannotLoadUserData": "ไม่สามารถโหลดข้อมูลผู้ใช้ได้",
+    "viewProfile": "ดู Profile",
+    "selectBlood": "เลือกกรุ๊ปเลือด",
+    "selectDepartment": "เลือกแผนก",
+    "selectCommand": "เลือกกอง/สังกัด",
+    "selectStation": "เลือกสถานี",
+    "loadingUserData": "กำลังโหลดข้อมูลผู้ใช้...",
+    "noUserData": "ไม่พบข้อมูลผู้ใช้.",
+    "createSuccess": "สร้างผู้ใช้สำเร็จ!",
+    "updateSuccess": "อัปเดตผู้ใช้สำเร็จ!",
+    "mobileFormat": "รูปแบบ: 0XX-XXX-XXXX",
+    "citizenIdFormat": "รูปแบบ: X-XXXX-XXXXX-XX-X",
+    "dobHint": "ห้ามเป็นวันอนาคต สูงสุด 115 ปี",
+    "empId": "รหัสพนักงาน",
+    "userType": "ประเภทผู้ใช้",
+    "userTypeRegular": "ผู้ใช้ทั่วไป",
+    "userTypeAdmin": "ผู้ดูแลระบบ",
+    "userTypeSuperAdmin": "ผู้ดูแลระบบสูงสุด",
+    "userTypeUnknown": "ไม่ทราบ",
+    "resetPassword": "รีเซ็ตรหัสผ่าน",
+    "resetPasswordDescription": "ติดต่อผู้ดูแลระบบหรือฝ่ายสนับสนุน เพื่อรีเซ็ตรหัสผ่านของคุณ",
+    "resetPasswordDescriptionForAdmin": "กรอกอีเมล ชื่อผู้ใช้ และรหัสผ่านใหม่เพื่อรีเซ็ต",
+    "resetPasswordContactEmail": "อีเมล์",
+    "resetPasswordContactPhone": "โทรศัพท์",
+    "changePassword": "เปลี่ยนรหัสผ่าน",
+    "changePasswordDescription": "กรอกรหัสผ่านปัจจุบันและรหัสผ่านใหม่เพื่อเปลี่ยนรหัสผ่านของคุณ",
+    "currentPassword": "รหัสผ่านปัจจุบัน",
+    "newPassword": "รหัสผ่านใหม่",
+    "enterCurrentPassword": "กรอกรหัสผ่านปัจจุบัน",
+    "enterNewPassword": "กรอกรหัสผ่านใหม่",
+    "confirmNewPassword": "ยืนยันรหัสผ่านใหม่",
+    "currentPasswordRequired": "กรุณากรอกรหัสผ่านปัจจุบัน",
+    "newPasswordRequired": "กรุณากรอกรหัสผ่านใหม่",
+    "passwordMismatch": "รหัสผ่านไม่ตรงกัน",
+    "passwordTooShort": "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร",
+    "samePassword": "รหัสผ่านใหม่ต้องแตกต่างจากรหัสผ่านปัจจุบัน",
+    "incorrectCurrentPassword": "รหัสผ่านปัจจุบันไม่ถูกต้อง",
+    "unauthorized": "ไม่มีสิทธิ์ในการดำเนินการ",
+    "resetPasswordError": "ไม่สามารถรีเซ็ตรหัสผ่านได้",
+    "changePasswordError": "ไม่สามารถเปลี่ยนรหัสผ่านได้",
+    "resetPasswordSuccess": "รีเซ็ตรหัสผ่านสำเร็จ!",
+    "changePasswordSuccess": "เปลี่ยนรหัสผ่านสำเร็จ!",
+    "passwordResetSuccessToast": "รีเซ็ตรหัสผ่านเรียบร้อยแล้ว!",
+    "passwordChangeSuccessToast": "เปลี่ยนรหัสผ่านเรียบร้อยแล้ว!",
+    "passwordsMatch": "รหัสผ่านตรงกัน",
+    "passwordsDoNotMatch": "รหัสผ่านไม่ตรงกัน",
+    "passwordRequirementsNotMet": "รหัสผ่านไม่ตรงตามเงื่อนไข",
+    "userIdRequired": "ไม่พบ User ID",
+    "resetPasswordFailed": "เกิดข้อผิดพลาดในการรีเซ็ตรหัสผ่าน",
+    "changePasswordFailed": "เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน",
+    "resetting": "กำลังรีเซ็ต...",
+    "changing": "กำลังเปลี่ยน...",
+    "passwordRequirements": "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร ตัวใหญ่ 1 ตัว และอักขระพิเศษ 1 ตัว",
+    "passwordValidation": {
+      "minLength": "อย่างน้อย 8 ตัวอักษร",
+      "uppercase": "อย่างน้อยตัวใหญ่ 1 ตัว",
+      "specialChar": "อย่างน้อยอักขระพิเศษ 1 ตัว"
+    },
+    "blood_type": {
+      "A": "เอ",
+      "B": "บี",
+      "AB": "เอบี",
+      "O": "โอ"
+    },
+    "preferences": "การตั้งค่า",
+    "select_contact": "เลือกการติดต่อ",
+    "specificForm": "ฟอร์มแบบกำหนดเอง"
+  },
+  "breadcrumb": {
+    "home": "หน้าหลัก",
+    "system_configuration": "การตั้งค่าระบบ",
+    "audit_log": "บันทึกการตรวจสอบ"
+  },
+  "audit_log": {
+    "title": "บันทึกการตรวจสอบ",
+    "user_activities": "กิจกรรมของผู้ใช้",
+    "loading": "กำลังโหลด...",
+    "search": "ค้นหา",
+    "search_placeholder": "ค้นหา ผู้ใช้, ฟังก์ชั่น, การกระทำ...",
+    "search_data": "ค้นหาข้อมูล",
+    "refresh_data": "รีเฟรชข้อมูล",
+    "filters": "ตัวกรอง",
+    "date_time_range": "ช่วงวันที่และเวลา",
+    "start_date": "วันที่/เวลาเริ่มต้น",
+    "end_date": "วันที่/เวลาสิ้นสุด",
+    "username": "ชื่อผู้ใช้",
+    "function": "ฟังก์ชัน",
+    "action": "การกระทำ",
+    "status": "สถานะ",
+    "message": "ข้อความ",
+    "all_users": "ผู้ใช้ทั้งหมด",
+    "all_functions": "ฟังก์ชันทั้งหมด",
+    "all_actions": "การกระทำทั้งหมด",
+    "all_status": "สถานะทั้งหมด",
+    "success": "สำเร็จ",
+    "failed": "ล้มเหลว",
+    "warning": "คำเตือน",
+    "unknown": "ไม่ทราบ",
+    "clear_all": "ล้างทั้งหมด",
+    "clear_filters": "ล้างตัวกรอง",
+    "apply_filter": "ใช้ตัวกรอง",
+    "refresh": "รีเฟรช",
+    "search_users": "ค้นหาผู้ใช้...",
+    "filters_cleared": "ล้างตัวกรองเรียบร้อยแล้ว",
+    "query_success": "โหลดข้อมูลการทำธุรกรรมสำเร็จ {{count}} รายการ",
+    "audit_log_query_success": "โหลดข้อมูลบันทึกการตรวจสอบสำเร็จ {{count}} รายการ",
+    "user_transaction": "ผู้ใช้ / ธุรกรรม / เวลา",
+    "time": "เวลา",
+    "loading_data": "กำลังโหลดข้อมูล...",
+    "error": "ข้อผิดพลาด",
+    "error_message": "กรุณาตรวจสอบคอนโซลหรือลองใหม่อีกครั้ง",
+    "no_logs_found": "ไม่พบบันทึก",
+    "no_logs_description": "ไม่พบบันทึกการตรวจสอบสำหรับผู้ใช้นี้",
+    "showing_records": "แสดง {{start}}-{{end}} จาก {{total}} รายการ",
+    "transaction_id": "รหัสธุรกรรม",
+    "duration": "ระยะเวลา",
+    "invalid_username": "ชื่อผู้ใช้ไม่ถูกต้อง",
+    "adjust_filters": "ลองปรับตัวกรองใหม่",
+    "rows_per_page": "แถวต่อหน้า",
+    "show": "แสดง",
+    "showing": "แสดง",
+    "of": "จาก",
+    "logs": "บันทึก",
+    "previous": "ก่อนหน้า",
+    "next": "ถัดไป",
+    "log_details": "รายละเอียดบันทึก",
+    "full_message": "ข้อความทั้งหมด",
+    "old_data": "ข้อมูลเก่า",
+    "new_data": "ข้อมูลใหม่",
+    "response_data": "ข้อมูลการตอบกลับ",
+    "click_to_view_full": "คลิกเพื่อดูข้อความทั้งหมด",
+    "click_to_expand": "คลิกเพื่อขยาย",
+    "search_and_filter": "ค้นหาและกรองบันทึกการตรวจสอบระบบ",
+    "logs_found": "บันทึกที่พบ",
+    "records_found": "รายการที่พบ",
+    "entries": "รายการ",
+    "to": "ถึง",
+    "user_activity_history": "ประวัติการใช้งานของผู้ใช้",
+    "total_activities": "กิจกรรมทั้งหมด",
+    "avg_duration": "เวลาเฉลี่ย",
+    "no_activities_found": "ไม่พบกิจกรรมของผู้ใช้นี้",
+    "transaction_details": "รายละเอียดธุรกรรม",
+    "data_details": "รายละเอียดข้อมูล",
+    "unique_id": "รหัสเฉพาะ",
+    "datetime": "วันที่และเวลา",
+    "main_function": "ฟังก์ชันหลัก",
+    "all": "ทั้งหมด",
+    "items": "รายการ",
+    "result_data": "ผลลัพธ์",
+    "basic_info": "ข้อมูลพื้นฐาน",
+    "org_id": "รหัสองค์กร",
+    "function_name": "ชื่อฟังก์ชัน",
+    "sub_function": "ฟังก์ชันย่อย"
+  },
+  "case": {
+    "display": {
+      "audit": "บันทึกเจ้าหน้าที่",
+      "case_information": "รายละเอียดเคส",
+      "no": "เลขเคส",
+      "types": "ประเภทเหตุ",
+      "select_types_placeholder": "เลือกประเภทเหตุ",
+      "attach_file": "ไฟล์",
+      "service_center": "พื้นที่รับผิดชอบ",
+      "select_service_center": "เลือกพื้นที่รับผิดชอบ",
+      "area": "พื้นที่เกิดเหตุ",
+      "area_placeholder": "ใส่พื้นที่เกิดเหตุ",
+      "location_coordinates": "พิกัด",
+      "geocode_failed": "ไม่สามารถค้นหาที่อยู่สำหรับตำแหน่งดังกล่าวได้",
+      "map_expand": "ดูแผนที่ขนาดใหญ่",
+      "map_basemap": "รูปแบบแผนที่",
+      "map_basemap_street": "แผนที่ถนน",
+      "map_basemap_satellite": "ภาพดาวเทียม",
+      "map_settings_theme": "ธีม",
+      "map_settings_theme_light": "สว่าง",
+      "map_settings_theme_dark": "มืด",
+      "map_settings_language": "ภาษา",
+      "map_staff": "เจ้าหน้าที่",
+      "map_staff_hide": "ซ่อนเจ้าหน้าที่",
+      "map_staff_refresh": "รีเฟรชตำแหน่งเจ้าหน้าที่",
+      "map_staff_refresh_wait": "รอ {{seconds}} วินาที",
+      "map_staff_empty": "ไม่พบเจ้าหน้าที่ที่มีตำแหน่ง",
+      "map_staff_error": "ไม่สามารถโหลดตำแหน่งเจ้าหน้าที่ได้",
+      "map_staff_unmappable": "เจ้าหน้าที่ {{count}} คนไม่มีข้อมูลตำแหน่ง",
+      "map_staff_offline": "ออฟไลน์",
+      "map_staff_close": "ปิด",
+      "map_staff_coordinates": "พิกัด",
+      "map_staff_last_update": "อัปเดตตำแหน่งเมื่อ",
+      "map_staff_stale": "ข้อมูลเก่า",
+      "map_staff_in_development": "อยู่ระหว่างพัฒนา",
+      "map_staff_group_title": "เจ้าหน้าที่ {{count}} คนในจุดนี้",
+      "map_staff_group_hint": "อยู่ใกล้กันเกินกว่าจะแยกบนแผนที่ได้ เลือกหนึ่งคนเพื่อดูรายละเอียด",
+      "map_staff_group_back": "กลับไปที่เจ้าหน้าที่ {{count}} คนในจุดนี้",
+      "map_staff_section_personal_info": "ข้อมูลส่วนบุคคล",
+      "map_staff_section_personal_info_desc": "ข้อมูลติดต่อ หน่วย ทักษะ และสังกัด",
+      "map_staff_section_tracking": "ติดตามเจ้าหน้าที่แบบเรียลไทม์",
+      "map_staff_section_tracking_desc": "ความเร็ว ทิศทาง ความแม่นยำ GPS และเวลาที่ระบุพิกัดของเจ้าหน้าที่คนนี้แบบเรียลไทม์ อัปเดตทันทีที่มีการรายงาน พร้อมเส้นทางที่เคลื่อนที่ผ่านนับตั้งแต่เปิดชั้นข้อมูล",
+      "map_staff_section_routing": "ระบบวางแผนเส้นทางอัจฉริยะ",
+      "map_staff_section_routing_desc": "คำนวณและแสดงเส้นทางที่ดีที่สุดจากหน่วยที่รับผิดชอบไปยังที่เกิดเหตุ",
+      "map_staff_section_workflows": "คำสั่งงานตามบริบท",
+      "map_staff_section_workflows_desc": "คำสั่งด่วน: ดูข้อมูลเคส สั่งการเจ้าหน้าที่คนนี้ หรือยกเลิกการสั่งการ",
+      "map_staff_section_eta_ttl": "แดชบอร์ด ETA / TTL",
+      "map_staff_section_eta_ttl_desc": "เวลาที่คาดว่าจะถึงที่เกิดเหตุและเวลาที่ใช้เดินทางของหน่วยที่รับผิดชอบ ปรับตามสภาพจราจร",
+      "map_staff_case_details_button": "ดูรายละเอียดเคสทั้งหมด",
+      "map_place": "สถานที่",
+      "map_staff_assign_button": "สั่งการเข้าเคสนี้",
+      "map_staff_assign_section_button": "สั่งการเจ้าหน้าที่คนนี้",
+      "map_staff_cancel_button": "ถอนออกจากเคสนี้",
+      "map_staff_cancel_section_button": "ยกเลิกการสั่งการ",
+      "map_staff_assign_confirm_title": "ยืนยันการสั่งการ",
+      "map_staff_assign_confirm_message": "สั่งการ {{name}} เข้าเคส {{caseId}} ใช่หรือไม่?",
+      "map_staff_cancel_confirm_title": "ยืนยันการยกเลิกการสั่งการ",
+      "map_staff_cancel_confirm_message": "ถอน {{name}} ออกจากเคส {{caseId}} ใช่หรือไม่? เจ้าหน้าที่จะกลับสู่กลุ่มพร้อมปฏิบัติงาน",
+      "map_staff_assign_description": "ส่งเจ้าหน้าที่คนนี้เข้าเคสที่เปิดอยู่ตามขั้นตอน SOP",
+      "map_staff_cancel_description": "ถอนเจ้าหน้าที่คนนี้ออกจากเคสที่เปิดอยู่",
+      "map_staff_badge_current_case": "เคสนี้",
+      "map_staff_not_assigned_here": "ยังไม่ได้สั่งการเจ้าหน้าที่คนนี้",
+      "map_staff_other_cases": "เคสอื่นที่ถืออยู่ ({{count}})",
+      "map_staff_other_cases_pending": "ยังไม่รองรับการแสดงเคสอื่น",
+      "map_staff_blocked_assign": "สถานะ SOP ปัจจุบันยังไม่อยู่ในขั้นสั่งการ",
+      "map_staff_blocked_cancel": "สถานะ SOP ปัจจุบันไม่อนุญาตให้ยกเลิกการสั่งการ",
+      "map_staff_submitting": "กำลังส่งคำสั่ง...",
+      "map_staff_route_calculate": "คำนวณเส้นทาง",
+      "map_staff_route_recalculate": "คำนวณใหม่",
+      "map_staff_route_solving": "กำลังคำนวณ...",
+      "map_staff_route_none": "ยังไม่ได้คำนวณเส้นทาง",
+      "map_staff_route_distance": "ระยะทาง",
+      "map_staff_route_drive_time": "เวลาเดินทาง",
+      "map_staff_route_eta": "เวลาถึงโดยประมาณ",
+      "map_staff_route_ttl": "เวลาที่เหลือถึงจุดหมาย",
+      "map_staff_route_overdue": "เกินเวลาที่คาดไว้",
+      "map_staff_route_stale_caveat": "คำนวณจากตำแหน่งที่ไม่เป็นปัจจุบัน - เส้นทางจริงอาจแตกต่างออกไป",
+      "map_staff_route_km": "{{km}} กม.",
+      "map_staff_route_minutes": "{{minutes}} นาที",
+      "map_staff_route_err_no_case": "เคสนี้ไม่มีตำแหน่งที่สามารถระบุบนแผนที่ได้",
+      "map_staff_route_err_no_staff": "เจ้าหน้าที่คนนี้ไม่มีตำแหน่งที่สามารถระบุบนแผนที่ได้",
+      "map_staff_route_err_failed": "ไม่สามารถคำนวณเส้นทางได้ กรุณาลองใหม่อีกครั้ง",
+      "map_staff_route_err_metrics": "บริการเส้นทางไม่ได้ส่งระยะทางหรือเวลากลับมา กรุณาลองใหม่อีกครั้ง",
+      "map_staff_tracking_speed": "ความเร็ว",
+      "map_staff_tracking_speed_value": "{{speed}} กม./ชม.",
+      "map_staff_tracking_stopped": "ไม่เคลื่อนที่",
+      "map_staff_tracking_heading": "ทิศทางการเคลื่อนที่",
+      "map_staff_tracking_heading_stopped": "แสดงเฉพาะขณะที่หน่วยกำลังเคลื่อนที่",
+      "map_staff_tracking_bearing_value": "{{compass}} {{degrees}}°",
+      "map_staff_tracking_accuracy": "ความแม่นยำ GPS",
+      "map_staff_tracking_accuracy_value": "±{{meters}} ม.",
+      "map_staff_tracking_fix_age": "เวลาที่ระบุพิกัด GPS",
+      "map_staff_tracking_none": "เจ้าหน้าที่คนนี้ไม่ได้ส่งความเร็ว ทิศทาง หรือความแม่นยำมาพร้อมกับตำแหน่ง",
+      "map_staff_tracking_trail_show": "แสดงเส้นทางการเคลื่อนที่",
+      "map_staff_tracking_trail_hide": "ซ่อนเส้นทางการเคลื่อนที่",
+      "map_staff_tracking_trail_empty": "ยังไม่มีการเคลื่อนที่ที่บันทึกไว้ เส้นทางจะถูกบันทึกระหว่างที่เปิดชั้นข้อมูลเจ้าหน้าที่",
+      "map_staff_tracking_trail_caveat": "เส้นทางที่เจ้าหน้าที่คนนี้เคลื่อนที่ผ่านนับตั้งแต่เปิดชั้นข้อมูลเจ้าหน้าที่ ไม่ใช่ประวัติที่บันทึกถาวร และจะเริ่มใหม่เมื่อโหลดหน้าใหม่",
+      "map_staff_compass_n": "เหนือ",
+      "map_staff_compass_ne": "ตะวันออกเฉียงเหนือ",
+      "map_staff_compass_e": "ตะวันออก",
+      "map_staff_compass_se": "ตะวันออกเฉียงใต้",
+      "map_staff_compass_s": "ใต้",
+      "map_staff_compass_sw": "ตะวันตกเฉียงใต้",
+      "map_staff_compass_w": "ตะวันตก",
+      "map_staff_compass_nw": "ตะวันตกเฉียงเหนือ",
+      "map_boundary": "ขอบเขตการปกครอง",
+      "map_boundary_levels": "ชั้นข้อมูล",
+      "map_boundary_error": "ไม่สามารถโหลดขอบเขตการปกครองได้",
+      "map_boundary_province": "จังหวัด",
+      "map_boundary_district": "เขต/อำเภอ",
+      "map_boundary_subdistrict": "แขวง/ตำบล",
+      "map_boundary_province_short": "จว.",
+      "map_boundary_district_short": "เขต",
+      "map_boundary_subdistrict_short": "แขวง",
+      "map_boundary_apply": "ใช้งาน",
+      "map_boundary_cancel": "ยกเลิก",
+      "map_boundary_close": "ปิด",
+      "map_boundary_select_all": "ทั้งหมด",
+      "map_boundary_clear": "ล้าง",
+      "map_boundary_search": "ค้นหาพื้นที่",
+      "map_boundary_loading": "กำลังโหลดพื้นที่…",
+      "map_boundary_pending": "กดใช้งานเพื่ออัปเดตแผนที่",
+      "map_boundary_applied": "แสดงบนแผนที่แล้ว",
+      "map_boundary_no_match": "ไม่พบพื้นที่ที่ตรงกัน",
+      "map_boundary_no_parent": "เลือกพื้นที่ระดับบนก่อน",
+      "contact": "ข้อมูลติดต่อ",
+      "phone_number": "หมายเลขโทรศัพท์",
+      "phone_number_placeholder": "ใส่เลขโทรศัพท์",
+      "contact_method": "ช่องทางการติดต่อ",
+      "contact_method_placeholder": "เลือกช่องทางการติดต่อ",
+      "iot_device": "อุปกรณ์ IoT",
+      "iot_device_placeholde": "รหัส IoT",
+      "iot_alert_date": "เวลา IoT Alert",
+      "case_detail": "รายละเอียดเคส",
+      "case_detail_placeholder": "ใส่รายละเอียดเคส",
+      "detail": "รายละเอียด",
+      "result": "อนุมัติปิดงาน",
+      "result_placeholder": "เลือกประเภทปิดงาน",
+      "result_detail_placeholder": "รายละเอียดปิดงาน",
+      "cancel_case": "ยกเลิกเหตุ",
+      "cancel": "ยกเลิก",
+      "close_case": "อนุมัติปิดงาน",
+      "request_schedule_date": "นัดหมายล่วงหน้า",
+      "save_change": "บันทึกการเปลี่ยนแปลง",
+      "save_as_draft": "บันทึกแบบร่าง",
+      "submit": "สร้างใบงาน",
+      "Assigned Officer": "เจ้าหน้าที่ ที่ได้รับมอบหมาย",
+      "Assigned Officers": "เจ้าหน้าที่ ที่ได้รับมอบหมาย",
+      "schedule_placeholder": "วว/ดด/ปปปป",
+      "schedule_placeholder_time": "วว/ดด/ปปปป ชช:นน",
+      "updateAt": "แก้ไขเมื่อ",
+      "updateBy": "แก้ไขโดย",
+      "edit": "การแก้ไข",
+      "cancel_case_detail": "ยืนยันการยกเลิกเหตุ",
+      "cancel_case_title": "ยกเลิกเหตุ",
+      "close_case_detail": "ยืนยันการปิดเหตุ",
+      "close_case_title": "ปิดเหตุ",
+      "cancel_case_assignment_title": "ยกเลิกการมอบหมายงาน",
+      "cancel_case_assignment_detail": "ยืนยันยกเลิกการมอบหมายงานสำหรับ",
+      "advance_filtering": {
+        "title": "กรองขั้นสูง",
+        "search_case_type_place_holder": "ค้นหาโดยประเภทเหตุ...",
+        "search_detail": "ค้นหารายละเอียด",
+        "search_detail_placeholder": "ค้นหารายละเอียด...",
+        "start_date_title": "วันที่เริ่มต้น",
+        "end_date_title": "วันที่สิ้นสุด",
+        "status_title": "สถานะ",
+        "status_placeholder_all": "สถานะทั้งหมด",
+        "create_by_tilte": "สร้างโดย",
+        "create_by_tilte_placeholder": "สร้างโดย...",
+        "phone": "เบอร์โทรศัพท์",
+        "phone_number_placeholder": "เบอร์โทรศัพท์..."
+      },
+      "toast": {
+        "close_case_success": "ปิดงานสำเร็จ",
+        "close_case_fail": "ปิดงานไม่สำเร็จ",
+        "cancel_case_success": "ยกเลิกงานสำเร็จ",
+        "cancel_case_fail": "ยกเลิกงานไม่สำเร็จ",
+        "cancel_unit_success": "ยกเลิกเจ้าหน้าที่สำเร็จ",
+        "cancel_unit_fail": "ยกเลิกเจ้าหน้าที่ไม่สำเร็จ",
+        "save_change_sucess": "บันทึกสำเร็จ",
+        "save_change_fail": "บันทึกไม่สำเร็จ",
+        "dispatch_success": "มอบหมายงานสำเร็จ",
+        "dispatch_fail": "มอบหมายงานไม่สำเร็จ",
+        "add_case_success": "สร้างเหตุสำเร็จ",
+        "savedaft_success": "สร้างแบบร่างสำเร็จ",
+        "add_case_fail": "สร้างเหตุไม่สำเร็จ",
+        "savedaft_fail": "สร้างแบบร่างไม่สำเร็จ",
+        "missing_close_case_data": "กรุณาใส่ข้อมูลให้ครบ",
+        "upload_file_success": "อัพโหลดไฟล์สำเร็จ",
+        "upload_file_fail": "อัพโหลดไฟล์ไม่สำเร็จ",
+        "loading_case": "กำลังโหลดใบงาน",
+        "loading_case_success": "โหลดใบงานสำเร็จ",
+        "loading_case_fail": "โหลดใบงานไม่ สำเร็จ"
+      }
+    },
+    "sop_card": {
+      "comment": "ข้อความ",
+      "edit": "แก้ไข",
+      "cancel_edit": "ยกเลิกแก้ไข",
+      "attach_file": "แนบไฟล์",
+      "assign_officer": "มอบหมายงานให้เจ้าหน้าที่",
+      "created": "สร้างโดย",
+      "create_date": "วันที่สร้าง",
+      "Critical Priority": "ความสำคัญวิกฤต",
+      "High Priority": "ความสำคัญสูง",
+      "Medium Priority": "ความสำคัญปานกลาง",
+      "Low Priority": "ความสำคัญต่ำ",
+      "send_activity": "ส่งข้อความ",
+      "fail_send_activity": "ส่งไม่สำเร็จ",
+      "due": "สิ้นสุด",
+      "comment_modal_title": "บันทึกเหตุการณ์",
+      "request_spare_part": "ขอชิ้นส่วนอะไหล่",
+      "no_comment": "ไม่มีข้อความ"
+    },
+    "assignment": {
+      "case_type": "ประเภทเหตุ",
+      "area": "พื้นที่เกิดเหตุ",
+      "status": "สถานะ",
+      "piority": "ความสำคัญ",
+      "create_by": "สร้างโดย",
+      "create_date": "วันที่สร้าง",
+      "kanban": "ใบงาน",
+      "list": "รายการ",
+      "pageheader": "ใบงาน",
+      "search_placeholder": "ค้นหาใบงาน...",
+      "advance_filter": "กรอง",
+      "add_new_case": "เพิ่มเหตุใหม่",
+      "clear": "ลบตัวกรอง",
+      "apply_filter": "เพิ่มตัวกรอง"
+    },
+    "assign_officer_modal": {
+      "title": "มอบหมายงานให้เจ้าหน้าที่",
+      "search_placeholder": "ค้นหาเจ้าหน้าที่โดยชื่อ,องค์กร,ทักษะ...",
+      "recommend_button": "ตามทักษะ",
+      "allofficer_button": "แสดงทั้งหมด",
+      "area": "พื้นที่รับผิดชอบ",
+      "status": "สถานะ",
+      "name": "ชื่อ",
+      "skills": "ทักษะ",
+      "workloads": "งานที่มี",
+      "no_officer": "ไม่มีเจ้าหน้าที่",
+      "not_match_officer": "ไม่ค้นพบเจ้าหน้าที่ที่ค้นหา",
+      "assign_button": "มอบหมายงานให้เจ้าหน้าที่",
+      "select": "มอบหมาย",
+      "officer": "เจ้าหน้าที่",
+      "end_of_action": "เสร็จสิ้น"
+    },
+    "officer_detail": {
+      "personal_title": "ข้อมูลเจ้าหน้าที่",
+      "assignee_title": "ข้อมูลผู้มอบหมายงาน",
+      "fullname": "ชื่อ-นามสกุล",
+      "username": "ชื่อผู้ใช้",
+      "mobile_number": "เบอร์โทรศัพท์",
+      "email": "อีเมล",
+      "service_title": "รายละเอียดงาน",
+      "vehicle": "หมายเลขหน่วย ",
+      "address": "ที่อยู่",
+      "service_progress_title": "ความคืบหน้าบริการ"
+    },
+    "back": "กลับ",
+    "dnd_text_des": "ลากและวางไฟล์ที่นี่ หรือคลิกเพื่อเลือกไฟล์",
+    "dnd_text_des_on_over": "วางไฟล์ที่นี่",
+    "supports": "รองรับ",
+    "images": "รูปประเภท",
+    "max": "สูงสุด",
+    "each": "ต่อไฟล์",
+    "download": "ดาวน์โหลด",
+    "status_allcase": "ทุกใบงาน",
+    "panel": {
+      "device_info": "ข้อมูลอุปกรณ์",
+      "device_type": "ประเภทอุปกรณ์",
+      "device_model": "รุ่น",
+      "service_history": "ประวัติงาน",
+      "details_panel": "หน้าต่างรายละเอียด",
+      "brand": "ยี่ห้อ",
+      "iot_device_serial_number": "หมายเลขประจำเครื่อง",
+      "iot_device_name": "ชื่ออุปกรณ์",
+      "customer_search": "ค้นหาลูกค้า",
+      "appointmentType_search": "ค้นหาประเภทนัดหมาย",
+      "serviceType_search": "ค้นหาประเภทการบริการ",
+      "unlink_confirm_description": "การดำเนินการนี้จะยกเลิกการเชื่อมโยงลูกค้าออกจากเคสนี้ หมายเลขติดต่อของเคสจะยังคงอยู่"
+    }
+  },
+  "time": {
+    "s": "วิ.",
+    "m": "นท.",
+    "h": "ชม.",
+    "d": "ว.",
+    "y": "ป.",
+    "OVERDUE": "เกินกำหนด",
+    "TIMEREMAINING": "เวลาที่เหลือ",
+    "Hours": "ชั่วโมง",
+    "Minutes": "นาที",
+    "Seconds": "วินาที",
+    "Years": "ปี",
+    "Months": "เดือน",
+    "Days": "วัน",
+    "Overdue": "เกินกำหนด"
+  },
+  "progress": {
+    "sla": "SLA",
+    "actual": "ใช้ไป",
+    "overdue_by": "เกินเวลา",
+    "faster_by": "เร็วกว่า",
+    "in_progress": "กำลังดำเนินการ",
+    "pending": "รอดำเนินการ",
+    "no_sla": "ไม่ได้กำหนด SLA",
+    "used": "ใช้ไป",
+    "completed_progress": "งานสำเร็จไปแล้ว",
+    "total_sla": "SLA ทั้งหมด"
+  },
+  "form_builder": {
+    "title": "ตัวสร้างแบบฟอร์ม",
+    "header": "สร้างแบบฟอร์มใหม่",
+    "description": "ปรับแต่งแบบฟอร์มโดยเพิ่ม แก้ไข และลบฟิลด์",
+    "create": "สร้างฟอร์ม",
+    "form_management": "การจัดการฟอร์ม",
+    "form_not_found": "ไม่เจอฟอร์ม",
+    "desc_filter_not_found": "ลองปรับตัวกรองหรือเงื่อนไขการค้นหาของคุณ",
+    "confirm_pulish": "คุณต้องการเผยแพร่ฟอร์มนี้ใช่ไหม",
+    "confirm_unpulish": "คุณต้องการยกเลิกการเผยแพร่ฟอร์มนี้ใช่ไหม",
+    "remove_workflow": "ไม่สามารถยกเลิกเผยแพร่ได้ เนื่องจากฟอร์มนี้ถูกใช้งานใน Workflow ด้านล่าง",
+    "export_form": "ส่งออกฟอร์ม",
+    "export_description": "ดาวน์โหลดฟอร์มนี้เป็นไฟล์ JSON",
+    "form_name": "ชื่อฟอร์ม",
+    "form_description": "คำอธิบายฟอร์ม",
+    "import_form": "นำเข้าฟอร์ม",
+    "import_description": "อัปโหลดไฟล์ JSON เพื่อนำเข้าการตั้งค่าฟอร์ม",
+    "select_file": "เลือกไฟล์ JSON",
+    "selected_file": "ไฟล์ที่เลือก",
+    "file_size": "ขนาด",
+    "invalid_file_type": "กรุณาเลือกไฟล์ JSON ที่ถูกต้อง",
+    "invalid_import_data": "ข้อมูลฟอร์มไม่ถูกต้อง",
+    "import_success": "นำเข้าฟอร์มสำเร็จ",
+    "import_error": "เกิดข้อผิดพลาดในการนำเข้าฟอร์ม",
+    "add_field": "เพิ่มฟิลด์",
+    "preview": "ดูตัวอย่าง",
+    "save": "บันทึก",
+    "field_types": {
+      "text": "ข้อความ",
+      "number": "ตัวเลข",
+      "date": "วันที่",
+      "select": "ตัวเลือก",
+      "checkbox": "กล่องเครื่องหมาย",
+      "radio": "ปุ่มตัวเลือก",
+      "textarea": "พื้นที่ข้อความ",
+      "file": "ไฟล์",
+      "header": "หัวข้อ",
+      "paragraph": "ข้อความย่อหน้า"
+    },
+    "validation": {
+      "required": "จำเป็น",
+      "max_length": "ความยาวสูงสุด",
+      "min_length": "ความยาวขั้นต่ำ"
+    }
+  },
+  "dynamicForm": {
+    "pageTitle": "เครื่องมือสร้างฟอร์มไดนามิก",
+    "saveDrafts": "บันทึกร่าง",
+    "saveChange": "บันทึกการเปลี่ยนแปลง",
+    "saveForm": "บันทึกฟอร์ม",
+    "preview": {
+      "noFields": "ยังไม่มีการเพิ่มฟิลด์ คลิก \"แก้ไข\" เพื่อเริ่มเพิ่ม",
+      "versionPrefix": "เวอร์ชัน "
+    },
+    "toasts": {
+      "noFormName": "กรุณากรอกชื่อฟอร์ม",
+      "noFields": "ไม่มีองค์ประกอบในฟอร์ม",
+      "somethingWentWrong": "เกิดข้อผิดพลาดบางอย่าง",
+      "unexpectedError": "เกิดข้อผิดพลาดที่ไม่คาดคิด",
+      "correctErrors": "โปรดแก้ไขข้อผิดพลาดก่อนส่ง",
+      "draftLoaded": "โหลดร่างสำเร็จ:",
+      "noDraftFound": "ไม่พบร่างใน localStorage",
+      "parseDraftError": "ไม่สามารถแยกวิเคราะห์ร่างจาก localStorage:",
+      "moveBetweenGroupsNotAllowed": "ไม่อนุญาตให้ย้ายรายการระหว่างกลุ่มต่างๆ"
+    }
+  },
+  "formEdit": {
+    "confirmPublish": {
+      "title": "ยืนยันการเผยแพร่?",
+      "description": "ยืนยันการเผยแพร่?"
+    },
+    "formSettings": {
+      "title": "การตั้งค่าฟอร์ม",
+      "formNameLabel": "ชื่อฟอร์ม:",
+      "formNamePlaceholder": "ป้อนชื่อฟอร์ม",
+      "formIdLabel": "รหัสฟอร์ม:",
+      "formIdPlaceholder": "ป้อนรหัสฟอร์มที่ไม่ซ้ำกัน",
+      "version": "เวอร์ชัน :",
+      "publish": "เผยแพร่",
+      "unpublish": "ยกเลิกการเผยแพร่",
+      "gridColumns": "จำนวนคอลัมน์ (เดสก์ท็อป):",
+      "formType": "ประเภทฟอร์ม"
+    },
+    "layoutEditor": {
+      "title": "เครื่องมือแก้ไขเค้าโครงฟอร์ม",
+      "hideAll": "ซ่อนทั้งหมด",
+      "showAll": "แสดงทั้งหมด",
+      "noFields": "ยังไม่มีการเพิ่มฟิลด์ ใช้ปุ่มด้านบนเพื่อเพิ่มฟิลด์ใหม่"
+    },
+    "settingsModal": {
+      "title": "การตั้งค่าสำหรับ:",
+      "fieldType": "ประเภทฟิลด์:",
+      "saveButton": "บันทึกกฎ",
+      "unsupportedRule": "กฎที่ไม่รองรับ: {ruleName}"
+    },
+    "rules": {
+      "searchCountries": "ค้นหาประเทศ...",
+      "minLength": "ความยาวขั้นต่ำ:",
+      "maxLength": "ความยาวสูงสุด:",
+      "minnumber": "ค่าต่ำสุด:",
+      "maxnumber": "ค่าสูงสุด:",
+      "minSelections": "จำนวนตัวเลือกขั้นต่ำ:",
+      "maxSelections": "จำนวนตัวเลือกสูงสุด:",
+      "maxFileSize": "ขนาดไฟล์สูงสุด (MB):",
+      "minFiles": "จำนวนไฟล์ขั้นต่ำ:",
+      "maxFiles": "จำนวนไฟล์สูงสุด:",
+      "contain": "ต้องมี:",
+      "allowedCountries": "ประเทศที่อนุญาต:",
+      "allowedFileTypes": "ประเภทไฟล์ที่อนุญาต:",
+      "minLocalDate": "วันที่และเวลาท้องถิ่นขั้นต่ำ:",
+      "maxLocalDate": "วันที่และเวลาท้องถิ่นสูงสุด:",
+      "minDate": "วันที่ขั้นต่ำ:",
+      "maxDate": "วันที่สูงสุด:",
+      "validEmailFormat": "รูปแบบอีเมลที่ถูกต้อง",
+      "hasUppercase": "มีตัวพิมพ์ใหญ่",
+      "hasLowercase": "มีตัวพิมพ์เล็ก",
+      "hasNumber": "มีตัวเลข",
+      "hasSpecialChar": "มีอักขระพิเศษ",
+      "noWhitespace": "ไม่มีช่องว่าง",
+      "futureDateOnly": "เฉพาะวันที่ในอนาคต",
+      "pastDateOnly": "เฉพาะวันที่ในอดีต"
+    }
+  },
+  "formElement": {
+    "dragHandleTitle": "ลากเพื่อจัดลำดับใหม่",
+    "form_elements": "องค์ประกอบฟอร์ม",
+    "removeFieldTitle": "ลบฟิลด์",
+    "toggleVisibility": "สลับการแสดงผล",
+    "showLabel": "แสดงป้ายกำกับ",
+    "labelText": "ข้อความป้ายกำกับ:",
+    "labelPlaceholder": "แก้ไขป้ายกำกับฟิลด์",
+    "idLabel": "รหัส (ID):",
+    "idPlaceholder": "แก้ไขรหัสฟิลด์",
+    "idTitle": "แก้ไขรหัสฟิลด์",
+    "placeholderLabel": "ข้อความตัวยึดตำแหน่ง:",
+    "placeholderPlaceholder": "แก้ไขข้อความตัวยึดตำแหน่ง",
+    "placeholderTitle": "แก้ไขข้อความตัวยึดตำแหน่ง",
+    "required": "จำเป็น",
+    "enableSearch": "เปิดใช้งานการค้นหา",
+    "containsPersonalData": "มีข้อมูลส่วนบุคคล",
+    "piiStrategy": {
+      "lastN": "แสดง 4 หลักท้าย",
+      "email": "รูปแบบอีเมล",
+      "yearOnly": "แสดงเฉพาะปี",
+      "full": "ซ่อนทั้งหมด"
+    },
+    "gridColumns": "จำนวนคอลัมน์ (เดสก์ท็อป):",
+    "columnSpan": "ความกว้างคอลัมน์ (เดสก์ท็อป):",
+    "newOption": "ตัวเลือกใหม่",
+    "groupedFields": "ฟิลด์ที่จัดกลุ่ม",
+    "formForOption": "ฟอร์มสำหรับ \"{optionValue}\""
+  },
+  "formType": {
+    "textInput": "ข้อความ",
+    "numberInput": "ตัวเลข",
+    "textAreaInput": "พื้นที่ข้อความ",
+    "emailInput": "อีเมล",
+    "multiCheckbox": "ช่องทำเครื่องหมาย (หลายตัวเลือก)",
+    "singleSelect": "ตัวเลือก (รายการเดียว)",
+    "image": "รูปภาพ",
+    "dndImage": "รูปภาพ (ลากและวาง)",
+    "multiImage": "รูปภาพ (หลายรูป)",
+    "dndMultiImage": "รูปภาพ (ลากและวาง หลายรูป)",
+    "passwordInput": "รหัสผ่าน",
+    "date": "วันที่",
+    "dateTime": "วันที่และเวลา",
+    "radio": "ปุ่มตัวเลือก (Radio)",
+    "group": "กลุ่ม",
+    "dynamicField": "ฟิลด์แบบไดนามิก",
+    "phoneNumber": "หมายเลขโทรศัพท์"
+  },
+  "formViewer": {
+    "emptyValue": "-",
+    "noImageUploaded": "ไม่มีรูปภาพอัปโหลด",
+    "noImagesUploaded": "ไม่มีรูปภาพหลายรูปอัปโหลด",
+    "emptyGroup": "ไม่มีฟิลด์ในกลุ่มนี้",
+    "dynamicFieldDetails": "รายละเอียดสำหรับ \"{{value}}\"",
+    "unsupportedFieldType": "รูปแบบฟิลด์ไม่รองรับ: {{type}}"
+  },
+  "customer": {
+    "social": {
+      "already_in_list": "บัญชี {{channel}} นี้อยู่ในรายการด้านล่างแล้ว",
+      "already_linked_other": "บัญชี {{channel}} นี้เชื่อมโยงกับลูกค้ารายอื่นอยู่แล้ว",
+      "partial_attach": "บันทึกข้อมูลลูกค้าแล้ว แต่ไม่สามารถเชื่อมโยงช่องทางการติดต่อได้ {{count}} รายการ กรุณาเพิ่มจากโปรไฟล์ลูกค้า",
+      "attach_needs_profile": "บันทึกข้อมูลลูกค้าแล้ว แต่ไม่สามารถเชื่อมโยงช่องทางการติดต่อโดยอัตโนมัติได้ กรุณาเพิ่มจากโปรไฟล์ลูกค้า",
+      "link_title": "เชื่อมโยงช่องทางการติดต่อ",
+      "link_to_customer": "เชื่อมโยงกับลูกค้ารายนี้",
+      "search_owner": "เลือกลูกค้าที่เป็นเจ้าของบัญชีนี้",
+      "conflict_owner": "เชื่อมโยงกับ {{owner}} อยู่แล้ว",
+      "identity_required": "กรุณากรอกรหัสบัญชีก่อน",
+      "channels": "ช่องทางการติดต่อ",
+      "primary": "หลัก",
+      "empty": "ยังไม่มีช่องทางการติดต่อ",
+      "partial_index": "รายการช่องทางอาจไม่ครบถ้วน ไม่สามารถโหลดบัญชีที่เชื่อมโยงบางรายการได้",
+      "channel": "ช่องทาง",
+      "account_id": "รหัสบัญชี",
+      "account_name": "ชื่อบัญชี",
+      "photo_url": "ลิงก์รูปภาพ",
+      "email_hint": "จะบันทึกลงอีเมลของลูกค้าเฉพาะเมื่อยังไม่มีอีเมลเดิมเท่านั้น",
+      "add": "เพิ่มช่องทางการติดต่อ",
+      "link": "เชื่อมโยงบัญชี",
+      "unlink": "ยกเลิกการเชื่อมโยง",
+      "unlink_title": "ยกเลิกการเชื่อมโยงบัญชี",
+      "unlink_description": "บัญชีนี้จะถูกยกเลิกการเชื่อมโยงกับลูกค้ารายนี้อย่างถาวร และไม่สามารถย้อนกลับได้",
+      "linked": "เชื่อมโยงบัญชีแล้ว",
+      "updated": "อัปเดตบัญชีแล้ว",
+      "unlinked": "ยกเลิกการเชื่อมโยงบัญชีแล้ว",
+      "save_failed": "ไม่สามารถบันทึกบัญชีได้",
+      "unlink_failed": "ไม่สามารถยกเลิกการเชื่อมโยงบัญชีได้",
+      "already_linked_here": "บัญชี {{channel}} นี้เชื่อมโยงกับลูกค้ารายนี้อยู่แล้ว",
+      "already_linked_elsewhere": "บัญชี {{channel}} นี้เชื่อมโยงกับ {{owner}} อยู่แล้ว",
+      "email_not_saved": "เชื่อมโยงช่องทางแล้ว แต่ไม่สามารถบันทึกอีเมลได้",
+      "provider": {
+        "line": "ไลน์",
+        "facebook": "เฟซบุ๊ก",
+        "textchat": "แชทข้อความ",
+        "phone": "โทรศัพท์",
+        "email": "อีเมล"
+      },
+      "idLabel": {
+        "line": "LINE User ID",
+        "facebook": "Facebook ID",
+        "textchat": "รหัสแชท",
+        "phone": "หมายเลขโทรศัพท์",
+        "email": "ที่อยู่อีเมล"
+      },
+      "idHint": {
+        "line": "LINE user ID ไม่ใช่ @handle",
+        "facebook": "Facebook page-scoped user ID",
+        "textchat": "รหัสผู้เข้าชมเว็บแชท",
+        "phone": "หมายเลขโทรศัพท์เพิ่มเติมของลูกค้ารายนี้",
+        "email": "ที่อยู่อีเมลเพิ่มเติมของลูกค้ารายนี้"
+      }
+    },
+    "userType": {
+      "bronze": "บรอนซ์",
+      "silver": "ซิลเวอร์",
+      "gold": "โกลด์",
+      "platinum": "แพลทินัม"
+    },
+    "searchPlaceHolder": "ค้นหา ชื่อ,เบอร์มือถือ,อีเมล",
+    "info": "ข้อมูลลูกค้า",
+    "note": {
+      "title": "บันทึกภายใน",
+      "add": "เพิ่มบันทึกภายใน",
+      "save": "บันทึก",
+      "saving": "กำลังบันทึก...",
+      "placeholder": "เพิ่มบันทึกเกี่ยวกับลูกค้ารายนี้...",
+      "category": "หมวดหมู่ (เลือกได้หลายรายการ)",
+      "empty": "ยังไม่มีบันทึก",
+      "edited": "แก้ไขแล้ว",
+      "created": "เพิ่มบันทึกแล้ว",
+      "updated": "แก้ไขบันทึกแล้ว",
+      "deleted": "ลบบันทึกแล้ว",
+      "load_failed": "ไม่สามารถโหลดบันทึกได้",
+      "save_failed": "ไม่สามารถบันทึกได้",
+      "delete_failed": "ไม่สามารถลบบันทึกได้",
+      "delete_title": "ลบบันทึก",
+      "delete_description": "บันทึกนี้จะถูกลบอย่างถาวร และไม่สามารถกู้คืนได้",
+      "categories": {
+        "general": "ทั่วไป",
+        "billing": "การเรียกเก็บเงิน",
+        "support": "การสนับสนุน",
+        "sales": "การขาย"
+      }
+    }
+  },
+  "report": {
+    "1": "1.รายงานสรุปงานบริการ",
+    "1_1": "1.1 รายงานสรุปงานบริการรายวัน",
+    "1_2": "1.2 รายงานสรุปงานบริการรายเดือน",
+    "1_3": "1.3 รายงานสรุปงานบริการเปรียบเทียบตามรายวัน",
+    "1_4": "1.4 รายงานสรุปงานบริการเปรียบเทียบตามรายเดือน",
+    "2": "2.รายงานรายละเอียดงานบริการ",
+    "2_1": "2.1 รายงานรายละเอียดข้อมูลงานบริการ",
+    "2_2": "2.2 รายงานสรปงานบริการแจกแจงตามประเภทงานบริการ",
+    "2_3": "2.3 รายงานสรุปงานบริการแจกแจงตามผลให้บริการ",
+    "2_4": "2.4 รายงานรายละเอียดงานบริการและสถานที่ให้บริการ",
+    "group": {
+      "case": "รายงานเหตุ",
+      "order": "รายงานคำสั่งซื้อ"
+    },
+    "order": {
+      "1": "1.รายงานสรุปคำสั่งซื้อ",
+      "1_1": "1.1 รายงานสรุปออเดอร์รายวัน",
+      "1_2": "1.2 รายงานสรุปสินค้า",
+      "1_3": "1.3 รายงานสรุปอะไหล่",
+      "2": "2.รายงานรายละเอียดคำสั่งซื้อ",
+      "2_1": "2.1 รายงานรายละเอียดข้อมูลคำสังซื้อ",
+      "2_2": "2.2 รายงานสรุปการขอเบิกชิ้นส่วน/อะไหล่",
+      "2_3": "2.3 รายงานยอดขาย 10 อันดับแรก"
+    }
+  },
+  "form_manager": {
+    "confirm_publish": "คุณต้องการที่จะเปิดใช้งานฟอร์มนี้ใช่ไหม",
+    "confirm_unpublish": "คุณต้องการที่จะปิดใช้งานฟอร์มนี้ใช่ไหม",
+    "delete_form_desc": "คุณต้องการที่จะลบใช้งานฟอร์มนี้ใช่ไหม"
+  },
+  "toast": {
+    "delete_form_success": "ลบฟอร์มสำเร็จ"
+  },
+  "apiSetUp": {
+    "fetchcaseTypeFail": "โหลดข้อมูลประเภทเหตุไม่สำเร็จ",
+    "fetchDeptCommandStationFail": "โหลดข้อมูลแผนกไม่สำเร็จ",
+    "fetchCaseStatusFail": "โหลดข้อมูลประเภทใบงานไม่สำเร็จ",
+    "fetchCaseResultFail": "โหลดข้อมูลประเภทปิดงานไม่สำเร็จ",
+    "fetchUnitStatusFail": "โหลดข้อมูลสถาณะหน่วยไม่สำเร็จ",
+    "fetchAreaFail": "โหลดข้อมูลพื้นที่รับผิดชอบไม่สำเร็จ"
+  },
+  "address": {
+    "no": "บ้านเลขที่",
+    "room": "ห้อง",
+    "floor": "ชั้น",
+    "building": "อาคาร/ตึก",
+    "street": "ถนน/ซอย",
+    "subDistrict": "ตำบล/แขวง",
+    "district": "อำเภอ/เขต",
+    "province": "จังหวัด",
+    "postalCode": "รหัสไปรษณีย์",
+    "country": "ประเทศ",
+    "sameAsRegistered": "เหมือนกับที่อยู่ตามทะเบียนบ้าน",
+    "currentAddress": "ที่อยู่ปัจุบัน",
+    "registered": "ที่อยู่ตามทะเบียนบ้าน",
+    "specificForm": "ฟอร์มแบบกำหนดเอง"
+  },
+  "input": {
+    "notEnterEmailError": "กรุณากรอกอีเมล",
+    "invalidEmailError": "รูปแบบอีเมลไม่ถูกต้อง",
+    "notEnterUsernameError": "กรุณากรอกชื่อผู้ใช้",
+    "notEnterPasswordError": "กรุณากรอกรหัสผ่าน",
+    "passwordTooShortError": "รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร",
+    "passwordsDoNotMatchError": "รหัสผ่านไม่ตรงกัน",
+    "requiredFieldError": "กรุณากรอกข้อมูลในช่องที่จำเป็น",
+    "notEnterMobileNumberError": "กรุณากรอกเบอร์มือถือ",
+    "notEnterPhoneNumberError": "กรุณากรอกเบอร์บ้าน",
+    "notEnterDobError": "กรุณากรอกวันเกิด",
+    "invalidMobileNumberInput": "เบอร์โทรศัพท์ไม่ถูกต้อง",
+    "notEnterSpecifyForm": "กรุณากรอกฟอร์มแบบกำหนดเอง"
+  },
+  "appointment": {
+    "searchPlaceHolder": "ค้นหา ชื่อลูกค้า,เบอร์โทรศัพท์,ผลิตภัณฑ์,บริการ,โน๊ต",
+    "pending": "รอการยืนยัน",
+    "upcoming": "รอการยืนยัน",
+    "delete_warning": "คุณต้องการลบการนัดหมายนี้ใช้หรือไม่"
+  },
+  "customerProduct": {
+    "haveWarranty": "มีประกัน",
+    "endOfWarranty": "หมดประกัน"
+  },
+  "customerConfigure": {
+    "pageTitle": "การตั้งค่าฟอร์มลูกค้า",
+    "subtitle": "เลือกฟิลด์ที่จะแสดงในฟอร์มสร้างลูกค้า",
+    "saveConfig": "บันทึกการตั้งค่า",
+    "saving": "กำลังบันทึก...",
+    "saveSuccess": "บันทึกการตั้งค่าสำเร็จ",
+    "saveError": "บันทึกการตั้งค่าไม่สำเร็จ",
+    "personalDetails": "ข้อมูลส่วนบุคคล",
+    "personalDetailsDesc": "ฟิลด์ข้อมูลส่วนตัวพื้นฐาน",
+    "contactPreferences": "การติดต่อและการตั้งค่า",
+    "contactPreferencesDesc": "ช่องทางการติดต่อและการตั้งค่าผู้ใช้",
+    "registeredAddress": "ที่อยู่ตามทะเบียนบ้าน",
+    "registeredAddressDesc": "ฟิลด์ที่อยู่ตามทะเบียนบ้าน",
+    "currentAddress": "ที่อยู่ปัจจุบัน",
+    "currentAddressDesc": "ฟิลด์ที่อยู่ปัจจุบัน",
+    "fields": {
+      "social": "ช่องทางการติดต่อ",
+      "title": "คำนำหน้า",
+      "firstName": "ชื่อ",
+      "middleName": "ชื่อกลาง",
+      "lastName": "นามสกุล",
+      "displayName": "ชื่อที่แสดง",
+      "citizenId": "เลขบัตรประชาชน",
+      "dob": "วันเกิด",
+      "blood": "กรุ๊ปเลือด",
+      "gender": "เพศ",
+      "photo": "รูปโปรไฟล์",
+      "userType": "ประเภทผู้ใช้",
+      "languagePreference": "ภาษาที่ต้องการ",
+      "contractPreference": "การติดต่อที่ต้องการ",
+      "note": "หมายเหตุ",
+      "dynamicForm": "ฟอร์มแบบกำหนดเอง",
+      "no": "บ้านเลขที่",
+      "room": "ห้อง",
+      "floor": "ชั้น",
+      "building": "อาคาร",
+      "street": "ถนน",
+      "subDistrict": "ตำบล/แขวง",
+      "district": "อำเภอ/เขต",
+      "province": "จังหวัด",
+      "postalCode": "รหัสไปรษณีย์",
+      "country": "ประเทศ",
+      "road": "ถนน",
+      "lat": "ละติจูด",
+      "lon": "ลองจิจูด"
+    }
+  },
+  "requestSparePart": {
+    "pleaseSelectBrand": "กรุณาเลือกยี่ห้อ",
+    "pleaseSelectProduct": "กรุณาเลือกสินค้า",
+    "skipProduct": "ข้าม (ไม่เลือกสินค้า)",
+    "pleaseSelectSparePart": "กรุณาเลือกอะไหล่",
+    "requestSparePart": "เพิ่มในออเดอร์",
+    "createOrder": "สร้างออเดอร์",
+    "orderCreated": "สร้างออเดอร์สำเร็จ!",
+    "orderFailed": "ไม่สามารถสร้างออเดอร์ได้"
+  },
+  "productDashboard": {
+    "header": {
+      "title": "แดชบอร์ดจัดการผลิตภัณฑ์",
+      "subtitle": "ภาพรวมผลิตภัณฑ์ บริการ คลังสินค้า คำสั่งซื้อ และการดำเนินงานลูกค้า"
+    },
+    "metrics": {
+      "fromLastMonth": "จากเดือนที่แล้ว",
+      "titles": {
+        "product": "ผลิตภัณฑ์",
+        "sparePart": "อะไหล่",
+        "ordering": "กำลังออเดอร์",
+        "pending": "รอดำเนินการ"
+      }
+    },
+    "moduleOverview": {
+      "title": "ภาพรวม",
+      "subtitle": "ความสามารถของแพลตฟอร์ม",
+      "activeRecords": "รายการที่ใช้งานอยู่",
+      "titles": {
+        "productStock": "สต็อกสินค้า",
+        "sparePartStock": "สต็อกอะไหล่",
+        "customers": "ลูกค้า",
+        "appointments": "การนัดหมาย"
+      }
+    },
+    "topOrdered": {
+      "title": "สินค้าที่สั่งซื้อมากที่สุด",
+      "subtitle": "อะไหล่ที่มีคำสั่งซื้อมากที่สุดในเดือนนี้",
+      "orderedTimes": "สั่งซื้อแล้ว {{count}} ครั้ง",
+      "unitPrice": "ราคาต่อหน่วย"
+    },
+    "inventoryAlert": {
+      "title": "แจ้งเตือนสินค้าคงคลัง",
+      "subtitle": "สินค้าใกล้หมดและคำขอที่รอดำเนินการ",
+      "partsBelowMinimum": "อะไหล่ {{count}} รายการต่ำกว่าระดับสต็อกขั้นต่ำ",
+      "purchaseRequestsWaiting": "คำขอซื้อ {{count}} รายการรอการอนุมัติ"
+    },
+    "revenue": {
+      "title": "ประมาณการรายได้",
+      "subtitle": "รายได้จากการดำเนินงานรายเดือน",
+      "thisMonth": "เดือนนี้",
+      "products": "สินค้า"
+    }
+  },
+  "knowledge": {
+    "dashboard": {
+      "page": {
+        "title": "แดชบอร์ดคลังความรู้",
+        "metaTitle": "แดชบอร์ด KB | TailAdmin",
+        "metaDescription": "แดชบอร์ดคลังความรู้ที่รองรับการผูก API รายบล็อก สลับ mock ได้ แปลภาษาได้ และรองรับ dark mode",
+        "subtitle": "ติดตามสุขภาพคอนเทนต์ ดูความต้องการจากการค้นหา และหาบทความที่ควรได้รับการดูแลต่อ",
+        "badge": "ตัวอย่างข้อมูลจำลอง",
+        "syncLabel": "ซิงก์ล่าสุด",
+        "theme": "ธีม",
+        "sourceTitle": "แหล่งข้อมูล"
+      },
+      "summary": {
+        "coverage": "คะแนนความครอบคลุม",
+        "health": "สุขภาพคอนเทนต์",
+        "searches": "ดีมานด์การค้นหา",
+        "sla": "SLA การตอบกลับ"
+      },
+      "metrics": {
+        "published": {
+          "title": "บทความที่เผยแพร่แล้ว",
+          "description": "จำนวนบทความที่แสดงผลในคลังความรู้"
+        },
+        "approved": {
+          "title": "บทความที่อนุมัติแล้ว",
+          "description": "จำนวนบทความที่ผ่านการอนุมัติและพร้อมเข้าสู่การเผยแพร่"
+        },
+        "submitted": {
+          "title": "รายการที่ส่งเข้าระบบ",
+          "description": "จำนวนบทความหรือคำขอที่ถูกส่งเข้าสู่ขั้นตอนรีวิว"
+        },
+        "expiringSoon": {
+          "title": "ใกล้หมดอายุ",
+          "description": "จำนวนบทความที่ใกล้ถึงช่วงหมดอายุและควรรีวิว"
+        },
+        "expired": {
+          "title": "บทความหมดอายุ",
+          "description": "จำนวนบทความที่เลยเกณฑ์วันหมดอายุแล้ว"
+        },
+        "totalViews": {
+          "title": "ยอดเข้าชมรวม",
+          "description": "ยอดเข้าชมบทความทั้งหมดในช่วงเวลาปัจจุบัน"
+        },
+        "activeUsers": {
+          "title": "ผู้ใช้งานที่กำลังทำงาน",
+          "description": "จำนวนผู้เขียนและผู้รีวิวที่กำลังใช้งานอยู่"
+        },
+        "avgRating": {
+          "title": "คะแนนเฉลี่ย",
+          "description": "ความพึงพอใจจากฟีดแบ็กของผู้อ่านล่าสุด"
+        }
+      },
+      "sections": {
+        "metrics": {
+          "title": "ตัวชี้วัดภาพรวม",
+          "description": "KPI หลักของพื้นที่ทำงานคลังความรู้ปัจจุบัน"
+        },
+        "trend": {
+          "title": "แนวโน้มยอดเข้าชม",
+          "description": "ทราฟฟิกบทความรายเดือนของคลังความรู้"
+        },
+        "categories": {
+          "title": "5 หมวดหมู่ยอดนิยมประจำสัปดาห์",
+          "description": "อันดับหมวดหมู่ตามสัดส่วนยอดเข้าชมในสัปดาห์นี้"
+        },
+        "searches": {
+          "title": "คำค้นหายอดนิยมประจำสัปดาห์",
+          "description": "คีย์เวิร์ดที่ถูกค้นหามากที่สุดในสัปดาห์นี้"
+        },
+        "articles": {
+          "title": "บทความเด่น / ล่าสุด / ยอดนิยม",
+          "description": "รายการบทความที่จัดลำดับสำหรับมุมมองแดชบอร์ดปัจจุบัน",
+          "top": "บทความเด่น",
+          "latest": "ล่าสุด",
+          "popular": "ยอดนิยม"
+        },
+        "activity": {
+          "title": "บทความคะแนนต่ำ",
+          "description": "กิจกรรมการเผยแพร่และตรวจสอบล่าสุด"
+        },
+        "lowScore": {
+          "title": "บทความคะแนนเฉลี่ยต่ำ",
+          "description": "บทความที่ได้รับคะแนนต่ำกว่าเกณฑ์ — ควรปรับปรุงคุณภาพและความชัดเจนของเนื้อหา"
+        },
+        "lowView": {
+          "title": "บทความยอดเข้าชมต่ำ",
+          "description": "บทความที่มียอดเข้าชมน้อยที่สุด — พิจารณาปรับปรุงชื่อเรื่อง ลิงก์ หรือการค้นพบ"
+        }
+      },
+      "labels": {
+        "vsLastPeriod": "เทียบรอบก่อนหน้า",
+        "share": "สัดส่วน",
+        "hits": "ครั้ง",
+        "avgScore": "คะแนนเฉลี่ย",
+        "views": "วิว",
+        "likes": "ไลก์",
+        "bookmarks": "บุ๊กมาร์ก",
+        "updated": "อัปเดต",
+        "articles": "บทความ",
+        "loading": "กำลังโหลดแดชบอร์ด...",
+        "loadFailed": "ไม่สามารถโหลดข้อมูลแดชบอร์ดได้",
+        "apiPath": "เส้นทาง API",
+        "source": "แหล่งข้อมูล",
+        "mock": "ข้อมูลจำลอง",
+        "api": "API",
+        "noData": "ไม่มีข้อมูลสำหรับแสดงผล"
+      },
+      "buttons": {
+        "refresh": "รีเฟรช",
+        "refreshing": "กำลังรีเฟรช..."
+      },
+      "status": {
+        "published": "เผยแพร่แล้ว",
+        "review": "กำลังรีวิว",
+        "draft": "ฉบับร่าง"
+      },
+      "content": {
+        "categories": {
+          "getting-started": {
+            "label": "เริ่มต้นใช้งาน"
+          },
+          "troubleshooting": {
+            "label": "การแก้ปัญหา"
+          },
+          "billing": {
+            "label": "การเรียกเก็บเงิน"
+          },
+          "automation": {
+            "label": "ระบบอัตโนมัติ"
+          },
+          "security": {
+            "label": "ความปลอดภัย"
+          }
+        },
+        "searches": {
+          "sso": {
+            "label": "เข้าสู่ระบบ SSO"
+          },
+          "reset-password": {
+            "label": "รีเซ็ตรหัสผ่าน"
+          },
+          "workflow": {
+            "label": "ขั้นตอนการอนุมัติ"
+          },
+          "mobile-app": {
+            "label": "ตั้งค่าแอปมือถือ"
+          },
+          "permissions": {
+            "label": "สิทธิ์ของบทบาท"
+          }
+        },
+        "articles": {
+          "kb-101": {
+            "title": "ตั้งค่า SSO และการแมปโดเมน"
+          },
+          "kb-204": {
+            "title": "แก้ปัญหาเอเจนต์หลุดการเชื่อมต่อเป็นช่วง ๆ"
+          },
+          "kb-331": {
+            "title": "กำหนดกฎการอนุมัติบทความตามทีม"
+          }
+        },
+        "activity": {
+          "act-1": {
+            "title": "อัปเดตคู่มือเริ่มต้นใช้งานระบบเรียกเก็บเงิน",
+            "detail": "ตรวจทานโดยทีม Support Enablement และเผยแพร่ขึ้นระบบแล้ว",
+            "at": "12 นาทีที่แล้ว"
+          },
+          "act-2": {
+            "title": "บทความตารางสิทธิ์กำลังรอการอนุมัติ",
+            "detail": "กำลังรอการตรวจทานขั้นสุดท้ายจากฝ่ายกฎหมายก่อนเผยแพร่",
+            "at": "48 นาทีที่แล้ว"
+          },
+          "act-3": {
+            "title": "สร้างกลุ่มเจตนาการค้นหาใหม่แล้ว",
+            "detail": "คำนวณคีย์เวิร์ดยอดค้นหาจากทราฟฟิกล่าสุดประจำสัปดาห์ใหม่แล้ว",
+            "at": "1 ชั่วโมงที่แล้ว"
+          }
+        }
+      }
+    },
+    "broadcast": {
+      "page": {
+        "title": "จัดการข้อความ Broadcast",
+        "metaTitle": "จัดการ Broadcast | TailAdmin",
+        "metaDescription": "หน้าจัดการ Broadcast ที่มีตัวกรองสรุป รายการประกาศ ข้อมูล mock และการผูก API แยกตามบล็อก",
+        "subtitle": "จัดการประกาศ ตรวจสอบการกระจายสถานะ และติดตามช่วงเวลาการเผยแพร่จากหน้าจอเดียว"
+      },
+      "sections": {
+        "summary": {
+          "title": "ภาพรวมสถานะ",
+          "description": "ตัวกรองด่วนสำหรับแต่ละสถานะของ Broadcast"
+        },
+        "list": {
+          "title": "Broadcast",
+          "description": "กำลังแสดงรายการสถานะ {{status}}"
+        },
+        "log": {
+          "title": "ประวัติ Broadcast",
+          "description": "{{total}} รายการทั้งหมดในประวัติการประกาศ"
+        }
+      },
+      "labels": {
+        "loading": "กำลังโหลดข้อมูล Broadcast...",
+        "loadingNotice": "กำลังโหลดข้อความแจ้งเตือนจาก API...",
+        "loadFailed": "ไม่สามารถโหลดข้อมูล Broadcast ได้",
+        "loadNoticeFailed": "ไม่สามารถโหลดข้อความแจ้งเตือนจาก API ได้",
+        "empty": "ไม่พบรายการ Broadcast สำหรับตัวกรองนี้",
+        "noResults": "ไม่พบรายการที่ตรงกับคำค้นหา",
+        "alertDetail": "รายละเอียดการแจ้งเตือน",
+        "entryNotice": "แจ้งเตือนก่อนเข้าใช้งานครั้งแรก",
+        "noticeAcknowledgement": "การยอมรับนี้จะถูกจำไว้ในเบราว์เซอร์นี้ และจะแสดงใหม่เมื่อมี Broadcast ใหม่เข้ามา",
+        "message": "ข้อความ",
+        "status": "สถานะ",
+        "dateRange": "ช่วงวันที่",
+        "apiPath": "เส้นทาง API",
+        "source": "แหล่งข้อมูล",
+        "mock": "ข้อมูลจำลอง",
+        "api": "API",
+        "topic": "หัวข้อ",
+        "title": "รายการประกาศ",
+        "continuing": "โปรดอ่านและตรวจสอบก่อนดำเนินการต่อ"
+      },
+      "buttons": {
+        "add": "เพิ่ม Broadcast ใหม่",
+        "accept": "ยอมรับและดำเนินการต่อ",
+        "edit": "แก้ไข Broadcast",
+        "delete": "ลบ Broadcast",
+        "retry": "ลองอีกครั้ง",
+        "cancel": "ยกเลิก",
+        "create": "สร้าง Broadcast",
+        "update": "บันทึกการแก้ไข",
+        "saving": "กำลังบันทึก...",
+        "refresh": "รีเฟรช",
+        "refreshing": "กำลังรีเฟรช..."
+      },
+      "form": {
+        "createTitle": "เพิ่ม Broadcast",
+        "editTitle": "แก้ไข Broadcast",
+        "description": "กำหนดหัวข้อ สถานะ และช่วงวันที่ใช้งานของข้อความ Broadcast",
+        "title": "หัวข้อ Broadcast",
+        "message": "ข้อความ",
+        "status": "สถานะ",
+        "startDate": "วันที่เริ่มต้น",
+        "endDate": "วันที่สิ้นสุด",
+        "validationTitle": "กรุณากรอกหัวข้อ",
+        "validationMessage": "กรุณากรอกข้อความ",
+        "validationStartDate": "กรุณาเลือกวันที่เริ่มต้น",
+        "validationEndDate": "กรุณาเลือกวันที่สิ้นสุด",
+        "validationStartDateRequired": "กรุณาเลือกวันที่เริ่มต้นให้ครบ",
+        "validationEndDateRequired": "กรุณาเลือกวันที่สิ้นสุดให้ครบ",
+        "validationDateOrder": "วันที่สิ้นสุดต้องไม่น้อยกว่าวันที่เริ่มต้น"
+      },
+      "confirm": {
+        "delete": "ลบ \"{{title}}\" ใช่หรือไม่",
+        "deleteDescription": "การดำเนินการนี้ไม่สามารถย้อนกลับได้"
+      },
+      "toast": {
+        "createSuccess": "สร้าง Broadcast สำเร็จ",
+        "createError": "ไม่สามารถสร้าง Broadcast ได้",
+        "updateSuccess": "บันทึกการแก้ไข Broadcast สำเร็จ",
+        "updateError": "ไม่สามารถแก้ไข Broadcast ได้",
+        "deleteSuccess": "ลบ Broadcast สำเร็จ",
+        "deleteError": "ไม่สามารถลบ Broadcast ได้"
+      },
+      "status": {
+        "all": "ทั้งหมด",
+        "scheduled": "ตั้งเวลาไว้",
+        "published": "เผยแพร่แล้ว",
+        "expired": "หมดอายุ",
+        "draft": "ฉบับร่าง"
+      },
+      "content": {
+        "items": {
+          "bc-001": {
+            "title": "ตรวจสอบ validation ก่อนเผยแพร่",
+            "message": "ตรวจสอบ validation ให้แน่ใจว่าแท็กทั้งหมดถูกปิดและซ้อนกันอย่างถูกต้องก่อนเผยแพร่ข้อความ Broadcast ให้ผู้ใช้"
+          },
+          "bc-002": {
+            "title": "ยืนยันกลุ่มผู้รับก่อนตั้งเวลา",
+            "message": "ยืนยันกลุ่มเป้าหมายก่อนตั้งเวลา Broadcast สำหรับรอบ release ถัดไป"
+          },
+          "bc-003": {
+            "title": "ตรวจสอบลิงก์และไฟล์แนบ",
+            "message": "ตรวจสอบลิงก์ภายนอกและไฟล์แนบทั้งหมดเพื่อป้องกันการอ้างอิงที่เสียในประกาศฉบับสุดท้าย"
+          },
+          "bc-004": {
+            "title": "ประกาศการออกรุ่นระบบสำหรับรอบปิดปรับปรุงครั้งถัดไป",
+            "message": "ประกาศการออกรุ่นระบบสำหรับรอบปิดปรับปรุงครั้งถัดไป"
+          },
+          "bc-005": {
+            "title": "แคมเปญ Broadcast สิ้นสุดลงหลังจากการผลักดันคลังความรู้เดือนธันวาคม",
+            "message": "แคมเปญ Broadcast สิ้นสุดลงหลังจากการผลักดันคลังความรู้เดือนธันวาคม"
+          },
+          "bc-006": {
+            "title": "ฉบับร่างเตือนผู้แก้ไขให้ตรวจสอบประกาศที่ยังไม่เผยแพร่",
+            "message": "ฉบับร่างเตือนผู้แก้ไขให้ตรวจสอบประกาศที่ยังไม่เผยแพร่"
+          }
+        }
+      },
+      "pageLog": {
+        "eyebrow": "Broadcast",
+        "title": "ประวัติ Broadcast",
+        "metaTitle": "ประวัติ Broadcast | TailAdmin",
+        "metaDescription": "ดูย้อนหลังประกาศ Broadcast ทั้งหมดที่ผ่านมาทุกช่องทาง",
+        "subtitle": "เรียกดูและตรวจสอบประกาศ Broadcast ทั้งหมดที่เผยแพร่ ตั้งเวลา หรือบันทึกไว้ในทุกช่องทาง"
+      },
+      "log": {
+        "searchPlaceholder": "ค้นหาด้วยหัวข้อหรือข้อความ...",
+        "publishedAt": "เผยแพร่เมื่อ",
+        "audience": "กลุ่มเป้าหมาย",
+        "startDate": "วันเริ่มต้น",
+        "endDate": "วันสิ้นสุด"
+      },
+      "pagination": {
+        "showing": "แสดง",
+        "to": "-",
+        "of": "จาก",
+        "items": "รายการ",
+        "prev": "ก่อนหน้า",
+        "next": "ถัดไป"
+      }
+    },
+    "files": {
+      "page": {
+        "title": "ไฟล์ประกอบบทความ",
+        "metaTitle": "ไฟล์ประกอบบทความ | TailAdmin",
+        "metaDescription": "เรียกดู อัปโหลด และจัดการไฟล์ที่จัดเก็บใน MinIO สำหรับบทความใน Knowledge Base",
+        "subtitle": "เรียกดู อัปโหลด และจัดการไฟล์ที่แนบกับบทความ Knowledge Base ซึ่งจัดเก็บใน Object Storage",
+        "eyebrow": "จัดการไฟล์"
+      },
+      "sections": {
+        "recent": {
+          "title": "ไฟล์ทั้งหมด",
+          "description": "ไฟล์ที่เข้าถึงล่าสุดจากทุกโฟลเดอร์"
+        },
+        "folders": "โฟลเดอร์",
+        "files": "ไฟล์"
+      },
+      "labels": {
+        "loading": "กำลังโหลดไฟล์...",
+        "loadFailed": "ไม่สามารถโหลดไฟล์ได้",
+        "empty": "ไม่พบไฟล์ในตำแหน่งนี้",
+        "noResults": "ไม่พบไฟล์ที่ตรงกับการค้นหา",
+        "files": "ไฟล์",
+        "size": "ขนาด",
+        "apiPath": "เส้นทาง API",
+        "source": "แหล่งข้อมูล",
+        "mock": "ข้อมูลจำลอง",
+        "api": "API",
+        "lastOpen": "เปิดล่าสุด",
+        "fileCount": "{{count}} ไฟล์, {{size}}",
+        "selectedCount": "เลือกแล้ว {{count}} ไฟล์",
+        "noneSelected": "ยังไม่ได้เลือกไฟล์"
+      },
+      "buttons": {
+        "upload": "อัปโหลด",
+        "uploading": "กำลังอัปโหลด...",
+        "download": "ดาวน์โหลด",
+        "delete": "ลบ",
+        "retry": "ลองอีกครั้ง",
+        "refresh": "รีเฟรช",
+        "refreshing": "กำลังรีเฟรช...",
+        "newFolder": "โฟลเดอร์ใหม่",
+        "create": "สร้าง",
+        "copyUrl": "คัดลอก URL",
+        "cancel": "ยกเลิก"
+      },
+      "folder": {
+        "namePlaceholder": "ชื่อโฟลเดอร์…"
+      },
+      "confirm": {
+        "delete": "ลบ \"{{name}}\" ใช่หรือไม่?",
+        "deleteFolder": "ลบโฟลเดอร์ \"{{name}}\" ใช่หรือไม่?"
+      },
+      "toast": {
+        "uploadSuccess": "อัปโหลดไฟล์สำเร็จ",
+        "uploadError": "ไม่สามารถอัปโหลดไฟล์ได้",
+        "deleteSuccess": "ลบไฟล์สำเร็จ",
+        "deleteError": "ไม่สามารถลบไฟล์ได้",
+        "downloadError": "ไม่สามารถสร้างลิงก์ดาวน์โหลดได้",
+        "folderCreated": "สร้างโฟลเดอร์สำเร็จ",
+        "folderError": "ไม่สามารถสร้างโฟลเดอร์ได้",
+        "folderDeleteSuccess": "ลบโฟลเดอร์สำเร็จ",
+        "folderDeleteError": "ไม่สามารถลบโฟลเดอร์ได้",
+        "copySuccess": "คัดลอก URL แล้ว",
+        "copyError": "ไม่สามารถคัดลอก URL ได้"
+      },
+      "tree": {
+        "title": "โฟลเดอร์"
+      }
+    },
+    "articles": {
+      "pageTitle": "รายการบทความ",
+      "pageSubtitle": "ค้นหาและจัดการบทความทั้งหมดในฐานความรู้",
+      "addArticle": "+ เพิ่มบทความ",
+      "filter": {
+        "searchTitle": "ค้นหาหัวข้อ",
+        "searchPlaceholder": "ค้นหาหัวข้อบทความ…",
+        "category": "หมวดหมู่",
+        "categoryPlaceholder": "เลือกหมวดหมู่",
+        "createdDate": "วันที่สร้าง",
+        "startCreatedDatePlaceholder": "วันที่เริ่มต้น",
+        "endCreatedDatePlaceholder": "วันที่สิ้นสุด",
+        "createdBy": "ผู้สร้าง",
+        "createdByPlaceholder": "เลือกผู้สร้าง",
+        "status": "สถานะบทความ",
+        "statusPlaceholder": "เลือกสถานะ",
+        "version": "Version",
+        "versionPlaceholder": "Version",
+        "group": "Group",
+        "groupPlaceholder": "เลือก Group",
+        "priority": "ระดับความสำคัญ",
+        "priorityPlaceholder": "เลือกระดับ",
+        "score": "คะแนน",
+        "scorePlaceholder": "คะแนน",
+        "sortBy": "เรียงลำดับ",
+        "sortByPlaceholder": "เรียงลำดับ",
+        "resetFilter": "ล้างตัวกรอง"
+      },
+      "status": {
+        "all": "ทั้งหมด",
+        "publish": "เผยแพร่แล้ว",
+        "wait_publish": "รอเผยแพร่",
+        "wait_approve": "รออนุมัติ",
+        "draft": "แบบร่าง",
+        "archived": "เก็บถาวร",
+        "unpublished": "ยกเลิกการเผยแพร่"
+      },
+      "priority": {
+        "all": "ทั้งหมด",
+        "high": "สูง",
+        "medium": "กลาง",
+        "low": "ต่ำ"
+      },
+      "user": {
+        "all": "ทั้งหมด"
+      },
+      "group": {
+        "all": "ทั้งหมด"
+      },
+      "sortBy": {
+        "title_az": "ชื่อ A–Z",
+        "title_za": "ชื่อ Z-A",
+        "createdDate_az": "วันที่สร้าง A-Z",
+        "createdDate_za": "วันที่สร้าง Z-A"
+      },
+      "meta": {
+        "version": "เวอร์ชั่น",
+        "lastEdited": "แก้ไขล่าสุด",
+        "createDate": "วันที่สร้าง",
+        "views": "การดู",
+        "priority": "ระดับ",
+        "category": "หมวดหมู่",
+        "viewCount": "รีวิว"
+      },
+      "statusBadge": {
+        "publish": "เผยแพร่แล้ว",
+        "wait_publish": "รอเผยแพร่",
+        "wait_approve": "รออนุมัติ",
+        "draft": "แบบร่าง",
+        "archived": "เก็บถาวร",
+        "unpublished": "ยกเลิกการเผยแพร่"
+      },
+      "loading": "กำลังโหลดบทความ…",
+      "noData": "ไม่พบบทความ",
+      "total": "รายการ",
+      "edit": "แก้ไข",
+      "approve": "เปลี่ยนสถานะ",
+      "pagination": {
+        "showing": "แสดง",
+        "to": "-",
+        "of": "จาก",
+        "prev": "ก่อนหน้า",
+        "next": "ถัดไป",
+        "items": "รายการ"
+      },
+      "category": {
+        "pageTitle": "จัดการหมวดหมู่",
+        "pageSubtitle": "จัดระเบียบหมวดหมู่บทความในรูปแบบต้นไม้ ลากเพื่อเรียงลำดับใหม่",
+        "modalTitle": "เลือกหมวดหมู่",
+        "modalSubtitle": "คลิกหมวดหมู่เพื่อกรองบทความ",
+        "backToArticles": "กลับไปรายการบทความ",
+        "all": "ทุกหมวดหมู่",
+        "searchPlaceholder": "ค้นหาหมวดหมู่…",
+        "sortBy": "เรียง",
+        "addRoot": "เพิ่มหมวดหมู่",
+        "add": "เพิ่ม",
+        "newCategory": "หมวดหมู่ใหม่",
+        "newCategoryPlaceholder": "ชื่อหมวดหมู่…",
+        "renamed": "เปลี่ยนชื่อหมวดหมู่แล้ว",
+        "deleted": "ลบหมวดหมู่แล้ว",
+        "added": "เพิ่มหมวดหมู่แล้ว",
+        "errorGeneric": "เกิดข้อผิดพลาด",
+        "confirmDeleteTitle": "ลบหมวดหมู่?",
+        "confirmDeleteBody": "หมวดหมู่ย่อยทั้งหมดจะถูกลบด้วย",
+        "delete": "ลบ",
+        "cancel": "ยกเลิก",
+        "cannotdelete": "ไม่สามารถลบหมวดหมู่ได้",
+        "dragHint": "ลากวางเพื่อเรียงลำดับใหม่ • ดับเปิวเพื่อเปลี่ยนชื่อ",
+        "noResults": "ไม่พบหมวดหมู่",
+        "empty": "ยังไม่มีหมวดหมู่",
+        "selectButton": "เลือกหมวดหมู่",
+        "expandAll": "ขยายทั้งหมด",
+        "collapseAll": "หุบทั้งหมด",
+        "refresh": "โหลดข้อมูลใหม่"
+      },
+      "form": {
+        "createTitle": "สร้างบทความ",
+        "editTitle": "แก้ไขบทความ",
+        "eyebrow": "Knowledge Base",
+        "createSub": "กรอกข้อมูลเพื่อสร้างบทความใหม่",
+        "editSub": "แก้ไขข้อมูลบทความที่มีอยู่",
+        "saveBtn": "บันทึก",
+        "saving": "กำลังบันทึก…",
+        "loading": "กำลังโหลดข้อมูล…",
+        "steps": {
+          "create": "สร้าง",
+          "submit": "ส่ง",
+          "approve": "อนุมัติ",
+          "publish": "เผยแพร่"
+        },
+        "tabs": {
+          "basic": "ข้อมูลพื้นฐาน",
+          "basicSub": "Basic Info",
+          "content": "เนื้อหาบทความ",
+          "contentSub": "Content",
+          "visibility": "การมองเห็น",
+          "visibilitySub": "Visibility & Settings"
+        },
+        "basic": {
+          "titleLabel": "ชื่อเรื่อง (Title)",
+          "titlePlaceholder": "ระบุชื่อบทความ",
+          "versionLabel": "เวอร์ชั่น (Version)",
+          "descriptionLabel": "คำอธิบายบทความ (Article Description)",
+          "descriptionPlaceholder": "ระบุคำอธิบายโดยย่อ",
+          "priorityLabel": "ลำดับความสำคัญ (Priority)",
+          "priorityPlaceholder": "เลือกลำดับความสำคัญ",
+          "sourceLabel": "แหล่งที่มา (Source)",
+          "sourcePlaceholder": "ระบุแหล่งที่มา",
+          "reserveDateLabel": "วันที่สำรอง (Reserve Date)",
+          "ownershipLabel": "ผู้รับผิดชอบ (Ownership)",
+          "ownershipPlaceholder": "ระบุผู้รับผิดชอบ",
+          "relatedArticlesLabel": "บทความที่เกี่ยวข้อง (Related Articles)",
+          "relatedArticlesPlaceholder": "พิมพ์ชื่อบทความแล้วกด Enter…",
+          "groupArticlesPlaceholder": "พิมพ์ชื่อกลุ่มแล้วกด Enter…",
+          "categoryLabel": "หมวดหมู่ (Category)",
+          "categorySearch": "ค้นหาหมวดหมู่…",
+          "categoryEmpty": "ไม่พบหมวดหมู่",
+          "tagAdd": "เพิ่ม",
+          "tagPlaceholder": "พิมพ์แล้วกด Enter…"
+        },
+        "content": {
+          "attachmentLabel": "สิ่งแนบมาด้วย (File Attachment)",
+          "pickFromMinio": "เลือกไฟล์จาก MinIO",
+          "noFiles": "ยังไม่มีไฟล์แนบ",
+          "contentLabel": "เนื้อหาบทความ (Content)"
+        },
+        "visibility": {
+          "startDateLabel": "วันที่เริ่มต้น (Start Date)",
+          "endDateLabel": "วันที่หมดอายุ (Expiration Date)",
+          "viewableGroupsLabel": "กลุ่มผู้มองเห็นได้ (Viewable Groups)",
+          "viewableGroupsPlaceholder": "พิมพ์ชื่อกลุ่มแล้วกด Enter…",
+          "keywordsLabel": "คำสำคัญ (Keywords)",
+          "keywordsPlaceholder": "พิมพ์คำสำคัญแล้วกด Enter…",
+          "tagAdd": "เพิ่ม",
+          "tagPlaceholder": "พิมพ์แล้วกด Enter…"
+        },
+        "nav": {
+          "prev": "ก่อนหน้า",
+          "next": "ถัดไป"
+        },
+        "validation": {
+          "titleRequired": "กรุณาระบุชื่อเรื่อง (Title)"
+        },
+        "success": "บันทึกบทความสำเร็จ!",
+        "errorGeneric": "เกิดข้อผิดพลาด",
+        "picker": {
+          "title": "เลือกไฟล์จาก MinIO",
+          "subtitle": "เลือกไฟล์ที่ต้องการแนบกับบทความ",
+          "confirm": "ยืนยัน {{count}} ไฟล์",
+          "cancel": "ยกเลิก",
+          "search": "ค้นหาไฟล์…",
+          "empty": "ไม่มีไฟล์ในโฟลเดอร์นี้",
+          "noResults": "ไม่พบไฟล์",
+          "selectedCount": "เลือกแล้ว {{count}} ไฟล์",
+          "noneSelected": "ยังไม่ได้เลือกไฟล์",
+          "allFiles": "ไฟล์ทั้งหมด",
+          "folders": "โฟลเดอร์",
+          "files": "ไฟล์"
+        }
+      },
+      "review": {
+        "eyebrow": "พิจารณาบทความ",
+        "title": "พิจารณาบทความ",
+        "back": "กลับ",
+        "panel": "ผลการพิจารณา",
+        "currentStatus": "สถานะปัจจุบัน",
+        "decisionLabel": "ผลการพิจารณา",
+        "publish": "เผยแพร่แล้ว",
+        "wait_publish": "รอเผยแพร่",
+        "wait_approve": "รออนุมัติ",
+        "draft": "แบบร่าง",
+        "archived": "เก็บถาวร",
+        "unpublished": "ยกเลิกการเผยแพร่",
+        "approve": "อนุมัติ",
+        "approveDesc": "บทความพร้อมเผยแพร่",
+        "changes": "ขอแก้ไข",
+        "changesDesc": "ให้ผู้เขียนแก้ไขก่อนอนุมัติ",
+        "reject": "ปฏิเสธ",
+        "rejectDesc": "บทความไม่ผ่านเกณฑ์",
+        "note": "หมายเหตุ / ความเห็น",
+        "notePlaceholder": "ระบุเหตุผลหรือความเห็นสำหรับการพิจารณา…",
+        "submit": "ยืนยันการ",
+        "submitting": "กำลังส่ง…",
+        "selectDecision": "กรุณาเลือกผลการพิจารณา",
+        "success": "ส่งผลการพิจารณาสำเร็จ",
+        "error": "เกิดข้อผิดพลาดในการส่งผล",
+        "coverImage": "รูปปก",
+        "noCover": "ไม่มีรูปปก",
+        "changeLabel": "เปลี่ยน",
+        "changeTitle": "เปลี่ยนรูปภาพหน้าปก",
+        "notFoundimg": "ไม่พบรูปภาพ"
+      },
+      "activityLog": {
+        "title": "ประวัติการดำเนินการ",
+        "viewAll": "ดูประวัติทั้งหมด",
+        "create": "สร้างบทความ",
+        "edit": "แก้ไขบทความ",
+        "submit": "ส่งตรวจสอบ",
+        "approve": "อนุมัติแล้ว",
+        "publish": "เผยแพร่แล้ว",
+        "archive": "เก็บถาวร",
+        "draft": "บันทึกแบบร่าง",
+        "to_draf": "ย้ายไปฉบับร่าง",
+        "unpublish": "ยกเลิกการเผยแพร่บทความ",
+        "reject": "ปฏิเสธบทความ",
+        "change_version": "เปลี่ยนเวอร์ชัน",
+        "empty": "ไม่มีรายการ"
+      },
+      "detail": {
+        "eyebrow": "รายละเอียดบทความ",
+        "back": "กลับหน้าบทความ",
+        "edit": "แก้ไขบทความ",
+        "loading": "กำลังโหลดบทความ…",
+        "notFound": "ไม่พบบทความ",
+        "content": "เนื้อหา",
+        "attachments": "ไฟล์แนบ",
+        "noAttachments": "ไม่มีไฟล์แนบ",
+        "noContent": "ยังไม่มีเนื้อหา",
+        "metadata": "ข้อมูล",
+        "category": "หมวดหมู่",
+        "group": "กลุ่ม",
+        "author": "ผู้เขียน",
+        "ownership": "ผู้รับผิดชอบ",
+        "source": "แหล่งที่มา",
+        "views": "ยอดเข้าชม",
+        "rating": "คะแนน",
+        "score": "สกอร์",
+        "version": "เวอร์ชัน และ วันเวลา",
+        "startDate": "วันที่เริ่ม",
+        "endDate": "วันหมดอายุ",
+        "createdAt": "วันที่สร้าง",
+        "updatedAt": "แก้ไขล่าสุด",
+        "viewableGroups": "กลุ่มที่เข้าถึงได้",
+        "keywords": "คำสำคัญ",
+        "relatedArticles": "บทความที่เกี่ยวข้อง",
+        "noRelated": "ไม่มีบทความที่เกี่ยวข้อง",
+        "activityLog": "ประวัติการดำเนินการ",
+        "accessAndKeywords": "กลุ่มที่เข้าถึงได้ และ คำสำคัญ",
+        "actions": {
+          "create": "สร้างบทความ",
+          "edit": "แก้ไขบทความ",
+          "submit": "ส่งตรวจสอบ",
+          "approve": "อนุมัติแล้ว",
+          "publish": "เผยแพร่แล้ว",
+          "archive": "เก็บถาวร",
+          "draft": "บันทึกแบบร่าง"
+        }
+      },
+      "coverImage": {
+        "change": "เปลี่ยน",
+        "delete": "ลบ",
+        "copy": "คัดลอก",
+        "download": "ดาวน์โหลด",
+        "edit": "แก้ไข",
+        "deleteCoverImage": "ลบรูปปก",
+        "copyPath": "คัดลอกเส้นทาง",
+        "downloadImage": "ดาวน์โหลดภาพ",
+        "editImage": "แก้ไขภาพ",
+        "deleteConfirmTitle": "ลบรูปปก?",
+        "deleteConfirmDescription": "คุณแน่ใจหรือว่าต้องการลบรูปปก การดำเนินการนี้ไม่สามารถเลิกทำได้",
+        "copyConfirmDescription": "คัดลอกเส้นทางรูปภาพไปยังคลิปบอร์ด?",
+        "downloadConfirmDescription": "ดาวน์โหลดรูปปกไปยังอุปกรณ์ของคุณ?",
+        "cancel": "ยกเลิก",
+        "confirm": "ยืนยัน",
+        "processing": "กำลังประมวลผล...",
+        "clickToEdit": "คลิกเพื่อแก้ไข",
+        "clickToAdd": "คลิกเพื่อเพิ่มรูปภาพ",
+        "noCoverImage": "ไม่มีรูปปก",
+        "copyError": "ไม่สามารถคัดลอกไปยังคลิปบอร์ด",
+        "downloadError": "ไม่สามารถดาวน์โหลดรูปภาพ",
+        "actionFailed": "การดำเนินการล้มเหลว",
+        "save": "บันทึก"
+      },
+      "rating": {
+        "title": "คะแนน",
+        "yourRating": "คะแนนของคุณ",
+        "outOf5": "จาก 5",
+        "stars": "ดาว",
+        "submit": "ส่งคะแนน",
+        "submitting": "กำลังส่ง...",
+        "success": "ส่งคะแนนสำเร็จ",
+        "error": "ไม่สามารถส่งคะแนน"
+      },
+      "comments": {
+        "title": "ความเห็น",
+        "noComments": "ยังไม่มีความเห็น",
+        "writeComment": "เขียนความเห็น...",
+        "send": "ส่ง",
+        "sending": "กำลังส่ง...",
+        "reply": "ตอบกลับ",
+        "replies": "ตอบกลับ",
+        "viewReplies": "ดูการตอบกลับ",
+        "hideReplies": "ซ่อนการตอบกลับ",
+        "delete": "ลบ",
+        "deleteConfirm": "ลบความเห็นนี้?",
+        "cancel": "ยกเลิก",
+        "success": "เพิ่มความเห็นสำเร็จ",
+        "error": "ไม่สามารถเพิ่มความเห็น"
+      },
+      "actions": {
+        "delete": "ลบ (Delete)",
+        "duplicate": "คัดลอก(Copy)",
+        "editContent": "สร้างเวอร์ชันใหม่",
+        "certify": "แก้ไข(Edits)",
+        "deleteConfirmTitle": "ลบบทความ?",
+        "deleteConfirmDesc": "การดำเนินการนี้ไม่สามารถเลิกทำได้ บทความจะถูกลบออกอย่างถาวร",
+        "cancel": "ยกเลิก",
+        "confirmDelete": "ลบ"
+      }
+    },
+    "banner": {
+      "page": {
+        "metaTitle": "จัดการแบนเนอร์",
+        "metaDescription": "จัดการบทความที่แสดงเป็น Banner บน Knowledge Base",
+        "eyebrow": "Banner Management",
+        "title": "การจัดการแบนเนอร์ Banner",
+        "subtitle": "จัดการบทความที่แสดงเป็น Banner บน Knowledge Base"
+      },
+      "grid": {
+        "title": "Banner ที่ใช้งานอยู่",
+        "count": "รายการ",
+        "empty": "ยังไม่มี Banner เลือกบทความด้านล่างเพื่อเพิ่ม",
+        "save": "บันทึกลำดับ",
+        "saving": "กำลังบันทึก…",
+        "unsaved": "มีการเปลี่ยนแปลงที่ยังไม่บันทึก"
+      },
+      "articleList": {
+        "title": "Articles",
+        "selectBtn": "เลือก Banner",
+        "added": "เพิ่มแล้ว"
+      },
+      "tab": {
+        "newest": "เรื่องล่าสุด",
+        "popular": "เรื่องยอดนิยม",
+        "high": "สถานะสูง",
+        "published": "เผยแพร่แล้ว",
+        "review": "กำลังตรวจสอบ"
+      },
+      "toast": {
+        "addSuccess": "เพิ่ม Banner สำเร็จ",
+        "addError": "ไม่สามารถเพิ่ม Banner",
+        "removeSuccess": "ลบ Banner แล้ว",
+        "removeError": "ไม่สามารถลบ Banner"
+      }
+    },
+    "source": {
+      "page": {
+        "title": "จัดการแหล่งที่มา",
+        "metaTitle": "จัดการแหล่งที่มา | TailAdmin",
+        "metaDescription": "จัดการข้อมูลหลักแหล่งที่มาของบทความ — เพิ่ม แก้ไข และลบรายการ",
+        "subtitle": "จัดการรายการแหล่งที่มาของบทความที่ใช้งานในระบบ สามารถเพิ่ม แก้ไข หรือลบรายการได้จากหน้านี้"
+      },
+      "sections": {
+        "list": {
+          "title": "รายการแหล่งที่มา",
+          "description": "รายการแหล่งที่มาทั้งหมดในระบบ"
+        }
+      },
+      "labels": {
+        "loading": "กำลังโหลดข้อมูลแหล่งที่มา...",
+        "loadFailed": "ไม่สามารถโหลดข้อมูลแหล่งที่มาได้",
+        "empty": "ไม่พบรายการแหล่งที่มา",
+        "apiPath": "เส้นทาง API",
+        "source": "แหล่งข้อมูล",
+        "mock": "ข้อมูลจำลอง",
+        "api": "API",
+        "active": "ใช้งาน",
+        "inactive": "ปิดใช้งาน",
+        "nameTh": "ชื่อ (ไทย)",
+        "nameEn": "ชื่อ (อังกฤษ)",
+        "seq": "ลำดับ",
+        "status": "สถานะ",
+        "actions": "การดำเนินการ",
+        "no": "#"
+      },
+      "buttons": {
+        "add": "เพิ่มแหล่งที่มา",
+        "edit": "แก้ไข",
+        "delete": "ลบ",
+        "deleteConfirm": "ลบแหล่งที่มา",
+        "cancel": "ยกเลิก",
+        "create": "สร้างแหล่งที่มา",
+        "update": "บันทึกการแก้ไข",
+        "saving": "กำลังบันทึก...",
+        "refresh": "รีเฟรช",
+        "refreshing": "กำลังรีเฟรช..."
+      },
+      "form": {
+        "createTitle": "เพิ่มแหล่งที่มา",
+        "editTitle": "แก้ไขแหล่งที่มา",
+        "description": "กรอกชื่อแหล่งที่มาภาษาไทยและอังกฤษ พร้อมกำหนดลำดับการแสดงผล",
+        "nameTh": "ชื่อ (ภาษาไทย)",
+        "nameEn": "ชื่อ (ภาษาอังกฤษ)",
+        "seq": "ลำดับการแสดงผล",
+        "isActive": "เปิดใช้งาน",
+        "validationNameTh": "กรุณากรอกชื่อภาษาไทย",
+        "validationNameEn": "กรุณากรอกชื่อภาษาอังกฤษ",
+        "validationSeq": "ลำดับการแสดงผลต้องเป็นตัวเลขที่มากกว่า 0"
+      },
+      "pagination": {
+        "showing": "แสดง {{from}}–{{to}} จาก {{total}} รายการ",
+        "prev": "ก่อนหน้า",
+        "next": "ถัดไป"
+      },
+      "confirm": {
+        "delete": "ลบ \"{{name}}\" ใช่หรือไม่?",
+        "deleteDescription": "การดำเนินการนี้ไม่สามารถยกเลิกได้"
+      },
+      "toast": {
+        "createSuccess": "เพิ่มแหล่งที่มาสำเร็จ",
+        "createError": "ไม่สามารถเพิ่มแหล่งที่มาได้",
+        "updateSuccess": "บันทึกการแก้ไขแหล่งที่มาสำเร็จ",
+        "updateError": "ไม่สามารถแก้ไขแหล่งที่มาได้",
+        "deleteSuccess": "ลบแหล่งที่มาสำเร็จ",
+        "deleteError": "ไม่สามารถลบแหล่งที่มาได้"
+      }
+    },
+    "case": {
+      "panel": {
+        "title": "คลังความรู้",
+        "search": "ค้นหา",
+        "notfound": "ไม่พบบทความ",
+        "copied": "คัดลอกแล้ว!",
+        "copy": "คัดลอกลิงก์",
+        "open": "เปิด",
+        "lastupdate": "วันที่อัปเดตล่าสุด"
+      }
+    }
+  }
+}

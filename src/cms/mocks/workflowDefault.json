@@ -1,0 +1,282 @@
+{
+  "nodes": [
+    {
+      "id": "node-1750675051804",
+      "type": "start",
+      "position": {
+        "x": 20,
+        "y": 80
+      },
+      "data": {
+        "label": "Start",
+        "description": "Start case opening",
+        "config": {
+          "continueFromWorkflow": false,
+          "sourceWorkflowId": ""
+        }
+      }
+    },
+    {
+      "id": "node-1750675059477",
+      "type": "process",
+      "position": {
+        "x": 20,
+        "y": 200
+      },
+      "data": {
+        "label": "New",
+        "description": "Create new case by Agent",
+        "config": {
+          "action": "new",
+          "form": "new",
+          "sla": "1",
+          "pic": "agent"
+        }
+      }
+    },
+    {
+      "id": "node-1750675111158",
+      "type": "decision",
+      "position": {
+        "x": 20,
+        "y": 320
+      },
+      "data": {
+        "label": "Disp?",
+        "description": "Dispatching or not",
+        "config": {}
+      }
+    },
+    {
+      "id": "node-1750675180163",
+      "type": "process",
+      "position": {
+        "x": 20,
+        "y": 460
+      },
+      "data": {
+        "label": "Dispatching",
+        "description": "Dispatcher do dispatch",
+        "config": {
+          "action": "disp",
+          "form": "disp",
+          "sla": "7",
+          "pic": "dispatcher"
+        }
+      }
+    },
+    {
+      "id": "node-1750675219207",
+      "type": "process",
+      "position": {
+        "x": 220,
+        "y": 460
+      },
+      "data": {
+        "label": "Accept",
+        "description": "Responder accept case",
+        "config": {
+          "action": "accept",
+          "form": "accept",
+          "sla": "5",
+          "pic": "responder"
+        }
+      }
+    },
+    {
+      "id": "node-1750675301774",
+      "type": "process",
+      "position": {
+        "x": 420,
+        "y": 460
+      },
+      "data": {
+        "label": "Arrival",
+        "description": "Responder arrive at target location",
+        "config": {
+          "action": "arrival",
+          "form": "arrival",
+          "sla": "30",
+          "pic": "responder"
+        }
+      }
+    },
+    {
+      "id": "node-1750675355390",
+      "type": "process",
+      "position": {
+        "x": 620,
+        "y": 460
+      },
+      "data": {
+        "label": "Resolve",
+        "description": "Responder resolve case",
+        "config": {
+          "action": "resolve",
+          "form": "resolve",
+          "sla": "90",
+          "pic": "responder"
+        }
+      }
+    },
+    {
+      "id": "node-1750675419334",
+      "type": "process",
+      "position": {
+        "x": 620,
+        "y": 320
+      },
+      "data": {
+        "label": "Complete",
+        "description": "Dispatcher confirm to close case",
+        "config": {
+          "action": "complete",
+          "form": "complete",
+          "sla": "2",
+          "pic": "dispatcher"
+        }
+      }
+    },
+    {
+      "id": "node-1750675487312",
+      "type": "end",
+      "position": {
+        "x": 620,
+        "y": 200
+      },
+      "data": {
+        "label": "End",
+        "description": "End case opening",
+        "config": {
+          "allowContinuation": false,
+          "nextWorkflowId": ""
+        }
+      }
+    },
+    {
+      "id": "node-1750675530227",
+      "type": "process",
+      "position": {
+        "x": 200,
+        "y": 320
+      },
+      "data": {
+        "label": "Alert",
+        "description": "Alert case via Email",
+        "config": {
+          "action": "alert",
+          "form": "alert",
+          "sla": "1",
+          "pic": "supervisor"
+        }
+      }
+    },
+    {
+      "id": "node-1750675605990",
+      "type": "process",
+      "position": {
+        "x": 340,
+        "y": 320
+      },
+      "data": {
+        "label": "Assign Vender",
+        "description": "Supervisor assign to vender",
+        "config": {
+          "action": "assign",
+          "form": "assign",
+          "sla": "1",
+          "pic": "supervisor"
+        }
+      }
+    },
+    {
+      "id": "node-1750675763051",
+      "type": "process",
+      "position": {
+        "x": 480,
+        "y": 320
+      },
+      "data": {
+        "label": "Fix",
+        "description": "Supervisor fix",
+        "config": {
+          "action": "fix",
+          "form": "fix",
+          "sla": "1",
+          "pic": "supervisor"
+        }
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "connection-1750675068326",
+      "source": "node-1750675051804",
+      "target": "node-1750675059477"
+    },
+    {
+      "id": "connection-1750675116617",
+      "source": "node-1750675059477",
+      "target": "node-1750675111158"
+    },
+    {
+      "id": "connection-1750675187168",
+      "source": "node-1750675111158",
+      "target": "node-1750675180163",
+      "label": "yes"
+    },
+    {
+      "id": "connection-1750675228673",
+      "source": "node-1750675180163",
+      "target": "node-1750675219207"
+    },
+    {
+      "id": "connection-1750675306123",
+      "source": "node-1750675219207",
+      "target": "node-1750675301774"
+    },
+    {
+      "id": "connection-1750675359867",
+      "source": "node-1750675301774",
+      "target": "node-1750675355390"
+    },
+    {
+      "id": "connection-1750675485887",
+      "source": "node-1750675355390",
+      "target": "node-1750675419334"
+    },
+    {
+      "id": "connection-1750675493050",
+      "source": "node-1750675419334",
+      "target": "node-1750675487312"
+    },
+    {
+      "id": "connection-1750675534720",
+      "source": "node-1750675111158",
+      "target": "node-1750675530227",
+      "label": "no"
+    },
+    {
+      "id": "connection-1750675722605",
+      "source": "node-1750675530227",
+      "target": "node-1750675605990"
+    },
+    {
+      "id": "connection-1750675767094",
+      "source": "node-1750675605990",
+      "target": "node-1750675763051"
+    },
+    {
+      "id": "connection-1750675800559",
+      "source": "node-1750675763051",
+      "target": "node-1750675419334"
+    }
+  ],
+  "metadata": {
+    "title": "SOP001",
+    "description": "Default Service Operation Process",
+    "status": "active",
+    "createdAt": "2025-06-23T10:37:29.569Z",
+    "updatedAt": "2025-06-23T10:53:26.264Z"
+  }
+}

@@ -1,0 +1,29 @@
+[
+  {
+    "id": "template_1",
+    "name": "Customer Service Agent",
+    "description": "Template for customer service representatives",
+    "category": "Customer Service",
+    "permissions": ["case_view", "case_create", "case_edit", "send_notifications", "reports_view"],
+    "usageCount": 25,
+    "rating": 4.8
+  },
+  {
+    "id": "template_2",
+    "name": "Data Analyst",
+    "description": "Template for data analysis and reporting roles",
+    "category": "Analytics",
+    "permissions": ["reports_view", "reports_create", "analytics_access", "data_export", "case_view"],
+    "usageCount": 15,
+    "rating": 4.6
+  },
+  {
+    "id": "template_3",
+    "name": "Quality Assurance",
+    "description": "Template for QA and compliance roles",
+    "category": "Quality",
+    "permissions": ["case_view", "audit_logs", "compliance_reports", "reports_view", "analytics_access"],
+    "usageCount": 12,
+    "rating": 4.7
+  }
+]

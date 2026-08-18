@@ -1,0 +1,300 @@
+{
+  "nodes": [
+    {
+      "id": "node-1750757524671",
+      "type": "start",
+      "position": {
+        "x": 200,
+        "y": 260
+      },
+      "data": {
+        "label": "Start 1",
+        "description": "",
+        "config": {
+          "continueFromWorkflow": false,
+          "sourceWorkflowId": ""
+        }
+      }
+    },
+    {
+      "id": "node-1750757535919",
+      "type": "process",
+      "position": {
+        "x": 200,
+        "y": 380
+      },
+      "data": {
+        "label": "OpenCaseForm",
+        "description": "",
+        "config": {
+          "sla": "12",
+          "pic": "agent",
+          "action": "new",
+          "form": "new"
+        }
+      }
+    },
+    {
+      "id": "node-1750757594574",
+      "type": "decision",
+      "position": {
+        "x": 200,
+        "y": 480
+      },
+      "data": {
+        "label": "dispatch?",
+        "description": "",
+        "config": {
+          "condition": "autoDispatch=true"
+        }
+      }
+    },
+    {
+      "id": "node-1750757615781",
+      "type": "process",
+      "position": {
+        "x": 360,
+        "y": 480
+      },
+      "data": {
+        "label": "mettlink",
+        "description": "",
+        "config": {
+          "pic": "responder"
+        }
+      }
+    },
+    {
+      "id": "node-1750757664604",
+      "type": "process",
+      "position": {
+        "x": 200,
+        "y": 580
+      },
+      "data": {
+        "label": "noti supervisor",
+        "description": "",
+        "config": {
+          "action": "alert",
+          "form": "alert",
+          "sla": "12",
+          "pic": "supervisor"
+        }
+      }
+    },
+    {
+      "id": "node-1750757716308",
+      "type": "decision",
+      "position": {
+        "x": 200,
+        "y": 680
+      },
+      "data": {
+        "label": "Apporve",
+        "description": "",
+        "config": {
+          "condition": "apporve=true"
+        }
+      }
+    },
+    {
+      "id": "node-1750757789819",
+      "type": "process",
+      "position": {
+        "x": 200,
+        "y": 780
+      },
+      "data": {
+        "label": "Cancellation Record",
+        "description": "",
+        "config": {
+          "pic": "supervisor",
+          "action": "new",
+          "form": "disp",
+          "sla": "12"
+        }
+      }
+    },
+    {
+      "id": "node-1750757795835",
+      "type": "process",
+      "position": {
+        "x": 360,
+        "y": 680
+      },
+      "data": {
+        "label": "Approval record",
+        "description": "",
+        "config": {
+          "action": "accept",
+          "form": "accept",
+          "pic": "supervisor"
+        }
+      }
+    },
+    {
+      "id": "node-1750757928130",
+      "type": "end",
+      "position": {
+        "x": 60,
+        "y": 780
+      },
+      "data": {
+        "label": "Cancel",
+        "description": "",
+        "config": {
+          "allowContinuation": false,
+          "nextWorkflowId": ""
+        }
+      }
+    },
+    {
+      "id": "node-1750758226567",
+      "type": "process",
+      "position": {
+        "x": 500,
+        "y": 480
+      },
+      "data": {
+        "label": "closeCase Record",
+        "description": "",
+        "config": {
+          "pic": "responder",
+          "form": "fix",
+          "action": "fix"
+        }
+      }
+    },
+    {
+      "id": "node-1750758332763",
+      "type": "decision",
+      "position": {
+        "x": 500,
+        "y": 680
+      },
+      "data": {
+        "label": "closeCase Apporve",
+        "description": "",
+        "config": {}
+      }
+    },
+    {
+      "id": "node-1750758437262",
+      "type": "end",
+      "position": {
+        "x": 500,
+        "y": 780
+      },
+      "data": {
+        "label": "CloseCase",
+        "description": "",
+        "config": {
+          "allowContinuation": false,
+          "nextWorkflowId": ""
+        }
+      }
+    },
+    {
+      "id": "node-1750758466981",
+      "type": "process",
+      "position": {
+        "x": 700,
+        "y": 580
+      },
+      "data": {
+        "label": "refix",
+        "description": "",
+        "config": {
+          "action": "fix",
+          "form": "fix",
+          "pic": "dispatcher"
+        }
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "connection-1750757540228",
+      "source": "node-1750757524671",
+      "target": "node-1750757535919"
+    },
+    {
+      "id": "connection-1750757611036",
+      "source": "node-1750757535919",
+      "target": "node-1750757594574"
+    },
+    {
+      "id": "connection-1750757628411",
+      "source": "node-1750757594574",
+      "target": "node-1750757615781",
+      "label": "yes"
+    },
+    {
+      "id": "connection-1750757679786",
+      "source": "node-1750757594574",
+      "target": "node-1750757664604",
+      "label": "no"
+    },
+    {
+      "id": "connection-1750757719026",
+      "source": "node-1750757664604",
+      "target": "node-1750757716308"
+    },
+    {
+      "id": "connection-1750757800497",
+      "source": "node-1750757716308",
+      "target": "node-1750757795835",
+      "label": "yes"
+    },
+    {
+      "id": "connection-1750757801777",
+      "source": "node-1750757716308",
+      "target": "node-1750757789819",
+      "label": "no"
+    },
+    {
+      "id": "connection-1750757929760",
+      "source": "node-1750757789819",
+      "target": "node-1750757928130"
+    },
+    {
+      "id": "connection-1750758179189",
+      "source": "node-1750757795835",
+      "target": "node-1750757615781"
+    },
+    {
+      "id": "connection-1750758267362",
+      "source": "node-1750757615781",
+      "target": "node-1750758226567"
+    },
+    {
+      "id": "connection-1750758370895",
+      "source": "node-1750758226567",
+      "target": "node-1750758332763"
+    },
+    {
+      "id": "connection-1750758445532",
+      "source": "node-1750758332763",
+      "target": "node-1750758437262",
+      "label": "yes"
+    },
+    {
+      "id": "connection-1750758540688",
+      "source": "node-1750758332763",
+      "target": "node-1750758466981",
+      "label": "no"
+    },
+    {
+      "id": "connection-1750758571039",
+      "source": "node-1750758466981",
+      "target": "node-1750758226567"
+    }
+  ],
+  "metadata": {
+    "title": "OpenCaseWorkflow",
+    "description": "",
+    "status": "draft",
+    "createdAt": "2025-06-24T09:31:51.264Z",
+    "updatedAt": "2025-06-25T02:34:19.555Z"
+  }
+}

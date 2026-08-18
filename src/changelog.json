@@ -1,0 +1,806 @@
+{
+  "0.48.2": {
+    "date": "2026-08-18",
+    "segment": "PATCH",
+    "notes": "fix(cms): let staff create a new brand or category again\n- This only affected setups that use the newer way of talking to the server. Setups still on the older way were never affected.\n- Filling in a new brand or category and saving it did not create anything. The save was reaching the server, but it was asking for the list of existing brands or categories instead of asking for the new one to be created, so nothing was ever saved.\n- Same underlying issue as the workflow create problem fixed the same day - fixed the same way, this time for brands and categories.\n- The screen that creates brands and categories is not switched on yet, so nobody has been able to hit this in the app so far. Fixed now so it is ready and correct once that screen is switched on.\n- changelog.json / package.json: bump version 0.48.1 -> 0.48.2",
+    "author": "Wisarud Techa"
+  },
+  "0.48.1": {
+    "date": "2026-08-17",
+    "segment": "PATCH",
+    "notes": "fix(cms): let staff create and delete workflows again\n- Both problems below only affected setups that use the newer way of talking to the server. Setups still on the older way were never affected.\n- Creating a workflow: building a new workflow and pressing save did not create anything. The save was reaching the server, but it was asking for the list of existing workflows instead of asking for the new workflow to be created, so nothing was ever saved. New workflows now save properly.\n- Opening and saving an existing workflow was never affected, which is why the trouble only showed up on brand new ones.\n- Deleting a workflow: the delete button on the workflow list was still sending its request the older way, which these setups no longer answer, so the workflow stayed where it was. Deleting now takes the same route as the rest of the workflow screens and works again.\n- Once a workflow is deleted the list refreshes on its own, so the workflow disappears without the page needing to be reloaded.\n- Deleting could also report \"delete failed\" even when the workflow had in fact been deleted, because of a refresh step straight afterwards that always failed. The message now matches what actually happened.\n- The same delete fix is available to the other list screens (skills, units, users, roles and so on), but only the workflow list has been switched over for now. Every other list behaves exactly as before.\n- changelog.json / package.json: bump version 0.48.0 -> 0.48.1",
+    "author": "Wisarud Techa"
+  },
+  "0.48.0": {
+    "date": "2026-08-17",
+    "segment": "MINOR",
+    "notes": "feat: hide customers' personal details from staff who have not been given permission to see them, stop customer information being left behind on shared computers, and let admins mark extra personal questions on a customer's form the same way\n- A customer's personal details - ID card number, phone numbers, email address, date of birth, photo and exact street address - are now hidden from staff unless they have been given permission to see them. In place of the real value staff see a partly hidden one: a phone number shows only its last four digits, an email address shows only its first letter and the part after the @, and a date of birth shows only the year.\n- Enough is left showing to still do the job. An agent who has been given a phone number over the line can still tell which customer it belongs to from the last four digits, and searching for a customer by their full phone number still finds them.\n- The broader parts of an address - country, province, district, sub-district and postcode - stay visible to everyone. The area and zone screens rely on them, and on their own they do not point to a particular household.\n- A customer's photo is replaced with the same blank picture already used for customers who have no photo on file.\n- Where a customer is opened for editing, the protected fields are shown locked and empty rather than partly hidden. This is deliberate: a partly hidden value sitting in an editable box would be saved over the real one the moment somebody pressed save. Everything else on the form - notes, customer type and so on - can still be changed and saved as normal, and the hidden details are left exactly as they were.\n- Adding a brand new customer is unaffected. Every field can be filled in as before, since there is nothing on file yet to hide.\n- Extra phone numbers and email addresses kept alongside the main ones are hidden the same way. LINE, Facebook and Text Chat account names stay visible, as those are account names rather than ways of contacting somebody directly.\n- Staff without permission can no longer open an extra phone number or email address for editing, although they can still remove one.\n- Who may see all of this is controlled by a single new permission, granted by the system administrator in the usual way. Nobody holds it until it is granted, so details start out hidden rather than exposed. System administrators can always see them.\n- The number shown for a case itself - the phone number the caller actually used to open it - is not affected by any of this and is always shown in full. It is kept separately from the customer's own phone number on file, since a customer can call in on a number that is not their own.\n- When building a customer's \"specific form\" (the extra custom questions some customer types have), whoever designs the form can now tick a new \"Contains personal data\" box on a question and choose how it should be hidden - showing only the last four digits, only the year, in an email-style partial hide, or fully hidden - and it is then treated exactly like the built-in personal details above: hidden on the customer's page and locked (not saveable-over) when editing. This does not apply to the questions on case forms or other question sets elsewhere in the app - only to a customer's own specific form.\n- Signing out now clears the case information the app keeps on the computer for working offline. Until now it stayed on the machine after signing out, so on a shared workstation the next person to sign in inherited the previous person's cases. A problem clearing it cannot stop somebody signing out.\n- Case information is no longer passed around inside the app in a way that left the whole case list - including customer names, phone numbers and addresses - readable by anything else running on the page. Screens are now simply told that something has changed and look the case up themselves, which is what most of them already did.\n- The case board still keeps itself up to date exactly as before, including when a case is created or changed by another dispatcher.\n- Web addresses and error messages written to the browser's technical log no longer carry customer details. Looking a customer up by ID card number or phone number previously wrote that number into the log.\n- Available in Thai and English. The new \"Contains personal data\" question-builder wording is not yet available in Chinese, matching the rest of the form-builder screen, which has never had a Chinese translation.\n- changelog.json / package.json: bump version 0.47.0 -> 0.48.0\nNote: this hides information on the screen only. It is not a replacement for the protection applied by the backend, which is being handled separately as its own piece of work.\nNote: the check that saving an edited customer leaves the hidden details untouched - including a personal-data question on the specific form - has not yet been carried out against a real environment. Worth doing on a spare customer record before this goes anywhere near live data.\nNote: marking a question as personal data works fully in the app, but the backend has not yet agreed to keep that marking when a form is saved. Until it does, treat this as ready on our side and pending confirmation from the backend before relying on it.\nNote: case information is still also kept in a second, older place on the computer that is written to every time a case is saved. Signing out now clears it, but while somebody is signed in it can still be seen by other tabs of the app open on the same computer. Tidying that up means removing the older copy altogether and is left as a separate piece of work.",
+    "author": "Wisarud Techa"
+  },
+  "0.47.0": {
+    "date": "2026-08-11",
+    "segment": "MINOR",
+    "notes": "feat(cms): let a case be handed to several officers at once, instead of one officer at a time\n- Until now a case could only hold one officer. The \"Assign officer\" button disappeared from the case as soon as somebody was on it, so putting a second officer on the job meant first cancelling the one already assigned. The button now stays available, and more officers can be added at any point while the case is still open.\n- The officer picker uses tick boxes instead of a single-choice selection, so several officers can be chosen and sent to the case in one action. A tick at the top of the list selects everyone currently shown, which respects whatever has been typed in the search box.\n- The officers chosen are listed by name above the Assign button, each can be taken off the list individually, and the button shows how many are selected.\n- Officers already working the case are still kept out of the picker, so nobody can be added to the same case twice.\n- Assigning several officers now gives one confirmation message covering the whole action rather than one message per officer, and if any of them could not be assigned it says which ones by name. The case is brought up to date once at the end instead of after every officer.\n- The same picker is used when attaching officers to an appointment from the case's side panel. That screen was already laid out to hold several officers and could only ever take one; it now takes as many as are chosen.\n- Cancelling an officer's assignment is unchanged, and is still only offered while the case is at the assignment stage.\n- changelog.json / package.json: bump version 0.46.0 -> 0.47.0",
+    "author": "Wisarud Techa"
+  },
+  "0.46.0": {
+    "date": "2026-08-10",
+    "segment": "MINOR",
+    "notes": "feat(cms): officers on the case map now move in real time, and you can show the path an officer has taken\n- Officer positions on the case map now update by themselves as officers report in, instead of only moving when the staff list was refreshed. Their speed, direction, GPS accuracy and GPS time update the same way.\n- Because of this, the note in the \"Real-Time Staff Tracking\" section warning that the readings were not live has been removed - it is no longer true. The section still shows how old each GPS reading is and still marks it \"Outdated\" once it passes five minutes, which is what matters if an officer's device goes quiet.\n- Added a \"Show movement trail\" button inside that section. It draws a dashed line on the map showing where the selected officer has been, with a count of how many positions have been recorded. It is deliberately drawn differently from the calculated route line, and given its own icon, because the route is where an officer is going and the trail is where they have been - the two should never be mistaken for each other.\n- The trail is collected the whole time officers are shown on the map, so pressing the button shows the path already travelled rather than starting from nothing. It is not a saved history: it covers only the period the map was open and starts over when the page is reloaded, and the section says so.\n- An officer parked in one place no longer adds points to their own trail, so a stationary vehicle does not build up a scribble where it is standing.\n- An officer who had never reported a position before now appears on the map as soon as they report one, instead of staying invisible until the next refresh.\n- The map no longer reloads the whole list of officers every time one of them reports a position, which removes a large amount of unnecessary background activity. A slower check still runs while the map is open, so officers added to or removed from the case by another dispatcher still appear.\n- Fixed a problem that would have made an officer's icon jump backwards to an older position when an update arrived while they were moving.\n- An officer whose device stops reporting now fades and is marked \"Outdated\" on the map by itself, instead of waiting for something else on screen to change first.\n- changelog.json / package.json: bump version 0.45.0 -> 0.46.0",
+    "author": "Wisarud Techa"
+  },
+  "0.45.0": {
+    "date": "2026-08-10",
+    "segment": "MINOR",
+    "notes": "feat(cms): fill in the \"Real-Time Staff Tracking\" section on the case map with the speed, direction and GPS quality each officer reports, and show which way a moving officer is heading\n- The last section on an officer's card on the case map was still marked \"In development\" and showed only a line describing what it would eventually do. It now works, and the \"In development\" tag is gone.\n- Opening it shows how fast that officer is travelling, which direction they are going, how accurate their GPS reading is, and when their GPS position was actually taken. All of this was already being sent with the officer's location and was simply not being shown anywhere.\n- The direction is only shown while the officer is actually moving. A parked vehicle keeps reporting whichever way it was last pointing, and showing that would suggest an officer is still on their way somewhere when they are not.\n- Selecting an officer who is on the move now draws a small arrow on the ring beneath them pointing the way they are travelling, so their direction can be seen on the map without opening the card. The arrow disappears when they stop, and when their position becomes outdated.\n- Every reading is stamped with how old it is, and marked \"Outdated\" past the same five-minute mark already used for the position itself. This is deliberate: these values refresh when the staff list refreshes, and are not a live feed - the section says so in plain words rather than implying otherwise.\n- Officers whose equipment reports a position but nothing else now get a clear one-line explanation instead of a column of dashes.\n- changelog.json / package.json: bump version 0.43.1 -> 0.45.0 (package.json was left behind at 0.43.1 when 0.44.0 was released; this brings the two back in step).",
+    "author": "Wisarud Techa"
+  },
+  "0.44.0": {
+    "date": "2026-08-10",
+    "segment": "MINOR",
+    "notes": "feat: let customers have more than one phone number or email, mark which contact channel is the main one, and move the contact channels list to its own tab\n- People can now add extra phone numbers and email addresses to a customer, in addition to the main phone number and email already on the profile. These show up alongside LINE, Facebook and Text Chat in the same Contact Channels list.\n- The contact channel that matches the customer's stated contact preference is now marked \"Primary\" with a badge, so staff can see at a glance which number or account to use first. This is worked out automatically from the preference already saved on the customer's profile and needs no extra setup.\n- Brought back the checkmark next to each contact channel to match the design that was already agreed and published, after it was temporarily left out in the last update.\n- Added a little more breathing room between the \"Contact Information\" heading and the first contact card, so the heading does not feel cramped against the list below it.\n- Moved the full Contact Channels list out of the narrow sidebar on the customer page and into its own tab at the end of the tab row, so it now gets the full width of the screen instead of being squeezed into a side column.\n- Groundwork only: LINE, Facebook and Text Chat as case contact methods are still switched off pending reference codes from the backend, unchanged from the previous update.",
+    "author": "Wisarud Techa"
+  },
+  "0.43.1": {
+    "date": "2026-08-07",
+    "segment": "PATCH",
+    "notes": "fix(cms): show the officer's real status for the current case instead of a dash, and tidy up the route button while it is briefly unavailable\n- A staff member's status specific to the case being viewed (for example, dispatched or on scene) was showing as a plain \"-\" instead of the actual status name, both on their own card and in the list shown for a group of officers. This was being looked up against the wrong list of statuses behind the scenes; it is now looked up against the correct one and shows the real status.\n- The \"Calculate route\" / \"Recalculate\" button still needs a short pause after being pressed before it can be used again, exactly as before, but it no longer counts down a number of seconds on the button itself while waiting - it simply stays as its normal label until it is ready again.\n- changelog.json / package.json: bump version 0.43.0 -> 0.43.1",
+    "author": "Wisarud Techa"
+  },
+  "0.43.0": {
+    "date": "2026-08-07",
+    "segment": "MINOR",
+    "notes": "feat(cms): show distance and arrival time for every officer in a group, an officer's status on the current case, and fix a bug that could silently fail to remove someone from a case\n- Area name labels on the case map (province, district, sub-district) could sit directly over a cluster of staff icons and their headcount, making both unreadable. Labels are now hidden automatically whenever the staff layer is switched on, and reappear once it is switched off - no extra button needed.\n- Clicking a cluster of staff standing close together now shows the distance and drive time to the case for every officer in that cluster at once, calculated automatically as soon as the list opens - there is no button to press. Nobody's estimate is left out, however many officers are in the group.\n- No route line is drawn on the map for a group, and there is no way to refresh the numbers from this list - that stays the job of opening one officer's own card. Closing the group and reopening it again straight away reuses the numbers just calculated; reopening it later, or after an officer has genuinely moved, gets fresh ones.\n- A staff member's card, and the list shown for a group, now also show their status specific to the case currently being viewed (for example, dispatched or on scene) alongside their general on-duty status, so it is clear at a glance both whether they are available and what they are doing on this particular case.\n- Fixed: removing a staff member from a case could silently fail to go through, because a piece of information the system needed to send was sometimes missing by the time the button was pressed. Removing someone from a case now works reliably every time.\n- Available in Thai, English and Chinese.\n- changelog.json / package.json: bump version 0.42.0 -> 0.43.0\nNote: the boundary-label fix is based on how the mapping software is documented to behave rather than something that could be confirmed against the vendor's own written guarantee - worth a quick visual double-check the next time the map is opened with a crowded cluster.\nNote: distance and time for every officer in a large group is calculated one at a time rather than in a single combined request, because the combined option is not currently available on our mapping account - so a very large group costs more to calculate than a small one. Getting that option enabled would let this be done more efficiently later.\nNote: the case-specific status is expected to use the same list of status names already used elsewhere on the map, but this has not yet been double-checked against a real case with officers already assigned to it - worth confirming.",
+    "author": "Wisarud Techa"
+  },
+  "0.42.0": {
+    "date": "2026-08-07",
+    "segment": "MINOR",
+    "notes": "feat(cms): show the driving route, distance and estimated arrival time from a selected officer to the case\n- Opening a staff member's card on the case map now offers a \"Calculate route\" button. Pressing it draws the driving route from that officer's last known position to the case on the map, and shows the distance and how long the drive should take.\n- A separate summary shows the estimated time of arrival as a clock time, and how much time is left before they arrive, so nobody has to work it out from the drive time alone.\n- Nothing is calculated automatically - it only happens when the button is pressed, and pressing it again straight away is not allowed for a short cooldown, so the same route cannot accidentally be calculated over and over.\n- Recalculating from the same spot shortly afterwards reuses the previous result instead of asking the mapping service again, so nothing is wasted by opening the card, closing it and opening it again.\n- The travel time now properly accounts for real traffic conditions rather than an idealised free-flowing road, after testing showed the untraffic-adjusted figure could understate a Bangkok drive time by well over a third.\n- If the officer's position is more than a few minutes old, the calculated route is still shown but is clearly marked as based on an outdated position.\n- If the case has no usable location, or the officer has none, the system says so plainly rather than guessing or showing a route that might be wrong - a wrong estimate here is worse than none, since it could send the wrong unit.\n- The route line drawn on the map cannot be clicked or interacted with, and sits underneath the case marker and staff icons so nothing important is ever covered by it.\n- Available in Thai, English and Chinese.\n- changelog.json / package.json: bump version 0.41.0 -> 0.42.0\nNote: calculating a route costs a small amount of paid usage from the mapping service, similar to how the satellite map view already does - worth keeping an eye on once it is in daily use.",
+    "author": "Wisarud Techa"
+  },
+  "0.41.0": {
+    "date": "2026-08-07",
+    "segment": "MINOR",
+    "notes": "feat(cms): switch theme and language from the case map's large view, and stop it forgetting the staff layer when reopened\n- The \"Map style\" button on the case map's large view can now also switch the app between light and dark mode and change its language, so those settings no longer have to be reached by closing the large map first - until now the map's own pop-up covered the main menu bar where they normally live.\n- This is the same light/dark and language setting used everywhere else in the app, so changing it from the map updates the whole screen too, and changing it from the main menu bar is reflected the next time the map's own button is opened.\n- Turning on the staff layer on the large map, and selecting an officer or a group of officers to look at, is now remembered when the large map is closed and reopened. Previously, closing the large map always switched the staff layer off and forgot who was selected, so both had to be set up again from scratch every time.\n- The large map now also reopens showing the same part of the map it was left on, rather than always jumping back to the case's own location.\n- Available in Thai, English and Chinese.\n- Checked with the backend team that cancelling a staff member's task already uses the correct \"cancel officer\" command rather than the \"cancel whole case\" one - confirmed correct, no change needed.\n- changelog.json / package.json: bump version 0.40.0 -> 0.41.0",
+    "author": "Wisarud Techa"
+  },
+  "0.40.0": {
+    "date": "2026-08-06",
+    "segment": "MINOR",
+    "notes": "feat(cms): show province, district and sub-district boundaries on the case map, and make the map's own buttons take up less room\n- The case map - on the case creation form, the case screen, and the case preview - can now show administrative boundaries for Bangkok as coloured, named shapes drawn over the map: province, district and sub-district, so it is clear at a glance which area an incident falls in.\n- Three new buttons let staff turn each of the three levels on or off independently, and all three can be shown at the same time if needed.\n- On the large map, an extra \"Boundaries\" button opens a panel for choosing exactly which provinces, districts and sub-districts to display, with a search box and select-all/clear for each level. Changes only take effect once \"Apply\" is pressed, so the map never jumps around while a choice is still being made.\n- Neighbouring districts are automatically given different colours from each other, so it is easy to see where one area ends and the next begins, and every sub-district takes the same colour as the district it belongs to.\n- Area names follow the app's language setting and appear in Thai, English or Chinese.\n- Added a \"Place\" button next to the map's other buttons, matching the one already on the case assignment screen. It is not switched on yet and is marked \"In development\".\n- On the smaller maps (the case creation form and the case preview), the map style, boundaries, place and \"view larger map\" buttons now show as compact icons only, and reveal their full label when hovered over, tapped, or reached by keyboard - so the buttons take up far less space without anything becoming harder to find. The large map continues to show every button and label in full.\n- Fixed: boundaries were not appearing at all when the map was opened at full size - only the small map was showing them. Both now match.\n- Available in Thai, English and Chinese.\n- changelog.json / package.json: bump version 0.39.0 -> 0.40.0\nNote: boundary data currently covers Bangkok only, read from a file bundled with the app while the nationwide version of this feature is still being built on the backend. The map has been built so that switching over to the full country later will not require rebuilding this feature from scratch.",
+    "author": "Wisarud Techa"
+  },
+  "0.39.0": {
+    "date": "2026-08-05",
+    "segment": "MINOR",
+    "notes": "feat(cms): staff icons on the case map now update themselves, and no longer hide each other when people stand close together\n- When a staff member changes their duty status on the mobile app, or picks the unit they are working with, the case map now reacts on its own. Their icon changes colour straight away, and a moment later the whole staff list is quietly re-checked so their position and details catch up too. Until now nothing changed on screen until somebody pressed refresh.\n- The refresh button is now only unavailable for ten seconds after it has actually been pressed. These automatic updates no longer switch it off, which previously would have left it greyed out almost permanently on a busy shift.\n- Staff standing close together used to be drawn on top of one another, so only the person on top could be seen or clicked. Worse, two people reporting exactly the same position could never be separated no matter how far the map was zoomed in, leaving one of them completely unreachable.\n- They are now drawn as a single circle showing how many people are in it. The circle takes the colour of the most available person in the group, so it is still possible to see at a glance whether anyone there can be given a command.\n- Clicking that circle zooms the map in when that would be enough to separate the group. When it would not - because they are at the same position, or the map is already as far in as it goes - a list opens instead, showing each person by name with their own status, so any of them can be chosen. Opening someone from that list leaves a link back to it.\n- The ring marking the selected staff member now follows them into a group, instead of disappearing the moment somebody else parks next to them.\n- Fixed: opening \"Personal Information\" or \"Real-Time Staff Tracking\" on a staff card also opened \"Contextual Workflows\", every time. The card was deciding what to open based on its own height, and opening anything made it taller. Sections now open and close entirely independently.\n- Reworded the description of \"Real-Time Staff Tracking\", which promised positions updating live. Duty status does now update by itself, but a position still only changes when the staff list is re-checked, so the description said more than the system can do.\n- Available in Thai, English and Chinese.\n- changelog.json / package.json: bump version 0.38.0 -> 0.39.0\nNote: the example status code in the backend's own documentation for these live updates does not match the codes this app uses to colour staff icons. If live status changes ever turn every staff member red, that mismatch is the reason, and it needs confirming with the backend team. A warning has been added for developers so the cause is visible rather than silent.\nNote: the live connection carries duty status and unit changes only - it does not yet send positions. Staff icons therefore still only move when the list is re-checked, which now happens automatically after any of those changes.",
+    "author": "Wisarud Techa"
+  },
+  "0.38.0": {
+    "date": "2026-08-04",
+    "segment": "MINOR",
+    "notes": "feat(cms): assign or remove a staff member straight from the case map, and rearrange the map's controls\n- Dispatchers can now put a staff member on the open case, or take them off it, directly from the card that opens when their icon is clicked on the map. The separate assign window is unchanged and still works exactly as before - this is a shortcut for the common case, not a replacement for it.\n- The assign (or remove) button appears twice on that card: once in a bar at the top that stays in place however far the card is scrolled, and once inside the section that explains what the action will actually do. Both ask for confirmation first.\n- Where the case's current stage does not allow dispatching or withdrawing someone, the button is switched off and a short amber line says why, instead of failing silently when pressed.\n- While a command is being sent, only that person's card is disabled and shows a \"Sending command...\" spinner - every other staff member on the map can still be opened. Nothing on screen changes until the system confirms it, so the button only flips from Assign to Remove once the case has genuinely been updated, rather than guessing and correcting itself a moment later.\n- The card's sections have been reorganised around what the map is for: Real-Time Staff Tracking, Smart Routing Engine, Contextual Workflows, ETA / TTL Dashboard, and Personal Information. Contextual Workflows is the working one - it shows the case, assigns or removes the staff member, and opens the full case details. The other three are labelled \"In development\" rather than filled with sample information.\n- Personal Information now shows real details - full name, phone number, unit and organisation - taken from the same place as the staff details already shown from the assign window, so the two can never disagree.\n- Staff icons are now coloured by one thing only: whether that person can be given a command. Green means ready, red means logged in but already tied up on a case, and grey means either not ready for duty or not logged in. Status badges elsewhere still show the exact status by name.\n- The selected staff member is now marked with a soft coloured ring on the ground beneath them, instead of the icon growing much larger and turning almost black.\n- The mouse pointer now changes to a hand when it passes over a staff icon, so it is clear they can be clicked.\n- Clicking anywhere on the map no longer draws a blue border around the whole map. It still appears for anyone who reaches the map by keyboard, which is who it is for.\n- The staff features now live on the large map only, opened with \"View larger map\". The small map on the case screen keeps just that button and \"Map style\", which leaves the case itself easier to see.\n- A location search box has been added. On the case screen it only moves the map to the place searched for - it never moves the case's own pin, which can still only be done while editing the case. It waits for at least three characters before offering suggestions, and it appears on the large map only.\n- The map's buttons have been regrouped: search at the top left; View larger map, Map style, Staff and Place along the top right; zoom and the compass at the bottom right. Place is a placeholder for showing points of interest and does nothing yet.\n- Staff positions are now only re-checked when the refresh button is pressed. The map no longer re-checks them on its own every ten seconds, and the countdown number has gone from the button - it still cannot be pressed twice in quick succession.\n- The line reporting how many staff had no reported position has been removed by request. Those staff are simply not drawn on the map.\n- Night mode: the map now uses a night version of the street map, and the map's own controls follow the app's light or dark setting instead of always being light.\n- Fixed: a staff card with several sections open could hide its last section entirely - it sat below the bottom edge of the map and scrolling could not reach it.\n- Fixed: on the large map the case list section opened and then could not be closed again.\n- Removed the technical \"Source: GraphQL\" line from the staff card, which was of no use to anyone using the system.\n- The assigned officers shown further down the case screen now update themselves after a staff member is added or removed, rather than relying on each screen to ask for fresh information.\n- Not yet available: the list of other cases a staff member is already handling. There is no way to ask the system that question at present, so the card says so plainly rather than showing a guess.\n- Available in Thai, English and Chinese.\n- changelog.json / package.json: bump version 0.37.0 -> 0.38.0",
+    "author": "Wisarud Techa"
+  },
+  "0.37.0": {
+    "date": "2026-08-03",
+    "segment": "MINOR",
+    "notes": "feat(cms): show where staff are on the case map, with a framework for future assignment actions\n- The case screen's location map now has a \"Staff\" button next to the map style button. Turning it on shows every officer who can be dispatched to that case as a small person-shaped icon at their last known position, colour-coded by whether they are not ready, ready, en route, on scene, or off duty - the same colours already used elsewhere for staff status.\n- Clicking a staff icon opens a small card with that officer's name, status, and current coordinates, including how long ago that position was reported. A position older than five minutes, or from someone currently offline, is shown faded out so it is clear the information may no longer be current.\n- The card also lists six upcoming sections - Assigned Case, Personal Information, Assign Case, Cancel Assignment, Routing, and Tracking - each clearly labelled \"In development\" for now, so it is clear what is coming without pretending it already works.\n- A refresh button next to the Staff button re-checks everyone's position on request. To avoid overloading the system it can only be used once every 10 seconds, and shows a countdown while it is unavailable.\n- The Staff button and refresh button are grouped together as a single control in the map's bottom-left corner, along with any status message (for example, when nobody has a reported position yet), instead of being spread across different corners of the map.\n- Only available to staff who already have permission to assign cases, and only on the case assignment screen - it does not appear on the case creation form or on the summary shown before a case is submitted.\n- Positions are refreshed by request for now (on open and via the refresh button); support for positions updating live in the background is built in but stays switched off until the appropriate part of the system is ready on our end.\n- changelog.json / package.json: bump version 0.36.0 -> 0.37.0",
+    "author": "Wisarud Techa"
+  },
+  "0.36.0": {
+    "date": "2026-08-01",
+    "segment": "MINOR",
+    "notes": "feat(cms): let staff switch the case location map between a street map and satellite pictures\n- The map on the case screens has a new \"Map style\" button in its bottom corner. It offers a choice between the ordinary street map and satellite pictures, so a location can be checked against what is actually on the ground - a particular building, an entrance, a lane with no name - and not only against street names. Until now the map only ever showed the street view, with no way to change it.\n- The satellite view still draws street names and boundaries over the pictures, so it stays possible to tell where you are while looking at them.\n- The new button is available everywhere the map already appears: while creating a case, on a scheduled case, on the summary shown before a case is submitted, and when viewing or assigning an existing case.\n- On screens where the location is fixed and cannot be edited, the map style can still be changed. It only affects what is on screen and never alters the location recorded on the case.\n- Switching between the two views keeps the current position, how far the map is zoomed in, and the pin marking the chosen spot. Nothing has to be found again afterwards.\n- The choice is remembered. It carries across when the map is opened at full size, and it is still in place the next time the case screens are opened, so it does not have to be set again each time.\n- Place names on the map now follow the language the app is set to, for Thai, English and Chinese, wherever the map supplier has that language available.\n- The \"View larger map\" button has moved up slightly to sit above the new button.\n- If the map pictures cannot be loaded at all - for example if the map account is not set up for them - the map quietly falls back to a basic version of the same view instead of leaving a blank square on screen.\n- changelog.json / package.json: bump version 0.35.0 -> 0.36.0\nNote: satellite pictures are charged for by the map supplier per use, so this is worth keeping an eye on once it is in daily use.",
+    "author": "Wisarud Techa"
+  },
+  "0.35.0": {
+    "date": "2026-08-01",
+    "segment": "MINOR",
+    "notes": "feat: recognise a customer by their LINE, Facebook or web chat account, all linked to one customer record\n- People who get in touch over LINE, Facebook or web chat can now be recognised as an existing customer. Until now the only way to identify someone was by their phone number, so anyone who wrote in from social media came through as an unknown contact every time, even if they had been dealt with before.\n- The Contact Channels tab in the customer panel on the case screens now shows real information. It previously showed a fixed four-line list in which LINE and Facebook were always blank, and which looked the same for every customer no matter what was actually on file.\n- Staff can add, change and remove a customer's social accounts from that tab, recording the account's ID, the name shown on that platform, and its profile picture.\n- The same contact channel list now also appears on the customer profile, so phone, email and social accounts are all read from one place instead of each screen showing its own partial version that could disagree with the others.\n- Added a \"Link Contact Channel\" action for the situation where a message arrives from an account nobody recognises: staff enter the account details, search for the customer it belongs to, and link the two. If a case is open at the time, that customer is attached to the case in the same step, so it does not have to be done twice.\n- If an account is already linked to somebody else, staff are now told who it belongs to by name rather than getting a general error. This is the check that stops the same person being recorded twice under two separate profiles, which is difficult to undo once it has happened.\n- Social accounts can also be entered while creating a brand-new customer, and are saved along with them. If they cannot be attached automatically the customer is still saved, and a message explains that the channels need to be added from their profile - the entered details are never silently lost.\n- For web chat only, an optional email address can be recorded. It is written to the customer's email address only when they do not already have one, so an address already on file is never overwritten.\n- Administrators can hide the whole Contact Channels section from the customer form using a new setting on the customer form configuration page.\n- Removed the \"Primary\" and verified marks that used to appear against contact channels. They were fixed text rather than real information - every customer showed the same marks regardless of the facts - so they have been taken out rather than left to look like something that had been checked.\n- Groundwork only: LINE, Facebook and Text Chat can be offered as contact methods when creating a case, but they stay switched off until the reference codes for them are issued, so the contact method list is unchanged for now.\n- Available in Thai, English and Chinese, apart from the new customer form configuration setting, whose label is not yet translated into Chinese because that whole page has no Chinese wording yet.",
+    "author": "Wisarud Techa"
+  },
+  "0.34.0": {
+    "date": "2026-07-31",
+    "segment": "MINOR",
+    "notes": "feat: add internal notes about a customer, visible to staff only, on the case screens\n- The customer panel on the case screens (creating a case, scheduled cases, and viewing or assigning an existing case) has a new Internal Notes tab. Until now that tab showed a fixed sample note that was the same for every customer and could not be changed - it was a placeholder, not real information.\n- Staff can now write notes about a customer, and those notes stay attached to that customer, so they show up again the next time anyone opens a case for them. Notes are for internal use and are not shown to the customer.\n- Each note records who wrote it and when. The newest note appears at the top, and older ones load automatically as the list is scrolled.\n- Notes can be corrected or removed after the fact, but only by the person who wrote them or by a system administrator - everyone else can read them but sees no Edit or Delete option. Deleting always asks for confirmation first, and the note is then gone for good.\n- A note that has been changed since it was written is marked as edited, so it is clear the wording is not the original.\n- Notes can be labelled with one or more categories (General, Billing, Support, Sales), shown as small colour-coded tags. Categories are picked by tapping them on or off, so a single note can cover more than one topic - for example both Billing and Support. When a note is opened for editing, its existing tags are already selected.\n- Unfinished notes are remembered in the browser while they are being typed, so closing the tab or refreshing the page by accident no longer loses the text. The saved draft is cleared once the note is successfully added, and drafts are kept separate per person and per customer, so nothing carries over to the next customer or to the next person using the same computer.\n- If saving a note fails, the message stays on screen so it can be retried without retyping, and the reason given by the system is shown rather than a generic error. Previously this kind of screen could report success even when the save had actually failed.\n- Available in Thai, English and Chinese.\n- Fixed: the Sub-case tab in the case side panel was showing the raw text \"coomon.subcase\" instead of a readable label, in every language.\n- changelog.json / package.json: bump version 0.33.0 -> 0.34.0\nNote: categories are stored as part of the note's text rather than as a separate field, because the system does not yet record them separately. This means notes cannot yet be searched or filtered by category.",
+    "author": "Wisarud Techa"
+  },
+  "0.33.0": {
+    "date": "2026-07-31",
+    "segment": "MINOR",
+    "notes": "feat: fix the \"your session is about to expire\" warning so it actually appears, stop background session renewals from reloading the whole screen, and add a strict 8-hour maximum session length\n- The \"your session will expire soon\" warning now appears based on when the login session is actually about to run out. Previously it was hooked up to a separate, disconnected timer, so in practice it almost never showed - people were either signed out with no warning at all, or bounced straight back to the sign-in page.\n- Added a working \"Stay Signed In\" button to that warning. Clicking it now tries to renew the session in the background - if it works, the warning closes and the person keeps working normally; if it doesn't, the warning stays up and says so, with the countdown still running.\n- The app used to blank out to a full-screen loading spinner every time it quietly renewed a session in the background, which could interrupt whatever someone was doing (filling in a form, reviewing a case, etc). It now shows a small, unobtrusive \"refreshing session\" notice in the corner instead and leaves the rest of the screen untouched.\n- Added a hard 8-hour maximum session length that starts counting from the moment of login. It cannot be extended by refreshing the page, staying active, or leaving the tab open in the background - once it's reached, the person is automatically signed out and returned to the sign-in page, with no warning pop-up, since this limit is intentionally not something a person can postpone.\n- Fixed a bug where clicking \"Sign Out\" on the expiry warning sometimes didn't close it right away - the sign-in page would flash in behind it, but the warning itself stayed on screen and needed a second click to actually disappear.\n- Fixed a bug that could crash the notifications panel if it tried to redraw itself in the instant right after someone was signed out.\n- Fixed a background sign-on status check that was quietly clearing a person's single-sign-on cookies just by checking them, which could sign someone out unexpectedly during normal use.\n- Fixed a few cases where a brief network hiccup during a background session renewal could wipe out a person's saved login and force them back to the sign-in page even though their session was still valid.\n- changelog.json / package.json: bump version 0.32.4 -> 0.33.0",
+    "author": "Wisarud Techa"
+  },
+  "0.32.4": {
+    "date": "2026-07-30",
+    "segment": "PATCH",
+    "notes": "fix: keep the left-hand menu and top menu bar a steady, consistent width as the browser window is resized\n- The left-hand menu (Workspace/Contact/Case/Product/Knowledge) no longer shrinks or stretches unpredictably as the window narrows on large screens. It only switches to a compact, icons-only view once the screen is genuinely small (tablet/mobile size), instead of flickering between wide and narrow.\n- In that compact icons-only view, hovering the mouse over the menu temporarily widens it so the labels are readable again, narrowing back once you move away - the same behaviour as manually collapsing the menu. The Chat menu's two options (Lobby, History) now appear directly as their own icons in this view instead of being hidden inside a group that could no longer be opened.\n- The compact view's header now shows just the app's initial and the changelog button, dropping the version number so everything still fits.\n- The top menu bar's shortcuts (Workspace, Contact, Case, Product, Knowledge, and More) no longer get cut off or need a scrollbar on medium-sized windows. They shrink to icons only, and hovering any one shows its name as a small pop-up label - opening on the left for the right-most \"More\" button so it doesn't sit under the icons on the far right (language, notifications, account, etc.), and on the right for every other item. Full text labels return once the window is wide enough, and \"More\" has moved back next to the other shortcuts instead of appearing on its own.",
+    "author": "Wisarud Techa"
+  },
+  "0.32.3": {
+    "date": "2026-07-26",
+    "segment": "PATCH",
+    "notes": "refactor(cms): tidy up the case screens so their parts can be reused, with no change to how they work for users\n- The case screens (creating a case, editing a case, and creating a scheduled case) all share the same overall layout. The side panel on the right (which shows customer and device details) used to be locked into that layout. It is now a flexible slot, so each screen decides what to put there - and a future screen could show a different panel, or no panel at all. Screens without a panel now get a clean full-width layout instead of an empty gap.\n- The case form used to be tied to one specific way of holding its data. It now simply reports each change back to the screen and lets the screen decide how to store it, so the same form can be reused in more places later.\n- The lists the form needs (case types, service areas, customers) were being read from the browser's saved data in several places with the same copied code. That is now a single shared helper, which also fails gracefully - if the saved data is somehow damaged it shows an empty list instead of breaking the whole form.\n- The one big case form was split into small, self-contained pieces (priority, case type, contact method, details, service centre, customer, location, attachments, schedule date, and so on). Each piece can now be arranged on its own, so a screen can lay them out however it needs.\n- The single on/off 'create mode' switch that controlled several unrelated behaviours at once was replaced with separate, clearly-named options (for example: lock the case type, lock the service centre, show attachments). Existing screens keep their exact current behaviour, but new screens can now mix and match.\n- The scheduled-case screen used to carry its own private, near-duplicate copy of the whole case form. It now shares the same building blocks as the other screens, so there is only one form to maintain. This removed a large amount of duplicated code (that screen shrank by roughly a third) and two unused header components.\n- All of the above is behaviour-preserving: the create, edit, and scheduled-case screens look and work the same as before.",
+    "author": "Wisarud Techa"
+  },
+  "0.32.2": {
+    "date": "2026-07-26",
+    "segment": "PATCH",
+    "notes": "feat(core): add a look-but-do-not-touch mode to the shared record preview popup\n- Lists across the app (cases, users, roles, organisations, workflows, skills and units) open the same popup to show the details of one record. That popup now supports an optional read-only mode, so a screen can show a record purely for reading with no way to act on it from there.\n- While read-only, the previous and next arrows are switched off, along with their left and right arrow-key shortcuts. The position counter (for example 3 of 12) still shows, so it stays clear where you are in the list.\n- While read-only, the copy-to-clipboard buttons next to each field are removed, and the whole row of buttons along the bottom of the popup (such as Update and Delete) is hidden rather than greyed out, so no empty strip is left behind.\n- Closing always keeps working, by every route: the close button in the header, the round close button in the corner, clicking the shaded area outside the popup, and the Esc key.\n- Moving between the popup's tabs stays available, because that only changes what you are looking at and never changes the record.\n- Content that each screen supplies inside the tabs is made unresponsive too, so nothing left over inside it can be clicked or reached by tabbing with the keyboard. One trade-off: text inside the popup cannot be selected while in this mode.\n- The mode is switched off everywhere for now, so every existing screen behaves exactly as it did before. Screens can be switched over one at a time, and the panels shown inside the popup can be updated later so their own buttons appear properly greyed out instead of simply not responding.",
+    "author": "Wisarud Techa"
+  },
+  "0.32.1": {
+    "date": "2026-07-25",
+    "segment": "PATCH",
+    "notes": "fix(core): migrate UserProfile off raw fetch onto RTK Query + GraphQL, and authenticate the password-reset endpoint\n- user.ts (types): add ChangePasswordData ({id, currentPassword, newPassword}) and ResetPasswordData ({email, username, newPassword}); neither existed anywhere in the repo - authApi.ts's commented-out ChangePasswordData/ResetPasswordData imports reference types that were never defined\n- userApi.ts: add changePassword (PATCH /users/change_password/:id, id carried in the path) and resetPassword (POST /users/reset_password) mutations plus their hooks, contracts per src/core/mocks/userCURL.v2.sh:325-355; placed in userApi rather than authApi because the REST paths are /users/* and the GraphQL root is User - authApi's commented-out resetPassword targets a different /auth/reset-password endpoint and is left untouched\n- userQueries.ts: register ChangePassword and ResetPassword (root User, inputs ChangePasswordInput!/ResetPasswordInput!) at \"/users/change_password/:id\" PATCH and \"/users/reset_password\" POST - without these hybridBaseQuery returns a hard CUSTOM_ERROR, since the no-REST-fallback change in 0.28.8 means a missing GQL_MAP entry is a user-facing failure rather than a silent REST retry. \"/users/reset_password\" also matches the \"/users/:id\" pattern, but that entry defines no POST so matchUrl's definesMethod guard skips it, exactly as it already does for \"/users/add\"; \"/users/change_password/:id\" is three segments and collides with nothing (both verified by replaying matchUrl's regex against all 159 registered GQL_MAP keys)\n- ResetPasswordModal.tsx: security fix - the raw fetch deliberately sent no Authorization header (\"ใช้ API ใหม่ที่ไม่ต้องมี Authorization header\"), making POST /users/reset_password an unauthenticated \"set any user's password given email + username\" primitive, with no permission check anywhere except the render-site gate in UserMetaCard. Now goes through useResetPasswordMutation so baseQueryFactory attaches the Bearer token and the BFF can enforce the permission server-side; adds an in-modal canResetOthers guard (user.reset_password or system admin) because the component is exported and independently importable. The client-side check is defence in depth only - the endpoint is not actually closed until the backend adds the server-side check\n- ChangePasswordModal.tsx: migrate to useChangePasswordMutation, dropping the hand-built Bearer header read from localStorage(\"access_token\") (which missed sessionStorage/rememberMe=false tokens) and the @/cms/utils/constants APP_CONFIG import from a core component; add a missing-userId guard\n- both modals: replace the HTTP-status success test with an envelope check via the previously-unused src/core/utils/apiResponseStatus.ts (these are its first consumers). Under GraphQL every response is HTTP 200, so !response.ok never fired and a business failure - including a wrong current password - read as success; readEnvelopeStatus's \"unknown\" is deliberately treated as failure here, since a false failure costs a retry while a false success tells the user their password changed when it did not. The 400/401 branches are kept in catch for REST mode. Errors surface the BFF's own wording via readEnvelopeMessage(err.data) rather than readMutationError, whose String(error) fallback would render \"[object Object]\" in the error box\n- UserProfileContext.tsx: rewritten as a thin RTK composition - deleted the local apiFetch helper, the fetchRef guard, the ~165-line fetchData and the three useEffect state mirrors, replaced by useGetUserRolesQuery + useGetUserByUserNameQuery (both already GraphQL-mapped) alongside the existing organizationApi queries, with useMemo-derived dropdowns and a memoized context value. Three bugs fall out of the rewrite: refetchUserData was permanently dead (fetchRef.current was set true on entry and reset only on failure paths, so every call after the first success returned early); getCurrentLanguage() was hardcoded to \"en\" while the app default is th, so role/department/command/station names never followed the language switcher and now read from useTranslation(); and loading tracked only the manual fetch, so UserOrganizationCard rendered N/A while the org dropdown queries were still in flight. Username now comes from useAuth().state.user - AuthProvider hydrates it synchronously from TokenManager on first render - instead of re-parsing localStorage[\"profile\"]\n- changelog.json / package.json: bump version 0.32.0 -> 0.32.1\nNote: deliberately left out of scope - the 0-byte EditUserInfoCard.tsx, the try/catch-around-useUserProfile() pattern in UserMetaCard/UserInfoCard/UserOrganizationCard, the || JSX chains in UserMetaCard, and the UserFormProfile vs UserProfile type split",
+    "author": "Wisarud Techa"
+  },
+  "0.32.0": {
+    "date": "2026-07-30",
+    "segment": "MINOR",
+    "notes": "feat: dashboard widgets:\n- Move customizable dashboard from CMS to core and mount it at a top-level /dashboard/custom route so it can host widgets from any module.\n- Add 5 Product Management widgets (growth metrics, module overview, top ordered, revenue, inventory alert) and group the Add Widget library by domain (Case / Product).\n- Fix load crash and stuck-dirty save after saving by splitting the layout list response (metadata only) from the detail response (with widgets); the editable draft is now seeded only from the detail record.\n- Move the Custom Dashboard menu from the sidebar into the topbar Dashboard & Analytics menu.\n- Add i18n keys (TH/EN/CN) for the product widgets, widget groups, and the topbar entry.",
+    "author": "Wisarud Techa"
+  },
+  "0.31.0": {
+    "date": "2026-07-24",
+    "segment": "MINOR",
+    "notes": "feat(cms): dashboard widgets:\n- Add new customizable dashboard widget system (WebSocket-driven case summary, SLA, case trend, and status donut widgets) at /cms/dashboard/custom, alongside the existing ServiceDashboard.\n- Add dashboard layout REST + GraphQL API (list/get/create/update/delete) confirmed against layout_configurations contract, with mock-mode fallback.\n- Wire layout API into UI: fix render loop on load, add save success/error toasts, add envelope-status verdict handling to avoid silent failed-save data loss.\n- Add layout management UI: switch/new/rename/duplicate/delete/share/set-default, with URL + localStorage based layout selection.\n- Add i18n keys (TH/EN/CN) for the dashboard builder and layout management.",
+    "author": "Wisarud Techa"
+  },
+  "0.30.1": {
+    "date": "2026-07-24",
+    "segment": "PATCH",
+    "notes": "fix(cms): stop the case phone field from silently unlinking customers, and add Edit/Change/Unlink actions to the case customer panel\n- CaseCustomerInput.tsx: handleCustomerDataPhoneChange no longer clears or replaces the linked customer - once customerData.id is set the field only patches mobileNo, so typing a contact number can't drop id/name/email/photo (previously every keystroke without a cached match reset customerData to {mobileNo}) and can't silently swap in whoever else happens to own that number in the stale localStorage customer cache; the cached-list auto-match convenience is kept only while no customer is linked yet, which is what it was for. The field carries two independent facts - which customer is linked (id) and what number the caller used (mobileNo) - and this restores the separation the link/add flows already assumed\n- CaseDetailView.tsx (handleSaveChanges): customerId now falls back to sopData.data.customerId instead of null when caseState.customerData.id is unset - saving a case whose phone had been edited was PATCHing customerId:null and destroying a link that \"Link existing customer\"/\"Add customer\" had already persisted via patchUpdateCaseCustomer; there is no explicit unlink at save time, so an absent id must never be read as an intentional detach. parseInt now takes String(customerId) since the server-side value is a number\n- CaseDetailView.tsx (case-load effect): resolve the customer by sopData.data.customerId first and only fall back to matching phoneNo against listCustomerData - that list is a localStorage snapshot (customer_data), not live data, so a case whose caller phoned from a number belonging to a different cached customer loaded the wrong profile on every reload; the phone match is still used to enrich display fields when no customerId exists\n- caseApi.ts: widen patchUpdateCaseCustomer's body type to {id, customerId: number | null} so the mutation can express an unlink; the existing link/add call sites (LinkingExistingCustomer.tsx, CustomerCreate.tsx) still pass numbers and are unaffected\n- CasePanel.tsx (CustomerInfoTab): the linked-customer branch previously rendered only a read-only \"View Full Profile\" button, so a mistyped or wrongly-linked customer could only be corrected from the CRM customer pages or by abusing the case phone field. Add Edit, Change and Unlink beside it - Edit reuses the existing CustomerCreate dialog (state renamed openAddCustomerModal -> openCustomerFormModal and shared with Add; the dialog already received `customer` and CustomerCreate already branches to update mode on customer?.id, that path was simply unreachable because the dialog only ever rendered in the unlinked branch), Change opens the existing LinkingExistingCustomer dialog unchanged, and Unlink confirms via the shared ConfirmationModal then PATCHes customerId:null and clears identity locally while keeping the case's mobileNo. All three sit behind the existing hideCustomerLinkActions flag, so the scheduled-case flow (createCaseSchedule.tsx) keeps its phone-field-only behaviour. Unlink is purely local when caseWorkOrderNumber is unset (create-case, before the case exists). Note: the null customerId payload is an unverified backend contract - if /case/:id/customer (or its GraphQL counterpart UpdateCaseCustomer/CaseCustomerInput) rejects it, the existing try/catch surfaces an error toast rather than failing silently, but unlink won't persist until backend support is confirmed\n- CustomerCreate.tsx: the update branch now closes the modal and pushes the edited fields back into caseState.customerData on success, mirroring what the add branch already did - it previously only toasted, leaving the dialog open and the case holding pre-edit values, so a later case save wrote the stale customerName even though the panel showed the new one; reuses the same isCreate/existing-mobileNo guard as link/add so editing a customer profile can't overwrite the case's own phone field\n- en.json / th.json / cn.json: add common.unlink and case.panel.unlink_confirm_description in all three locales; the Edit and Change buttons reuse the existing common.edit / common.change keys\n- changelog.json / package.json: bump version 0.30.0 -> 0.30.1",
+    "author": "Wisarud Techa"
+  },
+  "0.30.0": {
+    "date": "2026-07-23",
+    "segment": "MINOR",
+    "notes": "feat(cms): add ArcGIS map-driven address & coordinate capture, and decompose the case form into composable sections\n- package.json: add @arcgis/core (v5.1.13) dependency and cross-env devDependency; raise the vite build heap via cross-env NODE_OPTIONS=--max-old-space-size=8192 (wrapping vite build specifically, so the flag survives the && after tsc -b) - @arcgis/core's 30MB+ sourcemaps OOM the default Node heap during chunk rendering; sourcemaps kept on\n- api.ts (core/config): add ARCGIS_API_KEY (from VITE_ARCGIS_API_KEY) and ARCGIS_GEOCODE_URL (defaults to the ArcGIS World Geocoding Service) to API_CONFIG; the .env.* files themselves are left untouched (key added later by ops) and the code falls back to \"\"\n- arcgisSetup.ts (new): one-time esriConfig bootstrap - sets esriConfig.apiKey from API_CONFIG and esriConfig.assetsPath to the versioned CDN (5.1, matching the installed @arcgis/core so the CDN assets line up with the bundled JS), guarded so it initialises once\n- ArcgisAddressMap.tsx (new): self-contained address picker - a Search widget (forward geocode) plus click-to-reverse-geocode via locator.locationToAddress, resolving a single {address, latitude, longitude} to onSelect; builds the MapView once, keeps latest onSelect/onError/disabled in refs to avoid rebuilds and stale closures, syncs a controlled value prop for edit mode (re-marks + goTo), reports geocode errors (still surfacing the coordinate when the address lookup fails), and destroys the view on unmount; typed against minimal local event shapes since the SDK's generated event types aren't reliably importable across majors\n- case.ts (types): add caseLat?/caseLon? (strings) to CaseDetails, mirroring the existing CreateCase/CaseEntity payload shape\n- case form location field: render the lazy-loaded map above the existing location textarea (Suspense + Loading fallback); the select handler fills location + caseLat/caseLon, a memoized mapValue feeds coordinates back for edit-mode centering, a coordinate readout renders below, and geocode failures raise a translated toast (useToastContext); the textarea stays editable as a manual fallback. Landed in caseFormFields.tsx and moved to formFields/CaseLocationSection.tsx in the same change set (see below)\n- createCase.tsx / createCaseSchedule.tsx / CaseDetailView.tsx: replace the hardcoded caseLat:\"\"/caseLon:\"\" in each of the three payload builders with caseState.caseLat/caseLon (these columns were reserved by the backend but never populated); CaseDetailView also reads caseLat/caseLon back from the loaded case into caseState so edit mode re-centers the map\n- vite.config.ts: exclude @arcgis/@esri and the packages the SDK pulls in (@amcharts, @vaadin, @zip.js, luxon, marked) from the node_modules->vendor catch-all, leaving them unassigned so Rollup places them in the async chunks created by the lazy-loaded map. An earlier attempt forced them into a dedicated \"arcgis\" manualChunk, but @arcgis/core and its runtime deps form one mutually-referencing group - splitting it across arcgis/vendor made vendor import arcgis (\"Circular chunk: arcgis -> vendor -> arcgis\") and, because vendor is eager, pulled the whole ~12.5MB SDK into index.html on every page load. With the exclusion the SDK is genuinely lazy: index.html references only index/vendor, vendor drops 4.81MB -> 4.01MB, and ~13.4MB leaves the initial bundle; Rollup's automatic fine-grained splitting also beats the single forced chunk (map entry ~1.3MB plus on-demand pieces) so only what the map uses is fetched\n- ArcgisAddressMap.tsx: readOnly mode (replaces the earlier disabled prop) - hides the Search widget and ignores map clicks so the location can't be changed, while pan/zoom and the marker stay fully usable; the old disabled prop dimmed the map and set pointer-events:none, which wrongly blocked panning too\n- ArcgisAddressMapField.tsx (new): shared wrapper used by every surface - inline map plus an expand button that opens the existing core Modal (~90vw x 85vh) containing a larger map; the modal map mounts only while open, and picking a location there flows through the same onSelect so the inline map re-syncs\n- CaseDisplay.tsx (FormFieldValueDisplay): add a showMap prop rendering a read-only map under the location text, gated on the case actually having stored coordinates so legacy cases don't show a misleading default-centred map; CaseDetailView.tsx and PreviewCaseData.tsx opt in. Case Detail view mode previously showed no map at all - it renders FormFieldValueDisplay, while the interactive map lives in CaseFormFields which only mounts when editFormData is true, so the map now stays read-only until the existing Edit button is pressed\n- en.json / th.json / cn.json: add case.display.location_coordinates, case.display.geocode_failed and case.display.map_expand in all three locales\n- formFields/ (new module, 13 files): decompose the monolithic caseFormFields.tsx into focused, independently composable sections - CasePriorityBadge, CaseDynamicForm, CaseTypeSelect, CaseSourceSelect, CaseIotFields (CaseIotDeviceInput/CaseIotDateInput/CaseWorkOrderRefInput), CaseDetailsInput, CaseAreaSelect, CaseCustomerSection, CaseLocationSection, CaseAttachmentsSection, CaseScheduleDateInput, plus the extracted useCaseTypeForm hook (case-type selection + dynamic-form fetching) and a barrel index.ts. caseFormFields.tsx drops from ~470 to 155 lines and is now a thin composition over these\n- formFields/types.ts (new): CaseFieldSectionProps ({caseState, onCaseChange}) - sections read the case and emit a Partial<CaseDetails> patch rather than owning state, so any screen can compose them regardless of how it stores the case\n- formFields/capabilities.ts (new): CaseFormCapabilities replaces the single overloaded isCreate boolean with five independent flags (lockCaseType, lockArea, showAttachments, autoFetchTypeForm, defaultIotDate) plus a capabilitiesForMode(isCreate) preset, so a screen can mix behaviours without inventing a new mode\n- formFields/CaseLocationSection.tsx (new): now owns the map integration moved out of caseFormFields.tsx - lazy ArcgisAddressMapField above the free-text address, handleMapSelect writing location + caseLat/caseLon, coordinate readout, translated geocode-failure toast, behind a showMap prop\n- caseFormOptions.ts (new): readCachedCaseTypeSubTypes/readCachedAreas/readCachedCustomers replace the inline localStorage JSON.parse calls duplicated across the case screens, adding try/catch so malformed cached JSON logs and degrades to an empty list instead of throwing during render\n- createCaseSchedule.tsx: rewritten to compose the new section components and cached-option readers instead of its own duplicated field markup\n- createCase.tsx / CaseDetailView.tsx / layout.tsx / caseHeader.tsx / CasePanel.tsx / CaseCustomerInput.tsx: follow-on updates for the new form-section API and shared option readers\n- changelog.json / package.json: bump version 0.29.1 -> 0.30.0\nNote: map currently loads ArcGIS's light theme only (widgets stay light in dark mode) - functional, follow-up for theme-matched chrome",
+    "author": "Wisarud Techa"
+  },
+  "0.29.1": {
+    "date": "2026-07-21",
+    "segment": "PATCH",
+    "notes": "feat(cms): add Top 10 Sales report to Order Report group\n- reportConfig.json: add order_2_3 entry (\"2.3 รายงานยอดขาย 10 อันดับแรก\") to the order group's second section, pointing at the CRM__2_3x Jasper report unit\n- en.json / th.json / cn.json: add the report.order.2_3 translation key backing the new report's title in all three locales",
+    "author": "Wisarud Techa"
+  },
+  "0.29.0": {
+    "date": "2026-07-21",
+    "segment": "MINOR",
+    "notes": "feat(core): add User Group Management module (CRUD, membership assignment, real backend wiring)\n- user.ts (types): add UserGroup (id/orgId/grpId/en/th/description?/active/timestamps), UserGroupCreateData/UpdateData ({active,en,th} - grpId is server-generated, matching real UserGroupInsertInput), UserGroupMember ({orgId,username,grpId,en?,th?,active} - GetUserGroupByUsername's row shape), AssignUserGroupData/AssignUserGroupBatchData ({grpId,username}/{grpId,usernames[]}), UserGroupMetrics, and UserGroupWithMembers (UserGroup & {users: string[]}) - GetUserGroupById's real response embeds member usernames directly on the group record rather than returning a separate row list\n- userApi.ts: add getUserGroup (GET /user_groups/all), createUserGroup/updateUserGroup/deleteUserGroup (POST /user_groups/add, PATCH|DELETE /user_groups/:id), getUserGroupById (GET /user_groups/:id - one call returns the group plus its member usernames, no per-user derivation needed), getUserGroupsByUsername (GET /user_with_groups/username/:username - a user's own groups), and assignUserGroup/assignUserGroupBatch/deleteAssignUserGroup (POST /user_groups/:id/users/add|batch, DELETE /user_groups/:id/users/:username) - all tagged \"UserGroup\" (new tag type in baseApi.ts) so writes correctly invalidate and refetch reads\n- userGroupQueries.ts (new): GQL_USER_GROUP mapping for all 9 REST paths to their GraphQL operations (root UserGroup), registered in gqlMapper.ts; contracts verified against real backend responses (src/core/mocks/userCURL.v2.sh) rather than assumed from convention\n- UserGroupManagement.tsx (component + page, both new): group list/metrics via EnhancedCrudContainer, create/edit/delete modal, and a Members modal (GroupMembersView, new) whose checklist is seeded from a single getUserGroupById call and saved via assignUserGroupBatch\n- UserGroupsView.tsx (new) + UserManagement.tsx: new \"Groups\" tab in the user preview - per-user group checklist seeded from getUserGroupsByUsername, saved by diffing against the original set and calling assignUserGroup (adds) / deleteAssignUserGroup (removes)\n- MetricsView.tsx: extend the accepted metrics prop union with UserGroupMetrics\n- App.tsx: add the /user-group route; SuperTopbar.tsx: add a User Management submenu entry gated by usergroup.view (not yet present in any permission catalog, so effectively system-admin-only until the backend adds it)\n- en.json / th.json / cn.json: add crud.user_group.* (list/form/action/confirm/members), navigation labels, and crud.user.list.group.*/preview.tab.header.groups keys across all three locales\n- userCURL.sh / userCURL.v2.sh: document the 9 confirmed group/membership operations; correct GetUserGroupById's REST path to /user_groups/{grpId} (no trailing /users) and record its real response shape, and GetUserGroupByUsername's real path (/user_with_groups/username/{username}, not /user_groups/username/{username})",
+    "author": "Wisarud Techa"
+  },
+  "0.28.8": {
+    "date": "2026-07-21",
+    "segment": "PATCH",
+    "notes": "fix(core): remove REST fallback from the hybrid GraphQL layer, fix Case Type/Sub Type GraphQL mapping, and add GraphQL scaffolding for the remaining live domains\n- hybridBaseQuery.ts: fixed the GraphQL-error REST-retry, which had been silently disabled (the real retry code was commented out, replaced by a no-op console.warn); iterated through an opt-in VITE_GRAPHQL_STRICT toggle before settling on the final behavior - REST is never called as a fallback anymore, whether from a missing GQL_MAP entry or a GraphQL error/errors-array response; both cases now log via console.error and return a CUSTOM_ERROR-shaped FetchBaseQueryError directly; the separate VITE_USE_GRAPHQL!==\"true\" global switch (routes everything through REST with GraphQL never attempted) is unchanged\n- caseTypeQueries.ts: rewrote GQL_CASE_TYPE/GQL_CASE_SUB_TYPE keys to match the real REST URLs in serviceApi.ts (/casetypes, /casetypes_with_subtype, /casesubtypes - no underscore, singular \"subtype\") instead of the never-matching /case_types, /case_sub_types keys, which meant this whole domain silently ran 100% REST despite the scaffolding existing; split the create mutations onto explicit /casetypes/add and /casesubtypes/add keys instead of relying on the :id wildcard incidentally capturing the literal \"add\" segment, matching the /case/add convention already used by caseQueries.ts\n- gqlMapper.ts: registered three new GQL_* mappings (GQL_DASHBOARD_LAYOUT, GQL_DEVICE_IOT, GQL_ORDER_STATUS) into GQL_MAP; added a comment documenting that GQL_ORDER_ITEM is fully shadowed by the later GQL_ORDER_WORKFLOW spread (same \"/orders\"/\"/orders/:id\" keys, later spread wins)\n- deviceIoTQueries.ts (new): GQL_DEVICE_IOT scaffold mapping GET /devices (live in CasePanel.tsx); unverified best-effort shape, no backend schema/Postman collection exists in-repo to check against\n- dashboardLayoutQueries.ts (new): GQL_DASHBOARD_LAYOUT scaffold for all 5 dashboardLayoutApi.ts endpoints, marked backend-pending since the BFF doesn't expose this domain yet (useDashboardLayouts.ts currently routes around it via a local mock store)\n- orderStatusQueries.ts (new): GQL_ORDER_STATUS scaffold mapping only GET /order_status, the one live/reachable endpoint in inventoryRequestApi.ts (used by the Workflow Editor); the file's other endpoints (/request_spare_part, /request_status) are dead/unreachable elsewhere in the app and intentionally left unmapped\n- customerSocialQueries.ts, userContactQueries.ts, permissionQueries.ts, orderItemQueries.ts: added header comments marking each as orphaned (no REST caller, or fully shadowed in orderItemQueries.ts's case) so nobody wastes time debugging why they \"don't work\"\n- .env.production / .env.sit: added VITE_USE_GRAPHQL=\"true\" plus a VITE_GRAPHQL_BASE_URL=\"\" TODO placeholder for the real SIT/Production GraphQL BFF URL - both files previously had neither, unlike .env.dev/.env.qa/.env.staging, and still point VITE_BASE_URL at a QA host pending real infra\n- CLAUDE.md: updated the \"Hybrid REST/GraphQL query layer\" section to document the final no-REST-fallback behavior, replacing the now-inaccurate \"silently falls through to plain REST - this is intentional\" note",
+    "author": "Wisarud Techa"
+  },
+  "0.28.7": {
+    "date": "2026-07-20",
+    "segment": "PATCH",
+    "notes": "feat(core): wire the Assign Area tab to the real user-area backend endpoints\n- user.ts (types): add UserArea (mirrors UserSkill, distId instead of skillId) and UserAreaUpdateData ({id, distIds}), per src/core/mocks/userAreaCURL.sh\n- userApi.ts: add getUserAreaByUsername (GET /users_with_area/username/:username) and updateUserArea (PATCH /users_with_area/:id, body {distIds}) - id confirmed by the user to be the username, matching the paired GET, so both share the same identifier as the existing Skill endpoints\n- userQueries.ts: register GetUserAreaByUsername and UpdateUserArea (root UserArea) in GQL_USER at /users_with_area/username/:id and /users_with_area/:id (PATCH), mirroring the UserSkill mappings; confirmed via gqlMapper.ts that a PATCH's :id path param is merged into the GraphQL input after the body, so it doesn't need to be duplicated in the RTK Query body\n- UserManagement.tsx (component): areaList is now seeded from a real useGetUserAreaByUsernameQuery fetch (mirrors the existing skillList/userWithSkills wiring) instead of starting empty; reuses the same shared userName state the Skills tab already tracks - AreaAssignmentContent's existing user-change detection now calls setUserName directly (more reliable than Skill's own mechanism, which only fires when the user has >=1 existing skill); handleUserAreaSave now calls the real updateUserArea mutation with toasts, replacing the no-op stub\n- AreaAssignmentView.tsx: Save button is live - disabled only while loading or no user selected, label toggles Save/Saving - replacing the permanently-disabled \"pending backend\" state\n- en.json / th.json / cn.json: restructure crud.user.list.area into an update block (title/success/error/button.save/button.saving) mirroring crud.user.list.skill.update, replacing the placeholder pending_backend copy",
+    "author": "Wisarud Techa"
+  },
+  "0.28.6": {
+    "date": "2026-07-20",
+    "segment": "PATCH",
+    "notes": "fix(core): complete User REST->GraphQL migration and fix single-record response-shape bugs\n- userQueries.ts: move CreateUser from the \"/users/:id\" POST slot to the literal \"/users/add\" key (matches src/core/mocks/userCURL.sh; the old slot silently mis-routed POST /users/activity, /users/departments and /users/stop-impersonation into CreateUser) and keep UpdateUser on \"/users/:id\" PATCH; add the single-record username/skill mappings, all keyed with a \":id\" placeholder so their GetIdInput! receives the value in input.id - \"/users/username/:id\" (GetUserByUsername), \"/users/username/ForCaseInfo/:id\" (GetUserForCaseInfo), \"/users_with_skills/username/:id\" (GetUserSkillByUsername, root UserSkill) and \"/users_with_skills_batch/add\" POST (UpdateUserSkillBatch, root UserSkill); segment counts keep the /users/username* keys disjoint from /users/:id so match order is not load-bearing\n- userApi.ts: re-enable createUser (url corrected /users -> /users/add) and updateUser (method corrected PUT -> PATCH) so both match the GraphQL mappings and the backend, typed against the dynamic form body (Record<string, unknown>) instead of the stale template UserCreateData/UserUpdateData types; updateUser now invalidates both {type:User,id} and the \"User\" list so the list refreshes after an edit; uncomment the useCreateUserMutation/useUpdateUserMutation exports\n- userApi.ts: add an ensureEnvelope<T>() helper wired as transformResponse on getUserByUserName and getUserByUserNameForCaseInfo - normalizeToApiResponse (gqlUtils.ts) unwraps a single REST record to the bare object but leaves a single GraphQL record enveloped, so consumers that read response.data.<field> (OverviewTab.tsx, OfficerDataModal.tsx, officerSkillModal.tsx) rendered \"N/A\" under REST; ensureEnvelope re-wraps the unwrapped case so .data is always present regardless of VITE_USE_GRAPHQL / REST fallback, leaving the consumers untouched\n- UserForm.tsx: migrate user create/update from a raw fetch - which bypassed the hybrid REST->GraphQL layer and its cache invalidation, and read the JWT straight from localStorage (missing sessionStorage/rememberMe=false tokens) - to useCreateUserMutation/useUpdateUserMutation, and migrate the edit/view GET-load from apiFetch to useGetUserQuery; delete the local apiFetch helper and the now-unused APP_CONFIG import; surface the server error from RTK's {data}/{message} shapes in the submit catch\n- UserForm.tsx: fix the edit/view form loading blank under GraphQL - the hydration effect spread the fetched record flat, but a single GraphQL record normalizes to an { status, msg, data, desc } envelope; unwrap one level when the payload is enveloped so every field hydrates regardless of transport\n- roleQueries.ts: change the role-permission PATCH mapping key from \"/role_permission/:id\" to the literal \"/role_permission/multi\" so the mapper stops injecting a spurious id:\"multi\" into RolePermissionMultiInput (which would break the actively-used multi-save under GraphQL) and stops mis-routing the unused per-roleId PATCH (/role_permission/:roleId) to UpdateRolePermissionMulti; the per-roleId path is left unmapped and safely falls back to REST",
+    "author": "Wisarud Techa"
+  },
+  "0.28.5": {
+    "date": "2026-07-17",
+    "segment": "PATCH",
+    "notes": "feat(core): add \"Assign Area\" tab to User Management with hierarchical Country/Province/District selection\n- UserManagement.tsx (page, src/core/pages/Admin): fetch countries/provinces/districts via useGetCountriesQuery/useGetProvincesQuery/useGetDistrictsQuery (@/cms/store/api/area), mirroring the existing pattern in src/cms/pages/Admin/AreaManagement.tsx, and pass them down to UserManagementComponent as new countries/provinces/districts props\n- UserManagement.tsx (component, src/core/components/admin/user-management/user): accept the new countries/provinces/districts props; add areaList state holding selected district distId values (the business code, chosen to mirror how UserSkill/UserWithSkillsBatchUpdateData key skills by skillId rather than the raw DB id, since a future area batch-update endpoint would likely expect the same convention); add handleAreaToggle (single-district toggle) and handleAreaCascadeToggle (a country/province click resolves all descendant district distIds via their countryId/provId and selects/deselects them as one block); add a handleUserAreaSave stub that makes no mutation call, since no user-area batch-update endpoint exists yet; add handleAreaUserChange, called by the new tab's onUserChange to clear areaList when a genuinely different user is previewed; add a new \"area\" tab to previewConfig.tabs between \"skills\" and \"auditLog\"\n- AreaAssignmentView.tsx (new): recursive Country -> Province -> District checkbox tree. Only district (leaf) selections are real - Country/Province checkboxes are derived tri-state (checked/indeterminate/unchecked) aggregates computed from their descendant districts' presence in areaList, and clicking one cascades a select-all/deselect-all instead of storing a value of its own. Detects its own userName prop changing (the preview modal supports navigating between users while open via enableNavigation) and calls onUserChange once per genuine change, rather than tying the reset to the Skills tab's own lazily-set userName state, which only updates on a skill toggle and would race with an area toggle in the same click. Intentionally does not reuse HierarchyView/HierarchyItemComponent - that pair is built for admin CRUD of the tree itself (expand/collapse plus per-node Update/Delete actions) and has no checkbox/selection concept at all (isSelected exists but nothing ever sets it); reimplements a small tree renderer instead, styled after SkillsMatrixView's button-as-checkbox visuals (CheckLineIcon for checked, lucide-react's Minus for indeterminate). Save button is always disabled with translated helper text explaining it's pending backend support\n- en.json / th.json / cn.json: add crud.user.list.preview.tab.header.area tab label and a crud.user.list.area block (title/pending_backend/button.save) mirroring the existing crud.user.list.skill block",
+    "author": "Wisarud Techa"
+  },
+  "0.28.4": {
+    "date": "2026-07-17",
+    "segment": "PATCH",
+    "notes": "fix(core): route UserAuditLog through the hybrid RTK Query layer instead of a raw fetch\n- UserAuditLog.tsx: replace the hand-rolled fetch(`${APP_CONFIG.API_BASE_URL}/audit_log/${username}`) with the already-existing useGetAuditLogsByUsernameQuery hook - createHybridBaseQuery only intercepts RTK Query requests, so a raw fetch is invisible to the REST->GraphQL switch and this panel was the one screen still issuing REST GETs while .env/.env.dev/.env.qa/.env.staging already set VITE_USE_GRAPHQL=\"true\" (no error, it just silently ran on a different transport than the rest of the app); the endpoint and its GraphQL mapping already existed (auditApi.ts + auditQueries.ts \"/audit_log/:username\" -> GetAuditLogsByUsername, registered in GQL_MAP), and Admin/AuditLog.tsx already consumed them, so this is a deletion rather than new code\n- UserAuditLog.tsx: fix an infinite spinner - loading was useState(true) while the fetch effect early-returned on a falsy username, so nothing ever cleared it; the hook's skip: !username leaves both isLoading/isFetching false and renders the empty state instead (reachable from UserManagement.tsx, which passes userItem.username unguarded)\n- UserAuditLog.tsx: fix auth reading localStorage.getItem(\"access_token\") directly, which threw \"Access token not found\" whenever TokenManager had stored the token in sessionStorage (rememberMe=false) and ignored its decrypt(); the shared base query resolves the token from Redux auth state with a TokenManager fallback\n- UserAuditLog.tsx: drop the manual JSON-parse loop (duplicated auditApi.ts's processAuditLog via transformResponse) and the result.status !== \"0\" envelope check - the only such string-compare in src, not portable to the GraphQL path since normalizeToApiResponse passes status through untouched and never surfaces it as an RTK error; RTK Query now also supplies stale-response handling, which the old code lacked entirely (switching users quickly could render the wrong user's logs)\n- UserAuditLog.tsx: add a typed getQueryErrorMessage(FetchBaseQueryError | SerializedError) helper rather than copying Admin/AuditLog.tsx's `as any`; derive logs/loading/error from the hook instead of mirroring them into state (Admin's useState + sync effects exist only because it juggles two endpoints)\n- UserAuditLog.tsx: hoist the audit status codes into a single AUDIT_STATUS constant now read by both getStatusBadge and the status dropdown, which previously duplicated the 0/1/2 literals and could drift apart (note Admin/AuditLog.tsx still maps 0/-1/-2 for the same endpoint - one of the two is wrong; left as-is pending backend confirmation)\n- UserAuditLog.tsx: add the null guards the admin page already has - optional-chaining on username/txId/message in the search filter (Admin/AuditLog.tsx:265-269 does the same, evidence real rows carry nulls), plus message ?? \"\" and (duration ?? 0).toFixed(2), which previously threw on null\n- UserAuditLog.tsx: fix a permanently stuck toast - showToast set show:true and nothing ever set it false (toastTimeoutRef only delayed showing), and the inline div had no auto-dismiss or close button, so the toast sat on screen until unmount; swapped it for the shared core/components/toast/Toast component (duration + onClose, already used by Admin/AuditLog.tsx) and re-homed the success toast into an effect keyed on the settled query\n- auditApi.ts: moved src/cms/store/api -> src/core/store/api and repointed its ApiResponse import to @/core/types - audit is core-domain, its GraphQL half already lived in core/store/api/graphql/auditQueries.ts, and both consumers are core components, so importing from @/cms would have extended the core->cms tangle rather than worked around it; still injects into the same core baseApi, so store wiring is unchanged\n- auditApi.ts: replace processAuditLog's `log: any` with the new RawAuditLog type, which surfaced two defects the any had masked - the '{}' branch returned the literal string \"{}\" instead of an object (harmless in render, but the declared Record type was a lie, and JSON.parse's any return re-hid it through the ternary), and the non-array fallback returned RawAuditLog[] as AuditLog[]; extracted the three duplicated parse ternaries into a typed parseJsonField helper and made the fallback preserve the envelope with data: undefined\n- audit.ts (types): add RawAuditLog for the wire shape - the API sends newData/oldData/resData as JSON strings, so AuditLog's Record<string, unknown> only describes them after processAuditLog runs; AuditLog itself is unchanged\n- Admin/AuditLog.tsx: update the auditApi import path to @/core/store/api/auditApi (no behavioral change; its pre-existing `as any` at the error derivation and ref-cleanup lint warning are left alone as out of scope)",
+    "author": "Wisarud Techa"
+  },
+  "0.28.3": {
+    "date": "2026-07-16",
+    "segment": "PATCH",
+    "notes": "feat(cms): map remaining Unit/Company/Source/Type MDM REST endpoints to GraphQL\n- mdmQueries.ts: add GET_LIST_MDM_UNIT_QUERY, GET_MDM_UNIT_BY_ID_QUERY, CREATE_MDM_UNIT_MUTATION, UPDATE_MDM_UNIT_MUTATION, DELETE_MDM_UNIT_MUTATION, GET_LIST_MDM_COMPANY_QUERY, GET_LIST_MDM_SOURCE_QUERY, and GET_LIST_MDM_TYPE_QUERY, with operationName/root/inputType values taken verbatim from src/cms/mocks/mdmCURL.sh (including the backend's MmdUnitInput typo, preserved rather than corrected) - register them in GQL_MDM against /mdm/units, /mdm/units/add, /mdm/units/:id (GET/PATCH/DELETE), /mdm/companies, /mdm/sources, and /mdm/types, completing unitApi.ts's REST->GraphQL coverage (getProperties/getUnitStatuses were already mapped); unitApi.ts itself is unchanged since the hybrid REST/GraphQL query layer (hybridBaseQuery.ts) auto-converts any matching REST call - intentionally left out the Create/Update/Delete mutations for Company/Source/Type/Property/Status that mdmCURL.sh documents but unitApi.ts never calls",
+    "author": "Wisarud Techa"
+  },
+  "0.28.2": {
+    "date": "2026-07-16",
+    "segment": "PATCH",
+    "notes": "fix(cms): preserve formType when importing a dynamic form via CustomerFormConfig\n- importDynamicFormModal.tsx: keep the current form's formType (instead of taking it from the imported JSON file) when merging an imported form into currentForm, alongside the already-preserved formName/formId - importing a file into a customer-type form (opened from CustomerFormConfig.tsx with defaultInsertType=\"customer\") was silently overwriting formType with whatever value (or none) the imported JSON carried, so the subsequent update payload no longer sent formType=\"customer\" and the form dropped out of the customer forms listing, which only shows forms with formType=\"customer\"",
+    "author": "Wisarud Techa"
+  },
+  "0.28.1": {
+    "date": "2026-07-16",
+    "segment": "PATCH",
+    "notes": "feat(cms): make Report page config-driven, add Order Report group, and wire topbar navigation\n- report.ts (types, new): add ReportItem/ReportSection/ReportGroup interfaces backing the report catalogue\n- reportConfix.json -> reportConfig.json: fix the filename typo and restructure the flat section list into ReportGroup[] (id/title/sections) with a stable id on every group/section/item, so React keys no longer depend on regenerating uuid() on every render; group the existing two sections under a new \"case\" group and add a new \"order\" group with 2 sections / 5 report links (order summary, order detail) pointing at the corresponding Jasper flows\n- ReportComponet.tsx: render report groups as a heading + section tables, type the config against ReportGroup[], key groups/sections/rows by their stable id instead of v4(), add an empty-state row per section, smooth-scroll to a group via a #report-group-<id> hash (useLocation), pass the active language into openJasperReport, and drop unused React.FC typing\n- Report.tsx: fix a copy-pasted PageMeta title/description (was \"React.js Workflow Management\") to describe the Report page, drop React.FC\n- openReport.ts: derive the Jasper userLocale from the active app language (th_TH/en_US/zh_CN) instead of a hardcoded en_US, move the OWASP_CSRFTOKEN literal and userTimezone to VITE_JASPER_CSRF_TOKEN/VITE_JASPER_TIMEZONE env vars, and extract the post-login redirect delay into a named constant\n- .env / .env.dev / .env.qa / .env.sit / .env.staging / .env.production: add VITE_JASPER_CSRF_TOKEN and VITE_JASPER_TIMEZONE, carrying over the existing literal values so runtime behavior is unchanged\n- SuperTopbar.tsx: turn the flat \"Report\" more-menu entry into a group with two sub-items, \"Case Report\" and \"Order Report\", each deep-linking to /cms/report with a hash that scrolls to the matching group\n- en.json / th.json / cn.json: add report.group.*/report.order.* translation keys and the topbar's report.sub_menu.case/order keys; also backfill cn.json's entire report.* block, which was missing outright (Chinese users previously saw raw report.1 etc. keys)",
+    "author": "Wisarud Techa"
+  },
+  "0.28.0": {
+    "date": "2026-07-15",
+    "segment": "MINOR",
+    "notes": "feat(cms): implement full CRUD hierarchy view for Area Management (Country/Province/District)\n- area.ts (types): add CountryCreateData/UpdateData, AreaProvinceCreateData/UpdateData, AreaDistrictCreateData/UpdateData, and dedicated list-item interfaces (Country, AreaProvince, AreaDistrict, each carrying a real per-level numeric id), plus AreaManagementProps\n- area.ts (store/api): add createCountry/updateCountry/deleteCountry, createProvince/updateProvince/deleteProvince, createDistrict/updateDistrict/deleteDistrict mutations, and getCountries/getProvinces/getDistricts list queries (GET /area/countries|provinces|districts) replacing the single merged /area/country_province_districts fetch for this feature - getArea/Area/mergeArea are left untouched for their existing unrelated consumers (UnitForm.tsx, CaseHistory.tsx)\n- areaQueries.ts (graphql): map the 9 new mutations (CreateCountry/UpdateCountry/DeleteCountry, etc.) and the 3 new list queries (GetCountryLists, GetProvinceLists, GetDistrictLists_) into GQL_AREA for the hybrid REST/GraphQL query layer\n- AreaManagement.tsx (page): fetch countries/provinces/districts as three separate lists instead of the merged endpoint, and gate the page behind the new area.view permission (was settings.view)\n- AreaManagement.tsx (component): add full CRUD - create/update/delete handlers and validation per level, cascading Country/Province selects, toolbar create button, and toast notifications, mirroring the existing Organization/Service CRUD pattern\n- AreaHierarchyView.tsx: wire real Update/Delete actions and an add-child affordance per level (previously read-only, actions: []); build the tree directly from the three per-level lists using each record's own real numeric id (instead of reusing business codes as a stand-in id); namespace every tree id by level (country:/province:/district:) since Country/Province/District ids come from independent DB sequences and can collide across levels, which would otherwise corrupt child counts and expand/collapse behavior in the shared HierarchyView component\n- en.json / th.json / cn.json: add the crud.area form/confirm/action/list-header translation keys needed for the new create/update/delete flows",
+    "author": "Wisarud Techa"
+  },
+  "0.27.28": {
+    "date": "2026-07-15",
+    "segment": "PATCH",
+    "notes": "refactor(cms): lock product dashboard to v3 and document dormant WebSocket fields\n- ProductDashboard.tsx: hide the internal v1/v2/v3 version-switcher and \"Export Report\" button from the UI (commented out, version state hardcoded to 3), while keeping ProductDashboardV1/V2 still wired in code as a fallback/rollback path rather than deleting them\n- ProductDashboard.tsx: document why ORDER_SUMMARY/ORDER_PERIODS/ORDER_INSIGHT are still captured via the WebSocket onMessage handler but never surfaced in a card - metricsCards now derives all its values/growth from DASHBOARD_GROWTH instead, and no backend message currently carries recent-service-activity data for the (already commented-out) Recent Services card",
+    "author": "Wisarud Techa"
+  },
+  "0.27.27": {
+    "date": "2026-07-15",
+    "segment": "PATCH",
+    "notes": "feat(cms): wire Jasper Report SSO config and report catalogue into the Report page\n- .env / .env.dev / .env.staging: configure the Jasper Report Server connection variables (VITE_JASPER_URL, VITE_JASPER_USERNAME, VITE_JASPER_PASSWORD) consumed by openReport.ts's SSO login flow and ReportComponet.tsx's report links (VITE_MOCK_API unchanged in these files)\n- reportConfix.json: define the report catalogue as two grouped sections (report.1 case-summary reports, report.2 case-detail reports), each with 4 entries pointing at Jasper's viewReportFlow flow with the target reportUnit path and Thai folder names URL-encoded\n- ReportComponet.tsx: render the catalogue as a titled table per group, translating section/item titles via t(), and open the matching Jasper report (VITE_JASPER_URL + item.url) in a popup window on row click via openJasperReport",
+    "author": "Wisarud Techa"
+  },
+  "0.27.26": {
+    "date": "2026-07-14",
+    "segment": "PATCH",
+    "notes": "feat(core): add system-role protection to privilege matrix, refactor user form inputs, and extend dashboard/websocket type support\n- PrivilegeMatrixView.tsx: lock permission toggles for the system role (SYSTEM_ROLE) when the current user isn't a system admin (via useIsSystemAdmin), collapse the permission table into a single-expand accordion grouped by permission group name, and size the scroll container against viewport height with sticky header/first-column\n- UserForm.tsx: replace native <select> elements with the shared Select component for department/command/station/role/title/gender/blood fields, lock username/email to create-only and empId to system-admin-only after creation, restrict the date-of-birth field to the calendar picker only (typing/pasting blocked), and keep formatted mobile-number/citizen-ID display in sync with the underlying digit-only form state\n- role.ts: back the privilege matrix and role management screens with Permission/Role/RolePermission/RoleAnalytics/RoleHierarchy/RoleMetrics/LoadingStates type definitions\n- roleQueries.ts: map /role, /role/:id, /role_permission, and /role_permission/:id REST paths to their GraphQL operations (GetListRole, GetRoleById, CreateRole, UpdateRole, DeleteRole, GetListRolePermission, UpdateRolePermissionMulti) for the hybrid REST/GraphQL query layer\n- dashboard.ts (types): extend WidgetType with CMS-specific widgets (case-status, sla-monitor, case-assignment, workflow-status, circular-progress, area-chart, world-map) and add rowHeight/header/background styling fields to WidgetConfig, DashboardWidget, and DashboardLayout\n- utils/dashboard.ts: add findKeyDeep/findKeyInArray recursive helpers for pulling values out of arbitrarily nested dashboard JSON payloads\n- websocket.tsx: handle CASE-CREATE/CASE-UPDATE/CASE-STATUS-UPDATE events by refreshing/patching the cached case list in IndexedDB (normalizing status S013 to S001) and re-dispatching a storage event so open case lists refresh live without a full refetch",
+    "author": "Wisarud Techa"
+  },
+  "0.27.25": {
+    "date": "2026-07-13",
+    "segment": "PATCH",
+    "notes": "fix(cms): fix case-panel customer search by phone and case-create phone-field ownership\n- CasePanel.tsx: restore the customerDataByPhone lookup to query by the case's typed/stored phone number (useGetCustommerByPhoneNoQuery) instead of the case's already-linked customerId (useGetCustomerByIdQuery), which had silently disabled all phone-based customer search and left an existing case's customer resolvable only when its stored phone number happened to already validate\n- CaseDetailView.tsx: fix initial customerData derivation to match the case's real phone number (sopData.data.phoneNo) instead of the always-undefined initialCaseData.phoneNo, and seed customerData.id from sopData.data.customerId so an already-linked customer resolves on opening a case even without a local cache hit\n- CasePanel.tsx / createCase/layout.tsx / LinkingExistingCustomer.tsx / CustomerCreate.tsx: thread an isCreate flag through the customer side panel so linking an existing customer or adding a new one while creating a case never overwrites the case's own phone number field (blank or already filled) - the field stays fully user-driven during case creation, with typing into it still triggering a live phone-based customer search",
+    "author": "Wisarud Techa"
+  },
+  "0.27.24": {
+    "date": "2026-07-10",
+    "segment": "PATCH",
+    "notes": "fix(cms): rework product dashboard metrics/modules to be data-driven and add i18n\n- ProductDashboard.tsx: fix DASHBOARD_GROWTH field mapping (byProducts/byParts/byMain/byQuantity -> the real product/sparePart/ordering/pending keys with .main.growthRate), which had been silently falling back to \"0%\" on every growth badge, and wire the Ordering/Pending cards to their real growth data instead of a mismatched proxy and a hardcoded \"0%\"\n- ProductDashboard.tsx: fix DASHBOARD_SUMMARY_ALL key mismatch (products/parts -> the real productStock/sparePartStock) that was rendering Product/Spare Part stock counts as 0 on both the metrics row and Module Overview\n- ProductDashboard.tsx: rework metricsCards and modules from hardcoded 4-item arrays into dynamic Object.entries(...)-driven lists so new backend keys appear automatically, each with a key-to-icon lookup (getMetricIcon/getModuleIcon) that falls back to keyword matching then a generic icon, and a fixed sort order (metricOrder/moduleOrder) so card order stays Product/Spare Part/Ordering/Pending and Product Stock/Spare Part Stock/Customers/Appointments regardless of JSON key order\n- ProductDashboard.tsx: fix Revenue donut showing a misleading highlighted dark-blue arc when revenue is 0/null/empty; now renders a plain uniform ring in that case\n- ProductDashboard.tsx: fix inverted-severity bug in the Inventory Alert \"parts below minimum stock\" badge - it used getStockStatus (designed for a single item's stock quantity, where more = healthier = green) on a count of already-flagged low-stock parts (where more = worse), showing a reassuring green badge with 11 flagged parts; switched to getRequestStatus, which has the correct more-is-worse polarity, matching the approval-requests badge next to it\n- ProductDashboard.tsx: add full i18n support - reintroduce t() from useTranslation, replace all static strings with translation keys, and add a translateOrHumanize helper so the now-dynamic metric/module card titles translate when a key is known and gracefully humanize the raw key when it isn't yet\n- en.json / th.json / cn.json: add a new productDashboard translation namespace (header, metrics, moduleOverview, topOrdered, inventoryAlert, revenue) with real Thai/Chinese copy",
+    "author": "Wisarud Techa"
+  },
+  "0.27.23": {
+    "date": "2026-07-10",
+    "segment": "PATCH",
+    "notes": "fix(cms): resolve QA-reported defects in spare parts, product stock, custom form, case creation, and customer forms\n- Form.tsx (crm): reset file-upload preview state when the Create/Edit modal opens, fixing a stale image preview carried over from a prior submission (shared by Spare Parts, Product, Product Stock, Inventory Stock, and Service forms)\n- productHelper.ts: fix off-by-one in getStockStatus so a quantity equal to LOW_STOCK_THRESHOLD (5) shows \"Low Stock\" instead of \"In Stock\"\n- DynamicForm.tsx: require a non-empty Form Name before saving a custom form; move that check and the existing \"no fields\" check ahead of the save try/finally so a validation failure no longer triggers the caller's modal-close callback and hide the error toast before it can be seen\n- SearchSelectInput.tsx: add an optional selectedLabelFallback prop to SearchableSelectApi so a freshly created/imported option shows its known label instead of falling back to its raw id when it isn't yet present in the fetched options page\n- CustomerFormConfig.tsx: pass the known form name as selectedLabelFallback to the specific-form picker, fixing the form id showing in place of the form name after create/import\n- createCase.tsx: switch from a page-local toast hook to the global toast context so the post-create success toast survives navigation to the Case Detail page instead of disappearing with the unmounted Create Case view\n- CustomerCreate.tsx: fix mobile-number validation firing both \"required\" and \"invalid format\" errors for an empty field; add the missing inline/toast validation for invalid email format\n- ProductStock.tsx: fix create/update success detection incorrectly treating the backend's \"-1\" error sentinel as success, which showed a green toast for duplicate/overlong Serial No. errors\n- en.json / th.json: add input.invalidEmailError (en) and dynamicForm.toasts.noFormName (en, th) translation keys",
+    "author": "Wisarud Techa"
+  },
+  "0.27.22": {
+    "date": "2026-07-09",
+    "segment": "PATCH",
+    "notes": "feat(crm): add product stock management view\nAdd ProductStock component wiring the product stock (serial number) CRUD flow into the shared crm View/Form components — list with filters (product, store), create/update/delete via productStockApi, and localized column rendering for product/store names, dates, and status.",
+    "author": "Wisarud Techa"
+  },
+  "0.27.21": {
+    "date": "2026-07-09",
+    "segment": "PATCH",
+    "notes": "fix(cms): fix case-customer linking bugs and hide link/add actions in scheduled case creation\n- CaseCustomerInput: clear stale linked-customer id/name/email/photo when the phone number is retyped and no longer matches, so retyping correctly redoes the phone-based match instead of staying pinned to the old customer\n- LinkingExistingCustomer: make handleOnLink async and move the case-customer PATCH out of the setCaseState updater (was double-firing under StrictMode), add try/catch + error toast, and guard against double-clicking select\n- CasePanel: pass caseWorkOrderNumber into the \"add customer\" dialog so a newly added customer persists to the case immediately, and add a hideCustomerLinkActions flag so the Link/Add buttons can be suppressed while keeping the rest of the customer panel\n- createCase/layout.tsx: thread hideCustomerLinkActions through to CasePanel\n- createCase/createCaseSchedule.tsx: hide the Link existing/Add customer buttons for the schedule/appointment-based case-creation flow, since its customer is already resolved via phone-number match and it never wires setCaseState into the panel anyway",
+    "author": "Wisarud Techa"
+  },
+  "0.27.20": {
+    "date": "2026-07-08",
+    "segment": "PATCH",
+    "notes": "fix(cms): correct product dashboard real-time data mapping and add loading states\n- Wire up previously-discarded WebSocket state (ORDER_TOP, DASHBOARD_REVENUE, ORDER_INSIGHT, ORDER_PERIODS) that was being thrown away via blank-slot destructuring\n- Fix ORDER_TOPTEN -> ORDER_TOP message type mismatch that silently dropped all Top Ordered data\n- Correct field mappings against confirmed real payloads: ORDER_TOP (byParts/partMeta/quantity), DASHBOARD_REVENUE (summary.actual, items[].percentRate), DASHBOARD_SUMMARY_ALL (totalActive, not total/stock), and ORDER_SUMMARY (.all.new/.pending, not the nonexistent .parts)\n- Fix Inventory Alert badge color bug: read .variant instead of .color, since getRequestStatus/getStockStatus's .color values don't exist in Badge's color union\n- Fix Tailwind dynamic-class-name purge bug in Inventory Alert card by rendering Badge directly instead of manually-interpolated classes\n- Remove dead/commented-out code and minor bugs (localStorage||sessionStorage dead fallback, unnecessary await)\n- Add per-section skeleton loading states (Metrics, Module Overview, Top Ordered, Inventory Alert, Revenue) using the existing Skeleton primitive",
+    "author": "Wisarud Techa"
+  },
+  "0.27.19": {
+    "date": "2026-07-07",
+    "segment": "PATCH",
+    "notes": "fix(cms): correct GraphQL stock inputs and inventory serial-number bug\n- inventoryStockQueries: give update its own input type (UpdateSparepartStockInput!) and fix delete's composite-key inputType to the actual GetIdInput_2! (corrects an earlier guessed type name)\n- InventoryStock: fix update call using the stale serial number to look up the record instead of the one just edited\n- inventoryQueries: fix spare-part update mutation method (PATCH -> PUT) to match the real REST verb\n- hybridBaseQuery: disable REST fallback on GraphQL failure, log a warning instead (verify this is intentional before shipping)\n- PreviewCaseData: clean up redundant whitespace in a className",
+    "author": "Wisarud Techa"
+  },
+  "0.27.18": {
+    "date": "2026-07-06",
+    "segment": "PATCH",
+    "notes": "fix(cms): fix GraphQL routing gaps for stock/form mutations, polish form inputs\n- Wire product/spare-part stock deletes into GraphQL: fix REST call shape (query params, not path segments) and loosen the mapper's DELETE guard to accept composite keys instead of requiring a literal 'id'\n- Split '/forms' into a per-method map so CreateForms (POST) routes through GraphQL instead of always falling back to REST\n- CustomizableSelect: stop a stray effect from resetting filtered results, add a clear-selection button, autofocus search on open\n- datetime-local inputs now open their picker on click anywhere, not just the calendar icon",
+    "author": "Wisarud Techa"
+  },
+  "0.27.17": {
+    "date": "2026-07-03",
+    "segment": "PATCH",
+    "notes": "fix(core,cms): route GraphQL uploads and comment mutations through correct operations\n- fix hybridBaseQuery/gqlMapper FormData handling so File values survive REST->GQL variable mapping instead of spreading to {}\n- add GraphQL multipart request support (operations/map/file parts + apollo-require-preflight) for endpoints whose variables carry a File\n- expand attachmentQueries operationNameByPathParam map so close, profile, and dynamicForm upload paths route to UploadFileCMS instead of silently defaulting to UploadFileCRM\n- warn in dev when a path param has no explicit operationName mapping, so future unmapped paths don't fail silently like \"close\" did\n- fix gqlMapper matchUrl to select by URL shape AND HTTP method, so same-shape/different-method entries (e.g. GET /orders/:id/comments vs POST /orders/:orderId/comments) stop shadowing each other\n- clean up stale commented-out mapping in orderCommentQueries",
+    "author": "Wisarud Techa"
+  },
+  "0.27.16": {
+    "date": "2026-07-02",
+    "segment": "PATCH",
+    "notes": "feat(cms): add appointment next-stage GraphQL mutation mapping\n- add PATCH_APPOINTMENT_MUTATION (AppointmentNextStage) using GetIdInput\n- map /appointment/next_stage/:id (PATCH) to the new mutation in GQL_APPOINTMENT",
+    "author": "Wisarud Techa"
+  },
+  "0.27.15": {
+    "date": "2026-07-02",
+    "segment": "PATCH",
+    "notes": "fix(core,cms): route auth refresh and case lookup through GraphQL hybrid mapping\n- switch AuthService.refreshToken to dispatch the authApi RTK mutation instead of httpClient, resolving through GQL_AUTH's AUTH_REFRESH_MUTATION\n- remove redundant caseId query param in getCaseByIdMutation causing GetIdInput GraphQL errors\n- add case-by-caseId GraphQL query mapping in caseQueries\n- extend appointment GraphQL queries with status-count-by-id mapping and per-method configs\n- extend order workflow GraphQL queries with cancel-order mapping and per-method configs",
+    "author": "Wisarud Techa"
+  },
+  "0.27.14": {
+    "date": "2026-07-01",
+    "segment": "PATCH",
+    "notes": "feat(core): add GraphQL multipart file upload support\n- map /upload/:path to Attachment.UploadFileCRM (UploadFileCMS for path=case)\n- fix FormData bodies being spread as {} in the REST->GQL input mapper\n- send multipart/form-data + apollo-require-preflight when variables hold a File\n- normalize upload response envelope to match existing GraphQL response shape",
+    "author": "Wisarud Techa"
+  },
+  "0.27.13": {
+    "date": "2026-06-30",
+    "segment": "PATCH",
+    "notes": "feat(cms): improve workflow management and product dashboard integration\n- update workflow list and editor pages with refreshed UI/data handling\n- refine workflow API and GraphQL workflow query support\n- update workflow type definitions for new workflow behavior\n- enhance service management admin page\n- refresh product dashboard integration with latest workflow changes",
+    "author": "Wisarud Techa"
+  },
+  "0.27.12": {
+    "date": "2026-06-29",
+    "segment": "PATCH",
+    "notes": "feat(cms): enhance CRM workflows, customer creation, and GraphQL integration\n- update inventory request flow components and cart drawer\n- refine CRM view and order workflow/order item handling\n- improve customer creation and customer query support\n- extend GraphQL mappings and utility helpers for files, workflows, and notifications\n- update admin service management and related types",
+    "author": "Wisarud Techa"
+  },
+  "0.27.11": {
+    "date": "2026-06-26",
+    "segment": "PATCH",
+    "notes": "feat(cms): enhance case/customer management, and improve GraphQL support\n- enhance customer view and customer-product API/GraphQL integration\n- improve CRM views for inventory and product stock display\n- refine case creation and form field components\n- update case and form API endpoints for better data handling",
+    "author": "Wisarud Techa"
+  },
+  "0.27.10": {
+    "date": "2026-06-25",
+    "segment": "PATCH",
+    "notes": "feat(cms): improve CRM inventory/product workflows and customer components\n- enhance inventory request component and product dashboard UI\n- update GraphQL query definitions for order workflow, inventory stock, product stock, and customer-product operations\n- refine customer component and preview behavior\n- update product helper logic and dispatch type definitions",
+    "author": "Wisarud Techa"
+  },
+  "0.27.9": {
+    "date": "2026-06-24",
+    "segment": "PATCH",
+    "notes": "feat(cms): add customer creation flow and improve toast notification system\n- Implement CustomerCreate component updates for new customer form handling, validation, file upload, and address state\n- Add global toast lifecycle events in ToastGlobal for case loading, success, error, and progress\n- Improve toast rendering and type styling in ToastContainer with dynamic icons and close button handling\n- Add standalone Toast component with timed progress bar support",
+    "author": "Wisarud Techa"
+  },
+  "0.27.8": {
+    "date": "2026-06-24",
+    "segment": "PATCH",
+    "notes": "feat(cms): enhance customer/product stock GraphQL support and appointment integration\n- Update customer view component to better integrate customer data and related appointment flows\n- Refine appointment API endpoints and mutation/query support\n- Add/adjust GraphQL mappings for customer-product operations\n- Fix product stock GraphQL schema paths and payload definitions",
+    "author": "Wisarud Techa"
+  },
+  "0.27.7": {
+    "date": "2026-06-23",
+    "segment": "PATCH",
+    "notes": "feat(cms): enhance CRM inventory/product stock, customer views, and appointment GraphQL flows\n- Update CRM inventory and product stock components with improved data display and type support\n- Refine customer view and form configuration for better customer UI/data handling\n- Adjust appointment API logic and GraphQL queries for appointments, appointment types, and forms\n- Enhance core gqlMapper utility to support updated GraphQL response shapes",
+    "author": "Wisarud Techa"
+  },
+  "0.27.6": {
+    "date": "2026-06-22",
+    "segment": "PATCH",
+    "notes": "feat: enhance customer management, appointments, and admin configuration\n- Add/update customer API and form handling (custommerApi, customerFormQueries, CustomerFormConfig, CustomerCreate)\n- Improve appointment card component and display\n- Enhance admin system configuration for skills and services\n- Optimize GraphQL queries (mdmQueries, caseResultQueries, customerFormQueries)\n- Update core GraphQL mapper utilities\n- Add report export modal functionality for CRM products\n- Update environment and dependencies",
+    "author": "Wisarud Techa"
+  },
+  "0.27.5": {
+    "date": "2026-06-19",
+    "segment": "PATCH",
+    "notes": "refactor(cms): enhance product form and inventory form with improved validation and error handling\n- Add additional validation rules for product form fields\n- Enhance inventory form to handle edge cases and improve user feedback\n- Implement better error handling and display for form submission failures",
+    "author": "Wisarud Techa"
+  },
+  "0.27.4": {
+    "date": "2026-06-19",
+    "segment": "PATCH",
+    "notes": "refactor(cms): enhance service dashboard with monthly and daily views\n- Add monthly and daily view options to service dashboard for better data visualization\n- Optimize query performance and response handling for improved dashboard responsiveness\n- Enhance UI components to accommodate new view options and provide a seamless user experience",
+    "author": "Wisarud Techa"
+  },
+  "0.27.3": {
+    "date": "2026-06-18",
+    "segment": "PATCH",
+    "notes": "refactor(crm): enhance inventory stock management, product data integration, and localization support\n- Refined inventory stock and product stock type definitions to improve data consistency and maintainability\n- Enhanced Product Stock and Inventory Stock UI components for better stock visibility and user interaction\n- Updated GraphQL product queries to support improved product data retrieval and synchronization\n- Optimized GraphQL inventory queries to ensure accurate inventory stock data handling\n- Added and updated English and Thai localization resources to support new inventory and product stock features\n- Improved overall CRM inventory management workflow by aligning frontend components, data models, and multilingual support",
+    "author": "Wisarud Techa"
+  },
+  "0.27.2": {
+    "date": "2026-06-17",
+    "segment": "PATCH",
+    "notes": "fix(crm): fix validation and required field handling in CRM forms\n- Ensure proper validation of required fields across different input types\n- Fix issue with required attribute not being applied to form fields",
+    "author": "Wisarud Techa"
+  },
+  "0.27.1": {
+    "date": "2026-06-17",
+    "segment": "PATCH",
+    "notes": "fix(core): fix GraphQL query parsing and response handling in cms gql api\n- Fix issue with parsing query string in GraphQL mapper for both queries and mutations\n- Ensure proper handling of query parameters and pagination data in transformResponse",
+    "author": "Wisarud Techa"
+  },
+  "0.27.0": {
+    "date": "2026-06-16",
+    "segment": "MINOR",
+    "notes": "refactor(cms): implement product dashboard real-time updates with WebSocket integration\n- Establish WebSocket connection to receive real-time updates for product dashboard\n- Handle incoming messages to update dashboard data dynamically\n- Ensure proper parsing and handling of message payloads\n- Add error handling and reconnection logic for WebSocket connection\n- Prepare for future expansion of real-time features across CMS module",
+    "author": "Wisarud Techa"
+  },
+  "0.26.6": {
+    "date": "2026-06-16",
+    "segment": "PATCH",
+    "notes": "refactor(core): env file update for dev (stg)\n- Update CRM API endpoint URL in .env.dev",
+    "author": "Wisarud Techa"
+  },
+  "0.26.5": {
+    "date": "2026-06-15",
+    "segment": "PATCH",
+    "notes": "fix(cms): fix customer appointment form\n- Fix issue with customer appointment form not loading data correctly\n- Ensure proper handling of form state and data fetching\n- Add test cases to verify correct form behavior and data display",
+    "author": "Wisarud Techa"
+  },
+  "0.26.4": {
+    "date": "2026-06-15",
+    "segment": "PATCH",
+    "notes": "fix(cms): fix customer profile form\n- Fix issue with customer profile form not loading data correctly\n- Ensure proper handling of form state and data fetching\n- Add test cases to verify correct form behavior and data display",
+    "author": "Wisarud Techa"
+  },
+  "0.26.3": {
+    "date": "2026-06-12",
+    "segment": "PATCH",
+    "notes": "fix(cms): fix graphql query parsing and response handling in cms gql api\n- Fix issue with parsing query string in GraphQL mapper for both queries and mutations\n- Ensure proper handling of query parameters and pagination data in transformResponse\n- Add test cases to cover various input scenarios and response structures",
+    "author": "Wisarud Techa"
+  },
+  "0.26.2": {
+    "date": "2026-06-11",
+    "segment": "PATCH",
+    "notes": "fix(cms): fix graphql query parsing and response handling in cms gql api\n- Fix issue with parsing query string in GraphQL mapper for both queries and mutations\n- Ensure proper handling of query parameters and pagination data in transformResponse\n- Add test cases to cover various input scenarios and response structures",
+    "author": "Wisarud Techa"
+  },
+  "0.26.1": {
+    "date": "2026-06-09",
+    "segment": "PATCH",
+    "notes": "fix(cms): optimize TailwindCSS styling consistency and strengthen TypeScript type safety\n- Enhanced TailwindCSS implementation for improved UI consistency and maintainability\n- Refined component styling structure to increase responsiveness and visual reliability\n- Fixed TypeScript variable type definitions to improve type safety and code stability\n- Reduced potential runtime issues through stricter type validation\n- Improved code quality, readability, and long-term maintainability\n- Supported overall application performance and development efficiency",
+    "author": "Wisarud Techa"
+  },
+  "0.26.0": {
+    "date": "2026-06-09",
+    "segment": "MINOR",
+    "notes": "refactor(cms): implement REST-to-GraphQL migration analysis and generate missing GraphQL mappings for validated endpoints\n- Analyzed endpoint inventory against migration source files and GraphQL mapping coverage\n- Cross-validated REST endpoints with Postman collection to prevent unsupported generation\n- Identified existing GraphQL mappings and eliminated duplicate migration targets\n- Generated GraphQL query/mutation configurations for validated Forms, Workflow, Dispatch, and Device modules\n- Added required gqlMapper integration entries and export mappings following existing conventions\n- Applied migration validation checklist to ensure mapping accuracy and route consistency",
+    "author": "Wisarud Techa"
+  },
+  "0.25.3": {
+    "date": "2026-06-09",
+    "segment": "PATCH",
+    "notes": "fix(cms): fix navigation, routing, and URL mapping issues causing valid pages to return 404 errors\n- Audited application navigation flows and route configurations\n- Corrected invalid path mappings and URL references\n- Fixed routing inconsistencies causing existing pages to resolve as 404\n- Improved navigation reliability and page accessibility across modules\n- Validated route coverage to reduce broken user journeys\n- Enhanced overall application stability and user experience",
+    "author": "Wisarud Techa"
+  },
+  "0.25.2": {
+    "date": "2026-05-15",
+    "segment": "PATCH",
+    "notes": "fix(cms): fix initialize form ONLY when open form\n- Fix issue with form initializing only when opening form\n- Ensure proper handling of form state and data loading on open\n- Add test cases to verify correct form initialization behavior",
+    "author": "Wisarud Techa"
+  },
+  "0.25.1": {
+    "date": "2026-05-15",
+    "segment": "PATCH",
+    "notes": "fix(cms): fix infinite append stops correctly in CustomiableSelect component\n- Fix issue with infinite append not stopping correctly in CustomiableSelect component\n- Ensure proper handling of hasMore and isLoading states to prevent unnecessary API calls\n- Add test cases to verify correct behavior of infinite append functionality",
+    "author": "Wisarud Techa"
+  },
+  "0.25.0": {
+    "date": "2026-05-14",
+    "segment": "MINOR",
+    "notes": "refactor(cms): CRM permission structure update\n- Update permission structure to support more granular permissions\n- Change permission definitions from array to object array with metadata\n- Update User Type and Permission Manager to handle new structure\n- Refactor usePermissions hook to check permissions based on new structure\n- Add migration helper for existing permissions",
+    "author": "Wisarud Techa"
+  },
+  "0.24.2": {
+    "date": "2026-05-14",
+    "segment": "PATCH",
+    "notes": "refactor(cms): enhance link existing customer flow in case creation\n- Add option to link existing customer in case creation flow\n- Integrate with customer search API for linking existing customers\n- Ensure proper handling of linked customer data in case state\n- Add test cases to verify correct state update after linking existing customer",
+    "author": "Wisarud Techa"
+  },
+  "0.24.1": {
+    "date": "2026-05-14",
+    "segment": "PATCH",
+    "notes": "refactor(cms): enhance add customer flow in case creation\n- Fix issue with customer data not updating in case state after creation\n- Ensure new customer data is properly merged into existing case state\n- Add test cases to verify correct state update after adding new customer",
+    "author": "Wisarud Techa"
+  },
+  "0.24.0": {
+    "date": "2026-05-14",
+    "segment": "MINOR",
+    "notes": "refactor(cms): enhance add customer flow in case creation\n- Add customer search and selection in case creation flow\n- Allow creating new customer directly from case creation\n- Integrate with customer API for search and create operations\n- Improve UX/UI of customer selection and creation in case form",
+    "author": "Wisarud Techa"
+  },
+  "0.23.3": {
+    "date": "2026-05-13",
+    "segment": "PATCH",
+    "notes": "Handle decistion request spare part.",
+    "author": "Phanuphong M"
+  },
+  "0.23.2": {
+    "date": "2026-05-13",
+    "segment": "PATCH",
+    "notes": "Update show label order request.",
+    "author": "Phanuphong M"
+  },
+  "0.23.1": {
+    "date": "2026-05-12",
+    "segment": "PATCH",
+    "notes": "Request Spare Part Update items,cancel,status action.",
+    "author": "Phanuphong M"
+  },
+  "0.23.0": {
+    "date": "2026-05-08",
+    "segment": "MINOR",
+    "notes": "refactor(cms): enhance product list search and filter flow\n- Add search button with enter key support\n- Add minimum search text validation\n- Add dynamic reusable filter system\n- Add filter reset and auto apply flow\n- Improve server-side pagination and sorting\n- Improve View component query handling",
+    "author": "Wisarud Techa"
+  },
+  "0.22.0": {
+    "date": "2026-05-07",
+    "segment": "MINOR",
+    "notes": "refactor(cms): enhance product list server-side pagination\n- Move product list to server-side query flow\n- Fix pagination button state after page change\n- Fix page info display for total records\n- Sync search, sort, and pagination with API query\n- Improve View component pagination logic",
+    "author": "Wisarud Techa"
+  },
+  "0.21.1": {
+    "date": "2026-05-06",
+    "segment": "PATCH",
+    "notes": "fix(cms): fix parse query string in GraphQL mapper\n- Fix issue with parsing query string in GraphQL mapper\n- Ensure proper handling of query parameters for both queries and mutations\n- Add test cases to cover various input scenarios",
+    "author": "Wisarud Techa"
+  },
+  "0.21.0": {
+    "date": "2026-05-06",
+    "segment": "MINOR",
+    "notes": "refactor(cms): enhance existing i18n coverage across CMS module\n- Add missing translation keys and values for Thai language\n- Ensure all user-facing text in CMS is translatable\n- Review and update existing translations for accuracy and consistency",
+    "author": "Wisarud Techa"
+  },
+  "0.20.0": {
+    "date": "2026-04-29",
+    "segment": "MINOR",
+    "notes": "refactor(cms): enhance workflow builder\n- Add workflow type in metadata as selector to builder\n- Add request status to action dropdown depend on workflow type selection\n- Extract large components into smaller, manageable sub-components (NodeForm, NodeConnections, WorkflowStats, etc.)",
+    "author": "Wisarud Techa"
+  },
+  "0.19.1": {
+    "date": "2026-04-29",
+    "segment": "PATCH",
+    "notes": "feat(cms): implement product / spare parts management\n- Add stock indicator into product list\n- Enhance UX/UI of stock summary viewer of each product / spare parts",
+    "author": "Wisarud Techa"
+  },
+  "0.19.0": {
+    "date": "2026-04-23",
+    "segment": "MINOR",
+    "notes": "feat(cc): implement email workspace and call center dashboard\n- Add email workspace with email list and details view\n- Implement call center dashboard with key metrics and charts\n- Integrate with mock data for demonstration purposes",
+    "author": "Wisarud Techa"
+  },
+  "0.18.0": {
+    "date": "2026-04-23",
+    "segment": "MINOR",
+    "notes": "feat(cms): implement product dashboard\n- Add product dashboard with key metrics and charts\n- Integrate with mock data for demonstration purposes\n- Prepare for real data integration in future updates",
+    "author": "Wisarud Techa"
+  },
+  "0.17.3": {
+    "date": "2026-04-23",
+    "segment": "PATCH",
+    "notes": "fix(cms): fix product stock form\n- Fix default value of datetime field in product stock form\n- Ensure proper handling of date values in form submission and display",
+    "author": "Wisarud Techa"
+  },
+  "0.17.2": {
+    "date": "2026-04-22",
+    "segment": "PATCH",
+    "notes": "refactor(cms): Update product stock form\n- Add purchaseDate and endWarrantyDate in to form\n- Add default of datetime value as now\n- Change existing field label (registerDate, mfw)\n- Fix product and inventory image upload issue",
+    "author": "Wisarud Techa"
+  },
+  "0.17.1": {
+    "date": "2026-04-21",
+    "segment": "PATCH",
+    "notes": "fix(cms): fix upload image\n- Fix image upload field in inventory form\n- Fix file upload API integration\n- Fix uploaded image display in inventory details and list views",
+    "author": "Wisarud Techa"
+  },
+  "0.17.0": {
+    "date": "2026-04-21",
+    "segment": "MINOR",
+    "notes": "feat(cms): implement inventory upload image\n- Add image upload field to inventory form\n- Integrate with file upload API\n- Display uploaded image in inventory details and list views",
+    "author": "Wisarud Techa"
+  },
+  "0.16.3": {
+    "date": "2026-04-21",
+    "segment": "PATCH",
+    "notes": "Add Grap api Mapping",
+    "author": "Phanuphong M"
+  },
+  "0.16.2": {
+    "date": "2026-04-20",
+    "segment": "PATCH",
+    "notes": "refactor(core): enhanence GraphQL add mutation handling in cms gql api\n- Add mutation support to GraphQL client\n- Create example mutation for updating data\n- Ensure proper handling of mutation responses and errors",
+    "author": "Wisarud Techa"
+  },
+  "0.16.1": {
+    "date": "2026-04-20",
+    "segment": "PATCH",
+    "notes": "Request Spare Part can skip product.",
+    "author": "Phanuphong M"
+  },
+  "0.16.0": {
+    "date": "2026-04-09",
+    "segment": "MINOR",
+    "notes": "refactor(core): enhanence GraphQL response handling in cms gql api\n- Add normalization function for cms response\n- Ensure consistent return structure for pagination data\n- Improve type safety and error handling in transformResponse",
+    "author": "Wisarud Techa"
+  },
+  "0.15.3": {
+    "date": "2026-04-08",
+    "segment": "PATCH",
+    "notes": "Add Search Category Product SparePart When Create Request Spare Part.",
+    "author": "Phanuphong M"
+  },
+  "0.15.2": {
+    "date": "2026-04-08",
+    "segment": "PATCH",
+    "notes": "Update env service to welcome case.",
+    "author": "Phanuphong M"
+  },
+  "0.15.1": {
+    "date": "2026-04-08",
+    "segment": "PATCH",
+    "notes": "Add Request By in Request Spare Part.",
+    "author": "Phanuphong M"
+  },
+  "0.15.0": {
+    "date": "2026-04-08",
+    "segment": "MINOR",
+    "notes": "Add Appointment Calendar.",
+    "author": "Phanuphong M"
+  },
+  "0.14.2": {
+    "date": "2026-04-08",
+    "segment": "PATCH",
+    "notes": "refactor(layout): update sidebar and topbar navigation\n- Adjust menu item from sidebar to topbar\n- Link navigation items properly to topbar\n- Ensure consistent styling with existing navigation items",
+    "author": "Wisarud Techa"
+  },
+  "0.14.1": {
+    "date": "2026-04-08",
+    "segment": "PATCH",
+    "notes": "refactor(core): enhanence GraphQL response handling in cms gql api\n- Add normalization function for cms response\n- Ensure consistent return structure for pagination data\n- Improve type safety and error handling in transformResponse",
+    "author": "Wisarud Techa"
+  },
+  "0.14.0": {
+    "date": "2026-04-07",
+    "segment": "MINOR",
+    "notes": "feat(core): implement graphql client and integrate with auth and cms modules\n- Add GraphQL client setup using custom Client\n- Create GraphQL queries and mutations for cms data\n- Refactor product API interactions to use GraphQL\n- Ensure compatibility with existing REST endpoints during transition",
+    "author": "Wisarud Techa"
+  },
+  "0.13.0": {
+    "date": "2026-04-03",
+    "segment": "MINOR",
+    "notes": "feat(cms): implement product upload image\n- Add image upload field to product form\n- Integrate with file upload API\n- Display uploaded image in product details and list views",
+    "author": "Wisarud Techa"
+  },
+  "0.12.0": {
+    "date": "2026-03-31",
+    "segment": "MINOR",
+    "notes": "feat(cms): implement product stock management (finalize)\n- Finalize product stock management features\n- Fix bugs and issues from previous implementation\n- Prepare for inventory stock management implementation",
+    "author": "Wisarud Techa"
+  },
+  "0.11.0": {
+    "date": "2026-03-27",
+    "segment": "MINOR",
+    "notes": "feat(cms): implement product stock management\n- Implement stock-in (create / edit) form with product / store selector",
+    "author": "Wisarud Techa"
+  },
+  "0.10.0": {
+    "date": "2026-03-26",
+    "segment": "MINOR",
+    "notes": "style(CMS): product, spare parts, service\n- Upgrade CRUD UI/UX\n- Fix bug and issue",
+    "author": "Wisarud Techa"
+  },
+  "0.9.0": {
+    "date": "2026-03-24",
+    "segment": "MINOR",
+    "notes": "refactor(imports): update module references after core extraction (2)\n- Reference (v0.6.3)\n- Create Prototype of Inventory Request Module",
+    "author": "Wisarud Techa"
+  },
+  "0.8.2": {
+    "date": "2026-03-06",
+    "segment": "PATCH",
+    "notes": "refactor(layout): stabilize grid-based layout and remove viewport conflicts (2)\n- Reference (v0.8.0)\n- Create wrapper hook + central prefix config for URL routing (useAppNavigation) to replace useNavigation",
+    "author": "Wisarud Techa"
+  },
+  "0.8.1": {
+    "date": "2026-03-06",
+    "segment": "PATCH",
+    "notes": "fix(defect): change env file on dev (stg)\n- Update CRM API endpoint URL",
+    "author": "Wisarud Techa"
+  },
+  "0.8.0": {
+    "date": "2026-03-06",
+    "segment": "MINOR",
+    "notes": "refactor(layout): stabilize grid-based layout and remove viewport conflicts (1)\n- Reference (v0.5.1)",
+    "author": "Wisarud Techa"
+  },
+  "0.7.3": {
+    "date": "2026-03-06",
+    "segment": "PATCH",
+    "notes": "fix(defect): build optimizing\n- Reference (v0.7.2)",
+    "author": "Wisarud Techa"
+  },
+  "0.7.2": {
+    "date": "2026-03-06",
+    "segment": "PATCH",
+    "notes": "fix(defect): build optimizing\n- Fix `Uncaught TypeError: Cannot set properties of undefined (setting 'Children')` in vite.config.ts",
+    "author": "Wisarud Techa"
+  },
+  "0.7.1": {
+    "date": "2026-03-12",
+    "segment": "PATCH",
+    "notes": "fix(defect): imports, update module references after core extraction (4), change sidebar label and URL (1)\n- Reference (v0.6.5, v0.6.6)",
+    "author": "Wisarud Techa"
+  },
+  "0.7.0": {
+    "date": "2026-03-06",
+    "segment": "MINOR",
+    "notes": "perf: build optimizing\n- Update manualChunks in vite.config.ts",
+    "author": "Wisarud Techa"
+  },
+  "0.6.6": {
+    "date": "2026-03-06",
+    "segment": "PATCH",
+    "notes": "refactor(layout): change sidebar label and URL\n- Change label from 'Task List' to 'Case Assignment'\n- Change URL of Case Dashboard from '/cms/dashboard' to '/cms'",
+    "author": "Wisarud Techa"
+  },
+  "0.6.5": {
+    "date": "2026-03-06",
+    "segment": "PATCH",
+    "notes": "fix(defect): imports, update module references after core extraction (3), permission structure (array to object array) (2)\n- Reference (v0.6.4)",
+    "author": "Wisarud Techa"
+  },
+  "0.6.4": {
+    "date": "2026-03-04",
+    "segment": "PATCH",
+    "notes": "fix(defect): imports, update module references after core extraction (2), permission structure (array to object array) (1)\n- Reference (v0.6.2, v0.6.3)",
+    "author": "Wisarud Techa"
+  },
+  "0.6.3": {
+    "date": "2026-03-04",
+    "segment": "PATCH",
+    "notes": "refactor(imports): update module references after core extraction (1)\n- Reference (v0.6.1)",
+    "author": "Wisarud Techa"
+  },
+  "0.6.2": {
+    "date": "2026-03-04",
+    "segment": "PATCH",
+    "notes": "refactor(permission): update permission structure (array to object array)\n- Update User Type\n- Update Permission Manager\n- Update usePermissions Hook\n- Migration Helper",
+    "author": "Wisarud Techa"
+  },
+  "0.6.1": {
+    "date": "2026-02-26",
+    "segment": "PATCH",
+    "notes": "refactor(imports): update module references after core extraction\n- Replace cms-level imports with core-based imports\n- Align provider hierarchy with Super App structure\n- Ensure authentication and theme are initialized at root level\n- Fix circular dependency risks",
+    "author": "Wisarud Techa"
+  },
+  "0.6.0": {
+    "date": "2026-02-26",
+    "segment": "MINOR",
+    "notes": "refactor(core): extract shared infrastructure from cms module to core layer\n- Move global-level components from cms to core\n- Relocate Theme, Language, Notification, and Authentication logic\n- Promote shared contexts, hooks, providers, store, types, and utilities\n- Establish core as application-wide infrastructure boundary\n- Reduce coupling between cms module and global services",
+    "author": "Wisarud Techa"
+  },
+  "0.5.2": {
+    "date": "2026-02-18",
+    "segment": "PATCH",
+    "notes": "chore(core): prepare foundation for multi-product scalability\n- Prepare layout for dynamic product registry\n- Standardize folder boundaries (core vs products)\n- Improve naming consistency\n- Clean unused layout logic",
+    "author": "Wisarud Techa"
+  },
+  "0.5.1": {
+    "date": "2026-02-18",
+    "segment": "PATCH",
+    "notes": "refactor(layout): stabilize grid-based layout and remove viewport conflicts\n- Convert SuperLayout to master flex/grid structure\n- Ensure single viewport owner\n- Remove redundant height declarations\n- Standardize overflow handling\n- Improve long-term scalability of layout system",
+    "author": "Wisarud Techa"
+  },
+  "0.5.0": {
+    "date": "2026-02-18",
+    "segment": "MINOR",
+    "notes": "feat(core): add collapsible sidebar behavior\n- Implement sidebar collapse/expand state\n- Add smooth width transition\n- Support icon-only mode\n- Maintain layout responsiveness\n- Prepare for persistent UI state handling",
+    "author": "Wisarud Techa"
+  },
+  "0.4.0": {
+    "date": "2026-02-18",
+    "segment": "MINOR",
+    "notes": "feat(core): add SuperTopbar with global navigation controls\n- Add top navigation bar\n- Implement product-level navigation menu\n- Add user status, notifications, and avatar placeholder\n- Establish global UI layer independent from product modules",
+    "author": "Wisarud Techa"
+  },
+  "0.3.0": {
+    "date": "2026-02-18",
+    "segment": "MINOR",
+    "notes": "feat(core): implement SuperSidebar with product navigation layer\n- Add left navigation for product switching\n- Introduce NavLink active styling\n- Prepare structure for multi-product expansion\n- Add visual separation between Super and Product navigation",
+    "author": "Wisarud Techa"
+  },
+  "0.2.1": {
+    "date": "2026-02-18",
+    "segment": "PATCH",
+    "notes": "refactor(cms): decouple CMS app from root viewport control\n- Remove fixed positioning from Product Sidebar\n- Remove z-index conflicts\n- Convert Product layout to module-based layout\n- Ensure compatibility when mounted inside SuperLayout",
+    "author": "Wisarud Techa"
+  },
+  "0.2.0": {
+    "date": "2026-02-18",
+    "segment": "MINOR",
+    "notes": "feat(core): introduce SuperLayout as root application shell\n- Add SuperLayout as master layout wrapper\n- Prepare structure for multi-product architecture\n- Mount Outlet under SuperLayout\n- Isolate product modules from root router",
+    "author": "Wisarud Techa"
+  },
+  "0.1.0": {
+    "date": "2026-02-17",
+    "segment": "MINOR",
+    "notes": "chore: baseline cms standalone application\n- Stable cms module\n- Standalone layout architecture\n- Product-level providers and infrastructure",
+    "author": "Wisarud Techa"
+  }
+}
