@@ -204,8 +204,6 @@ const fetchPresignGQL = async (
   return result.data.url;
 };
 
-
-
 const getApiDownloadUrl = (objectKey: string): Promise<string> =>
   fetchPresignGQL("GetFileDownload", objectKey);
 
@@ -221,7 +219,6 @@ const getApiCopyUrl = async (objectKey: string): Promise<string> => {
   }
   return result.data.viewUrl;
 };
-
 
 
 const createApiFolder = async (folderPath: string): Promise<void> => {

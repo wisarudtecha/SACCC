@@ -19,7 +19,7 @@ import {
   Phone,
   // Settings,
   Users,
-  BoxesIcon,
+  //BoxesIcon,
   FilePenLine,
   Bell
 } from "lucide-react";
@@ -245,20 +245,20 @@ const SuperSidebar = (
         KbPermission.KB_BROADCAST_VIEW
       ])
     },
-    {
-      icon: <Bell />,
-      name: t("navigation.super_app.topbar.more.menu.knowledge.sub_menu.boardcastlog"),
-      path: "/kms/broadcast-log",
-      permission: permissions.hasPermission(KbPermission.KB_BROADCAST_VIEW)
-    },
-    {
-      icon: <BoxesIcon />,
-      name: t("navigation.super_app.sidebar.knowledge.menu.files"),
-      path: "/kms/files",
-      permission: permissions.hasAnyPermission([
-        KbPermission.KB_FILE_VIEW
-      ])
-    },
+    // {
+    //   icon: <Bell />,
+    //   name: t("navigation.super_app.topbar.more.menu.knowledge.sub_menu.boardcastlog"),
+    //   path: "/kms/broadcast-log",
+    //   permission: permissions.hasPermission(KbPermission.KB_BROADCAST_VIEW)
+    // },
+    // {
+    //   icon: <BoxesIcon />,
+    //   name: t("navigation.super_app.sidebar.knowledge.menu.files"),
+    //   path: "/kms/files",
+    //   permission: permissions.hasAnyPermission([
+    //     KbPermission.KB_FILE_VIEW
+    //   ])
+    // },
     {
       icon: <FilePenLine />,
       name: t("navigation.super_app.sidebar.knowledge.menu.articles"),
@@ -574,9 +574,10 @@ const SuperSidebar = (
           </div>
           {(permissions.permissionsByCategory?.kms
             && permissions.permissionsByCategory?.kms.length > 0
-            && permissions.hasAnyPermission([KbPermission.KB_DASHBOARD_VIEW,
+            && permissions.hasAnyPermission([
+            KbPermission.KB_DASHBOARD_VIEW,
             KbPermission.KB_BROADCAST_VIEW,
-            KbPermission.KB_FILE_VIEW,
+            // KbPermission.KB_FILE_VIEW,
             KbPermission.KB_ARTICLE_VIEW,
             KbPermission.KB_ARTICLE_MGMT_VIEW])) && (
               <div className="mb-0">

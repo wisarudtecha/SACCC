@@ -46,6 +46,7 @@ const ArticleBannerCarousel: React.FC = () => {
   const next = () => setCurrent((c) => (c < maxIndex ? c + 1 : 0));
 
   const visible = banners.slice(current, current + ITEMS_PER_VIEW);
+ 
 
   if (isLoading) {
     return (

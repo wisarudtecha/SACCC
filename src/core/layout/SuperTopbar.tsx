@@ -42,7 +42,9 @@ import {
   Wrench,
   X,
   ListIcon,
-  Presentation
+  Presentation,
+  BoxesIcon,
+  Bell
 } from "lucide-react";
 import { ThemeToggleButton } from "@/core/components/common/ThemeToggleButton";
 import { Dropdown } from "@/core/components/ui/dropdown/Dropdown";
@@ -411,6 +413,8 @@ const SuperTopbar = (
       KbPermission.KB_CATEGORY_VIEW,
       KbPermission.KB_BANNER_VIEW,
       KbPermission.KB_SOURCE_VIEW,
+      KbPermission.KB_FILE_VIEW,
+      KbPermission.KB_BROADCAST_VIEW
     ])
       ? [{
         icon: <Package />,
@@ -422,6 +426,18 @@ const SuperTopbar = (
             name: t("navigation.super_app.topbar.more.menu.knowledge.sub_menu.category"),
             path: "/kms/category-manager",
             permission: permissions.hasPermission(KbPermission.KB_CATEGORY_VIEW)
+          },
+          {
+            icon: <BoxesIcon />,
+            name: t("navigation.super_app.sidebar.knowledge.menu.files"),
+            path: "/kms/files",
+            permission: permissions.hasPermission(KbPermission.KB_FILE_VIEW)
+          },
+          {
+            icon: <Bell />,
+            name: t("navigation.super_app.sidebar.knowledge.menu.broadcast"),
+            path: "/kms/broadcast",
+            permission: permissions.hasPermission(KbPermission.KB_BROADCAST_VIEW)
           },
           {
             icon: <Presentation />,

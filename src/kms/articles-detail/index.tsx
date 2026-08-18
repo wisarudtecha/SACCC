@@ -69,7 +69,6 @@ const ArticleDetailPage = () => {
         title={header?.title ?? t("knowledge.articles.detail.loading")}
         description={header?.description ?? ""}
       />
-
       <div className="space-y-5 pb-8">
         {/* Header — loads independently */}
         <ArticleCoverImage

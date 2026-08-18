@@ -3498,7 +3498,7 @@
           "priorityPlaceholder": "选择优先级",
           "sourceLabel": "来源",
           "sourcePlaceholder": "输入来源",
-          "reserveDateLabel": "预留日期",
+          "reserveDateLabel": "数据接收日期",
           "ownershipLabel": "负责人",
           "ownershipPlaceholder": "输入负责人",
           "relatedArticlesLabel": "相关文章",
@@ -3817,6 +3817,31 @@
         "open": "打开",
         "lastupdate": "最后更新时间"
       }
+    },
+     "editor": {
+      "tableActions": "表格",
+      "insertRowAbove": "上方插入行",
+      "insertRowBelow": "下方插入行",
+      "insertColumnLeft": "左侧插入列",
+      "insertColumnRight": "右侧插入列",
+      "deleteRow": "删除行",
+      "deleteColumn": "删除列",
+      "deleteTable": "删除表格",
+      "mergeCells": "合并",
+      "splitCell": "拆分",
+      "align": "对齐",
+      "left": "左",
+      "center": "中",
+      "right": "右",
+      "borderStyle": "边框",
+      "solid": "实线",
+      "dashed": "虚线",
+      "dotted": "点线",
+      "none": "无",
+      "borderWidth": "宽度",
+      "borderColor": "边框颜色",
+      "fillColor": "填充颜色",
+      "clearFillColor": "清除填充颜色"
     }
   },
   "customer": {

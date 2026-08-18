@@ -31,6 +31,7 @@ const BannerCard: React.FC<BannerCardProps> = ({
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    console.log("banner.coverImage", banner);
     if (!banner.coverImage) return;
     if (banner.coverImage.startsWith("http")) {
       setImgUrl(banner.coverImage);

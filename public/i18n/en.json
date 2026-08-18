@@ -4068,7 +4068,7 @@
           "priorityPlaceholder": "Select Priority",
           "sourceLabel": "Source",
           "sourcePlaceholder": "Enter source",
-          "reserveDateLabel": "Reserve Date",
+          "reserveDateLabel": "Receive Date",
           "ownershipLabel": "Ownership",
           "ownershipPlaceholder": "Enter owner",
           "relatedArticlesLabel": "Related Articles",
@@ -4387,6 +4387,31 @@
         "open": "Open",
         "lastupdate": "Last Update Time"
       }
+    },
+    "editor": {
+      "tableActions": "Table",
+      "insertRowAbove": "Row Above",
+      "insertRowBelow": "Row Below",
+      "insertColumnLeft": "Col Left",
+      "insertColumnRight": "Col Right",
+      "deleteRow": "Delete Row",
+      "deleteColumn": "Delete Col",
+      "deleteTable": "Delete Table",
+      "mergeCells": "Merge",
+      "splitCell": "Split",
+      "align": "Align",
+      "left": "Left",
+      "center": "Center",
+      "right": "Right",
+      "borderStyle": "Border",
+      "solid": "Solid",
+      "dashed": "Dashed",
+      "dotted": "Dotted",
+      "none": "None",
+      "borderWidth": "Width",
+      "borderColor": "Border Color",
+      "fillColor": "Fill Color",
+      "clearFillColor": "Clear Fill Color"
     }
   }
 }

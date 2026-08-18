@@ -6,7 +6,7 @@ import { parseDateValue } from "@/kms/common/common.transform.service";
 import { FiX } from "react-icons/fi";
 import type { ArticleFormInput } from "@/kms/articles-create-update/dtos/article-form.dto";
 import { useArticleViewGroup } from "@/kms/articles/hook/useArticlesData";
-
+import dayjs, { Dayjs } from "dayjs";
 
 // ─── shared styles ────────────────────────────────────────────────────────────
 
@@ -118,7 +118,7 @@ const VisibilityTab: React.FC<VisibilityTabProps> = ({ form, onChange, initViewG
   }, [viewGroupOptions]);
 
 
-  const startDate = React.useMemo(
+    const startDate = React.useMemo(
     () => parseDateValue(form.startDate),
     [form.startDate]
   );
@@ -127,6 +127,24 @@ const VisibilityTab: React.FC<VisibilityTabProps> = ({ form, onChange, initViewG
     [form.endDate]
   );
 
+  // state ควบคุม popup/picker เพื่อแก้ปัญหาเวลาเปลี่ยนค่าแล้วปฎิทินเด้งกลับ
+  const [startOpen, setStartOpen] = React.useState(false);
+  const [startPickerValue, setStartPickerValue] = React.useState<Dayjs | null>(
+    () => startDate ?? dayjs()
+  );
+  const [endOpen, setEndOpen] = React.useState(false);
+  const [endPickerValue, setEndPickerValue] = React.useState<Dayjs | null>(
+    () => endDate ?? dayjs()
+  );
+
+  // เมื่อค่า startDate เปลี่ยนจากภายนอก ให้ sync picker value
+  React.useEffect(() => {
+    if (!startOpen && startDate) setStartPickerValue(startDate);
+  }, [startDate, startOpen]);
+  React.useEffect(() => {
+    if (!endOpen && endDate) setEndPickerValue(endDate);
+  }, [endDate, endOpen]);
+
   return (
 
     <div className="space-y-5">
@@ -134,23 +152,127 @@ const VisibilityTab: React.FC<VisibilityTabProps> = ({ form, onChange, initViewG
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className={labelCls}>{t("knowledge.articles.form.visibility.startDateLabel")}</label>
-          <DatePicker
+
+
+
+
+                    <DatePicker
+            value={startDate ? dayjs(startDate, "DD/MM/YYYY") : null}
+            open={startOpen}
+            onOpenChange={(open) => {
+              setStartOpen(open);
+              if (open) {
+                // เมื่อเปิดให้ชี้ไปที่วัน start ปัจจุบัน (กัน popup กระโดด)
+                setStartPickerValue(startDate ?? dayjs());
+              }
+            }}
+            defaultPickerValue={startPickerValue ?? dayjs()}
+            onChange={(date) => {
+              const newStartDate = date
+                ? date.format("DD/MM/YYYY")
+                : "";
+
+              onChange("startDate", newStartDate);
+              setStartPickerValue(date ?? dayjs());
+
+              // ถ้า End Date เดิมน้อยกว่า Start Date ใหม่ ให้เคลียร์
+              if (
+                date &&
+                endDate &&
+                dayjs(endDate, "DD/MM/YYYY").isBefore(date, "day")
+              ) {
+                onChange("endDate", "");
+              }
+            }}
+            format="DD/MM/YYYY"
+            style={{ width: "100%", height: "40px" }}
+            styles={{ popup: { root: { zIndex: 999999 } } }}
+          />
+
+
+
+
+
+
+          {/* <DatePicker
             value={startDate}
             onChange={(date) => onChange("startDate", date ? date.format("DD/MM/YYYY") : "")}
             format="DD/MM/YYYY"
             style={{ width: "100%", height: "40px" }}
             styles={{ popup: { root: { zIndex: 999999 } } }}
-          />
+          /> */}
+
         </div>
         <div>
           <label className={labelCls}>{t("knowledge.articles.form.visibility.endDateLabel")}</label>
+
+
+
+                    <DatePicker
+            value={endDate ? dayjs(endDate, "DD/MM/YYYY") : null}
+            open={endOpen}
+            onOpenChange={(open) => {
+              setEndOpen(open);
+              if (open && endDate) {
+                setEndPickerValue(endDate);
+              }
+            }}
+            defaultPickerValue={endPickerValue ?? dayjs()}
+            onChange={(date) => {
+              onChange(
+                "endDate",
+                date ? date.format("DD/MM/YYYY") : ""
+              );
+              if (date) setEndPickerValue(date);
+            }}
+            disabled={!startDate}
+            disabledDate={(current) => {
+              if (!startDate) {
+                return true;
+              }
+
+              const start = dayjs(startDate, "DD/MM/YYYY");
+
+              return current.isBefore(start, "day");
+            }}
+            format="DD/MM/YYYY"
+            style={{ width: "100%", height: "40px" }}
+            styles={{ popup: { root: { zIndex: 999999 } } }}
+          />
+
+
+
+          {/* 
+
           <DatePicker
+            value={endDate ? dayjs(endDate, "DD/MM/YYYY") : null}
+            onChange={(date) => {
+              onChange("endDate", date ? date.format("DD/MM/YYYY") : "");
+            }}
+            disabledDate={(current) => {
+              if (!startDate) return false;
+
+              const start = dayjs(startDate, "DD/MM/YYYY");
+
+              return current.isBefore(start, "day");
+            }}
+            format="DD/MM/YYYY"
+            style={{ width: "100%", height: "40px" }}
+              styles={{ popup: { root: { zIndex: 999999 } } }}
+              /> */}
+
+
+
+
+
+
+          {/* <DatePicker
             value={endDate}
             onChange={(date) => onChange("endDate", date ? date.format("DD/MM/YYYY") : "")}
             format="DD/MM/YYYY"
             style={{ width: "100%", height: "40px" }}
             styles={{ popup: { root: { zIndex: 999999 } } }}
-          />
+          /> */}
         </div>
       </div>
 

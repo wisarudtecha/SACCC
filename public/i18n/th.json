@@ -4099,7 +4099,7 @@
           "priorityPlaceholder": "เลือกลำดับความสำคัญ",
           "sourceLabel": "แหล่งที่มา (Source)",
           "sourcePlaceholder": "ระบุแหล่งที่มา",
-          "reserveDateLabel": "วันที่สำรอง (Reserve Date)",
+          "reserveDateLabel": "วันที่ได้รับข้อมูล (Receive Date)",
           "ownershipLabel": "ผู้รับผิดชอบ (Ownership)",
           "ownershipPlaceholder": "ระบุผู้รับผิดชอบ",
           "relatedArticlesLabel": "บทความที่เกี่ยวข้อง (Related Articles)",
@@ -4418,6 +4418,31 @@
         "open": "เปิด",
         "lastupdate": "วันที่อัปเดตล่าสุด"
       }
+    },
+    "editor": {
+      "tableActions": "จัดการตาราง",
+      "insertRowAbove": "แทรกแถวบน",
+      "insertRowBelow": "แทรกแถวล่าง",
+      "insertColumnLeft": "แทรกคอลัมน์ซ้าย",
+      "insertColumnRight": "แทรกคอลัมน์ขวา",
+      "deleteRow": "ลบแถว",
+      "deleteColumn": "ลบคอลัมน์",
+      "deleteTable": "ลบตาราง",
+      "mergeCells": "รวมเซลล์",
+      "splitCell": "แยกเซลล์",
+      "align": "จัดแนว",
+      "left": "ซ้าย",
+      "center": "กลาง",
+      "right": "ขวา",
+      "borderStyle": "เส้นขอบ",
+      "solid": "เส้นทึบ",
+      "dashed": "เส้นประ",
+      "dotted": "จุด",
+      "none": "ไม่มี",
+      "borderWidth": "ความหนา",
+      "borderColor": "สีเส้นขอบ",
+      "fillColor": "สีพื้น",
+      "clearFillColor": "ล้างสีพื้น"
     }
   }
 }

@@ -61,7 +61,7 @@ interface RichTextEditorProps {
 }
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
-
+ const { t } = useTranslation();
 
   const editorRef = useRef<HTMLDivElement>(null);
   const savedRangeRef = useRef<Range | null>(null);
@@ -69,6 +69,38 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
     open: false, text: "", url: "",
   });
   const [videoDialog, setVideoDialog] = useState<{ open: boolean; url: string }>({ open: false, url: "" });
+  const [tableDialog, setTableDialog] = useState<{ open: boolean; rows: number; cols: number }>({
+    open: false, rows: 3, cols: 3,
+  });
+
+  // --- Table cell selection / color / resize state ---
+  // เก็บ "block" ที่เลือกไว้ (Excel-style) จาก shift+click
+  const selectedBlockRef = useRef<{
+    table: HTMLTableElement;
+    r1: number; c1: number; r2: number; c2: number;
+  } | null>(null);
+  //const [showTableColorPicker, setShowTableColorPicker] = useState(false);
+  const [tableColorTarget, setTableColorTarget] = useState<"cell" | "row" | "col">("cell");
+  //const [showTableMenu, setShowTableMenu] = useState(false);
+  //const [showBorderMenu, setShowBorderMenu] = useState(false);
+  // ◾ Right-click context menu บน cell/table (table actions + border + fill color)
+  const [tableContextMenu, setTableContextMenu] = useState<{ x: number; y: number } | null>(null);
+  // เก็บ cell ที่คลิกขวา เพื่อใช้กับ border/fill color (เลือกเฉพาะ cell นั้น)
+  const ctxMenuCellRef = useRef<HTMLTableCellElement | null>(null);
+  // state ของ border ที่เลือกใน context menu ณ ขณะนี้ (เพื่อรวม style+width+color ครั้งเดียว)
+  const [ctxBorder, setCtxBorder] = useState<{ style: "solid" | "dashed" | "dotted" | "none"; width: number; color: string }>({
+    style: "solid", width: 1, color: "#d1d5db",
+  });
+
+  // ── Image resize state (จับมุมแล้วลาก resize รูปภาพ) ──
+  const selectedImgRef = useRef<HTMLImageElement | null>(null);
+  const [imgBox, setImgBox] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
+  const imgResizeRef = useRef<{
+    img: HTMLImageElement;
+    dir: "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w";
+    startX: number; startY: number;
+    startW: number; startH: number;
+  } | null>(null);
 
   const exec = useCallback((command: string, arg?: string) => {
     document.execCommand(command, false, arg);
@@ -76,8 +108,57 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
     if (editorRef.current) onChange(editorRef.current.innerHTML);
   }, [onChange]);
 
+
+
+  const execute = useCallback(
+    (command: string, arg?: string) => {
+      const editor = editorRef.current;
+      if (!editor) return;
+
+      console.log("command:", command);
+      console.log("selection:", window.getSelection()?.toString());
+
+      editor.focus();
+
+      const result = document.execCommand(command, false, arg);
+
+      console.log("result:", result);
+      console.log("html:", editor.innerHTML);
+
+      onChange(editor.innerHTML);
+    },
+    [onChange]
+  );
+
+
+
   const handleInput = () => {
     if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
+
+  // —— Excel/HTML paste: ซ่อม table ให้สมบูรณ์ก่อนแทรก ——
+  const preparePastedHtml = (doc: Document): string => {
+    const tables = doc.querySelectorAll<HTMLTableElement>("table");
+    if (!tables.length) return doc.body.innerHTML;
+
+    tables.forEach((table) => {
+      // ห่อ table เพื่อกัน overflow บนจอเล็ก
+      const wrapper = doc.createElement("div");
+      wrapper.style.cssText = "overflow-x:auto;margin:10px 0;";
+      table.parentNode?.insertBefore(wrapper, table);
+      wrapper.appendChild(table);
+
+      table.style.borderCollapse = "collapse";
+      table.style.width = "auto";
+
+      // ใส่ border/padding เป็น default เฉพาะ cell ที่ Excel ไม่ได้ให้ style มา
+      table.querySelectorAll<HTMLTableCellElement>("td, th").forEach((cell) => {
+        if (!cell.style.border) cell.style.border = "1px solid #d1d5db";
+        if (!cell.style.padding) cell.style.padding = "6px 10px";
+      });
+    });
+
+    return doc.body.innerHTML;
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
@@ -90,18 +171,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, "text/html");
 
-      // ได้:
-      // &lt;h1&gt;Test&lt;/h1&gt;
-      const encoded = doc.body.innerHTML;
+      const htmlToInsert = preparePastedHtml(doc);
 
-      // Decode:
-      // <h1>Test</h1>
-      const textarea = document.createElement("textarea");
-      textarea.innerHTML = encoded;
-
-      const decodedHtml = textarea.value;
-
-      document.execCommand("insertHTML", false, decodedHtml);
+      document.execCommand("insertHTML", false, htmlToInsert);
     } else {
       document.execCommand("insertText", false, text);
     }
@@ -170,6 +242,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
     const { url } = videoDialog;
     if (!url.trim()) { setVideoDialog({ open: false, url: "" }); return; }
     editorRef.current?.focus();
+    restoreSelection();
     const { src, type } = toEmbedUrl(url);
     let html: string;
     if (type === "video") {
@@ -198,11 +271,960 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
     setLinkDialog({ open: false, text: "", url: "" });
   };
 
+  // ===========================================================================
+  //  Table Editor (Insert / Row / Column / Delete) — ทำงานที่ cursor
+  // ===========================================================================
+
+  // หา cell/row/table ที่ cursor อยู่ในตำแหน่งปัจจุบัน
+  const getTableCellContext = (): { cell: HTMLTableCellElement; row: HTMLTableRowElement; table: HTMLTableElement } | null => {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return null;
+
+    let node: Node | null = sel.getRangeAt(0).commonAncestorContainer;
+
+    // เดินขึ้นหา <td> หรือ <th>
+    let cell: HTMLTableCellElement | null = null;
+    while (node && node !== editorRef.current && node !== document.body) {
+      if (node instanceof HTMLTableCellElement) { cell = node; break; }
+      node = node.parentNode;
+    }
+    if (!cell) return null;
+
+    const row = cell.closest("tr") as HTMLTableRowElement | null;
+    const table = cell.closest("table") as HTMLTableElement | null;
+    if (!row || !table) return null;
+
+    return { cell, row, table };
+  };
+
+  // ส่งกลับจำนวนคอลัมน์สูงสุด (เพื่อแทรกแถวให้เท่ากันทุก rows)
+  const getMaxColumns = (table: HTMLTableElement): number =>
+    Array.from(table.rows).reduce(
+      (max, r) => Math.max(max, r.cells.length),
+      1
+    );
+
+  const insertTable = (rows: number, cols: number) => {
+    editorRef.current?.focus();
+    restoreSelection();
+
+    let html = `<table cellspacing="0" style="border-collapse:collapse;width:auto;margin:10px 0;">`;
+    for (let r = 0; r < rows; r++) {
+      html += `<tr>`;
+      for (let c = 0; c < cols; c++) {
+        html += `<td style="border:1px solid #d1d5db;padding:6px 10px;">&nbsp;</td>`;
+      }
+      html += `</tr>`;
+    }
+    html += `</table>`;
+    document.execCommand("insertHTML", false, html);
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
+    setTableDialog((p) => ({ ...p, open: false }));
+  };
+
+  const insertTableRow = (above: boolean) => {
+    const ctx = getTableCellContext();
+    if (!ctx) return;
+
+    const { table, row } = ctx;
+    const maxCols = getMaxColumns(table);
+    const newRow = table.insertRow(row.rowIndex + (above ? 0 : 1));
+
+    // สร้าง cell ให้จำนวนเท่ากับ max
+    for (let i = 0; i < maxCols; i++) {
+      const td = newRow.insertCell();
+      td.style.border = "1px solid #d1d5db";
+      td.style.padding = "6px 10px";
+      td.innerHTML = "&nbsp;";
+    }
+
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
+
+  const insertTableColumn = (before: boolean) => {
+    const ctx = getTableCellContext();
+    if (!ctx) return;
+    const { table, row, cell } = ctx;
+    // ตำแหน่งแทรก: ถ้า before → แทรกหน้าตำแหน่ง cell, ถ้า after → แทรกหลัง cell
+    const colCellIdx = Array.from(row.cells).indexOf(cell) + (before ? 0 : 1);
+
+    for (const r of Array.from(table.rows)) {
+      const td = r.insertCell();
+      td.style.border = "1px solid #d1d5db";
+      td.style.padding = "6px 10px";
+      td.innerHTML = "&nbsp;";
+      // ย้าย cell ไปยังตำแหน่งที่ถูกต้องเสมอ (ทั้ง before และ after)
+      r.insertBefore(td, r.cells[colCellIdx] || null);
+    }
+
+    // ◉ อัปเดต <colgroup> ให้มี <col> ครบตามจำนวนคอลัมน์ใหม่ และคง width ของ col เดิมไว้
+    const colgroup = table.querySelector(":scope > colgroup");
+    if (colgroup) {
+      let colCount = 0;
+      for (const rr of Array.from(table.rows)) {
+        let n = 0;
+        for (const cc of Array.from(rr.cells)) n += cc.colSpan;
+        colCount = Math.max(colCount, n);
+      }
+      const cols = Array.from(colgroup.querySelectorAll(":scope > col"));
+      while (cols.length < colCount) {
+        const c = document.createElement("col");
+        c.style.width = "auto";
+        colgroup.appendChild(c);
+        cols.push(c);
+      }
+    }
+
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
+
+  const deleteTableRow = () => {
+    const ctx = getTableCellContext();
+    if (!ctx) return;
+    ctx.row.remove();
+    // ถ้าลบแถวสุดท้ายแล้ว table ว่าง → ลบ table ทิ้ง
+    if (ctx.table.rows.length === 0) ctx.table.remove();
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
+
+  const deleteTableColumn = () => {
+    const ctx = getTableCellContext();
+    if (!ctx) return;
+    const { table, row, cell } = ctx;
+    const colCellIdx = Array.from(row.cells).indexOf(cell);
+
+    // ลบ cell idx เดียวกันจากทุกแถว
+    for (const r of Array.from(table.rows)) {
+      const target = r.cells[colCellIdx];
+      if (target) target.remove();
+    }
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
+
+  const deleteTable = () => {
+    const ctx = getTableCellContext();
+    if (!ctx) return;
+    ctx.table.remove();
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
+
+ // const tableButtonCls ="inline-flex h-7 items-center gap-1 rounded px-2 text-xs text-gray-600 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-400 dark:hover:bg-gray-700";
+
+  // ===========================================================================
+  //  Table: cell selection (Excel-style shift+click), merge/split, color
+  // ===========================================================================
+
+  // สร้าง "grid จริง" ของ cell (expanded โดย colSpan/rowSpan) สำหรับหาตำแหน่ง (r,c)
+  const buildGrid = (
+    table: HTMLTableElement
+  ): { table: HTMLTableElement; rows: number; cols: number; grid: (HTMLTableCellElement | null)[][] } => {
+    // นับจำนวนคอลัมน์จริง
+    const rows = table.rows.length;
+    let cols = 0;
+    for (const row of Array.from(table.rows)) {
+      let colCount = 0;
+      for (const cell of Array.from(row.cells)) colCount += cell.colSpan;
+      cols = Math.max(cols, colCount);
+    }
+    // สร้าง grid เติม null
+    const grid: (HTMLTableCellElement | null)[][] = Array.from({ length: rows }, () =>
+      Array(cols).fill(null)
+    );
+    for (let r = 0; r < rows; r++) {
+      let c = 0;
+      for (const cell of Array.from(table.rows[r].cells)) {
+        while (c < cols && grid[r][c] !== null) c++;
+        for (let dr = 0; dr < cell.rowSpan; dr++) {
+          for (let dc = 0; dc < cell.colSpan; dc++) {
+            if (r + dr < rows && c + dc < cols) grid[r + dr][c + dc] = cell;
+          }
+        }
+        c += cell.colSpan;
+      }
+    }
+    return { table, rows, cols, grid };
+  };
+
+  // หา anchor (cell แรก) จากการคลิกใน cell — เก็บ range ให้แทน
+  const captureAnchorFromSelection = () => {
+    const ctx = getTableCellContext();
+    if (!ctx) return;
+    const { table, cell } = ctx;
+    const { grid, rows, cols } = buildGrid(table);
+    // หา (r,c) ของ cell นี้
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (grid[r][c] === cell) {
+          selectedBlockRef.current = { table, r1: r, c1: c, r2: r, c2: c };
+          return;
+        }
+      }
+    }
+  };
+
+  // เมื่อ shift+click ใน cell เป้าหมาย → ขยาย block ถึง cell นั้น
+  const extendBlockToCellAt = (
+    ctx: { cell: HTMLTableCellElement; row: HTMLTableRowElement; table: HTMLTableElement } | null
+  ) => {
+    const anchor = selectedBlockRef.current;
+    if (!anchor || !ctx || ctx.table !== anchor.table) return;
+    const { grid, rows, cols } = buildGrid(ctx.table);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (grid[r][c] === ctx.cell) {
+          selectedBlockRef.current = {
+            ...anchor,
+            r2: r,
+            c2: c,
+            table: ctx.table,
+          };
+          return;
+        }
+      }
+    }
+  };
+
+  // ทำ highlight selection บน block ผ่าน class-based outline (ใช้ data attr)
+  const applyBlockHighlight = () => {
+    // เคลียร์ของเก่าก่อน
+    if (editorRef.current) {
+      editorRef.current.querySelectorAll("[data-sel-mark='1']").forEach((el) =>
+        el.removeAttribute("data-sel-mark")
+      );
+    }
+    const blk = selectedBlockRef.current;
+    if (!blk) return;
+    const { grid } = buildGrid(blk.table);
+    const marks = new Set<HTMLTableCellElement>();
+    const r1 = Math.min(blk.r1, blk.r2), r2 = Math.max(blk.r1, blk.r2);
+    const c1 = Math.min(blk.c1, blk.c2), c2 = Math.max(blk.c1, blk.c2);
+    for (let r = r1; r <= r2; r++) {
+      for (let c = c1; c <= c2; c++) {
+        const cell = grid[r][c];
+        if (cell) marks.add(cell);
+      }
+    }
+    marks.forEach((cell) => cell.setAttribute("data-sel-mark", "1"));
+  };
+
+  const clearBlockSelection = () => {
+    selectedBlockRef.current = null;
+    if (editorRef.current) {
+      editorRef.current.querySelectorAll("[data-sel-mark='1']").forEach((el) =>
+        el.removeAttribute("data-sel-mark")
+      );
+    }
+  };
+
+  // ── Image resize: อัปเดตตำแหน่งกรอบของรูปที่เลือกเพื่อวาด handles ──
+  const updateImgBox = () => {
+    const img = selectedImgRef.current;
+    if (!img) { setImgBox(null); return; }
+    const r = img.getBoundingClientRect();
+    const er = editorRef.current?.getBoundingClientRect();
+    if (!er) return;
+    setImgBox({
+      left: r.left - er.left,
+      top: r.top - er.top,
+      width: r.width,
+      height: r.height,
+    });
+  };
+
+  const onImgResizeMove = (e: MouseEvent) => {
+    const st = imgResizeRef.current;
+    if (!st) return;
+    const dx = e.clientX - st.startX;
+    const dy = e.clientY - st.startY;
+    let w = st.startW, h = st.startH;
+    if (st.dir.includes("e")) w = st.startW + dx;
+    if (st.dir.includes("s")) h = st.startH + dy;
+    if (st.dir.includes("w")) w = st.startW - dx;
+    if (st.dir.includes("n")) h = st.startH - dy;
+    // รักษาสัดส่วน ตอนกด shift
+    if (e.shiftKey) {
+      const ratio = st.startW / st.startH;
+      if (st.dir.includes("e")) { h = w / ratio; }
+      else if (st.dir.includes("w")) { h = w / ratio; }
+      else if (st.dir.includes("s")) { w = h * ratio; }
+      else if (st.dir.includes("n")) { w = h * ratio; }
+    }
+    w = Math.max(20, w);
+    h = Math.max(20, h);
+    const img = st.img;
+    img.style.width = `${w}px`;
+    img.style.height = `${h}px`;
+    img.style.maxWidth = "none"; // กันไม่ให้ถูกจำกัดจาก prose
+    updateImgBox();
+  };
+
+  const onImgResizeUp = () => {
+    imgResizeRef.current = null;
+    window.removeEventListener("mousemove", onImgResizeMove);
+    window.removeEventListener("mouseup", onImgResizeUp);
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
+
+  const clearImgSelection = () => {
+    selectedImgRef.current = null;
+    setImgBox(null);
+  };
+
+  // Handler: คลิกใน editor -> จับว่าเป็น cell-table หรือไม่
+  const handleEditorClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // ถ้าคลิกที่ img → เลือกรูป (ถ้ายังไม่ถูก mousedown จัดการ)
+    if ((e.target as HTMLElement).closest?.("img")) {
+      const img = (e.target as HTMLElement).closest("img") as HTMLImageElement;
+      selectedImgRef.current = img;
+      updateImgBox();
+      return;
+    }
+    // ถ้าคลิกตำแหน่งว่างใน editor → เคลียร์การเลือกรูป
+    if (!(e.target as HTMLElement).closest(".img-resize-overlay")) {
+      clearImgSelection();
+    }
+    // ถ้าคลิกนอกตาราง → เคลียร์ selection
+    const inTable = !!(e.target as HTMLElement).closest("table");
+    if (!inTable) {
+      clearBlockSelection();
+      return;
+    }
+    // shift+click มีการจัดการใน mousedown แล้ว — อย่า overwrite
+    if (e.shiftKey) return;
+    captureAnchorFromSelection();
+    applyBlockHighlight();
+  };
+
+  // หา cell โดยตรงจาก target ของ event (แม่นกว่าการอ่าน selection ตอน mousedown)
+  const cellFromTarget = (target: EventTarget | null): {
+    cell: HTMLTableCellElement;
+    row: HTMLTableRowElement;
+    table: HTMLTableElement;
+  } | null => {
+    const cell = (target as HTMLElement)?.closest?.("td, th") as HTMLTableCellElement | null;
+    if (!cell) return null;
+    const row = cell.closest("tr") as HTMLTableRowElement | null;
+    const table = cell.closest("table") as HTMLTableElement | null;
+    if (!row || !table) return null;
+    return { cell, row, table };
+  };
+
+  // Handler: mousedown บน editor — ลาก resize ที่ขอบ cell / ลาก resize รูปภาพ
+  const handleEditorMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    // ◉ ถ้ากำลังลาก resize รูปอยู่ (จับจุดฉุดของรูป) → เริ่ม resize รูป
+    if (imgResizeRef.current) return;
+
+    // ถ้าคลิกที่จุดฉุด resize รูป (ใน overlay) → เริ่ม drag resize รูป
+    const handleEl = (e.target as HTMLElement).closest?.("[data-img-handle]") as HTMLElement | null;
+    if (handleEl && selectedImgRef.current) {
+      const dir = handleEl.getAttribute("data-img-handle") as
+        "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w";
+      const rect = selectedImgRef.current.getBoundingClientRect();
+      imgResizeRef.current = {
+        img: selectedImgRef.current,
+        dir,
+        startX: e.clientX,
+        startY: e.clientY,
+        startW: rect.width,
+        startH: rect.height,
+      };
+      e.preventDefault();
+      e.stopPropagation();
+      window.addEventListener("mousemove", onImgResizeMove);
+      window.addEventListener("mouseup", onImgResizeUp);
+      return;
+    }
+
+    // ถ้าคลิกที่ img → เลือกรูป (ไม่เข้า resize cell)
+    if ((e.target as HTMLElement).closest?.("img")) {
+      const img = (e.target as HTMLElement).closest("img") as HTMLImageElement;
+      selectedImgRef.current = img;
+      updateImgBox();
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
+    // ถ้าอยู่ที่ขอบ cell → เริ่ม resize cell
+    const cctx = cellFromTarget(e.target);
+    if (cctx) {
+      const started = beginResizeIfNearEdgeOn(cctx, e);
+      if (started) {
+        e.preventDefault();
+        e.stopPropagation();
+        window.addEventListener("mousemove", onResizeMove);
+        window.addEventListener("mouseup", onResizeUp);
+        return;
+      }
+    }
+    // shift+click -> ขยาย block
+    if (e.shiftKey) {
+      e.preventDefault(); // ป้องกัน browser เลือก text
+      extendBlockToCellAt(cctx);
+      applyBlockHighlight();
+    }
+  };
+
+  // ◾ Right-click บน cell/table → เปิด context menu (table actions + border + fill)
+  const handleTableContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
+    const cell = (e.target as HTMLElement).closest?.("td, th");
+    if (!cell) return; // คลิกขวาที่ไม่ใช่ cell → ปิดเมนู
+    e.preventDefault(); // ห้ามแสดง context menu ของเบราว์เซอร์
+
+        // เก็บ cell ที่คลิกขวา ไว้ใช้กับ single-cell (กรณีไม่มี block selection)
+        const td = cell as HTMLTableCellElement;
+        ctxMenuCellRef.current = td;
+
+    // ◉ ถ้ามี block selection (shift+select) อยู่ → ให้ context menu ทำงานกับทั้ง block
+    //    (merge / border / fill จะใช้ selectedBlockRef ทำงานกับทั้งบล็อกที่เลือกไว้)
+    if (selectedBlockRef.current) {
+      // ตรวจว่า cell ที่คลิกขวาอยู่ในตารางเดียวกับ block ที่เลือกหรือไม่
+      const blk = selectedBlockRef.current;
+      if (blk.table.contains(td)) {
+        // วาง cursor ใน cell ที่คลิกขวา (เพื่อให้ getTableCellContext ยังได้ cell นี้)
+        const range = document.createRange();
+        range.setStart(td, 0);
+        range.collapse(true);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+        editorRef.current?.focus();
+        setTableContextMenu({ x: e.clientX, y: e.clientY });
+        return;
+      }
+      // คลิกขวาที่ย้ายไปตารางอื่น → เคลียร์ block เดิม แล้วใช้ cell เดียว
+      clearBlockSelection();
+    }
+
+    // ✘ ไม่มี block selection → วาง cursor ที่ cell ที่คลิกขวา (ใช้กับ cell เดียว)
+    clearImgSelection();
+    const range = document.createRange();
+    range.setStart(td, 0);
+    range.collapse(true);
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+    editorRef.current?.focus();
+
+    setTableContextMenu({ x: e.clientX, y: e.clientY });
+  };
+
+  // Handler: mouseover – เปลี่ยน cursor เป็น resize เมื่อชิดขอบขวา/ซ้าย/ล่างของ cell
+  const handleEditorMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    // ถ้ากำลังลาก resize อยู่ ไม่ต้องยุ่ง
+    if (resizeStateRef.current) return;
+    const cctx = cellFromTarget(e.target);
+    if (!cctx) { document.body.style.cursor = ""; return; }
+    const rect = cctx.cell.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const offsetY = e.clientY - rect.top;
+    const threshold = 8;
+    const nearRight = rect.width - offsetX < threshold;
+    const nearBottom = rect.height - offsetY < threshold;
+    const nearLeft = offsetX < threshold;
+    if (nearRight || nearLeft) document.body.style.cursor = "col-resize";
+    else if (nearBottom) document.body.style.cursor = "row-resize";
+    else document.body.style.cursor = "";
+  };
+
+  // ================= Merge / Split =================
+
+  const mergeSelectedCells = () => {
+    const blk = selectedBlockRef.current;
+    if (!blk) return;
+    const { grid } = buildGrid(blk.table);
+    const r1 = Math.min(blk.r1, blk.r2), r2 = Math.max(blk.r1, blk.r2);
+    const c1 = Math.min(blk.c1, blk.c2), c2 = Math.max(blk.c1, blk.c2);
+    const colsSpan = c2 - c1 + 1;
+    const rowsSpan = r2 - r1 + 1;
+
+    const target = grid[r1][c1];
+    if (!target) return;
+
+    // รวบรวม cell ที่จะถูกลบ (ใน block, ไม่ใช่ target)
+    const toRemove = new Set<HTMLTableCellElement>();
+    for (let r = r1; r <= r2; r++) {
+      for (let c = c1; c <= c2; c++) {
+        const cell = grid[r][c];
+        if (cell && cell !== target) toRemove.add(cell);
+      }
+    }
+
+    // ถ้า target เป็น part ของ merge เดิมอยู่แล้ว กันไม่ให้เกิด overlap
+    // ตรวจ block ทับไปยัง neighboring cell ที่มี span เกิน block
+    target.colSpan = colsSpan;
+    target.rowSpan = rowsSpan;
+
+    toRemove.forEach((cell) => cell.remove());
+
+    // เก็บข้อความที่เหลือมารวม (Optional: concat text)
+    clearBlockSelection();
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
+
+  const splitCellAtCursor = () => {
+    const ctx = getTableCellContext();
+    if (!ctx) return;
+    const { cell, table } = ctx;
+    const cs = cell.colSpan, rs = cell.rowSpan;
+    if (cs === 1 && rs === 1) return; // ไม่มี span → ไม่ต้อง split
+
+    // หาตำแหน่งเริ่มต้น (startRow, startCol) ที่ cell นี้เริ่ม ใน grid จริง
+    const { grid, rows, cols } = buildGrid(table);
+    let startRow = -1, startCol = -1;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (grid[r][c] === cell) { startRow = r; startCol = c; break; }
+      }
+      if (startRow >= 0) break;
+    }
+    if (startRow < 0 || startCol < 0) return;
+
+    const html = cell.innerHTML;
+    const styleBorder = "border:1px solid #d1d5db;padding:6px 10px;";
+    const origTag = cell.tagName; // "TD" หรือ "TH"
+
+    // เก็บข้อความเดิมไว้ที่ cell แรก
+    const mkCell = (isFirst: boolean): HTMLTableCellElement => {
+      const td = document.createElement(origTag) as HTMLTableCellElement;
+      td.style.cssText = styleBorder;
+      td.innerHTML = isFirst ? html : "&nbsp;";
+      return td;
+    };
+
+    // ใช้ข้อเท็จจริงว่า cell ที่ merge เป็น rectangular ใน grid
+    // วาง cell เดี่ยว cs ตัวในแต่ละแถว rs ที่ cell ครอบคลุม
+    cell.remove();
+
+    // จำนวน cell ที่ควรต้องใส่ต่อแถว ให้ตารางคงรูป
+    // แต่ละแถวที่ cell ผ่าน จะมี cs cell เดี่ยว
+    for (let rr = 0; rr < rs; rr++) {
+      const tr = table.rows[startRow + rr];
+      if (!tr) break;
+      // หาตำแหน่งแทรก: นับ colSpan ก่อนตัว startCol ใน grid
+      // ทำแบบง่าย: แทรก cell ทุกตัวที่ startCol (หลัง cell ก่อนหน้า)
+      const insertIdx = Math.min(startCol, tr.cells.length);
+      for (let cc = 0; cc < cs; cc++) {
+        const td = mkCell(rr === 0 && cc === 0);
+        tr.insertBefore(td, tr.cells[insertIdx]);
+      }
+    }
+
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
+
+  // ================= Color ของ cell/row/col =================
+  const applyTableColor = (color: string) => {
+    const blk = selectedBlockRef.current;
+    const ctx = getTableCellContext();
+    const mode = tableColorTarget;
+    const cells = new Set<HTMLTableCellElement>();
+
+    if (mode === "row" && ctx) {
+      Array.from(ctx.row.cells).forEach((c) => cells.add(c));
+    } else if (mode === "col" && ctx) {
+      const { grid, rows, cols } = buildGrid(ctx.table);
+      // หา col ของ cursor
+      for (let c = 0; c < cols; c++) {
+        if (grid[ctx.row.rowIndex]?.[c] === ctx.cell) {
+          for (let r = 0; r < rows; r++) {
+            if (grid[r][c]) cells.add(grid[r][c] as HTMLTableCellElement);
+          }
+          break;
+        }
+      }
+    } else if (mode === "cell" && blk) {
+      // ใช้ block selection หรือ cell เดียว
+      const { grid } = buildGrid(blk.table);
+      const r1 = Math.min(blk.r1, blk.r2), r2 = Math.max(blk.r1, blk.r2);
+      const c1 = Math.min(blk.c1, blk.c2), c2 = Math.max(blk.c1, blk.c2);
+      for (let r = r1; r <= r2; r++)
+        for (let c = c1; c <= c2; c++) {
+          const cell = grid[r][c];
+          if (cell) cells.add(cell);
+        }
+    } else if (mode === "cell" && ctx) {
+      cells.add(ctx.cell);
+    }
+
+    cells.forEach((cell) => { cell.style.backgroundColor = color; });
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
+    //setShowTableColorPicker(false);
+    applyBlockHighlight();
+  };
+
+  // ================= จัดตำแหน่งข้อความใน cell (ซ้าย/กลาง/ขวา) =================
+  // ใช้ block selection (shift+click) เป็นหลัก เหมือนฟีเจอร์ fill color
+  // รองรับทั้ง: จัดข้อความใน cell และ จัดรูปภาพที่ถูกเลือกอยู่
+  const alignSelectedCells = (align: "left" | "center" | "right") => {
+    // ◉ ถ้ากำลังเลือกรูปอยู่ → จัดตำแหน่งรูป (ใน cell ใช้ text-align ของ cell / นอก cell ใช้ margin)
+    const img = selectedImgRef.current;
+    if (img) {
+      const cell = img.closest("td, th") as HTMLElement | null;
+      if (cell) {
+        // อยู่ใน cell: จัดผ่าน text-align ของ cell + รูปเป็น inline-block
+        img.style.display = "inline-block";
+        img.style.margin = "0";
+        img.style.float = "none";
+        cell.style.textAlign = align;
+      } else {
+        // อยู่นอกตาราง: ใช้ display:block + margin เพื่อจัดกลาง/ขวา
+        img.style.display = "block";
+        img.style.float = "none";
+        if (align === "center") img.style.margin = "0 auto";
+        else if (align === "right") img.style.margin = "0 0 0 auto";
+        else img.style.margin = "0";
+      }
+      if (editorRef.current) onChange(editorRef.current.innerHTML);
+      updateImgBox();
+      return;
+    }
+
+    const blk = selectedBlockRef.current;
+    const ctx = getTableCellContext();
+    const cells = new Set<HTMLTableCellElement>();
+
+    if (blk) {
+      // มี block selection → ปรับทั้ง block
+      const { grid } = buildGrid(blk.table);
+      const r1 = Math.min(blk.r1, blk.r2), r2 = Math.max(blk.r1, blk.r2);
+      const c1 = Math.min(blk.c1, blk.c2), c2 = Math.max(blk.c1, blk.c2);
+      for (let r = r1; r <= r2; r++)
+        for (let c = c1; c <= c2; c++) {
+          const cell = grid[r][c];
+          if (cell) cells.add(cell);
+        }
+    } else if (ctx) {
+      // ไม่มี block → ปรับ cell ปัจจุบันที่ cursor อยู่
+      cells.add(ctx.cell);
+    }
+
+    cells.forEach((cell) => { cell.style.textAlign = align; });
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
+
+  // ============ ปรับ Border style/width/color ให้ cell (เลือก block หรือ cell ปัจจุบัน) ============
+  const applyTableBorder = (
+    style: string,
+    width: number,
+    color: string
+  ) => {
+    const blk = selectedBlockRef.current;
+    const ctx = getTableCellContext();
+    const cells = new Set<HTMLTableCellElement>();
+
+    if (blk) {
+      // มี block selection → ปรับทั้ง block
+      const { grid } = buildGrid(blk.table);
+      const r1 = Math.min(blk.r1, blk.r2), r2 = Math.max(blk.r1, blk.r2);
+      const c1 = Math.min(blk.c1, blk.c2), c2 = Math.max(blk.c1, blk.c2);
+      for (let r = r1; r <= r2; r++)
+        for (let c = c1; c <= c2; c++) {
+          const cell = grid[r][c];
+          if (cell) cells.add(cell);
+        }
+    } else if (ctx) {
+      // ไม่มี block → ปรับ cell ปัจจุบันที่ cursor อยู่
+      cells.add(ctx.cell);
+    }
+
+    cells.forEach((cell) => {
+      cell.style.borderStyle = style === "none" ? "none" : style;
+      if (style !== "none") {
+        cell.style.borderWidth = `${width}px`;
+        cell.style.borderColor = color;
+      }
+    });
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
+
+  // ===========================================================================
+  //  Table: Resize (drag) — ตัวจับที่ขอบขวา/ล่างของ cell
+  // ===========================================================================
+
+  const resizeStateRef = useRef<{
+    cell: HTMLTableCellElement;
+    row: HTMLTableRowElement;
+    table: HTMLTableElement;
+    mode: "col" | "row";
+    colIdx: number;      // grid col ที่ resize อยู่
+    startX: number;
+    startY: number;
+    startW: number;
+    startH: number;
+  } | null>(null);
+
+  // หา grid col index ของ cell (รองรับ colspan/rowspan) โดยใช้ buildGrid
+  const getCellStartCol = (table: HTMLTableElement, cell: HTMLTableCellElement): number => {
+    const { grid, rows, cols } = buildGrid(table);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (grid[r][c] === cell) return c;
+      }
+    }
+    return 0;
+  };
+
+  // เริ่ม resize: ตรวจว่า pointer อยู่ใกล้ขอบขวา/ล่างของ cell แค่ไหน (ใน resize mode)
+  const beginResizeIfNearEdgeOn = (
+    ctx: { cell: HTMLTableCellElement; row: HTMLTableRowElement; table: HTMLTableElement },
+    e: React.MouseEvent
+  ) => {
+    const rect = ctx.cell.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const offsetY = e.clientY - rect.top;
+    const threshold = 8;
+    const nearRight = rect.width - offsetX < threshold;
+    const nearBottom = rect.height - offsetY < threshold;
+    const nearLeft = offsetX < threshold;   // รองรับการลากจากขอบซ้ายด้วย
+
+    // เลือก mode ตามที่ใกล้ขอบสุด (มองทั้งขอบขวา/ซ้าย/ล่าง)
+    if (nearRight || nearBottom || nearLeft) {
+      const mode =
+        (nearRight && rect.width - offsetX < offsetY) ||
+          (nearLeft && offsetX < offsetY)
+          ? "col"
+          : "row";
+      // lock layout เพื่อให้ width/height ที่ set เป็นไปตามที่ลากได้จริง
+      ctx.table.style.tableLayout = "fixed";
+      let colIdx = getCellStartCol(ctx.table, ctx.cell);
+      // ถ้าจับขอบซ้าย → resize คอลัมน์ทางซ้ายของ cell นี้
+      if (nearLeft && !nearRight) {
+        colIdx = Math.max(0, colIdx - 1);
+      }
+
+      // หา width ปัจจุบันของคอลัมน์ที่จะ resize (colIdx) จาก grid จริง
+      // ใช้เป็น startW เพื่อให้ resize ไปซ้าย/ขวาได้สมดุลทั้ง 2 ทิศ
+      let startW = rect.width;
+      if (mode === "col") {
+        const { grid, rows } = buildGrid(ctx.table);
+        let sum = 0, count = 0;
+        for (let rr = 0; rr < rows; rr++) {
+          const cell = grid[rr]?.[colIdx];
+          if (cell) {
+            const cr = (cell as HTMLTableCellElement).getBoundingClientRect();
+            sum += cr.width;
+            count++;
+          }
+        }
+        if (count) startW = sum / count;
+      }
+
+      // ◉ ปลดล็อก width ที่ Excel ฝังไว้บน cell (ทำครั้งเดียวต่อ table ตรวจผ่าน data attr)
+      //    เก็บ width ของ columns ที่ลากไปแล้วไว้บน <colgroup> ของเราให้ "ค้าง" ต่อเนื่อง
+      if (mode === "col" && ctx.table.getAttribute("data-resize-unlocked") !== "1") {
+        // ลบเฉพาะ width ที่ฝังบน cell (attribute + inline) แต่ไม่แตะ <colgroup> ที่เราสร้าง
+        Array.from(ctx.table.rows).forEach((row) => {
+          Array.from(row.cells).forEach((cell) => {
+            cell.removeAttribute("width");
+            cell.style.width = "";
+            cell.style.minWidth = "0";
+          });
+        });
+        ctx.table.style.tableLayout = "fixed";
+        ctx.table.style.width = "";
+        ctx.table.setAttribute("data-resize-unlocked", "1");
+      }
+
+      resizeStateRef.current = {
+        cell: ctx.cell,
+        row: ctx.row,
+        table: ctx.table,
+        mode,
+        colIdx,
+        startX: e.clientX,
+        startY: e.clientY,
+        startW,
+        startH: rect.height,
+      };
+      document.body.style.cursor = mode === "col" ? "col-resize" : "row-resize";
+      return true;
+    }
+    return false;
+  };
+
+  const onResizeMove = (e: MouseEvent) => {
+    const rs = resizeStateRef.current;
+    if (!rs) return;
+    if (rs.mode === "col") {
+      const delta = e.clientX - rs.startX;
+      const newW = Math.max(40, rs.startW + delta);
+
+      // หา/สร้าง <colgroup> (สร้างครั้งแรกตอนเริ่ม resize) แล้ว set width ของ col เป้า
+      let colgroup = rs.table.querySelector<HTMLTableColElement>(":scope > colgroup");
+      if (!colgroup) {
+        colgroup = document.createElement("colgroup");
+        let colCount = 0;
+        for (const row of Array.from(rs.table.rows)) {
+          let n = 0;
+          for (const cell of Array.from(row.cells)) n += cell.colSpan;
+          colCount = Math.max(colCount, n);
+        }
+        // บันทึก width ปัจจุบันของแต่ละคอลัมน์ "ค้าง" ไว้ที่ <col> ตั้งแต่ต้น
+        // เพื่อให้ columns ที่ยังไม่ถูกลากคงขนาดเดิมไว้ (ไม่หดแคบจาก content)
+        const { grid, rows, cols: gridCols } = buildGrid(rs.table);
+        const colWidths: number[] = [];
+        for (let ci = 0; ci < gridCols; ci++) {
+          let sum = 0, cnt = 0;
+          for (let ri = 0; ri < rows; ri++) {
+            const cell = grid[ri]?.[ci];
+            if (cell) { sum += (cell as HTMLTableCellElement).getBoundingClientRect().width; cnt++; }
+          }
+          colWidths.push(cnt ? sum / cnt : 0);
+        }
+        for (let i = 0; i < Math.max(colCount, 1); i++) {
+          const c = document.createElement("col");
+          if (colWidths[i]) c.style.width = `${Math.round(colWidths[i])}px`;
+          colgroup.appendChild(c);
+        }
+        rs.table.insertBefore(colgroup, rs.table.firstChild);
+      }
+      const cols = Array.from(colgroup.querySelectorAll<HTMLTableColElement>(":scope > col"));
+      const targetCol = cols[rs.colIdx];
+      if (targetCol) targetCol.style.width = `${newW}px`;
+    } else {
+      const delta = e.clientY - rs.startY;
+      const newH = Math.max(20, rs.startH + delta);
+      // set height ให้ทุก cell ในแถวเดียวกัน (row resize)
+      const startRow = rs.row.rowIndex;
+      const { grid, cols: gridCols } = buildGrid(rs.table);
+      const targets = new Set<HTMLTableCellElement>();
+      for (let cc = 0; cc < gridCols; cc++) {
+        const cell = grid[startRow]?.[cc];
+        if (cell) targets.add(cell as HTMLTableCellElement);
+      }
+      targets.forEach((cell) => { cell.style.height = `${newH}px`; });
+    }
+  };
+
+  const onResizeUp = () => {
+    const rs = resizeStateRef.current;
+    if (!rs) return;
+    resizeStateRef.current = null;
+    document.body.style.cursor = "";
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
+
+
+
+
+
+
+
+
+
+
+
+  //   const colorInputRef = useRef<HTMLInputElement>(null);
+
+  //   const saveSelection = () => {
+  //   const selection = window.getSelection();
+
+  //   if (
+  //     selection &&
+  //     selection.rangeCount > 0 &&
+  //     !selection.isCollapsed &&
+  //     editorRef.current?.contains(selection.anchorNode)
+  //   ) {
+  //     savedRangeRef.current = selection.getRangeAt(0).cloneRange();
+  //   }
+  // };
+  // const openColorPicker = () => {
+  //   // Save selection ก่อน
+  //   saveSelection();
+
+  //   // เปิด native color picker
+  //   colorInputRef.current?.click();
+  // };
+
+  //   const restoreSelection = () => {
+  //     if (!savedRangeRef.current) return;
+
+  //     const selection = window.getSelection();
+
+  //     selection?.removeAllRanges();
+  //     selection?.addRange(savedRangeRef.current);
+  //   };
+
+
+
+  const [showColorPicker, setShowColorPicker] = useState(false);
+
+  const colors = [
+    "#000000",
+    "#ffffff",
+    "#ef4444",
+    "#f97316",
+    "#eab308",
+    "#22c55e",
+    "#06b6d4",
+    "#3b82f6",
+    "#6366f1",
+    "#a855f7",
+    "#ec4899",
+    "#6b7280",
+  ];
+
+  const saveSelection = () => {
+    const selection = window.getSelection();
+
+    if (
+      selection &&
+      selection.rangeCount > 0 &&
+      editorRef.current?.contains(selection.anchorNode)
+    ) {
+      savedRangeRef.current = selection
+        .getRangeAt(0)
+        .cloneRange();
+    }
+  };
+
+  const restoreSelection = () => {
+    if (!savedRangeRef.current) return;
+
+    const selection = window.getSelection();
+
+    selection?.removeAllRanges();
+    selection?.addRange(savedRangeRef.current);
+  };
+
+
+
+
+
+
+
+
+
+
+
   React.useEffect(() => {
     if (editorRef.current && editorRef.current.innerHTML !== value) {
       editorRef.current.innerHTML = value;
     }
   }, [value]); // intentionally only on mount
+
+  // ◉ ปิด dropdown ทั้งหมด (font color / table action / border / fill color)
+  //    เมื่อคลิกที่ใดก็ได้นอกเมนูหรือตัว toggle ปุ่มแต่ละตัว
+  React.useEffect(() => {
+        const closeAll = () => {
+      setShowColorPicker(false);
+      // setShowTableMenu(false);
+      // setShowBorderMenu(false);
+      // setShowTableColorPicker(false);
+      setTableContextMenu(null);
+    };
+    const onDocMouseDown = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // ไม่ปิดเมื่อคลิกภายใน toolbar dropdown หรือ context menu (table context menu)
+      const insideAnyMenu =
+        target.closest("[data-toolbar-dropdown]") !== null ||
+        target.closest("[data-table-context-menu]") !== null;
+      if (!insideAnyMenu) closeAll();
+    };
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, []);
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-700">
@@ -230,14 +1252,125 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
         </select>
 
         <Divider />
-
+        {/* 
         <label title="Font color" className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded text-xs text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700">
           <span className="relative">
             <span className="font-bold text-sm">A</span>
             <span className="absolute bottom-0 left-0 right-0 h-1 rounded-sm bg-rose-400" />
           </span>
-          <input type="color" className="sr-only" onChange={(e) => exec("foreColor", e.target.value)} />
-        </label>
+          <input type="color" className="sr-only" onChange={(e) => exec("foreColor", e.target.value)} /> 
+        </label> */}
+
+
+
+        <div className="relative" data-toolbar-dropdown>
+          <button
+            type="button"
+            title="Font color"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              // เก็บ Selection ก่อน
+              saveSelection();
+              setShowColorPicker((prev) => !prev);
+            }}
+            className="inline-flex h-7 w-7 items-center justify-center rounded text-xs text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+          >
+            <span className="relative">
+              <span className="font-bold text-sm">A</span>
+              <span className="absolute bottom-0 left-0 right-0 h-1 rounded-sm bg-rose-400" />
+            </span>
+          </button>
+
+          {showColorPicker && (
+            <div
+              className="absolute left-0 top-full z-50 mt-1 w-48 rounded-lg border border-gray-200 bg-white p-3 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+              onMouseDown={(e) => e.preventDefault()}
+            >
+              <div className="grid grid-cols-6 gap-2">
+                {colors.map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    title={color}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+
+                      restoreSelection();
+
+                      document.execCommand(
+                        "foreColor",
+                        false,
+                        color
+                      );
+
+                      editorRef.current?.focus();
+
+                      if (editorRef.current) {
+                        onChange(editorRef.current.innerHTML);
+                      }
+
+                      setShowColorPicker(false);
+                    }}
+                    className="h-6 w-6 rounded-full border border-gray-300 hover:scale-110"
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 
+<button
+  type="button"
+  title="Font color"
+  onMouseDown={(e) => {
+    e.preventDefault();
+    saveSelection();
+  }}
+  onClick={openColorPicker}
+  className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded text-xs text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+>
+  <span className="relative">
+    <span className="font-bold text-sm">AB</span>
+    <span className="absolute bottom-0 left-0 right-0 h-1 rounded-sm bg-rose-400" />
+  </span>
+</button>
+
+<input
+  ref={colorInputRef}
+  type="color"
+className="sr-only" 
+  onChange={(e) => {
+    // Restore selection
+    if (savedRangeRef.current) {
+      const selection = window.getSelection();
+
+      selection?.removeAllRanges();
+      selection?.addRange(savedRangeRef.current);
+    }
+
+    // Apply color
+    document.execCommand(
+      "foreColor",
+      false,
+      e.target.value
+    );
+
+    // Focus กลับเข้า editor
+    editorRef.current?.focus();
+
+    // Update HTML
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML);
+    }
+  }}
+/> */}
+
+
+
+
+
 
         <Divider />
 
@@ -250,9 +1383,18 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
 
         <Divider />
 
-        <ToolbarBtn onClick={() => exec("insertUnorderedList")} title="Bullet list">
+        {/* <ToolbarBtn onClick={() => exec("insertUnorderedList")} title="Bullet list">
+          <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M4 5a1 1 0 100-2 1 1 0 000 2zm3-1h10a1 1 0 110 2H7a1 1 0 110-2zm-3 5a1 1 0 100-2 1 1 0 000 2zm3-1h10a1 1 0 110 2H7a1 1 0 110-2zm-3 5a1 1 0 100-2 1 1 0 000 2zm3-1h10a1 1 0 110 2H7a1 1 0 110-2z" /></svg>
+        </ToolbarBtn> */}
+
+        <ToolbarBtn onClick={() => execute("insertUnorderedList")} title="Bullet list">
           <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M4 5a1 1 0 100-2 1 1 0 000 2zm3-1h10a1 1 0 110 2H7a1 1 0 110-2zm-3 5a1 1 0 100-2 1 1 0 000 2zm3-1h10a1 1 0 110 2H7a1 1 0 110-2zm-3 5a1 1 0 100-2 1 1 0 000 2zm3-1h10a1 1 0 110 2H7a1 1 0 110-2z" /></svg>
         </ToolbarBtn>
+
+
+
+
+
         <ToolbarBtn onClick={() => exec("insertOrderedList")} title="Numbered list">
           <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M3 4h1v3H3V4zm1 7H3v-1l2-2H3V7h3v1l-2 2h2v1zm-1 3h1v1h1v1H3v-1h1v-2zM7 5h10a1 1 0 110 2H7a1 1 0 110-2zm0 5h10a1 1 0 110 2H7a1 1 0 110-2zm0 5h10a1 1 0 110 2H7a1 1 0 110-2z" /></svg>
         </ToolbarBtn>
@@ -277,25 +1419,485 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
         >
           <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
         </ToolbarBtn>
-        <ToolbarBtn onClick={() => setVideoDialog({ open: true, url: "" })} title="Insert video">
+        <ToolbarBtn onClick={() => { saveSelection(); setVideoDialog({ open: true, url: "" }); }} title="Insert video">
           <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" /></svg>
         </ToolbarBtn>
         <ToolbarBtn onClick={() => exec("insertHorizontalRule")} title="Horizontal rule">
           <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14" /></svg>
         </ToolbarBtn>
+
+        <Divider />
+
+        {/* ============ Table controls ============ */}
+        <ToolbarBtn
+          onClick={() => {
+            saveSelection();
+            setTableDialog((p) => ({ ...p, open: true }));
+          }}
+          title="Insert table"
+        >
+          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16v12H4V6zm0 4h16M9 10v8" /></svg>
+        </ToolbarBtn>
+        {/* Table actions dropdown (row/col/delete/merge/split) */}
+        {/* <div className="relative" data-toolbar-dropdown>
+          <button
+            type="button"
+            title="Table actions"
+            onMouseDown={(e) => { e.preventDefault(); setShowTableMenu((p) => !p); }}
+            className="inline-flex h-7 items-center gap-1 rounded px-2 text-xs text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+          >
+            <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm2 0v2h12V6H6zm12 4H6v2h12v-2zm0 4H6v2h12v-2z" clipRule="evenodd" /></svg>
+            <svg className="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M5.5 7.5L10 12l4.5-4.5H5.5z" /></svg>
+          </button>
+          {showTableMenu && (
+            <div
+              className="absolute left-0 top-full z-50 mt-1 w-52 rounded-lg border border-gray-200 bg-white p-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+              onMouseDown={(e) => e.preventDefault()}
+            >
+              {[
+                { icon: <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16"><path d="M0 0h16v2H0zM0 7h16v2H0zM2 2h1v3H2zM13 2h1v3h-1zM2 7h1v4H2z" /></svg>, label: "Insert row above", fn: () => insertTableRow(true) },
+                { icon: <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16"><path d="M2 2h1v3H2zM13 2h1v3h-1zM2 7h1v4H2zM13 7h1v4h-1zM0 12h16v2H0zM2 10h1v2H2z" /></svg>, label: "Insert row below", fn: () => insertTableRow(false) },
+                { icon: <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16"><path d="M0 0h2v6H0zM7 0h2v6H7zM4 0h1v6H4zM11 0h1v6h-1zM14 0h2v16h-2z" /></svg>, label: "Insert col left", fn: () => insertTableColumn(true) },
+                { icon: <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16"><path d="M0 0h2v16H0zM5 0h2v16H5zM10 0h1v16h-1zM13 0h2v16h-2zM5 0h1v6H5z" /></svg>, label: "Insert col right", fn: () => insertTableColumn(false) },
+                { icon: <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M1 4h22v16H1zM1 8h22M8 8v12" /></svg>, label: "Delete row", fn: () => deleteTableRow() },
+                { icon: <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M1 4h22v16H1zM1 8h22M8 8v12M8 4v16M8 8v12" /></svg>, label: "Delete column", fn: () => deleteTableColumn() },
+                { icon: <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18v16H3zM3 4h18M3 8h18M11 8v12" /></svg>, label: "Delete table", fn: () => deleteTable() },
+                { icon: <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16"><path d="M0 0h8v8H0zM8 8h8v8H8zM0 8h4v8H0zM8 0h4v8H8z" /></svg>, label: "Merge cells", fn: () => mergeSelectedCells() },
+                { icon: <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16"><path d="M0 0h4v4H0zM4 0h4v4H4zM8 0h4v4H8zM0 4h6v4H0z" /></svg>, label: "Split cell", fn: () => splitCellAtCursor() },
+              ].map((item) => (
+                <button
+                  key={item.label}
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    item.fn();
+                    setShowTableMenu(false);
+                  }}
+                  className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                >
+                  <span className="text-gray-500 dark:text-gray-400">{item.icon}</span>
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div> */}
+
+        {/* Border style dropdown */}
+        {/* <div className="relative" data-toolbar-dropdown>
+          <button
+            type="button"
+            title="Border style (cell/selection)"
+            onMouseDown={(e) => { e.preventDefault(); setShowBorderMenu((p) => !p); }}
+            className="inline-flex h-7 items-center gap-1 rounded px-2 text-xs text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" d="M4 8h16M4 12h16M4 16h16" /></svg>
+            <svg className="h-2.5 w-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M5.5 7.5L10 12l4.5-4.5H5.5z" /></svg>
+          </button>
+          {showBorderMenu && (
+            <div
+              className="absolute left-0 top-full z-50 mt-1 w-56 rounded-lg border border-gray-200 bg-white p-3 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+              onMouseDown={(e) => e.preventDefault()}
+            >
+              <p className="mb-2 text-xs font-semibold text-gray-700 dark:text-gray-200">Border Style</p>
+              <div className="mb-2 flex gap-1">
+                {([
+                  { s: "solid", label: "Solid", w: "border-solid" },
+                  { s: "dashed", label: "Dashed", w: "border-dashed" },
+                  { s: "dotted", label: "Dotted", w: "border-dotted" },
+                  { s: "none", label: "None", w: "" },
+                ] as Array<{ s: "solid" | "dashed" | "dotted" | "none"; label: string; w: string }>).map((opt) => (
+                  <button
+                    key={opt.s}
+                    type="button"
+                    onMouseDown={(e) => { e.preventDefault(); applyTableBorder(opt.s, 1, "#d1d5db"); setShowBorderMenu(false); }}
+                    className="flex-1 rounded border border-gray-300 px-1 py-1 text-[10px] text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                  >
+                    <span className="block border-b-2 border-gray-500 pb-1" style={{ borderBottomStyle: opt.s === "none" ? "none" : opt.s }} />
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              <p className="mb-1 text-xs font-semibold text-gray-700 dark:text-gray-200">Width</p>
+              <div className="mb-2 flex gap-1">
+                {[1, 2, 3].map((w) => (
+                  <button
+                    key={w}
+                    type="button"
+                    onMouseDown={(e) => { e.preventDefault(); applyTableBorder("solid", w, "#d1d5db"); setShowBorderMenu(false); }}
+                    className="flex-1 rounded border border-gray-300 py-1 text-[10px] text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                  >
+                    <span className="block border-b-2 border-gray-500" style={{ borderBottomWidth: w }} />
+                    {w}px
+                  </button>
+                ))}
+              </div>
+              <p className="mb-1 text-xs font-semibold text-gray-700 dark:text-gray-200">Color</p>
+              <div className="grid grid-cols-6 gap-1">
+                {["#000000", "#ffffff", "#d1d5db", "#ef4444", "#3b82f6", "#22c55e", "#eab308", "#a855f7", "#f97316", "#06b6d4", "#ec4899", "#6b7280"].map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onMouseDown={(e) => { e.preventDefault(); applyTableBorder("solid", 1, c); setShowBorderMenu(false); }}
+                    className="h-5 w-full rounded-sm border border-gray-200"
+                    style={{ backgroundColor: c }}
+                    title={c}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div> */}
+
+        {/* Align selected cells: ซ้าย/กลาง/ขวา */}
+        {/* <Divider />
+        <span className="mr-0.5 text-[10px] text-gray-400">Align</span>
+        <button type="button" title="Align left" onMouseDown={(e) => { e.preventDefault(); alignSelectedCells("left"); }} className={tableButtonCls}>
+          <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 16 16"><path d="M0 2h16v2H0zM0 7h10v2H0zM0 12h16v2H0z" /></svg>
+        </button>
+        <button type="button" title="Align center" onMouseDown={(e) => { e.preventDefault(); alignSelectedCells("center"); }} className={tableButtonCls}>
+          <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 16 16"><path d="M2 2h12v2H2zM5 7h6v2H5zM2 12h12v2H2z" /></svg>
+        </button>
+        <button type="button" title="Align right" onMouseDown={(e) => { e.preventDefault(); alignSelectedCells("right"); }} className={tableButtonCls}>
+          <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 16 16"><path d="M0 2h16v2H0zM6 7h10v2H6zM0 12h16v2H0z" /></svg>
+        </button> */}
+
+        {/* Table color picker toggle */}
+        {/* <div className="relative" data-toolbar-dropdown>
+          <button
+            type="button"
+            title="Fill color (cell/row/col)"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              setShowTableColorPicker((p) => !p);
+            }}
+            className="inline-flex h-7 items-center gap-1 rounded px-2 text-xs text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+          >
+            <span className="h-3 w-3 rounded-sm border" style={{ backgroundColor: tableColorTarget === "cell" ? "#ef4444" : tableColorTarget === "row" ? "#22c55e" : "#3b82f6" }} />
+            Fill
+          </button>
+          {showTableColorPicker && (
+            <div
+              className="absolute left-0 top-full z-50 mt-1 w-52 rounded-lg border border-gray-200 bg-white p-3 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+              onMouseDown={(e) => e.preventDefault()}
+            >
+              <div className="mb-2 flex gap-1">
+                {(["cell", "row", "col"] as const).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onMouseDown={(e) => { e.preventDefault(); setTableColorTarget(m); }}
+                    className={`rounded px-2 py-0.5 text-[10px] font-medium ${tableColorTarget === m ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"}`}
+                  >
+                    {m === "cell" ? "Cell" : m === "row" ? "Row" : "Column"}
+                  </button>
+                ))}
+              </div>
+              <div className="grid grid-cols-6 gap-2">
+                {colors.map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    title={color}
+                    onMouseDown={(e) => { e.preventDefault(); applyTableColor(color); }}
+                    className="h-6 w-6 rounded-full border border-gray-300 hover:scale-110"
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </div>
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); applyTableColor("transparent"); }}
+                className="mt-2 w-full rounded border border-gray-200 px-2 py-1 text-[10px] text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700"
+              >
+                Clear color
+              </button>
+            </div>
+          )}
+        </div> */}
+
+
       </div>
 
       {/* Editable area */}
+      <div className="relative">
+        <div
+          ref={editorRef}
+          contentEditable
+          suppressContentEditableWarning
+          onInput={handleInput}
+          onPaste={handlePaste}
+          onClick={handleEditorClick}
+          onContextMenu={handleTableContextMenu}
+          onMouseDown={(e) => { handleEditorMouseDown(e); setTableContextMenu(null); }}
+          onMouseMove={handleEditorMouseMove}
+          onKeyDown={(e) => { if (e.key === "Escape") { clearBlockSelection(); clearImgSelection(); setTableContextMenu(null); } }}
+          className="
+        prose 
+        prose-sm 
+        max-w-none 
+        min-h-[300px] 
+        bg-white 
+        p-4 
+        text-sm 
+        text-gray-900 
+        focus:outline-none 
+        dark:prose-invert 
+        dark:bg-gray-900 
+        dark:text-gray-200 
+        [&_h1]:text-xl 
+        [&_h1]:font-bold 
+        [&_h2]:text-lg 
+        [&_h2]:font-semibold 
+        [&_h3]:text-base 
+        [&_h3]:font-semibold 
+        [&_h1]:mb-2 
+        [&_h2]:mb-2 
+        [&_h3]:mb-1 
+        [&_a]:text-blue-600 
+        [&_a]:underline 
+        [&_a]:underline-offset-2 
+        dark:[&_a]:text-blue-400
+        min-h-[200px]
+        outline-none
+        [&_ul]:list-disc
+        [&_ul]:pl-6
+        [&_ul]:my-2
+        [&_ol]:list-decimal
+        [&_ol]:pl-6
+        [&_ol]:my-2
+                [&_li]:my-1
+        [&_table]:w-auto
+        [&_table]:border-collapse
+        [&_table]:my-2
+        [&_table]:text-sm
+        [&_td]:border
+        [&_td]:border-gray-300
+        [&_td]:px-3
+        [&_td]:py-1.5
+        [&_td]:align-top
+        [&_th]:border
+        [&_th]:border-gray-300
+        [&_th]:px-3
+        [&_th]:py-1.5
+        [&_th]:bg-gray-100
+        [&_th]:font-semibold
+        [&_th]:text-left
+        [&_th]:align-top
+                dark:[&_table]:text-slate-200
+        dark:[&_td]:border-slate-600
+        dark:[&_th]:border-slate-600
+        dark:[&_th]:bg-slate-700
+        [&_table]:relative
+                [&_[data-sel-mark]]:outline
+        [&_[data-sel-mark]]:outline-2
+        [&_[data-sel-mark]]:outline-blue-500
+        [&_[data-sel-mark]]:outline-offset-[-2px]
+        "
+        />
 
+        {/* ◉ Image resize overlay: กรอบ + จุดฉุด สำหรับรูปที่เลือก */}
+        {imgBox && selectedImgRef.current && (
+          <div
+            className="img-resize-overlay pointer-events-none absolute z-20"
+            style={{ left: imgBox.left, top: imgBox.top, width: imgBox.width, height: imgBox.height }}
+          >
+            <div
+              className="pointer-events-none absolute inset-0"
+              style={{ border: "2px solid #3b82f6" }}
+            />
+            {[
+              "nw", "n", "ne", "e", "se", "s", "sw", "w",
+            ].map((dir) => (
+              <button
+                key={dir}
+                type="button"
+                data-img-handle={dir}
+                onMouseDown={(e) => {
+                  const img = selectedImgRef.current;
+                  if (!img) return;
+                  const r = img.getBoundingClientRect();
+                  imgResizeRef.current = {
+                    img,
+                    dir: dir as "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w",
+                    startX: e.clientX,
+                    startY: e.clientY,
+                    startW: r.width,
+                    startH: r.height,
+                  };
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.addEventListener("mousemove", onImgResizeMove);
+                  window.addEventListener("mouseup", onImgResizeUp);
+                }}
+                className="pointer-events-auto absolute h-2.5 w-2.5 rounded-full"
+                style={{
+                  background: "#3b82f6",
+                  border: "1px solid #fff",
+                  cursor: dir.includes("w") || dir.includes("e") ? "ew-resize" : dir.includes("n") || dir.includes("s") ? "ns-resize" : "nwse-resize",
+                  ...(dir.includes("n") ? { top: -5 } : {}),
+                  ...(dir.includes("s") ? { bottom: -5 } : {}),
+                  ...(dir.includes("w") ? { left: -5 } : {}),
+                  ...(dir.includes("e") ? { right: -5 } : {}),
+                }} />
+            ))}
+          </div>
+        )}
+      </div>
 
-      <div
-        ref={editorRef}
-        contentEditable
-        suppressContentEditableWarning
-        onInput={handleInput}
-        onPaste={handlePaste}
-        className="prose prose-sm max-w-none min-h-[300px] bg-white p-4 text-sm text-gray-900 focus:outline-none dark:prose-invert dark:bg-gray-900 dark:text-gray-200 [&_h1]:text-xl [&_h1]:font-bold [&_h2]:text-lg [&_h2]:font-semibold [&_h3]:text-base [&_h3]:font-semibold [&_h1]:mb-2 [&_h2]:mb-2 [&_h3]:mb-1 [&_a]:text-blue-600 [&_a]:underline [&_a]:underline-offset-2 dark:[&_a]:text-blue-400"
-      />
+      {/* ◾ Table context menu (right-click บน cell) */}
+      {tableContextMenu && (
+                <div
+          data-table-context-menu
+          className="fixed z-[60] max-h-[70vh] w-60 overflow-y-auto rounded-lg border border-gray-200 bg-white p-1 shadow-xl dark:border-gray-700 dark:bg-gray-800"
+          style={{ left: Math.min(tableContextMenu.x, window.innerWidth - 260), top: Math.min(tableContextMenu.y, window.innerHeight - 80) }}
+          onContextMenu={(e) => e.preventDefault()}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+           {t("knowledge.editor.tableActions")}
+          </p>
+          {[
+            { icon: <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16"><path d="M0 0h16v2H0zM0 7h16v2H0zM2 2h1v3H2zM13 2h1v3h-1zM2 7h1v4H2z" /></svg>, label: t("knowledge.editor.insertRowAbove"), fn: () => insertTableRow(true) },
+            { icon: <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16"><path d="M2 2h1v3H2zM13 2h1v3h-1zM2 7h1v4H2zM13 7h1v4h-1zM0 12h16v2H0zM2 10h1v2H2z" /></svg>, label: t("knowledge.editor.insertRowBelow"), fn: () => insertTableRow(false) },
+            { icon: <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16"><path d="M0 0h2v6H0zM7 0h2v6H7zM4 0h1v6H4zM11 0h1v6h-1zM14 0h2v16h-2z" /></svg>, label:  t("knowledge.editor.insertColumnLeft"), fn: () => insertTableColumn(true) },
+            { icon: <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16"><path d="M0 0h2v16H0zM5 0h2v16H5zM10 0h1v16h-1zM13 0h2v16h-2zM5 0h1v6H5z" /></svg>, label:t("knowledge.editor.insertColumnRight"), fn: () => insertTableColumn(false) },
+            { icon: <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M1 4h22v16H1zM1 8h22M8 8v12" /></svg>, label:t("knowledge.editor.deleteRow"), fn: () => deleteTableRow() },
+            { icon: <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M1 4h22v16H1zM1 8h22M8 8v12M8 4v16M8 8v12" /></svg>, label: t("knowledge.editor.deleteColumn"), fn: () => deleteTableColumn() },
+            { icon: <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18v16H3zM3 4h18M3 8h18M11 8v12" /></svg>, label: t("knowledge.editor.deleteTable"), fn: () => deleteTable() },
+            { icon: <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16"><path d="M0 0h8v8H0zM8 8h8v8H8zM0 8h4v8H0zM8 0h4v8H8z" /></svg>, label: t("knowledge.editor.mergeCells"), fn: () => mergeSelectedCells() },
+            { icon: <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16"><path d="M0 0h4v4H0zM4 0h4v4H4zM8 0h4v4H8zM0 4h6v4H0z" /></svg>, label: t("knowledge.editor.splitCell"), fn: () => splitCellAtCursor() },
+          ].map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onMouseUp={() => { item.fn(); }}
+              className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              <span className="text-gray-500 dark:text-gray-400">{item.icon}</span>
+              {item.label}
+            </button>
+          ))}
+
+          <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
+
+          <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+            {t("knowledge.editor.align")}
+          </p>
+          <div className="flex gap-1 px-2 pb-1">
+            <button
+              type="button"
+              title={t("knowledge.editor.left")}
+              onMouseDown={(e) => e.preventDefault()}
+              onMouseUp={() => { alignSelectedCells("left"); }}
+              className="flex flex-1 items-center justify-center gap-1 rounded border border-gray-300 px-1 py-1.5 text-[10px] text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 16 16"><path d="M0 2h16v2H0zM0 7h10v2H0zM0 12h16v2H0z" /></svg>
+              {t("knowledge.editor.left")}
+            </button>
+            <button
+              type="button"
+              title={t("knowledge.editor.center")}
+              onMouseDown={(e) => e.preventDefault()}
+              onMouseUp={() => { alignSelectedCells("center"); }}
+              className="flex flex-1 items-center justify-center gap-1 rounded border border-gray-300 px-1 py-1.5 text-[10px] text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 16 16"><path d="M2 2h12v2H2zM5 7h6v2H5zM2 12h12v2H2z" /></svg>
+              {t("knowledge.editor.center")}
+            </button>
+            <button
+              type="button"
+              title={t("knowledge.editor.right")}
+              onMouseDown={(e) => e.preventDefault()}
+              onMouseUp={() => { alignSelectedCells("right"); }}
+              className="flex flex-1 items-center justify-center gap-1 rounded border border-gray-300 px-1 py-1.5 text-[10px] text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 16 16"><path d="M0 2h16v2H0zM6 7h10v2H6zM0 12h16v2H0z" /></svg>
+              {t("knowledge.editor.right")}
+            </button>
+          </div>
+
+          <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
+
+          <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+            {t("knowledge.editor.borderStyle")}
+          </p>
+                    <div className="flex gap-1 px-2 pb-1">
+            {(["solid", "dashed", "dotted", "none"] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onMouseUp={() => { setCtxBorder((p) => { const nb = { ...p, style: s }; applyTableBorder(nb.style, nb.width, nb.color); return nb; }); }}
+                className={`flex-1 rounded border px-1 py-1 text-[10px] text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 ${ctxBorder.style === s ? "border-blue-500 ring-1 ring-blue-500" : "border-gray-300"}`}
+              >
+                <span className="block border-b-2 border-gray-500 pb-1" style={{ borderBottomStyle: s === "none" ? "none" : s }} />
+                {/* {s === "none" ? "None" : s[0].toUpperCase() + s.slice(1)} */}
+                 {t(`knowledge.editor.${s}`)}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-1 px-2 pb-1">
+            {[1, 2, 3].map((w) => (
+              <button
+                key={w}
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onMouseUp={() => { setCtxBorder((p) => { const nb = { ...p, width: w }; applyTableBorder(nb.style, nb.width, nb.color); return nb; }); }}
+                className={`flex-1 rounded border py-1 text-[10px] text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 ${ctxBorder.width === w ? "border-blue-500 ring-1 ring-blue-500" : "border-gray-300"}`}
+              >
+                <span className="block border-b-2 border-gray-500" style={{ borderBottomWidth: w }} />
+                {w}px
+              </button>
+            ))}
+          </div>
+
+          <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+            {t("knowledge.editor.borderColor")}
+          </p>
+          <div className="grid grid-cols-6 gap-1 px-2 pb-1">
+            {["#000000", "#ffffff", "#d1d5db", "#ef4444", "#3b82f6", "#22c55e", "#eab308", "#a855f7", "#f97316", "#06b6d4", "#ec4899", "#6b7280"].map((c) => (
+              <button
+                key={c}
+                type="button"
+                title={c}
+                onMouseDown={(e) => e.preventDefault()}
+                onMouseUp={() => { setCtxBorder((p) => { const nb = { ...p, color: c }; applyTableBorder(nb.style, nb.width, nb.color); return nb; }); }}
+                className="h-5 w-full rounded-sm border border-gray-200"
+                style={{ backgroundColor: c, ...(ctxBorder.color === c ? { outline: "2px solid #3b82f6" } : {}) }}
+              />
+            ))}
+          </div>
+
+          <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
+
+          <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+             {t("knowledge.editor.fillColor")}
+          </p>
+          <div className="grid grid-cols-6 gap-1 px-2 pb-1">
+            {["#000000", "#ffffff", "#d1d5db", "#ef4444", "#3b82f6", "#22c55e", "#eab308", "#a855f7", "#f97316", "#06b6d4", "#ec4899", "#6b7280"].map((c) => (
+              <button
+                key={c}
+                type="button"
+                title={c}
+                onMouseDown={(e) => e.preventDefault()}
+                onMouseUp={() => { setTableColorTarget("cell"); applyTableColor(c); }}
+                className="h-5 w-full rounded-sm border border-gray-200"
+                style={{ backgroundColor: c }}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onMouseUp={() => { setTableColorTarget("cell"); applyTableColor("transparent"); }}
+            className="mx-2 mb-1 w-[calc(100%-16px)] rounded border border-gray-200 px-2 py-1 text-[10px] text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700"
+          >
+            {t("knowledge.editor.clearFillColor")}
+          </button>
+        </div>
+      )}
 
       {/* Link dialog */}
       {linkDialog.open && (
@@ -354,6 +1956,42 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
             <div className="mt-4 flex justify-end gap-2">
               <button type="button" onClick={() => setVideoDialog({ open: false, url: "" })} className="rounded-lg border border-gray-200 px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700">Cancel</button>
               <button type="button" onClick={insertVideo} disabled={!videoDialog.url.trim()} className="rounded-lg bg-blue-500 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-600 disabled:opacity-50">Insert</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Table dialog */}
+      {tableDialog.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onMouseDown={(e) => { if (e.target === e.currentTarget) setTableDialog((p) => ({ ...p, open: false })); }}>
+          <div className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-5 shadow-xl dark:border-gray-700 dark:bg-gray-800">
+            <p className="mb-4 text-sm font-semibold text-gray-900 dark:text-gray-100">Insert Table</p>
+            <div className="flex items-center gap-4">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Rows</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={tableDialog.rows}
+                  onChange={(e) => setTableDialog((p) => ({ ...p, rows: Math.max(1, Number(e.target.value) || 1) }))}
+                  className="w-20 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Columns</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={tableDialog.cols}
+                  onChange={(e) => setTableDialog((p) => ({ ...p, cols: Math.max(1, Number(e.target.value) || 1) }))}
+                  className="w-20 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                />
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <button type="button" onClick={() => setTableDialog((p) => ({ ...p, open: false }))} className="rounded-lg border border-gray-200 px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700">Cancel</button>
+              <button type="button" onClick={() => insertTable(tableDialog.rows, tableDialog.cols)} className="rounded-lg bg-blue-500 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-600">Insert</button>
             </div>
           </div>
         </div>
