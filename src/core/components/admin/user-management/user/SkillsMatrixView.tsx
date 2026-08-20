@@ -1,10 +1,9 @@
 // /src/components/admin/user-management/user/SkillMatrixView.tsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { CheckLineIcon, LockIcon } from "@/core/icons";
+import { useSyncPreviewedIdentity } from "@/core/hooks/useSyncPreviewedIdentity";
 import { useTranslation } from "@/core/hooks/useTranslation";
-import { useGetUserSkillsByUsernameQuery } from "@/core/store/api/userApi";
 import type { Skill } from "@/cms/types/skill";
-import type { UserSkill } from "@/core/types/user";
 import Button from "@/core/components/ui/button/Button";
 
 const SkillMatrixContent: React.FC<{
@@ -12,46 +11,28 @@ const SkillMatrixContent: React.FC<{
   skills: Skill[];
   skillList: string[];
   userName: string;
-  // userWithSkills: UserSkill[];
+  trackedUsername: string;
   handleUserSkillsSave: () => void;
   onUserSkillsToggle: (userName: string, skillId: string) => Promise<void>;
+  onUserChange: (userName: string) => void;
 }> = ({
   loading,
   skills,
   skillList,
   userName,
-  // userWithSkills,
+  trackedUsername,
   handleUserSkillsSave,
   onUserSkillsToggle,
+  onUserChange,
 }) => {
   const { language, t } = useTranslation();
 
-  const { data: userWithSkillsData } = useGetUserSkillsByUsernameQuery(userName, { skip: !userName });
-  const userWithSkills = useMemo(
-    () => (userWithSkillsData?.data as unknown as UserSkill[]) || [],
-    [userWithSkillsData?.data]
-  );
-
-  // Initialize skillList with user's current skills when data loads
-  const [initializedUser, setInitializedUser] = useState<string>("");
-
-  useEffect(() => {
-    if (userName && userWithSkills.length > 0 && initializedUser !== userName) {
-      // Initialize the parent's skillList with current user skills
-      const currentSkillIds = userWithSkills.map(us => us.skillId);
-      currentSkillIds.forEach(skillId => {
-        onUserSkillsToggle(userName, skillId);
-      });
-      setInitializedUser(userName);
-    }
-  }, [userName, userWithSkills, initializedUser, onUserSkillsToggle]);
-
-  // Reset initialization when user changes
-  useEffect(() => {
-    if (userName && userName !== initializedUser) {
-      setInitializedUser("");
-    }
-  }, [userName, initializedUser]);
+  // The parent (UserManagement) owns the query + seed effect for skillList, mirroring
+  // Groups/Area — this view no longer fetches or seeds on its own. The preview modal supports
+  // navigating between users while open, and this component remounts on every tab switch —
+  // trackedUsername (parent-persisted) survives that remount, so a bare remount with the same
+  // user is correctly a no-op.
+  useSyncPreviewedIdentity(userName, trackedUsername, onUserChange);
 
   const handleUserSkillsToggle = async (userName: string, skillId: string) => {
     try {

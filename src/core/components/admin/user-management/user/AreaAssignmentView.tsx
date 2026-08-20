@@ -1,7 +1,8 @@
 // /src/components/admin/user-management/user/AreaAssignmentView.tsx
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { ChevronDown, ChevronRight, Minus } from "lucide-react";
 import { CheckLineIcon, LockIcon } from "@/core/icons";
+import { useSyncPreviewedIdentity } from "@/core/hooks/useSyncPreviewedIdentity";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import type { Country, AreaProvince, AreaDistrict } from "@/cms/types/area";
 import Button from "@/core/components/ui/button/Button";
@@ -42,6 +43,7 @@ const AreaAssignmentContent: React.FC<{
   districts: AreaDistrict[];
   areaList: string[];
   userName: string;
+  trackedUsername: string;
   onAreaToggle: (distId: string) => void;
   onAreaCascadeToggle: (scopeType: "country" | "province", scopeId: string) => void;
   onUserAreaSave: () => void;
@@ -53,6 +55,7 @@ const AreaAssignmentContent: React.FC<{
   districts,
   areaList,
   userName,
+  trackedUsername,
   onAreaToggle,
   onAreaCascadeToggle,
   onUserAreaSave,
@@ -63,16 +66,10 @@ const AreaAssignmentContent: React.FC<{
   const [expandedCountries, setExpandedCountries] = useState<Set<string>>(new Set());
   const [expandedProvinces, setExpandedProvinces] = useState<Set<string>>(new Set());
 
-  // Detect the previewed user actually changing (the modal supports navigating
-  // between users while open) and notify the parent to clear its selection —
-  // there is no get-user-areas endpoint to reseed from otherwise.
-  const [trackedUser, setTrackedUser] = useState<string>("");
-  useEffect(() => {
-    if (userName && userName !== trackedUser) {
-      onUserChange(userName);
-      setTrackedUser(userName);
-    }
-  }, [userName, trackedUser, onUserChange]);
+  // The preview modal supports navigating between users while open, and this component
+  // remounts on every tab switch — trackedUsername (parent-persisted) survives that remount,
+  // so a bare remount with the same user is correctly a no-op.
+  useSyncPreviewedIdentity(userName, trackedUsername, onUserChange);
 
   const toggleExpanded = (set: Set<string>, setter: (next: Set<string>) => void, id: string) => {
     const next = new Set(set);

@@ -6,6 +6,7 @@
 // `onUserChange` once when the previewed user changes so the parent can point its query at them.
 import React, { useEffect, useRef, useState } from "react";
 import { CheckLineIcon, LockIcon } from "@/core/icons";
+import { useSyncPreviewedIdentity } from "@/core/hooks/useSyncPreviewedIdentity";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import type { UserGroup } from "@/core/types/user";
 import Button from "@/core/components/ui/button/Button";
@@ -15,6 +16,7 @@ const UserGroupsView: React.FC<{
   groups: UserGroup[];
   groupList: string[];
   userName: string;
+  trackedUsername: string;
   onGroupToggle: (grpId: string) => void;
   onUserGroupsSave: () => void;
   onUserChange: (userName: string) => void;
@@ -23,21 +25,17 @@ const UserGroupsView: React.FC<{
   groups,
   groupList,
   userName,
+  trackedUsername,
   onGroupToggle,
   onUserGroupsSave,
   onUserChange,
 }) => {
   const { language, t } = useTranslation();
 
-  // The preview modal supports navigating between users while open. Detect the previewed
-  // user actually changing and let the parent clear its selection.
-  const [trackedUser, setTrackedUser] = useState<string>("");
-  useEffect(() => {
-    if (userName && userName !== trackedUser) {
-      onUserChange(userName);
-      setTrackedUser(userName);
-    }
-  }, [userName, trackedUser, onUserChange]);
+  // The preview modal supports navigating between users while open, and this component
+  // remounts on every tab switch — trackedUsername (parent-persisted) survives that remount,
+  // so a bare remount with the same user is correctly a no-op.
+  useSyncPreviewedIdentity(userName, trackedUsername, onUserChange);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [maxHeight, setMaxHeight] = useState<number>(0);

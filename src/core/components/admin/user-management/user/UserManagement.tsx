@@ -160,9 +160,18 @@ const UserManagementComponent: React.FC<{
   // useEffect(() => {
   //   console.log("🚀 ~ UserManagementComponent ~ skillList:", skillList);
   // }, [skillList]);
-  
-  const handleSkillsToggle = useCallback(async (userName: string, skillId: string) => {
-    setUserName(userName);
+
+  // Called once when the previewed user genuinely changes (see useSyncPreviewedIdentity in
+  // SkillsMatrixView.tsx). Mirrors handleGroupUserChange/handleAreaUserChange: point the shared
+  // query at the new user and clear the stale selection until the seed effect above catches up.
+  const handleSkillsUserChange = useCallback((username: string) => {
+    setUserName(username);
+    setSkills([]);
+  }, []);
+
+  // userName param kept to match onUserSkillsToggle's (userName, skillId) signature shared with
+  // SkillMatrixContent's click handler; the user is now tracked solely via handleSkillsUserChange.
+  const handleSkillsToggle = useCallback(async (_userName: string, skillId: string) => {
     setSkills(prev =>
       prev.includes(skillId)
         ? prev.filter(id => id !== skillId)
@@ -233,12 +242,12 @@ const UserManagementComponent: React.FC<{
     setAreaList(userAreas.map(a => a.distId));
   }, [userAreas]);
 
-  // AreaAssignmentContent detects its own userName prop changing (the modal
-  // supports navigating between users while open) and calls this once per
-  // genuine change; reusing the shared userName state triggers the query/seed
-  // effects above for the newly previewed user.
+  // Called once when the previewed user genuinely changes (see useSyncPreviewedIdentity in
+  // AreaAssignmentView.tsx). Reusing the shared userName state triggers the query/seed effects
+  // above for the newly previewed user; clear the stale selection until the seed effect catches up.
   const handleAreaUserChange = useCallback((username: string) => {
     setUserName(username);
+    setAreaList([]);
   }, []);
 
   const handleAreaToggle = useCallback((distId: string) => {
@@ -310,9 +319,10 @@ const UserManagementComponent: React.FC<{
     setGroupList(userGroups.map(m => m.grpId));
   }, [userGroups]);
 
-  // UserGroupsView detects its own userName prop changing and calls this once; point the
-  // shared userName state at the newly previewed user so the query above refetches, and
-  // clear the selection so stale groups don't flash before the new data arrives.
+  // Called once when the previewed user genuinely changes (see useSyncPreviewedIdentity in
+  // UserGroupsView.tsx). Point the shared userName state at the newly previewed user so the
+  // query above refetches, and clear the selection so stale groups don't flash before the new
+  // data arrives.
   const handleGroupUserChange = useCallback((username: string) => {
     setUserName(username);
     setGroupList([]);
@@ -615,8 +625,10 @@ const UserManagementComponent: React.FC<{
                 skills={skill || []}
                 skillList={skillList || []}
                 userName={userItem.username || ""}
+                trackedUsername={userName}
                 handleUserSkillsSave={handleUserSkillsSave}
                 onUserSkillsToggle={handleSkillsToggle}
+                onUserChange={handleSkillsUserChange}
               />
             </div>
           );
@@ -644,6 +656,7 @@ const UserManagementComponent: React.FC<{
                 districts={districts || []}
                 areaList={areaList || []}
                 userName={userItem.username || ""}
+                trackedUsername={userName}
                 onAreaToggle={handleAreaToggle}
                 onAreaCascadeToggle={handleAreaCascadeToggle}
                 onUserAreaSave={handleUserAreaSave}
@@ -665,6 +678,7 @@ const UserManagementComponent: React.FC<{
                 groups={groups || []}
                 groupList={groupList || []}
                 userName={userItem.username || ""}
+                trackedUsername={userName}
                 onGroupToggle={handleGroupToggle}
                 onUserGroupsSave={handleUserGroupsSave}
                 onUserChange={handleGroupUserChange}
