@@ -22,7 +22,7 @@ import React from "react";
 import { ProtectedRoute } from "@/core/components/auth/ProtectedRoute";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import { useGetSubTypeQuery, useGetTypeQuery } from "@/cms/store/api/caseApi";
-import { useGetPropertiesQuery } from "@/cms/store/api/unitApi";
+import { useGetPropertiesQuery } from "@/cms/store/api/propertyApi";
 import { useGetSkillsQuery } from "@/core/store/api/userApi";
 import { useGetWorkflowsQuery } from "@/cms/store/api/workflowApi";
 import type { EnhancedCaseSubType, EnhancedCaseType } from "@/cms/types/case";
@@ -46,7 +46,10 @@ const CaseManagementPage: React.FC = () => {
   const caseTypes = caseTypesData?.data as unknown as EnhancedCaseType[] || [];
 
   const { data: propertiesData } = useGetPropertiesQuery({ start: 0, length: 100 });
-  const properties = propertiesData?.data as unknown as Property[] || [];
+  // Only active properties should be selectable from here - this is a lookup for
+  // configuring a service sub-type, not the property admin screen, so inactive
+  // (retired/disabled) properties are hidden rather than offered as a choice.
+  const properties = (propertiesData?.data as unknown as Property[] || []).filter(p => p.active);
 
   const { data: skillsData } = useGetSkillsQuery({ start: 0, length: 100 });
   const skills = skillsData?.data as unknown as EnhancedSkill[] || [];

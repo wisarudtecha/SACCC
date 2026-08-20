@@ -1,784 +1,498 @@
 // /src/components/admin/system-configuration/property/PropertyManagement.tsx
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useCallback, useMemo, useState } from "react";
+import { CheckLineIcon, CloseIcon, GroupIcon, TimeIcon } from "@/core/icons";
+import { EnhancedCrudContainer } from "@/core/components/crud/EnhancedCrudContainer";
+import { ToastContainer } from "@/core/components/crud/ToastContainer";
+import MetricsView from "@/core/components/admin/MetricsView";
+import { Modal } from "@/core/components/ui/modal";
+import { usePermissions } from "@/core/hooks/usePermissions";
+import { useIsSystemAdmin } from "@/core/hooks/useIsSystemAdmin";
+import { useToast } from "@/core/hooks/useToast";
+import { useTranslation } from "@/core/hooks/useTranslation";
 import {
-  ChevronDown,
-  ChevronRight,
-  Filter,
-  Plus,
-  RefreshCw,
-  Settings,
-  X
-} from "lucide-react";
-import { AlertHexaIcon, CheckCircleIcon, GroupIcon, PieChartIcon } from "@/core/icons";
+  useCreatePropertyMutation, useDeletePropertyMutation, useUpdatePropertyMutation
+} from "@/cms/store/api/propertyApi";
+import { capitalizeWords } from "@/core/utils/stringFormatters";
+import type { PreviewConfig } from "@/core/types/enhanced-crud";
+import type {
+  Property, PropertyCreateData, PropertyManagementProps, PropertyMetrics, PropertyUpdateData
+} from "@/cms/types/unit";
 import Input from "@/core/components/form/input/InputField";
-import Checkbox from "@/core/components/form/input/Checkbox";
-import Select from "@/core/components/form/Select";
+import Switch from "@/core/components/form/switch/Switch";
 import Button from "@/core/components/ui/button/Button";
-import Badge from "@/core/components/ui/badge/Badge";
-import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/core/components/ui/table";
-import type { PropertyDefinition, PropertyAnalytics } from "@/cms/types/device";
 
-// =============================
-// ENHANCED DATA INTERFACES
-// Building upon existing Property interface
-// =============================
+const PropertyManagementComponent: React.FC<PropertyManagementProps> = ({ properties }) => {
+  const isSystemAdmin = useIsSystemAdmin();
 
-// =============================
-// MOCK DATA
-// =============================
+  const permissions = usePermissions();
+  const { language, t } = useTranslation();
+  const { toasts, addToast, removeToast } = useToast();
 
-const mockProperties: PropertyDefinition[] = [
-  {
-    id: "1",
-    propId: "PROP-001",
-    orgId: "org-1",
-    en: "First Aid Certification",
-    th: "ใบรับรองการปฐมพยาบาล",
-    propertyCode: "CERT-FA-001",
-    category: "certification",
-    dataType: "date",
-    active: true,
-    description: "Basic first aid certification required for emergency response",
-    validationRules: [
-      { type: "required", value: "true", message: "First aid certification is required" }
-    ],
-    dependencies: [],
-    lifecycle: {
-      expirationPeriod: 24,
-      renewalRequired: true,
-      maintenanceSchedule: "annually",
-      verificationLevel: "certified"
-    },
-    metadata: {
-      priority: "high",
-      costImpact: 500,
-      trainingRequired: true,
-      certificationBody: "Red Cross"
-    },
-    createdAt: "2024-01-15T08:00:00Z",
-    updatedAt: "2024-08-15T10:30:00Z",
-    createdBy: "admin",
-    updatedBy: "system"
-  },
-  {
-    id: "2",
-    propId: "PROP-002",
-    orgId: "org-1",
-    en: "Fire Extinguisher",
-    th: "เครื่องดับเพลิง",
-    propertyCode: "EQUIP-FE-002",
-    category: "equipment",
-    dataType: "select",
-    active: true,
-    description: "Portable fire extinguisher for emergency response",
-    validationRules: [
-      { type: "required", value: "true", message: "Fire extinguisher type must be specified" }
-    ],
-    dependencies: [
-      { propertyId: "1", condition: "requires", value: "valid" }
-    ],
-    lifecycle: {
-      expirationPeriod: 12,
-      renewalRequired: true,
-      maintenanceSchedule: "monthly",
-      verificationLevel: "supervisor-verified"
-    },
-    metadata: {
-      priority: "critical",
-      costImpact: 200,
-      trainingRequired: false
-    },
-    createdAt: "2024-02-01T09:00:00Z",
-    updatedAt: "2024-08-20T14:15:00Z",
-    createdBy: "admin",
-    updatedBy: "supervisor"
-  },
-  {
-    id: "3",
-    propId: "PROP-003",
-    orgId: "org-1",
-    en: "Radio Communication",
-    th: "วิทยุสื่อสาร",
-    propertyCode: "COMM-RC-003",
-    category: "equipment",
-    dataType: "boolean",
-    active: true,
-    description: "Two-way radio for team communication",
-    validationRules: [],
-    dependencies: [],
-    lifecycle: {
-      renewalRequired: false,
-      verificationLevel: "self-reported"
-    },
-    metadata: {
-      priority: "medium",
-      costImpact: 150,
-      trainingRequired: true
-    },
-    createdAt: "2024-03-10T11:00:00Z",
-    updatedAt: "2024-08-25T16:45:00Z",
-    createdBy: "manager",
-    updatedBy: "admin"
+  const [createProperty] = useCreatePropertyMutation();
+  const [updateProperty] = useUpdatePropertyMutation();
+  const [deleteProperty] = useDeletePropertyMutation();
+
+  const [loading, setLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [propertyId, setPropertyId] = useState("");
+  const [active, setActive] = useState(true);
+  const [th, setTh] = useState("");
+  const [en, setEn] = useState("");
+  const [validationErrors, setValidationErrors] = useState({ th: "", en: "" });
+
+  const handlePropertyReset = () => {
+    setActive(true);
+    setPropertyId("");
+    setTh("");
+    setEn("");
+    setIsOpen(false);
   }
-];
 
-// const mockUnitProperties: UnitProperty[] = [
-//   {
-//     id: "1",
-//     unitId: "unit-001",
-//     propertyId: "1",
-//     value: "2024-12-31",
-//     status: "active",
-//     verificationDate: "2024-08-15",
-//     expirationDate: "2024-12-31",
-//     verifiedBy: "supervisor-01",
-//     evidence: ["cert-001.pdf"],
-//     notes: "Renewed certification valid until end of year"
-//   },
-//   {
-//     id: "2",
-//     unitId: "unit-001",
-//     propertyId: "2",
-//     value: "Type A",
-//     status: "maintenance",
-//     verificationDate: "2024-08-01",
-//     expirationDate: "2024-09-01",
-//     verifiedBy: "tech-01",
-//     evidence: ["inspect-001.jpg"],
-//     notes: "Scheduled for maintenance next week"
-//   },
-//   {
-//     id: "3",
-//     unitId: "unit-002",
-//     propertyId: "1",
-//     value: "2025-06-30",
-//     status: "active",
-//     verificationDate: "2024-07-01",
-//     expirationDate: "2025-06-30",
-//     verifiedBy: "supervisor-02",
-//     evidence: ["cert-002.pdf"],
-//     notes: "Recently renewed with extended validity"
-//   }
-// ];
-
-// =============================
-// MAIN COMPONENT
-// =============================
-
-const PropertiesManagementComponent: React.FC = () => {
-  // =============================
-  // STATE MANAGEMENT
-  // =============================
-  
-  const [activeTab, setActiveTab] = useState<"definitions" | "assignments" | "analytics">("definitions");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" }>({
-    key: "en",
-    direction: "asc"
-  });
-  const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<"create" | "edit" | "view" | "assign">("create");
-  const [selectedProperty, setSelectedProperty] = useState<PropertyDefinition | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
-
-  // Mock analytics data
-  const analytics: PropertyAnalytics = useMemo(() => ({
-    totalProperties: mockProperties.length,
-    activeProperties: mockProperties.filter(p => p.active).length,
-    expiringSoon: 5,
-    complianceRate: 87.5,
-    categoryDistribution: [
-      { category: "certification", count: 15 },
-      { category: "equipment", count: 23 },
-      { category: "skill", count: 8 },
-      { category: "resource", count: 12 }
-    ],
-    usageStats: [
-      { propertyId: "1", unitCount: 45 },
-      { propertyId: "2", unitCount: 38 },
-      { propertyId: "3", unitCount: 52 }
-    ]
-  }), []);
-
-  // =============================
-  // FILTERING & SORTING
-  // =============================
-
-  const filteredProperties = useMemo(() => {
-    let filtered = [...mockProperties];
-
-    // Search filter
-    if (searchTerm) {
-      const search = searchTerm.toLowerCase();
-      filtered = filtered.filter(prop => 
-        prop.en.toLowerCase().includes(search) ||
-        prop.th.toLowerCase().includes(search) ||
-        prop.propertyCode.toLowerCase().includes(search) ||
-        prop.description?.toLowerCase().includes(search)
-      );
+  const validateError = useCallback((): string[] => {
+    const errors: string[] = [];
+    if (!th.trim()) {
+      errors.push(t("crud.property.form.th.required"));
+      setValidationErrors(prev => ({ ...prev, th: t("crud.property.form.th.required") }));
     }
-
-    // Category filter
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter(prop => prop.category === selectedCategory);
+    if (!en.trim()) {
+      errors.push(t("crud.property.form.en.required"));
+      setValidationErrors(prev => ({ ...prev, en: t("crud.property.form.en.required") }));
     }
+    return errors;
+  }, [th, en, t]);
 
-    // Status filter
-    if (selectedStatus !== "all") {
-      filtered = filtered.filter(prop => 
-        selectedStatus === "active" ? prop.active : !prop.active
-      );
+  const handlePropertySave = useCallback(async () => {
+    const errors = validateError();
+    if (errors.length > 0) {
+      return; // Don"t save if there are validation errors
     }
-
-    // Sorting
-    filtered.sort((a, b) => {
-      const aValue = a[sortConfig.key as keyof PropertyDefinition] as string;
-      const bValue = b[sortConfig.key as keyof PropertyDefinition] as string;
-      
-      if (sortConfig.direction === "asc") {
-        return aValue.localeCompare(bValue);
-      } else {
-        return bValue.localeCompare(aValue);
-      }
-    });
-
-    return filtered;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mockProperties, searchTerm, selectedCategory, selectedStatus, sortConfig]);
-
-  // =============================
-  // EVENT HANDLERS
-  // =============================
-
-  const handleSort = useCallback((key: string) => {
-    setSortConfig(prev => ({
-      key,
-      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc"
-    }));
-  }, []);
-
-  const handleSelectProperty = useCallback((propertyId: string) => {
-    setSelectedProperties(prev => 
-      prev.includes(propertyId) 
-        ? prev.filter(id => id !== propertyId)
-        : [...prev, propertyId]
-    );
-  }, []);
-
-  const handleSelectAll = useCallback(() => {
-    if (selectedProperties.length === filteredProperties.length) {
-      setSelectedProperties([]);
-    } else {
-      setSelectedProperties(filteredProperties.map(p => p.id));
-    }
-  }, [selectedProperties.length, filteredProperties]);
-
-  const handleCreate = useCallback(() => {
-    setSelectedProperty(null);
-    setModalType("create");
-    setIsModalOpen(true);
-  }, []);
-
-  const handleEdit = useCallback((property: PropertyDefinition) => {
-    setSelectedProperty(property);
-    setModalType("edit");
-    setIsModalOpen(true);
-  }, []);
-
-  const handleView = useCallback((property: PropertyDefinition) => {
-    setSelectedProperty(property);
-    setModalType("view");
-    setIsModalOpen(true);
-  }, []);
-
-  const handleAssign = useCallback(() => {
-    setModalType("assign");
-    setIsModalOpen(true);
-  }, []);
-
-  // const handleBulkDelete = useCallback(() => {
-  //   // Implementation for bulk delete
-  //   console.log("Deleting properties:", selectedProperties);
-  //   setSelectedProperties([]);
-  // }, [selectedProperties]);
-
-  // =============================
-  // UTILITY FUNCTIONS
-  // =============================
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case "equipment": return "🛠️";
-      case "certification": return "📜";
-      case "skill": return "🎯";
-      case "resource": return "📦";
-      case "capability": return "⚡";
-      default: return "📋";
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active": return "text-green-500 dark:text-green-400 bg-green-100 dark:bg-green-800";
-      case "inactive": return "text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800";
-      case "maintenance": return "text-yellow-500 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-800";
-      case "expired": return "text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-800";
-      default: return "text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800";
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "critical": return "text-red-500 dark:text-red-400";
-      case "high": return "text-orange-500 dark:text-orange-400";
-      case "medium": return "text-blue-500 dark:text-blue-400";
-      case "low": return "text-gray-500 dark:text-gray-400";
-      default: return "text-gray-500 dark:text-gray-400";
-    }
-  };
-
-  // =============================
-  // RENDER FUNCTIONS
-  // =============================
-
-  const renderTabNavigation = () => (
-    <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
-      <nav className="flex space-x-8">
-        {[
-          { id: "definitions", label: "Property Definitions", icon: Settings },
-          { id: "assignments", label: "Unit Assignments", icon: GroupIcon },
-          { id: "analytics", label: "Analytics", icon: PieChartIcon }
-        ].map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => setActiveTab(id as "definitions" | "assignments" | "analytics")}
-            className={`
-              flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm transition-colors
-              ${activeTab === id 
-                ? "border-blue-500 dark:border-blue-400 text-blue-500 dark:text-blue-400" 
-                : "border-transparent text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300"
-              }
-            `}
-          >
-            <Icon className="w-4 h-4" />
-            <span>{label}</span>
-          </button>
-        ))}
-      </nav>
-    </div>
-  );
-
-  const renderToolbar = () => (
-    <div className="flex flex-col sm:flex-row gap-4 mb-6">
-      {/* Search */}
-      <div className="flex-1 relative">
-        <Input
-          placeholder="Search properties..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
-
-      {/* Filters Toggle */}
-      <Button onClick={() => setShowFilters(!showFilters)} size="sm" variant="outline">
-        <Filter className="w-4 h-4 mr-2" />
-        <span className="mr-2">Filters</span>
-        {showFilters ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-      </Button>
-
-      {/* Action Buttons */}
-      <div className="flex gap-2">
-        <Button onClick={handleCreate} size="sm" variant="primary">
-          <Plus className="w-4 h-4 mr-2" />
-          <span>Add Property</span>
-        </Button>
-
-        {/*
-        {selectedProperties.length > 0 && (
-          <>
-            <Button onClick={handleAssign} size="sm" variant="success">
-              <Users className="w-4 h-4 mr-2" />
-              <span>Assign ({selectedProperties.length})</span>
-            </Button>
-
-            <Button onClick={handleBulkDelete} size="sm" variant="error">
-              <Trash2 className="w-4 h-4 mr-2" />
-              <span>Delete ({selectedProperties.length})</span>
-            </Button>
-          </>
-        )}
-        */}
-      </div>
-    </div>
-  );
-
-  const renderFilters = () => showFilters && (
-    <div className="rounded-lg mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
-          Category
-        </label>
-        <Select
-          value={selectedCategory}
-          onChange={(value) => setSelectedCategory(value)}
-          className="cursor-pointer"
-          options={[
-            { label: "All Categories", value: "all" },
-            { label: "Equipment", value: "equipment" },
-            { label: "Certification", value: "certification" },
-            { label: "Skill", value: "skill" },
-            { label: "Resource", value: "resource" },
-            { label: "Capability", value: "capability" }
-          ]}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
-          Status
-        </label>
-        <Select
-          value={selectedStatus}
-          onChange={(value) => setSelectedStatus(value)}
-          className="cursor-pointer"
-          options={[
-            { label: "All Status", value: "all" },
-            { label: "Active", value: "active" },
-            { label: "Inactive", value: "inactive" }
-          ]}
-        />
-      </div>
-
-      <div className="flex items-end">
-        <Button
-          onClick={() => {
-            setSearchTerm("");
-            setSelectedCategory("all");
-            setSelectedStatus("all");
-          }}
-          size="sm"
-          variant="outline"
-          className="w-full"
-        >
-          <RefreshCw className="w-4 h-4 mr-2" />
-          <span>Clear Filters</span>
-        </Button>
-      </div>
-    </div>
-  );
-
-  const renderPropertyTable = () => (
-    <div className="rounded-lg shadow overflow-hidden">
-      <div className="overflow-x-auto">
-        <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 cursor-default">
-          <TableHeader className="bg-gray-100 dark:bg-gray-800">
-            <TableRow>
-              <TableCell isHeader className="px-6 py-3 text-left">
-                <Checkbox
-                  checked={selectedProperties.length === filteredProperties.length}
-                  onChange={handleSelectAll}
-                  className="bg-white dark:bg-gray-900"
-                />
-              </TableCell>
-              {[
-                { key: "propertyCode", label: "Property Code" },
-                { key: "th", label: "Name (TH)" },
-                // { key: "en", label: "Name (EN)" },
-                { key: "category", label: "Category" },
-                { key: "priority", label: "Priority" },
-                { key: "active", label: "Status" },
-                { key: "actions", label: "Actions" }
-              ].map(({ key, label }) => (
-                <th
-                  key={key}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-600 dark:hover:text-gray-300"
-                  onClick={() => key !== "actions" && handleSort(key)}
-                >
-                  <div className="flex items-center space-x-1">
-                    <span>{label}</span>
-                    {key !== "actions" && sortConfig.key === key && (
-                      sortConfig.direction === "asc" ? 
-                        <ChevronDown className="w-4 h-4" /> : 
-                        <ChevronRight className="w-4 h-4 transform rotate-90" />
-                    )}
-                  </div>
-                </th>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody className="divide-y divide-gray-200 dark:divide-gray-700">
-            {filteredProperties.map((property) => (
-              <TableRow key={property.id} className="hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                <TableCell className="px-6 py-4">
-                  <Checkbox
-                    checked={selectedProperties.includes(property.id)}
-                    onChange={() => handleSelectProperty(property.id)}
-                    className="bg-white dark:bg-gray-900"
-                  />
-                </TableCell>
-                <TableCell className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <span className="text-lg mr-2">{getCategoryIcon(property.category)}</span>
-                    <div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {property.propertyCode}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {property.propId}
-                      </div>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="px-6 py-4">
-                  <div className="text-sm text-gray-800 dark:text-gray-100">{property.th}</div>
-                  {property.description && (
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{property.description}</div>
-                  )}
-                </TableCell>
-                {/*
-                <TableCell className="px-6 py-4">
-                  <div className="text-sm text-gray-800 dark:text-gray-100">{property.en}</div>
-                </TableCell>
-                */}
-                <TableCell className="px-6 py-4">
-                  <Badge className="capitalize" color="primary" size="sm">
-                    {property.category}
-                  </Badge>
-                </TableCell>
-                <TableCell className="px-6 py-4">
-                  <span className={`text-sm font-medium capitalize ${getPriorityColor(property.metadata.priority)}`}>
-                    {property.metadata.priority}
-                  </span>
-                </TableCell>
-                <TableCell className="px-6 py-4">
-                  <Badge className={`capitalize ${getStatusColor(property.active ? "active" : "inactive")}`} size="sm">
-                    {property.active ? (
-                      <>
-                        <CheckCircleIcon className="w-3 h-3 mr-1" />
-                        Active
-                      </>
-                    ) : (
-                      <>
-                        <X className="w-3 h-3 mr-1" />
-                        Inactive
-                      </>
-                    )}
-                  </Badge>
-                </TableCell>
-                <TableCell className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex items-center space-x-2">
-                    <Button onClick={() => handleView(property)} variant="primary" size="xs">
-                      View
-                    </Button>
-                    <Button onClick={() => handleEdit(property)} variant="warning" size="xs">
-                      Edit
-                    </Button>
-                    <Button onClick={() => console.log("Delete property:", property.id)} variant="outline" size="xs">
-                      Delete
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {filteredProperties.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-gray-500 dark:text-gray-400 text-lg mb-2">No properties found</div>
-          <div className="text-gray-400 dark:text-gray-500 text-sm">Try adjusting your search or filters</div>
-        </div>
-      )}
-    </div>
-  );
-
-  const renderAnalytics = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      {[
-        {
-          title: "Total Properties",
-          value: analytics.totalProperties,
-          icon: Settings,
-          color: "text-blue-500 dark:text-blue-400",
-          bgColor: "bg-blue-100 dark:bg-blue-800"
-        },
-        {
-          title: "Active Properties",
-          value: analytics.activeProperties,
-          icon: CheckCircleIcon,
-          color: "text-green-500 dark:text-green-400",
-          bgColor: "bg-green-100 dark:bg-green-800"
-        },
-        {
-          title: "Expiring Soon",
-          value: analytics.expiringSoon,
-          icon: AlertHexaIcon,
-          color: "text-yellow-500 dark:text-yellow-400",
-          bgColor: "bg-yellow-100 dark:bg-yellow-800"
-        },
-        {
-          title: "Compliance Rate",
-          value: `${analytics.complianceRate}%`,
-          icon: PieChartIcon,
-          color: "text-purple-500 dark:text-purple-400",
-          bgColor: "bg-purple-100 dark:bg-purple-800"
+    const data: PropertyCreateData | PropertyUpdateData = {
+      active: active,
+      th: th,
+      en: en
+    };
+    try {
+      setLoading(true);
+      let response;
+      if (permissions.hasAnyPermission(["unit.create", "unit.update"])) {
+        if (propertyId) {
+          response = await updateProperty({
+            id: propertyId, data: data
+          }).unwrap();
         }
-      ].map((stat, index) => (
-        <div key={index} className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6 shadow">
-          <div className="flex items-center">
-            <div className={`${stat.bgColor} p-3 rounded-lg mr-4`}>
-              <stat.icon className={`w-6 h-6 ${stat.color}`} />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{stat.title}</p>
-              <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{stat.value}</p>
-            </div>
+        else {
+          response = await createProperty(data).unwrap();
+        }
+      }
+      else {
+        throw new Error(t("crud.common.permission_denied"));
+      }
+      if (response?.status) {
+        addToast("success", response?.message || response?.desc || response?.msg || (propertyId && t("crud.property.action.update.success")) || t("crud.property.action.create.success"));
+        setTimeout(() => {
+          window.location.replace(`/cms/property`);
+        }, 1000);
+      }
+      else {
+        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
+      }
+    }
+    catch (error) {
+      addToast("error", `${(error as { data?: { message?: string } })?.data?.message
+        || (error as { data?: { desc?: string } })?.data?.desc
+        || (error as { data?: { msg?: string } })?.data?.msg
+        || propertyId && t("crud.property.action.update.error") || t("crud.property.action.create.error")}: ${error}`);
+    }
+    finally {
+      setIsOpen(false);
+      setIsConfirmOpen(false);
+      setLoading(false);
+    }
+  }, [
+    active, addToast, createProperty, en, permissions, propertyId, th, t, updateProperty, validateError
+  ]);
+
+  const handlePropertyDelete = () => {
+    setTimeout(() => {
+      window.location.replace(`/cms/property`);
+    }, 1000);
+  };
+
+  const isDeleteAvailable = () => {
+    const canDelete = permissions.hasPermission("unit.delete");
+    return canDelete || isSystemAdmin;
+  }
+
+  const isEditAvailable = () => {
+    const canEdit = permissions.hasPermission("unit.update");
+    return canEdit || isSystemAdmin;
+  }
+
+  const isViewAvailable = () => {
+    const canView = permissions.hasPermission("unit.view");
+    return canView || isSystemAdmin;
+  }
+
+  // ===================================================================
+  // Real Functionality Data
+  // ===================================================================
+
+  const data: (Property & { id: string; name: string })[] = properties?.map(p => ({
+    ...p,
+    id: p.id ?? "",
+    name: (language === "th" ? p.th : p.en) || p.th || p.en || "",
+  })) ?? [];
+
+  // ===================================================================
+  // Metrics
+  // ===================================================================
+
+  const propertyMetrics: PropertyMetrics = useMemo(() => ({
+    totalProperties: data.length,
+    activeProperties: data.filter(p => p.active).length,
+    inactiveProperties: data.filter(p => !p.active).length,
+  }), [data]);
+
+  const attrMetrics = [
+    { key: "totalProperties", title: t("crud.property.metrics.total"), icon: GroupIcon, color: "blue", className: "text-blue-600" },
+    { key: "activeProperties", title: t("crud.property.metrics.active"), icon: CheckLineIcon, color: "green", className: "text-green-600" },
+    { key: "inactiveProperties", title: t("crud.property.metrics.inactive"), icon: TimeIcon, color: "red", className: "text-red-600" },
+  ];
+
+  // ===================================================================
+  // CRUD Configuration
+  // ===================================================================
+
+  const config = {
+    entityName: t("crud.property.name"),
+    entityNamePlural: t("crud.property.name"),
+    apiEndpoints: {
+      list: "/mdm/properties",
+      create: "/mdm/properties/add",
+      read: "/mdm/properties/:id",
+      update: "/mdm/properties/:id",
+      delete: "/mdm/properties/:id"
+    },
+    columns: [
+      {
+        key: language === "th" && "th" || "en",
+        label: t("crud.property.list.header.name"),
+        sortable: true,
+        render: (propertyItem: Property) =>
+          <span className="text-gray-900 dark:text-white">
+            {language === "th" && propertyItem.th || capitalizeWords(propertyItem.en || "")} ({language === "th" && capitalizeWords(propertyItem.en || "") || propertyItem.th})
+          </span>,
+      },
+      {
+        key: "status",
+        label: t("crud.property.list.header.status"),
+        sortable: true,
+        render: (propertyItem: Property) => {
+          const statusConfig = propertyItem.active
+            ? { color: "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100", icon: CheckLineIcon }
+            : { color: "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100", icon: TimeIcon };
+          const Icon = statusConfig.icon;
+          return (
+            <span className={`items-center px-2 py-1 rounded-full text-xs font-medium capitalize ${statusConfig.color}`}>
+              <Icon className="w-4 h-4 inline mr-1" />
+              {propertyItem.active ? t("common.active") : t("common.inactive")}
+            </span>
+          );
+        }
+      }
+    ],
+    actions: [
+      {
+        key: "view",
+        label: t("crud.common.read"),
+        variant: "primary" as const,
+        onClick: () => {},
+        condition: () => isViewAvailable()
+      },
+      {
+        key: "update",
+        label: t("crud.common.update"),
+        variant: "warning" as const,
+        onClick: (propertyItem: Property) => {
+          setPropertyId(propertyItem.id);
+          setActive(propertyItem.active);
+          setTh(propertyItem.th);
+          setEn(propertyItem.en);
+          setIsOpen(true);
+        },
+        condition: () => isEditAvailable()
+      },
+      {
+        key: "delete",
+        label: t("crud.common.delete"),
+        variant: "outline" as const,
+        onClick: () => {},
+        condition: () => isDeleteAvailable()
+      }
+    ]
+  };
+
+  // ===================================================================
+  // Preview Configuration
+  // ===================================================================
+
+  const previewConfig: PreviewConfig<
+    Property
+  > = {
+    title: () => t("crud.property.list.preview.header"),
+    size: "xl",
+    enableNavigation: true,
+    tabs: [
+      {
+        key: "overview",
+        label: "",
+        fields: [
+          {
+            key: language === "th" && "th" || "en",
+            label: t("crud.property.list.header.name"),
+            type: "custom" as const,
+            render: (_, propertyItem: Property) =>
+              <span className="text-gray-900 dark:text-white">
+                {language === "th" && propertyItem.th || capitalizeWords(propertyItem.en || "")} ({language === "th" && capitalizeWords(propertyItem.en || "") || propertyItem.th})
+              </span>,
+          },
+          {
+            key: "active",
+            label: t("crud.property.list.header.status"),
+            type: "custom",
+            render: value => {
+              const statusConfig = value
+                ? { color: "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100", icon: CheckLineIcon }
+                : { color: "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100", icon: TimeIcon };
+              const Icon = statusConfig.icon;
+              return (
+                <span className={`items-center px-2 py-1 rounded-full text-xs font-medium capitalize ${statusConfig.color}`}>
+                  <Icon className="w-4 h-4 inline mr-1" />
+                  {value ? t("common.active") : t("common.inactive")}
+                </span>
+              );
+            }
+          },
+        ]
+      }
+    ],
+    actions: [
+      {
+        key: "update",
+        label: t("crud.common.update"),
+        variant: "warning",
+        onClick: (propertyItem: Property) => {
+          setPropertyId(propertyItem.id);
+          setActive(propertyItem.active);
+          setTh(propertyItem.th);
+          setEn(propertyItem.en);
+          setIsOpen(true);
+        },
+        condition: () => isEditAvailable()
+      },
+    ]
+  };
+
+  // ===================================================================
+  // Custom Card Rendering
+  // ===================================================================
+
+  const renderCard = (propertyItem: Property) => {
+    const statusConfig = propertyItem.active
+      ? { color: "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100", icon: CheckLineIcon }
+      : { color: "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100", icon: TimeIcon };
+    const Icon = statusConfig.icon;
+
+    return (
+      <div className={`xl:flex items-start justify-between mb-4`}>
+        <div className="xl:flex items-center gap-3 min-w-0 xl:flex-1">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate capitalize">
+              {language === "th" && propertyItem.th || capitalizeWords(propertyItem.en || "")} ({language === "th" && capitalizeWords(propertyItem.en || "") || propertyItem.th})
+            </h3>
+            <span className={`items-center px-2 py-1 rounded-full text-xs font-medium capitalize ${statusConfig.color}`}>
+              <Icon className="w-4 h-4 inline mr-1" />
+              {propertyItem.active ? t("common.active") : t("common.inactive")}
+            </span>
           </div>
         </div>
-      ))}
-    </div>
-  );
+      </div>
+    );
+  };
 
-  // =============================
-  // MAIN RENDER
-  // =============================
+  // ===================================================================
+  // Render Component
+  // ===================================================================
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3 p-6">
-      <div className="mx-auto w-full">
-        <div className="space-y-6">
-          {/* Tab Navigation */}
-          {renderTabNavigation()}
+    <>
+      <MetricsView metrics={propertyMetrics} attrMetrics={attrMetrics} />
 
-          {/* Analytics Cards */}
-          {activeTab === "analytics" && renderAnalytics()}
+      <EnhancedCrudContainer
+        apiConfig={{
+          baseUrl: "/api",
+          endpoints: {
+            create: "/mdm/properties/add",
+            read: "/mdm/properties/:id",
+            list: "/mdm/properties",
+            update: "/mdm/properties/:id",
+            delete: "/mdm/properties/:id"
+          }
+        }}
+        config={config}
+        data={data}
+        // Goes through RTK Query -> createHybridBaseQuery, so DELETE /mdm/properties/:id becomes
+        // the DeleteMdmProperty mutation under GraphQL. The container's apiService fallback is a
+        // raw fetch that would always speak REST.
+        deleteItem={(id: string) => deleteProperty(id).unwrap()}
+        displayModes={["card", "table"]}
+        enableDebug={true} // Enable debug mode to troubleshoot
+        features={{
+          bulkActions: false,
+          export: false,
+          filtering: true,
+          keyboardShortcuts: true,
+          pagination: true,
+          realTimeUpdates: false,
+          search: true,
+          sorting: true,
+        }}
+        loading={!properties}
+        module="unit"
+        previewConfig={previewConfig as PreviewConfig<Property & { id: string }>}
+        searchFields={["th", "en"]}
+        onCreate={() => {
+          handlePropertyReset();
+          setIsOpen(true);
+        }}
+        onDelete={handlePropertyDelete}
+        onRefresh={() => window.location.reload()}
+        renderCard={renderCard as unknown as (item: { id: string }) => React.ReactNode}
+      />
 
-          {/* Toolbar */}
-          {activeTab !== "analytics" && renderToolbar()}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
 
-          {/* Filters */}
-          {activeTab !== "analytics" && renderFilters()}
-
-          {/* Content */}
-          {activeTab === "definitions" && renderPropertyTable()}
-          
-          {activeTab === "assignments" && (
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-8 text-center">
-              <GroupIcon className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-              <h3 className="text-xl font-medium text-gray-800 dark:text-gray-100 mb-2">Unit Property Matrix</h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">
-                Assign properties to units and manage their lifecycle
-              </p>
-              <button
-                onClick={handleAssign}
-                className="px-6 py-2 bg-blue-600 dark:bg-blue-300 hover:bg-blue-700 dark:hover:bg-blue-200 text-white dark:text-gray-900 rounded-lg transition-colors"
-              >
-                Open Assignment Matrix
-              </button>
-            </div>
-          )}
-
-          {activeTab === "analytics" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6 shadow">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Category Distribution</h3>
-                <div className="space-y-3">
-                  {analytics.categoryDistribution.map((item) => (
-                    <div key={item.category} className="items-center justify-between">
-                      <div className="flex items-center">
-                        <span className="text-lg mr-2">{getCategoryIcon(item.category)}</span>
-                        <span className="text-sm text-gray-600 dark:text-gray-300 capitalize">{item.category}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                          <div 
-                            className="bg-blue-500 dark:bg-blue-400 h-2 rounded-full" 
-                            style={{ width: `${(item.count / analytics.totalProperties) * 100}%` }}
-                          />
-                        </div>
-                        <span className="text-sm font-medium text-gray-800 dark:text-gray-100 w-8 text-right">
-                          {item.count}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6 shadow">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Property Usage Stats</h3>
-                <div className="space-y-3">
-                  {analytics.usageStats.map((item) => {
-                    const property = mockProperties.find(p => p.id === item.propertyId);
-                    return (
-                      <div key={item.propertyId} className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="text-sm font-medium text-gray-800 dark:text-gray-100">
-                            {property?.en || "Unknown Property"}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {property?.propertyCode}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-sm font-medium text-gray-800 dark:text-gray-100">
-                            {item.unitCount} units
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            assigned
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Modal Placeholder */}
-          {isModalOpen && (
-            <div className="fixed inset-0 bg-gray-900 dark:bg-white bg-opacity-50 flex items-center justify-center z-500000">
-              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl mx-4">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                    {modalType === "create" && "Create New Property"}
-                    {modalType === "edit" && "Edit Property"}
-                    {modalType === "view" && "Property Details"}
-                    {modalType === "assign" && "Assign Properties to Units"}
-                  </h3>
-                  <button
-                    onClick={() => setIsModalOpen(false)}
-                    className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-                <div className="text-center py-12">
-                  <p className="text-gray-500 dark:text-gray-400">
-                    {modalType === "create" && "Property creation form will be implemented here"}
-                    {modalType === "edit" && `Editing property: ${selectedProperty?.en}`}
-                    {modalType === "view" && `Viewing property: ${selectedProperty?.en}`}
-                    {modalType === "assign" && "Unit property assignment matrix will be implemented here"}
-                  </p>
-                  <button
-                    onClick={() => setIsModalOpen(false)}
-                    className="mt-4 px-4 py-2 bg-gray-600 dark:bg-gray-300 hover:bg-gray-700 dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded-lg transition-colors"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+      <Modal
+        isOpen={isOpen}
+        onClose={() => {
+          setIsOpen(false);
+          handlePropertyReset();
+        }}
+        className="max-w-4xl p-6 max-h-[80vh] overflow-y-auto"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
+            {propertyId && t("crud.property.form.header.update") || t("crud.property.form.header.create")}
+          </h3>
+          <Button
+            onClick={() => setIsOpen(false)}
+            variant="ghost"
+            size="sm"
+          >
+            <CloseIcon className="w-4 h-4" />
+          </Button>
         </div>
-      </div>
-    </div>
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="th" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+              {t("crud.property.form.th.label")}
+            </label>
+            <Input
+              id="th"
+              placeholder={t("crud.property.form.th.placeholder")}
+              value={th}
+              onChange={(e) => setTh && setTh(e.target.value)}
+            />
+            <span className="text-red-500 dark:text-red-400 text-xs">{validationErrors.th}</span>
+          </div>
+          <div>
+            <label htmlFor="en" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+              {t("crud.property.form.en.label")}
+            </label>
+            <Input
+              id="en"
+              placeholder={t("crud.property.form.en.placeholder")}
+              value={en}
+              onChange={(e) => setEn && setEn(e.target.value)}
+            />
+            <span className="text-red-500 dark:text-red-400 text-xs">{validationErrors.en}</span>
+          </div>
+          <div>
+            <Switch
+              key={propertyId || "new"}
+              label={t("crud.property.form.active.label")}
+              defaultChecked={active}
+              onChange={setActive}
+            />
+          </div>
+        </div>
+        <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex gap-3">
+            <Button onClick={handlePropertyReset} variant="outline">
+              {t("crud.property.action.button.reset")}
+            </Button>
+            <Button
+              onClick={() => {
+                setIsConfirmOpen(true);
+                setIsOpen(false);
+              }}
+              variant="primary"
+            >
+              {t("crud.property.action.button.save")}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isConfirmOpen}
+        onClose={() => {
+          setIsConfirmOpen(false);
+          setIsOpen(true);
+        }}
+        className="max-w-4xl p-6 max-h-[80vh] overflow-y-auto"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
+            {propertyId && t("crud.property.confirm.update.title") || t("crud.property.confirm.create.title")}
+          </h3>
+          <Button
+            onClick={() => {
+              setIsConfirmOpen(false);
+              setIsOpen(true);
+            }}
+            variant="ghost"
+            size="sm"
+          >
+            <CloseIcon className="w-4 h-4" />
+          </Button>
+        </div>
+        <div className="space-y-4">
+          {propertyId
+            && t("crud.property.confirm.update.message").replace("_PROPERTY_", language === "th" && th || en)
+            || t("crud.property.confirm.create.message").replace("_PROPERTY_", language === "th" && th || en)
+          }
+        </div>
+        <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex gap-3">
+            <Button
+              onClick={() => {
+                setIsConfirmOpen(false);
+                setIsOpen(true);
+              }}
+              variant="outline"
+            >
+              {t("crud.property.confirm.button.cancel")}
+            </Button>
+            <Button onClick={handlePropertySave} variant="success">
+              {loading && t("crud.property.confirm.button.saving") || t("crud.property.confirm.button.confirm")}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 };
 
-export default PropertiesManagementComponent
+export default PropertyManagementComponent;
