@@ -27,6 +27,10 @@ import { ChevronUp, UserCircleIcon, CameraIcon } from "lucide-react";
 import React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useCustomerSocials } from "@/cms/hooks/useCustomerSocials";
+import { useCustomerPrimaryContact } from "@/cms/hooks/useCustomerPrimaryContact";
+import { useUpdateCustomerContactDefaultMutation } from "@/cms/store/api/customerContactDefault";
+import { identityKey, isTypeInFamily, preferredChannelFamily } from "@/cms/utils/customerSocial.policy";
+import { readEnvelopeStatus } from "@/core/utils/apiResponseStatus";
 import { SocialAccountDraftList } from "@/cms/components/customer/social/SocialAccountDraftList";
 import { SocialAccountManager } from "@/cms/components/customer/social/SocialAccountManager";
 import type { DraftCustomerSocial } from "@/cms/types/customerSocial";
@@ -233,7 +237,34 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
      * editing an existing customer the manager writes directly and this stays empty.
      */
     const [socialDrafts, setSocialDrafts] = useState<DraftCustomerSocial[]>([]);
-    const { lookupIdentity, addSocial } = useCustomerSocials({ customerId: customer?.id });
+    const { socials, lookupIdentity, addSocial } = useCustomerSocials({ customerId: customer?.id });
+
+    /**
+     * Which draft channel is the customer's primary way of being contacted, held as an
+     * `identityKey` rather than an index so removing a draft can't promote its neighbour.
+     *
+     * Same deferral as the drafts themselves: `UpdateCustomerContactDefault` needs a `custId`,
+     * so this is written in `handleSubmit` once the customer exists. Leaving it unset is a
+     * valid outcome — the badge then falls back to `contractPreference`, exactly as it did
+     * before primaries were storable.
+     */
+    const [primaryDraftKey, setPrimaryDraftKey] = useState<string>("");
+    const [setPrimaryContact] = useUpdateCustomerContactDefaultMutation();
+
+    /**
+     * Editing: the stored primary entry has to follow the preference dropdown. Changing the
+     * channel to LINE leaves a record pointing at a phone number contradicted — the badge
+     * already ignores it, and this is what stops the BFF record itself staying wrong.
+     */
+    const { reconcileToPreference } = useCustomerPrimaryContact({
+        customer: editData,
+        socials,
+        enabled: Boolean(customer?.id),
+    });
+
+    const handleSetPrimaryDraft = useCallback((draft: DraftCustomerSocial | undefined) => {
+        setPrimaryDraftKey(draft ? identityKey(draft.socialType, draft.socialId) : "");
+    }, []);
 
     const toggleSection = useCallback((section: keyof typeof sectionsOpen) => {
         setSectionsOpen(prev => ({ ...prev, [section]: !prev[section] }));
@@ -326,7 +357,26 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
     const handleSelectChange = useCallback((name: string, val: string) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         handleInputChange({ target: { name, value: val } } as any);
-    }, [handleInputChange]);
+
+        if (name !== "contractPreference") {
+            return;
+        }
+
+        // The preference decides the channel, so a draft marked primary on a channel it no
+        // longer names has to give the mark up — otherwise the create flow would write a
+        // primary the very next read overrules.
+        setPrimaryDraftKey(previous => {
+            if (!previous) {
+                return previous;
+            }
+            const marked = socialDrafts.find(
+                draft => identityKey(draft.socialType, draft.socialId) === previous
+            );
+            return marked && isTypeInFamily(marked.socialType, preferredChannelFamily(val))
+                ? previous
+                : "";
+        });
+    }, [handleInputChange, socialDrafts]);
 
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -391,6 +441,18 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
             const draftEmail = socialDrafts.find(draft => draft.email?.trim())?.email?.trim();
             const resolvedEmail = formData.email || draftEmail || "";
 
+            // The marked draft only says *which entry*; the channel is whatever the preference
+            // dropdown holds. A mark on another channel is ignored rather than allowed to
+            // override the preference — the dropdown's `onChange` normally clears it, but a
+            // draft edited after marking can still land here.
+            const markedDraft = socialDrafts.find(
+                draft => identityKey(draft.socialType, draft.socialId) === primaryDraftKey
+            );
+            const primaryDraft = markedDraft
+                && isTypeInFamily(markedDraft.socialType, preferredChannelFamily(formData.contractPreference))
+                ? markedDraft
+                : undefined;
+
             const finalPayload: AddCustomer = {
                 ...formData,
                 email: resolvedEmail,
@@ -412,6 +474,12 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
                     return;
                 }
                 addToast("success", t("common.success"));
+
+                // The preference may have moved to a channel the stored primary entry doesn't
+                // belong to. No-op when it still agrees, so an unchanged dropdown costs
+                // nothing; failures are swallowed because the badge resolves correctly either
+                // way — this only keeps the BFF record honest for anything reading it directly.
+                await reconcileToPreference(finalPayload.contractPreference);
 
                 setOpenAddCustomerModal?.(false);
 
@@ -491,6 +559,29 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
                     }
                 }
 
+                // The primary points at a channel, so it is only meaningful once that channel
+                // has actually been attached — hence after the block above, not with the rest
+                // of the customer body. `referId` is the draft's own `socialId`, which is why
+                // this needs no lookup of the row that was just created.
+                if (primaryDraft && createdCustomer?.id) {
+                    try {
+                        const primaryResult = await setPrimaryContact({
+                            customerId: createdCustomer.id,
+                            type: primaryDraft.socialType,
+                            referId: primaryDraft.socialId.trim(),
+                        }).unwrap();
+
+                        if (readEnvelopeStatus(primaryResult?.status) === "failure") {
+                            addToast("warning", t("customer.social.primary_not_saved"));
+                        }
+                    }
+                    catch {
+                        // The customer and its channels saved; a missing primary is a partial
+                        // success the agent can fix from the profile, not a reason to alarm.
+                        addToast("warning", t("customer.social.primary_not_saved"));
+                    }
+                }
+
                 // Persist the link to the case immediately (same as "Link existing customer") so
                 // it isn't lost if the user navigates away without toggling edit mode / saving.
                 if (caseWorkOrderNumber && createdCustomer?.id) {
@@ -534,7 +625,7 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
             addToast("error", t("common.error"));
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [formData, selectedFile, fileUploader, addCustomer, updateCustomer, getCustomerByPhone, updateCaseCustomer, caseWorkOrderNumber, addToast, t, customer, onSuccess, isCreate, socialDrafts, addSocial]);
+    }, [formData, selectedFile, fileUploader, addCustomer, updateCustomer, getCustomerByPhone, updateCaseCustomer, caseWorkOrderNumber, addToast, t, customer, onSuccess, isCreate, socialDrafts, addSocial, primaryDraftKey, setPrimaryContact, reconcileToPreference]);
 
     const titleOptions = useMemo(() => [
         { value: "Mr", label: "Mr." },
@@ -1335,12 +1426,21 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
                             {sectionsOpen.social && (
                                 customer?.id
                                     // Editing: the customer exists, so writes go straight through.
-                                    ? <SocialAccountManager customer={editData} />
+                                    // The dropdown's current value goes with it, so the Primary
+                                    // badge and controls follow the channel being chosen rather
+                                    // than the one last saved.
+                                    ? <SocialAccountManager
+                                        customer={editData}
+                                        preference={formData.contractPreference}
+                                    />
                                     // Creating: nothing to attach to yet, so collect and defer.
                                     : <SocialAccountDraftList
                                         drafts={socialDrafts}
                                         onChange={setSocialDrafts}
                                         lookupIdentity={lookupIdentity}
+                                        primaryKey={primaryDraftKey}
+                                        onSetPrimary={handleSetPrimaryDraft}
+                                        preference={formData.contractPreference}
                                     />
                             )}
                         </div>

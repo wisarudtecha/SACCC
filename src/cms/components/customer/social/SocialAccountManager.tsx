@@ -7,8 +7,10 @@ import { useToastContext } from "@/core/components/crud/ToastGlobal";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import { usePiiMasker } from "@/core/hooks/useMaskedValue";
 import { useCustomerSocials } from "@/cms/hooks/useCustomerSocials";
+import { useCustomerPrimaryContact } from "@/cms/hooks/useCustomerPrimaryContact";
 import { toAddCustomerPayload } from "@/cms/utils/customerPayload";
 import { providerMeta } from "@/cms/utils/customerSocial.policy";
+import type { PrimaryContactTarget } from "@/cms/utils/customerSocial.policy";
 import { ContactChannelList } from "@/cms/components/customer/social/ContactChannelList";
 import { SocialAccountEditor } from "@/cms/components/customer/social/SocialAccountEditor";
 import {
@@ -20,6 +22,14 @@ import type { CustomerSocial, DraftCustomerSocial } from "@/cms/types/customerSo
 
 interface SocialAccountManagerProps {
   customer: Customer | undefined;
+  /**
+   * The contact channel currently selected in the customer form's dropdown, which may not be
+   * saved yet. Given, it decides the Primary badge and which rows offer "set as primary", so
+   * the list reflects the choice the agent is making rather than the last one they saved.
+   *
+   * The case side panel omits it — it has no preference dropdown, so the saved value stands.
+   */
+  preference?: string;
 }
 
 /**
@@ -45,7 +55,7 @@ const toDraft = (social: CustomerSocial): DraftCustomerSocial => ({
  * write actually land — the second being non-obvious because the BFF answers business
  * failures with HTTP 200.
  */
-export const SocialAccountManager = ({ customer }: SocialAccountManagerProps) => {
+export const SocialAccountManager = ({ customer, preference }: SocialAccountManagerProps) => {
   const { t } = useTranslation();
   const { addToast } = useToastContext();
   const { canViewPii } = usePiiMasker();
@@ -64,6 +74,14 @@ export const SocialAccountManager = ({ customer }: SocialAccountManagerProps) =>
     removeSocial,
     refresh,
   } = useCustomerSocials({ customerId });
+
+  const {
+    primaryKey,
+    preferredFamily,
+    isSaving: isSavingPrimary,
+    setPrimary,
+    repointAfterRemoval,
+  } = useCustomerPrimaryContact({ customer, socials, preferenceOverride: preference });
 
   const [fetchCustomer] = useLazyGetCustomerQuery();
   const [updateCustomer] = useUpdateCustommersMutationMutation();
@@ -190,6 +208,23 @@ export const SocialAccountManager = ({ customer }: SocialAccountManagerProps) =>
     [editing, guardIdentity, editSocial, addToast, t, refresh]
   );
 
+  /**
+   * Choosing a primary writes the specific entry and nothing else — the channel is the
+   * `contractPreference` dropdown's to decide, and a row pick must not quietly re-answer it.
+   * The list only offers this on rows the preference already permits.
+   */
+  const handleSetPrimary = useCallback(
+    async (target: PrimaryContactTarget) => {
+      const result = await setPrimary(target);
+
+      addToast(
+        result.ok ? "success" : "error",
+        result.message || t(result.ok ? "customer.social.primary_updated" : "customer.social.primary_failed")
+      );
+    },
+    [setPrimary, addToast, t]
+  );
+
   const handleConfirmDelete = useCallback(async () => {
     if (!pendingDelete) {
       return;
@@ -203,9 +238,12 @@ export const SocialAccountManager = ({ customer }: SocialAccountManagerProps) =>
     setPendingDelete(null);
 
     if (result.ok) {
+      // Silent housekeeping: the badge has already fallen back on its own, this just stops the
+      // stored record pointing at a row that no longer exists.
+      await repointAfterRemoval(pendingDelete);
       refresh();
     }
-  }, [pendingDelete, removeSocial, addToast, t, refresh]);
+  }, [pendingDelete, removeSocial, addToast, t, repointAfterRemoval, refresh]);
 
   const openComposer = useCallback(() => {
     // One editor at a time: an open inline edit would otherwise compete with the composer
@@ -226,6 +264,10 @@ export const SocialAccountManager = ({ customer }: SocialAccountManagerProps) =>
         socials={socials}
         isLoading={isLoading || isFetching}
         isPartial={isPartial}
+        primaryKey={primaryKey}
+        onSetPrimary={handleSetPrimary}
+        preferredFamily={preferredFamily}
+        isSettingPrimary={isSavingPrimary}
         renderSocialActions={social => (
           <div className="flex space-x-1">
             {/* Editing a PHONE/EMAIL row opens the editor on the raw record, which would put

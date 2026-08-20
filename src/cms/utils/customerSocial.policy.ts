@@ -9,6 +9,8 @@
  */
 import { readEntityVerdict } from "@/core/utils/apiResponseStatus";
 import type { EntityVerdict, EnvelopeLike } from "@/core/utils/apiResponseStatus";
+import { isCustomerContactDefault, STD_EMAIL_TYPE, STD_PHONE_TYPE } from "@/cms/types/customerContactDefault";
+import type { CustomerContactDefault, PrimaryContactType } from "@/cms/types/customerContactDefault";
 import type { Customer } from "@/cms/store/api/custommerApi";
 import type { CustomerSocial, SocialProvider } from "@/cms/types/customerSocial";
 
@@ -193,14 +195,24 @@ export const socialIdentityKey = (social: Pick<CustomerSocial, "socialType" | "s
  */
 export const PROFILE_PHONE_KEY = "phone";
 export const PROFILE_EMAIL_KEY = "email";
+export const PROFILE_LANDLINE_KEY = "landline";
+
+/** The profile's own fields, as opposed to a `CustomerSocial` row. */
+export type ProfileChannelKey =
+  | typeof PROFILE_PHONE_KEY
+  | typeof PROFILE_EMAIL_KEY
+  | typeof PROFILE_LANDLINE_KEY;
 
 /**
  * Picks the newest of a set of social rows — "newest" meaning `createdAt` descending, with
  * `id` descending as a tiebreak. The contract's samples show `createdAt` and `updatedAt`
  * identical on insert, so two rows written in the same request need a deterministic
  * tiebreak or "newest" would depend on array order rather than anything real.
+ *
+ * Exported because the primary-contact resolver below needs exactly this rule for the
+ * "channel chosen, but no specific entry" case.
  */
-const newestOf = (candidates: readonly CustomerSocial[]): CustomerSocial | undefined =>
+export const newestOf = (candidates: readonly CustomerSocial[]): CustomerSocial | undefined =>
   [...candidates].sort((a, b) => {
     const byDate = Date.parse(b.createdAt) - Date.parse(a.createdAt);
     if (byDate !== 0) {
@@ -209,44 +221,290 @@ const newestOf = (candidates: readonly CustomerSocial[]): CustomerSocial | undef
     return b.id.localeCompare(a.id);
   })[0];
 
+/** The identity a stored primary-contact record holds: a channel plus a specific entry. */
+export interface PrimaryContactTarget {
+  type: PrimaryContactType;
+  /** Empty means "this channel, whichever entry is newest" — a state the resolver handles. */
+  referId: string;
+}
+
 /**
- * Which single row should carry the "Primary" badge, derived from
- * `Customer.contractPreference` (`CALL | SMS | Email | LINE`, from `GetCustomerById`).
+ * What to store to make one linked account the primary.
  *
- * This is a stated interim rule, not a real preference model: the backend has no per-row
- * `isPrimary` and no way to say "this channel's phone number, specifically" — so CALL/SMS
- * are approximated against phone-shaped rows and LINE against the newest LINE row. When the
- * backend gains a real primary-selection mechanism, this function is the only place that
- * needs to change.
- *
- * Always returns a key, never `undefined` — confirmed behaviour: an unset or unrecognised
- * preference, or a preference whose channel has no matching row (e.g. `LINE` with nothing
- * linked), falls back to the profile phone, so exactly one row is always marked Primary.
+ * `socialId`, never the row's `id`: the value survives a row being re-created, and — the
+ * reason it matters — a *draft* channel has one before any row exists, which is what lets the
+ * create-customer form choose a primary before the customer is saved.
  */
-export const resolvePrimaryChannelKey = (
-  customer: Pick<Customer, "contractPreference"> | undefined,
+export const primaryTargetForSocial = (
+  social: Pick<CustomerSocial, "socialType" | "socialId">
+): PrimaryContactTarget => ({
+  type: social.socialType.trim().toUpperCase() as PrimaryContactType,
+  referId: social.socialId.trim(),
+});
+
+/**
+ * What to store to make one of the profile's own fields the primary.
+ *
+ * Landline and mobile deliberately share `STD_PHONE`: they are not differentiated as channels,
+ * and `referId` — the number itself — is what tells the two rows apart on the way back.
+ * Returns `undefined` when the field is empty, since a `referId` of `""` would be
+ * indistinguishable from "newest entry".
+ */
+export const primaryTargetForProfileChannel = (
+  channelKey: ProfileChannelKey,
+  customer: Pick<Customer, "mobileNo" | "landline" | "email"> | undefined
+): PrimaryContactTarget | undefined => {
+  const value = channelKey === PROFILE_EMAIL_KEY
+    ? customer?.email
+    : channelKey === PROFILE_LANDLINE_KEY
+      ? customer?.landline
+      : customer?.mobileNo;
+
+  const referId = value?.trim() ?? "";
+  if (!referId) {
+    return undefined;
+  }
+
+  return {
+    type: channelKey === PROFILE_EMAIL_KEY ? STD_EMAIL_TYPE : STD_PHONE_TYPE,
+    referId,
+  };
+};
+
+/**
+ * The row key a `type` falls back to when its channel has no entry to point at.
+ */
+const profileFallbackKey = (type: string): string =>
+  type === STD_EMAIL_TYPE || type === "EMAIL" ? PROFILE_EMAIL_KEY : PROFILE_PHONE_KEY;
+
+/**
+ * The channel groups a `contractPreference` can name.
+ *
+ * `CALL` and `SMS` collapse into one: both mean "reach them on a phone number", and nothing
+ * about a stored number says which of the two the customer wants. Every other preference maps
+ * to exactly one provider.
+ */
+export type ChannelFamily = "PHONE" | "EMAIL" | "LINE" | "FACEBOOK" | "TEXTCHAT";
+
+/** Keyed by the upper-cased `CONTRACT_PREFERENCE_OPTIONS` value (`customer/constant.ts`). */
+const FAMILY_BY_PREFERENCE: Readonly<Record<string, ChannelFamily>> = Object.freeze({
+  CALL: "PHONE",
+  SMS: "PHONE",
+  EMAIL: "EMAIL",
+  LINE: "LINE",
+  FACEBOOK: "FACEBOOK",
+  TEXTCHAT: "TEXTCHAT",
+});
+
+/**
+ * The `CustomerContactDefault.type` values each family permits. The profile's own fields
+ * (`STD_*`) sit in the same family as the linked accounts of the same kind — an extra phone
+ * number and the profile's own are both "a phone number".
+ */
+const FAMILY_TYPES: Readonly<Record<ChannelFamily, readonly string[]>> = Object.freeze({
+  PHONE: [STD_PHONE_TYPE, "PHONE"],
+  EMAIL: [STD_EMAIL_TYPE, "EMAIL"],
+  LINE: ["LINE"],
+  FACEBOOK: ["FACEBOOK"],
+  TEXTCHAT: ["TEXTCHAT"],
+});
+
+/**
+ * Which channel family a `contractPreference` names, or `undefined` when it names none —
+ * unset, or a value this build doesn't know. An unknown preference constrains nothing, which
+ * is what keeps a customer whose preference was written by another client from losing their
+ * stored primary.
+ */
+export const preferredChannelFamily = (
+  preference: string | undefined
+): ChannelFamily | undefined => FAMILY_BY_PREFERENCE[preference?.trim().toUpperCase() ?? ""];
+
+/**
+ * Is this channel one the preference permits?
+ *
+ * `true` for an absent family, deliberately: with no preference to obey there is nothing to
+ * contradict, so every row stays eligible.
+ */
+export const isTypeInFamily = (type: string, family: ChannelFamily | undefined): boolean =>
+  family ? FAMILY_TYPES[family].includes(type.trim().toUpperCase()) : true;
+
+/**
+ * The entry a preference resolves to on its own — "the most recently added contact information
+ * from that channel", which is the documented rule for a channel chosen without a specific
+ * entry, and the arbitration when the stored record names a channel the preference contradicts.
+ *
+ * Falls through to the profile's own field when the channel has no linked rows: a customer who
+ * prefers `CALL` and has no extra numbers still has a mobile (or a landline). Returns
+ * `undefined` only when the preferred channel has nothing at all to point at.
+ */
+export const primaryTargetForPreference = (
+  preference: string | undefined,
+  customer: Pick<Customer, "mobileNo" | "landline" | "email"> | undefined,
+  socials: readonly CustomerSocial[]
+): PrimaryContactTarget | undefined => {
+  const family = preferredChannelFamily(preference);
+  if (!family) {
+    return undefined;
+  }
+
+  const newest = newestOf(socials.filter(social => isTypeInFamily(social.socialType, family)));
+  if (newest) {
+    return primaryTargetForSocial(newest);
+  }
+
+  if (family === "EMAIL") {
+    return primaryTargetForProfileChannel(PROFILE_EMAIL_KEY, customer);
+  }
+
+  if (family === "PHONE") {
+    return primaryTargetForProfileChannel(PROFILE_PHONE_KEY, customer)
+      ?? primaryTargetForProfileChannel(PROFILE_LANDLINE_KEY, customer);
+  }
+
+  // LINE / Facebook / Text Chat with nothing linked — there is no profile field to fall back on.
+  return undefined;
+};
+
+/**
+ * The row a `{ type, referId }` pair points at.
+ *
+ *   - `STD_PHONE` → the landline row when `referId` is that number, otherwise the mobile. The
+ *     two are not differentiated as channels; the number itself is what tells them apart.
+ *   - `STD_EMAIL` → the profile email.
+ *   - a provider + `referId` → the row with exactly that `socialType`/`socialId`.
+ *   - a provider whose `referId` matches nothing — it was unlinked, or another client wrote a
+ *     value this customer never had → the newest row on that channel, rather than no primary
+ *     at all.
+ */
+const keyForTarget = (
+  type: string,
+  referId: string,
+  customer: Pick<Customer, "landline"> | undefined,
   socials: readonly CustomerSocial[]
 ): string => {
-  // "Email" is the one mixed-case value among CONTRACT_PREFERENCE_OPTIONS
-  // (customer/constant.ts) — normalise before comparing or it silently never matches.
-  const preference = customer?.contractPreference?.trim().toUpperCase();
+  if (type === STD_PHONE_TYPE) {
+    const landline = customer?.landline?.trim();
+    return referId && landline && referId === landline ? PROFILE_LANDLINE_KEY : PROFILE_PHONE_KEY;
+  }
 
-  if (preference === "EMAIL") {
+  if (type === STD_EMAIL_TYPE) {
     return PROFILE_EMAIL_KEY;
   }
 
-  if (preference === "SMS") {
-    const newestPhone = newestOf(socials.filter(social => social.socialType === "PHONE"));
-    return newestPhone?.id ?? PROFILE_PHONE_KEY;
+  const onChannel = socials.filter(social => social.socialType.trim().toUpperCase() === type);
+
+  if (referId) {
+    const exact = onChannel.find(social => social.socialId.trim() === referId);
+    if (exact) {
+      return exact.id;
+    }
   }
 
-  if (preference === "LINE") {
-    const newestLine = newestOf(socials.filter(social => social.socialType === "LINE"));
-    return newestLine?.id ?? PROFILE_PHONE_KEY;
+  return newestOf(onChannel)?.id ?? profileFallbackKey(type);
+};
+
+/**
+ * Which single row carries the "Primary" badge.
+ *
+ * `Customer.contractPreference` outranks the stored `CustomerContactDefault`: the preference
+ * says which *channel*, the stored record only which *entry* on it. So a customer who prefers
+ * `LINE` while their stored record still names a phone number is primarily reachable on their
+ * newest LINE account — the stored record is stale, not authoritative.
+ *
+ * The chain, in order:
+ *
+ *   1. No preference (or one this build doesn't know) → the stored record decides on its own.
+ *   2. Stored record whose `type` the preference permits → it decides.
+ *   3. Stored record the preference contradicts, or none at all → the newest entry on the
+ *      preferred channel.
+ *   4. Nothing to point at (e.g. `LINE` preferred with nothing linked) → the profile phone.
+ *
+ * Always returns a key, never `undefined`, so exactly one row is always marked Primary.
+ *
+ * `preferenceOverride` is for the customer form, where the dropdown can hold a channel the
+ * saved customer record doesn't have yet — the badge should follow what the agent is looking
+ * at, not what was last written.
+ */
+export const resolvePrimaryChannelKey = (
+  customer: Pick<Customer, "contractPreference" | "mobileNo" | "landline" | "email"> | undefined,
+  socials: readonly CustomerSocial[],
+  contactDefault?: CustomerContactDefault,
+  preferenceOverride?: string
+): string => {
+  const preference = preferenceOverride ?? customer?.contractPreference;
+  const family = preferredChannelFamily(preference);
+
+  // Guarded even though the parameter is typed: this value crosses an API boundary, where a
+  // customer with no primary answers `data: null` and `normalizeToApiResponse` coerces that
+  // to `[]` — a truthy value the declared type would happily accept.
+  const stored = isCustomerContactDefault(contactDefault) ? contactDefault : undefined;
+  const storedType = stored?.type?.trim().toUpperCase() ?? "";
+
+  if (storedType && isTypeInFamily(storedType, family)) {
+    return keyForTarget(storedType, stored?.referId?.trim() ?? "", customer, socials);
   }
 
-  // CALL, unset, or anything unrecognised.
-  return PROFILE_PHONE_KEY;
+  const target = primaryTargetForPreference(preference, customer, socials);
+  return target
+    ? keyForTarget(target.type, target.referId, customer, socials)
+    : PROFILE_PHONE_KEY;
+};
+
+/**
+ * Which customer-PII rule a social row's identifier follows, for `usePiiMasker`.
+ *
+ * PHONE and EMAIL rows are extra contact points on the profile — the same kind of data as
+ * `mobileNo`/`email`, so they reuse those rules rather than getting their own. Every other
+ * provider maps to nothing and passes through unmasked: a LINE display name is a platform
+ * handle, not a contact detail, and hiding it would leave the agent unable to tell the rows
+ * apart.
+ */
+const SOCIAL_PII_PATH: Readonly<Record<string, string>> = Object.freeze({
+  PHONE: "mobileNo",
+  EMAIL: "email",
+});
+
+export const socialPiiPath = (socialType: string): string =>
+  SOCIAL_PII_PATH[socialType.trim().toUpperCase()] ?? "";
+
+/** One contact value, plus the `usePiiMasker` path the caller should mask it with. */
+export interface PrimaryChannelDisplay {
+  /** Unmasked — masking is the caller's job, since only it knows the viewer's permissions. */
+  value: string;
+  /** Empty when the value is not customer PII (a platform handle, say). */
+  piiPath: string;
+}
+
+/**
+ * The actual phone number / address / handle behind a resolved primary row, for the surfaces
+ * that show the preference as a single line rather than as a list — the preview pane, where
+ * "CALL" alone doesn't tell an agent which number to dial.
+ *
+ * Returns `undefined` when the resolved row has no value to show (e.g. the fallback landed on
+ * a profile phone the customer doesn't have), so callers can keep rendering just the label.
+ */
+export const resolvePrimaryChannelDisplay = (
+  customer: Pick<Customer, "mobileNo" | "landline" | "email"> | undefined,
+  socials: readonly CustomerSocial[],
+  primaryKey: string
+): PrimaryChannelDisplay | undefined => {
+  if (primaryKey === PROFILE_PHONE_KEY) {
+    return customer?.mobileNo ? { value: customer.mobileNo, piiPath: "mobileNo" } : undefined;
+  }
+  if (primaryKey === PROFILE_LANDLINE_KEY) {
+    return customer?.landline ? { value: customer.landline, piiPath: "landline" } : undefined;
+  }
+  if (primaryKey === PROFILE_EMAIL_KEY) {
+    return customer?.email ? { value: customer.email, piiPath: "email" } : undefined;
+  }
+
+  const social = socials.find(candidate => candidate.id === primaryKey);
+  if (!social) {
+    return undefined;
+  }
+
+  const value = social.socialName?.trim() || social.socialId?.trim() || "";
+  return value ? { value, piiPath: socialPiiPath(social.socialType) } : undefined;
 };
 
 /**

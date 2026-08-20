@@ -37,6 +37,7 @@ import { GQL_APPOINTMENT_TYPE } from "@/cms/store/api/graphql/appointmentTypeQue
 import { GQL_BRAND } from "@/cms/store/api/graphql/brandQueries";
 import { GQL_CATEGORY } from "@/cms/store/api/graphql/categoryQueries";
 import { GQL_CUSTOMER } from "@/cms/store/api/graphql/customerQueries";
+import { GQL_CUSTOMER_CONTACT_DEFAULT } from "@/cms/store/api/graphql/customerContactDefaultQueries";
 import { GQL_CUSTOMER_FORM } from "@/cms/store/api/graphql/customerFormQueries";
 import { GQL_CUSTOMER_NOTE } from "@/cms/store/api/graphql/customerNoteQueries";
 import { GQL_CUSTOMER_PRODUCT } from "@/cms/store/api/graphql/customerProductQueries";
@@ -85,6 +86,7 @@ const GQL_MAP: Record<string, GqlMapConfig | Record<string, GqlMapConfig>> = {
   ...GQL_BRAND,
   ...GQL_CATEGORY,
   ...GQL_CUSTOMER,
+  ...GQL_CUSTOMER_CONTACT_DEFAULT,
   ...GQL_CUSTOMER_FORM,
   ...GQL_CUSTOMER_NOTE,
   ...GQL_CUSTOMER_PRODUCT,

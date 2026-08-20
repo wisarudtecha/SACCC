@@ -19,11 +19,23 @@ export const i18nUserType = (
   return label?t("customer.userType." + label.toLowerCase()):"";
 };
 
+/**
+ * The channel a customer prefers to be contacted on — and, since it outranks the stored
+ * `CustomerContactDefault`, the field that decides which contact row carries the Primary
+ * badge (`resolvePrimaryChannelKey` in `utils/customerSocial.policy.ts`).
+ *
+ * `FACEBOOK` and `TEXTCHAT` match the `CustomerSocial.socialType` strings exactly, which is
+ * what keeps the preference-to-channel mapping a straight comparison rather than a second
+ * translation table. `CALL` and `SMS` are the two that don't map one-to-one: both mean "a
+ * phone number", and which of the two is wanted is not something a stored number can say.
+ */
 export const CONTRACT_PREFERENCE_OPTIONS = [
   { value: "CALL", label: "CALL" },
   { value: "SMS", label: "SMS" },
   { value: "Email", label: "Email" },
   { value: "LINE", label: "LINE" },
+  { value: "FACEBOOK", label: "Facebook" },
+  { value: "TEXTCHAT", label: "Text Chat" },
 ];
 
 export const LANGUAGE_PREFERENCE_OPTIONS = [

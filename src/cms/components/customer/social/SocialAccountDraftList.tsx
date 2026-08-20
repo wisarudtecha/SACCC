@@ -1,12 +1,18 @@
 // src/cms/components/customer/social/SocialAccountDraftList.tsx
 import { useCallback, useState } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Star, Trash2 } from "lucide-react";
 import Button from "@/core/components/ui/button/Button";
+import Badge from "@/core/components/ui/badge/Badge";
 import { useToastContext } from "@/core/components/crud/ToastGlobal";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import { SocialAccountEditor } from "@/cms/components/customer/social/SocialAccountEditor";
 import { SocialAvatar } from "@/cms/components/customer/social/SocialAvatar";
-import { identityKey, providerMeta } from "@/cms/utils/customerSocial.policy";
+import {
+  identityKey,
+  isTypeInFamily,
+  preferredChannelFamily,
+  providerMeta,
+} from "@/cms/utils/customerSocial.policy";
 import type { IdentityLookup } from "@/cms/hooks/useCustomerSocials";
 import type { DraftCustomerSocial } from "@/cms/types/customerSocial";
 
@@ -15,6 +21,25 @@ interface SocialAccountDraftListProps {
   onChange: (drafts: DraftCustomerSocial[]) => void;
   /** Conflict check against accounts already linked to *other* customers. */
   lookupIdentity: (socialType: string, socialId: string) => IdentityLookup;
+  /**
+   * The `identityKey` of the draft marked primary, or empty for none.
+   *
+   * Identity rather than list position because a draft can be removed from the middle, and an
+   * index would then silently promote whichever draft slid into that slot.
+   */
+  primaryKey?: string;
+  /**
+   * Called with the draft to mark primary, or `undefined` to clear the mark — the latter when
+   * the primary draft is removed, since a customer created with a primary pointing at a
+   * channel that was never linked would be a dangling record from birth.
+   */
+  onSetPrimary?: (draft: DraftCustomerSocial | undefined) => void;
+  /**
+   * The contact channel selected in the form's preference dropdown. Only drafts on that
+   * channel can be marked primary — the preference decides the channel, and the mark only
+   * refines which entry on it.
+   */
+  preference?: string;
 }
 
 /**
@@ -33,9 +58,13 @@ export const SocialAccountDraftList = ({
   drafts,
   onChange,
   lookupIdentity,
+  primaryKey = "",
+  onSetPrimary,
+  preference,
 }: SocialAccountDraftListProps) => {
   const { t } = useTranslation();
   const { addToast } = useToastContext();
+  const preferredFamily = preferredChannelFamily(preference);
 
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -83,15 +112,32 @@ export const SocialAccountDraftList = ({
       if (editingIndex === null || !isAcceptable(draft, editingIndex)) {
         return;
       }
+
+      // Editing the identifier changes the draft's identity key, so a primary mark held
+      // against the old one has to move with it rather than silently detaching.
+      const previous = drafts[editingIndex];
+      const wasPrimary = identityKey(previous.socialType, previous.socialId) === primaryKey;
+
       onChange(drafts.map((existing, index) => (index === editingIndex ? draft : existing)));
       setEditingIndex(null);
+
+      if (wasPrimary) {
+        onSetPrimary?.(draft);
+      }
     },
-    [drafts, editingIndex, isAcceptable, onChange]
+    [drafts, editingIndex, isAcceptable, onChange, primaryKey, onSetPrimary]
   );
 
   const handleRemove = useCallback(
-    (index: number) => onChange(drafts.filter((_, position) => position !== index)),
-    [drafts, onChange]
+    (index: number) => {
+      const removed = drafts[index];
+      onChange(drafts.filter((_, position) => position !== index));
+
+      if (identityKey(removed.socialType, removed.socialId) === primaryKey) {
+        onSetPrimary?.(undefined);
+      }
+    },
+    [drafts, onChange, primaryKey, onSetPrimary]
   );
 
   return (
@@ -125,7 +171,22 @@ export const SocialAccountDraftList = ({
               />
             </div>
             <div className="min-w-0 grow">
-              <h3 className="text-sm">{meta ? t(meta.labelKey) : draft.socialType}</h3>
+              <div className="flex items-center space-x-2">
+                <h3 className="text-sm">{meta ? t(meta.labelKey) : draft.socialType}</h3>
+                {identityKey(draft.socialType, draft.socialId) === primaryKey ? (
+                  <Badge variant="solid" size="sm">{t("customer.social.primary")}</Badge>
+                ) : onSetPrimary && isTypeInFamily(draft.socialType, preferredFamily) && (
+                  <button
+                    type="button"
+                    onClick={() => onSetPrimary(draft)}
+                    title={t("customer.social.set_primary")}
+                    aria-label={t("customer.social.set_primary")}
+                    className="shrink-0 text-gray-400 hover:text-amber-500 dark:text-gray-500 dark:hover:text-amber-400"
+                  >
+                    <Star className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
               <p className="text-sm text-gray-600 dark:text-gray-300 break-all">{draft.socialName}</p>
               <p className="text-xs text-gray-400 dark:text-gray-500 break-all">{draft.socialId}</p>
             </div>

@@ -4,6 +4,9 @@ import FormViewer from "../form/dynamic-form/FormViewValue";
 import { i18nUserType } from "./constant";
 import Badge from "@/core/components/ui/badge/Badge";
 import { Customer, mergeAddress, useGetCustomerFormConfigQuery } from "@/cms/store/api/custommerApi";
+import { useCustomerSocials } from "@/cms/hooks/useCustomerSocials";
+import { useCustomerPrimaryContact } from "@/cms/hooks/useCustomerPrimaryContact";
+import { resolvePrimaryChannelDisplay } from "@/cms/utils/customerSocial.policy";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import { usePiiMasker } from "@/core/hooks/useMaskedValue";
 import { ChatIcon } from "@/core/icons";
@@ -13,7 +16,15 @@ export const CustomerPreviewData = ({ customer, className }: { customer: Custome
     const { t } = useTranslation();
     const { data: formConfigRes } = useGetCustomerFormConfigQuery();
     const formConfig = formConfigRes?.data;
-    const { canViewPii, maskAddress } = usePiiMasker();
+    const { canViewPii, maskAddress, maskValue } = usePiiMasker();
+
+    // The preference alone ("CALL") does not tell an agent which number to dial, so the
+    // stored primary's actual value is shown beneath it. Both reads share their RTK Query
+    // cache entries with the contact-channel list, so this costs no extra round-trip on the
+    // surfaces that render both.
+    const { socials } = useCustomerSocials({ customerId: customer?.id });
+    const { primaryKey } = useCustomerPrimaryContact({ customer, socials });
+    const primaryChannel = resolvePrimaryChannelDisplay(customer, socials, primaryKey);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const isAddressConfigured = (config: any) => {
@@ -155,6 +166,11 @@ export const CustomerPreviewData = ({ customer, className }: { customer: Custome
                                 <p className="text-sm leading-relaxed text-gray-400">
                                     {customer?.contractPreference || "-"}
                                 </p>
+                                {primaryChannel && (
+                                    <p className="text-sm leading-relaxed text-gray-400 break-all">
+                                        {maskValue(primaryChannel.piiPath, primaryChannel.value)}
+                                    </p>
+                                )}
                             </div>
                         )}
 

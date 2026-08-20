@@ -285,6 +285,7 @@ export const baseWelcomeCrmApi = createApi({
     "CustomerProduct",
     "CustomerNote",
     "CustomerSocial",
+    "CustomerContactDefault",
     "Service",
     "Category"
   ],

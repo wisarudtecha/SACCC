@@ -5,6 +5,7 @@ import Loading from "@/core/components/common/Loading";
 import { CustomerPreviewData } from "@/cms/components/customer/CustomerPreview";
 import { ContactChannelList } from "@/cms/components/customer/social/ContactChannelList";
 import { useCustomerSocials } from "@/cms/hooks/useCustomerSocials";
+import { useCustomerPrimaryContact } from "@/cms/hooks/useCustomerPrimaryContact";
 import { getTodayDate } from "@/cms/components/date/DateToString";
 import DatePickerLocal from "@/core/components/form/input/DatepicketLocal";
 import { SearchableSelectApi } from "@/cms/components/SearchInput/SearchSelectInput";
@@ -615,6 +616,9 @@ const ContactChannelsTab: React.FC<{ customer: Customer | undefined }> = ({ cust
     const { data: formConfigRes } = useGetCustomerFormConfigQuery();
     const formConfig = formConfigRes?.data;
     const { socials, isLoading, isPartial } = useCustomerSocials({ customerId: customer?.id });
+    // Read-only: the stored primary is shown, but choosing one belongs to the surfaces that
+    // can write (`SocialAccountManager`).
+    const { primaryKey } = useCustomerPrimaryContact({ customer, socials });
 
     return (
         <div className="p-5">
@@ -623,6 +627,7 @@ const ContactChannelsTab: React.FC<{ customer: Customer | undefined }> = ({ cust
                 socials={socials}
                 isLoading={isLoading}
                 isPartial={isPartial}
+                primaryKey={primaryKey}
                 hideHeading
                 showPhone={formConfig?.mobileNo !== false}
                 showEmail={formConfig?.email !== false}

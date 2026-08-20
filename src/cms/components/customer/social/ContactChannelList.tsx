@@ -1,5 +1,5 @@
 // src/cms/components/customer/social/ContactChannelList.tsx
-import { CircleCheckBig, Mail, MessageCircle, Phone, TriangleAlert } from "lucide-react";
+import { CircleCheckBig, Mail, MessageCircle, Phone, Star, TriangleAlert } from "lucide-react";
 import Loading from "@/core/components/common/Loading";
 import Badge from "@/core/components/ui/badge/Badge";
 import { useTranslation } from "@/core/hooks/useTranslation";
@@ -7,9 +7,20 @@ import { SocialAvatar } from "@/cms/components/customer/social/SocialAvatar";
 import { usePiiMasker } from "@/core/hooks/useMaskedValue";
 import {
   PROFILE_EMAIL_KEY,
+  PROFILE_LANDLINE_KEY,
   PROFILE_PHONE_KEY,
+  isTypeInFamily,
+  preferredChannelFamily,
+  primaryTargetForProfileChannel,
+  primaryTargetForSocial,
   providerMeta,
   resolvePrimaryChannelKey,
+  socialPiiPath,
+} from "@/cms/utils/customerSocial.policy";
+import type {
+  ChannelFamily,
+  PrimaryContactTarget,
+  ProfileChannelKey,
 } from "@/cms/utils/customerSocial.policy";
 import type { Customer } from "@/cms/store/api/custommerApi";
 import type { CustomerSocial } from "@/cms/types/customerSocial";
@@ -35,6 +46,31 @@ interface ContactChannelListProps {
    * what lets one row implementation serve both instead of two that drift.
    */
   renderSocialActions?: (social: CustomerSocial) => React.ReactNode;
+  /**
+   * Which row carries the Primary badge, resolved from the stored `CustomerContactDefault`
+   * by `useCustomerPrimaryContact`.
+   *
+   * Optional, and the fallback is deliberate: a caller that doesn't read the stored record
+   * gets the `contractPreference` approximation this component used before primaries were
+   * storable, rather than no badge at all.
+   */
+  primaryKey?: string;
+  /**
+   * Offer "set as primary" on the rows that could actually become primary. Omitted by
+   * read-only surfaces, which is what keeps this one component serving both.
+   */
+  onSetPrimary?: (target: PrimaryContactTarget) => void;
+  /**
+   * The channel the customer's `contractPreference` names. Only rows on it are offered the
+   * control, because the stored primary can only ever refine *which entry* on the preferred
+   * channel — the channel itself is the preference dropdown's to change.
+   *
+   * Defaults to the saved `contractPreference`; the customer form passes the dropdown's
+   * current value instead, so the controls follow what the agent is looking at.
+   */
+  preferredFamily?: ChannelFamily;
+  /** Disables the controls while a primary write is in flight. */
+  isSettingPrimary?: boolean;
 }
 
 /**
@@ -50,28 +86,16 @@ interface ContactChannelListProps {
  * The "Primary" badge and the checkmark are both back by request, to match the design
  * documentation already released, but they carry different amounts of real data:
  *
- *   - Primary is derived from `Customer.contractPreference` via `resolvePrimaryChannelKey`
- *     — real data, but a stated interim approximation until the backend supports choosing
- *     a specific row as primary.
+ *   - Primary is now a real, stored choice: `CustomerContactDefault` holds the channel *and*
+ *     the specific entry, and `useCustomerPrimaryContact` resolves it to a row key passed in
+ *     as `primaryKey`. A caller that doesn't pass one still gets the old
+ *     `contractPreference` approximation, which is also what every customer whose primary has
+ *     never been set falls back to.
  *   - The checkmark has no backing column at all (`CustomerSocial` still has no `verified`
  *     field). Since this list only ever renders channels that exist, it renders on every
  *     row — decorative, not a read of anything real. Worth revisiting if `verified` ever
  *     ships.
  */
-/**
- * Which customer PII rule a social row's identifier follows.
- *
- * PHONE and EMAIL rows are extra contact points on the profile — the same kind of data as
- * `mobileNo`/`email`, so they reuse those rules rather than getting their own. Every other
- * provider maps to nothing and passes through unmasked: a LINE display name is a platform
- * handle, not a contact detail, and hiding it would leave the agent unable to tell the rows
- * apart.
- */
-const SOCIAL_PII_PATH: Readonly<Record<string, string>> = {
-  PHONE: "mobileNo",
-  EMAIL: "email",
-};
-
 export const ContactChannelList = ({
   customer,
   socials,
@@ -81,6 +105,10 @@ export const ContactChannelList = ({
   showPhone = true,
   showEmail = true,
   renderSocialActions,
+  primaryKey,
+  onSetPrimary,
+  preferredFamily,
+  isSettingPrimary = false,
 }: ContactChannelListProps) => {
   const { t } = useTranslation();
   const { maskValue } = usePiiMasker();
@@ -97,7 +125,7 @@ export const ContactChannelList = ({
       tone: "text-blue-800 bg-blue-200 dark:bg-blue-300",
     },
     {
-      key: "landline",
+      key: PROFILE_LANDLINE_KEY,
       label: t("common.phone_number"),
       value: showPhone ? maskValue("landline", customer?.landline) : undefined,
       icon: <Phone className="w-5 h-5" />,
@@ -113,7 +141,40 @@ export const ContactChannelList = ({
   ].filter(channel => Boolean(channel.value));
 
   const hasAnything = directChannels.length > 0 || socials.length > 0;
-  const primaryKey = resolvePrimaryChannelKey(customer, socials);
+  // Only when the caller doesn't read the stored primary — see the prop's doc comment.
+  const resolvedPrimaryKey = primaryKey ?? resolvePrimaryChannelKey(customer, socials);
+
+  const resolvedFamily = preferredFamily ?? preferredChannelFamily(customer?.contractPreference);
+
+  /**
+   * The "make this the primary" control.
+   *
+   * Rendered per row rather than as one dropdown above the list because the thing being
+   * chosen *is* a row — a dropdown would have to re-describe every channel in its options,
+   * and a LINE display name and an extra phone number don't summarise into one line each.
+   *
+   * Absent on rows outside the preferred channel: those cannot become primary while the
+   * preference stands, and offering a control that would be silently overruled on the next
+   * read is worse than not offering one.
+   */
+  const renderPrimaryControl = (target: PrimaryContactTarget | undefined) => {
+    if (!onSetPrimary || !target || !isTypeInFamily(target.type, resolvedFamily)) {
+      return null;
+    }
+
+    return (
+      <button
+        type="button"
+        disabled={isSettingPrimary}
+        onClick={() => onSetPrimary(target)}
+        title={t("customer.social.set_primary")}
+        aria-label={t("customer.social.set_primary")}
+        className="shrink-0 text-gray-400 hover:text-amber-500 disabled:opacity-40 disabled:cursor-not-allowed dark:text-gray-500 dark:hover:text-amber-400"
+      >
+        <Star className="w-4 h-4" />
+      </button>
+    );
+  };
 
   return (
     <div className="space-y-3 text-gray-900 dark:text-white">
@@ -142,8 +203,14 @@ export const ContactChannelList = ({
             <div className="min-w-0">
               <div className="flex items-center space-x-2">
                 <h3 className="text-sm">{channel.label}</h3>
-                {channel.key === primaryKey && (
+                {channel.key === resolvedPrimaryKey ? (
                   <Badge variant="solid" size="sm">{t("customer.social.primary")}</Badge>
+                ) : (
+                  // The raw field, never `channel.value` — that one is masked, and the mask
+                  // must not be what gets stored as the primary's `referId`.
+                  renderPrimaryControl(
+                    primaryTargetForProfileChannel(channel.key as ProfileChannelKey, customer)
+                  )
                 )}
                 {/* Decorative — see the component doc comment above. */}
                 <CircleCheckBig className="text-green-500 w-4 h-4 shrink-0" />
@@ -155,7 +222,7 @@ export const ContactChannelList = ({
 
         {socials.map(social => {
           const meta = providerMeta(social.socialType);
-          const piiPath = SOCIAL_PII_PATH[social.socialType] ?? "";
+          const piiPath = socialPiiPath(social.socialType);
 
           return (
             <div
@@ -173,8 +240,10 @@ export const ContactChannelList = ({
                 <div className="flex items-center space-x-2">
                   {/* An unknown type still renders — as its own raw label, rather than blank. */}
                   <h3 className="text-sm">{meta ? t(meta.labelKey) : social.socialType}</h3>
-                  {social.id === primaryKey && (
+                  {social.id === resolvedPrimaryKey ? (
                     <Badge variant="solid" size="sm">{t("customer.social.primary")}</Badge>
+                  ) : (
+                    renderPrimaryControl(primaryTargetForSocial(social))
                   )}
                   {/* Decorative — see the component doc comment above. */}
                   <CircleCheckBig className="text-green-500 w-4 h-4 shrink-0" />
