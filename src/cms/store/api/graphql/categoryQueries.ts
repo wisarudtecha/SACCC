@@ -3,6 +3,10 @@ const GET_LIST_CATEGORY_QUERY = {
   operationName: "GetListCategory",
   root: "Category",
   inputType: "ListDataInput!",
+  // No pagination counts here on purpose: the BFF's Category list type does not expose
+  // currentPage/pageSize/totalFiltered/totalRecords/totalPage, and asking for them fails the
+  // whole query ("Cannot query fields ... Maybe they should be managed by client"). CategoryView
+  // therefore fetches the whole filtered set and pages it in the browser.
   fields: `status msg data desc`,
 };
 
@@ -49,6 +53,8 @@ export const GQL_CATEGORY = {
   "/category/:id": {
     GET: GET_CATEGORY_BY_ID_QUERY,
     // POST: CREATE_CATEGORY_MUTATION, // create posts to the collection "/category", not "/category/:id"
+    // categoryApi.updateCategory sends PUT; PATCH kept for callers that use it.
+    PUT: UPDATE_CATEGORY_MUTATION,
     PATCH: UPDATE_CATEGORY_MUTATION,
     DELETE: DELETE_CATEGORY_MUTATION,
   },

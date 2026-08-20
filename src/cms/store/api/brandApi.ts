@@ -5,7 +5,7 @@
  */
 import { baseApiCrm } from "@/core/store/api/baseApi";
 import type { ApiResponse } from "@/core/types";
-import type { Brand, BrandQueryParams, BrandUpdateData } from "@/cms/types/brand";
+import type { Brand, BrandCreateData, BrandQueryParams, BrandUpdateData } from "@/cms/types/brand";
 
 
 export const brandApi = baseApiCrm.injectEndpoints({
@@ -25,7 +25,7 @@ export const brandApi = baseApiCrm.injectEndpoints({
     }),
 
     // POST api/v1/brand
-    createBrand: builder.mutation<ApiResponse<Brand>, FormData>({
+    createBrand: builder.mutation<ApiResponse<Brand>, BrandCreateData>({
       query: data => ({
         url: "/brand",
         method: "POST",

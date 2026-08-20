@@ -47,6 +47,8 @@ import UnitManagementPage from "@/cms/pages/Admin/UnitManagement";
 import ReportPage from "@/cms/pages/Report/Report";
 
 // Product
+import BrandListPage from "@/cms/pages/Crm/Brands/BrandListPage";
+import CategoryListPage from "@/cms/pages/Crm/Categories/CategoryListPage";
 import InventoryListPage from "@/cms/pages/Crm/Inventory/InventoryListPage";
 import InventoryRequestListPage from "@/cms/pages/Crm/Request/InventoryRequestListPage";
 import InventoryStockPage from "@/cms/pages/Crm/Inventory/InventoryStockPage";
@@ -160,6 +162,26 @@ export default function CmsApp() {
           <Route path="/report" element={<ReportPage />} />
 
           {/* Product Management */}
+          {/* Brand and category are shared master data for both products and spare parts,
+              so they sit alongside the product routes and reuse product.view. */}
+          <Route
+            path="/brands"
+            element={
+              <ProtectedRoute requiredPermissions={["product.view"]}>
+                <BrandListPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/categories"
+            element={
+              <ProtectedRoute requiredPermissions={["product.view"]}>
+                <CategoryListPage />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/inventory"
             element={

@@ -3,6 +3,10 @@ const GET_LIST_BRAND_QUERY = {
   operationName: "GetListBrand",
   root: "Brand",
   inputType: "ListDataInput!",
+  // No pagination counts here on purpose: the BFF's Brand list type does not expose
+  // currentPage/pageSize/totalFiltered/totalRecords/totalPage, and asking for them fails the
+  // whole query ("Cannot query fields ... Maybe they should be managed by client"). BrandView
+  // therefore fetches the whole filtered set and pages it in the browser.
   fields: `status msg data desc`
 };
 
@@ -49,6 +53,8 @@ export const GQL_BRAND = {
   "/brand/:id": {
     GET: GET_BRAND_BY_ID_QUERY,
     // POST: CREATE_BRAND_MUTATION, // create posts to the collection "/brand", not "/brand/:id"
+    // brandApi.updateBrand sends PUT; PATCH kept for callers that use it.
+    PUT: UPDATE_BRAND_MUTATION,
     PATCH: UPDATE_BRAND_MUTATION,
     DELETE: DELETE_BRAND_MUTATION
   }

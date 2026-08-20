@@ -35,6 +35,7 @@ import {
   Settings,
   ShieldCheck,
   ShoppingCart,
+  Tag,
   User,
   UserCheck,
   Users,
@@ -189,6 +190,18 @@ const SuperTopbar = (
           name: t("navigation.super_app.topbar.more.menu.product.sub_menu.inventory_request"),
           path: "/cms/inventory/request",
           permission: permissions.hasPermission("order.view")
+        },
+        {
+          icon: <Tag />,
+          name: t("navigation.super_app.topbar.more.menu.product.sub_menu.brand"),
+          path: "/cms/brands",
+          permission: permissions.hasPermission("product.view")
+        },
+        {
+          icon: <Layers />,
+          name: t("navigation.super_app.topbar.more.menu.product.sub_menu.category"),
+          path: "/cms/categories",
+          permission: permissions.hasPermission("product.view")
         },
         // {
         //   icon: <Wrench />,
@@ -346,6 +359,12 @@ const SuperTopbar = (
           permission: permissions.hasPermission("unit.view")
         },
         {
+          icon: <Tag />,
+          name: t("navigation.super_app.topbar.more.menu.system_config.sub_menu.property"),
+          path: "/cms/property",
+          permission: permissions.hasPermission("unit.view")
+        },
+        {
           icon: <Wrench />,
           name: t("navigation.super_app.topbar.more.menu.system_config.sub_menu.skill"),
           path: "/cms/skill",
@@ -382,6 +401,12 @@ const SuperTopbar = (
           icon: <NotebookPen />,
           name: t("navigation.super_app.topbar.more.menu.contact.sub_menu.appointment"),
           path: "/cc/appointment",
+          permission: permissions.hasPermission("appointment.view")
+        },
+        {
+          icon: <Settings />,
+          name: t("navigation.super_app.topbar.more.menu.contact.sub_menu.appointment_type"),
+          path: "/cc/appointment-types",
           permission: permissions.hasPermission("appointment.view")
         }
       ]

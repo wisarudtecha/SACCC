@@ -389,7 +389,8 @@
           "title": "Contacts",
           "menu": {
             "list": "Contacts List",
-            "appointment": "Appointment"
+            "appointment": "Appointment",
+            "appointment_type": "Appointment Types"
           }
         },
         "case": {
@@ -438,7 +439,9 @@
                 "product_stock": "Products Stock",
                 "inventory": "Spare Parts",
                 "inventory_stock": "Spare Parts Stock",
-                "inventory_request": "Orders"
+                "inventory_request": "Orders",
+                "brand": "Brands",
+                "category": "Categories"
               }
             },
             "case": {
@@ -455,6 +458,7 @@
               "sub_menu": {
                 "service_type": "Service Type Management",
                 "unit": "Unit Management",
+                "property": "Property Management",
                 "skill": "Skill Management",
                 "area": "Area Management"
               }
@@ -474,7 +478,8 @@
               "sub_menu": {
                 "list": "Contacts List",
                 "config": "Contact Configuration",
-                "appointment": "Appointment"
+                "appointment": "Appointment",
+                "appointment_type": "Appointment Types"
               }
             },
             "dashboard_analytic": {
@@ -768,6 +773,68 @@
     }
   },
   "crud": {
+    "brand": {
+      "name": "Brands",
+      "type": {
+        "product": "Product",
+        "part": "Spare Part"
+      },
+      "list": {
+        "header": {
+          "name": "Brand Name",
+          "type": "Type",
+          "status": "Status"
+        }
+      },
+      "form": {
+        "th": {
+          "label": "Brand Name (TH)",
+          "placeholder": "Enter brand name in Thai",
+          "required": "Brand Name (TH) is required"
+        },
+        "en": {
+          "label": "Brand Name (EN)",
+          "placeholder": "Enter brand name in English",
+          "required": "Brand Name (EN) is required"
+        },
+        "type": {
+          "label": "Type",
+          "placeholder": "Select type",
+          "required": "Type is required"
+        }
+      }
+    },
+    "category": {
+      "name": "Categories",
+      "type": {
+        "product": "Product",
+        "part": "Spare Part"
+      },
+      "list": {
+        "header": {
+          "name": "Category Name",
+          "type": "Type",
+          "status": "Status"
+        }
+      },
+      "form": {
+        "th": {
+          "label": "Category Name (TH)",
+          "placeholder": "Enter category name in Thai",
+          "required": "Category Name (TH) is required"
+        },
+        "en": {
+          "label": "Category Name (EN)",
+          "placeholder": "Enter category name in English",
+          "required": "Category Name (EN) is required"
+        },
+        "type": {
+          "label": "Type",
+          "placeholder": "Select type",
+          "required": "Type is required"
+        }
+      }
+    },
     "common": {
       "processing": "Processing...",
       "search": "Search",
@@ -2103,6 +2170,148 @@
         }
       }
     },
+    "appointment_type": {
+      "name": "Appointment Type",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search appointment types..."
+          }
+        },
+        "header": {
+          "name": "Name",
+          "status": "Status"
+        },
+        "preview": {
+          "header": "Appointment Type Information"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "Create Appointment Type",
+          "update": "Edit Appointment Type"
+        },
+        "th": {
+          "label": "Name (TH)",
+          "placeholder": "Enter appointment type name in Thai language",
+          "required": "Appointment type name (Thai) is required"
+        },
+        "en": {
+          "label": "Name (EN)",
+          "placeholder": "Enter appointment type name in English language",
+          "required": "Appointment type name (English) is required"
+        },
+        "active": {
+          "label": "Active"
+        }
+      },
+      "confirm": {
+        "create": {
+          "title": "Create appointment type confirmation",
+          "message": "Please confirm to create _APPOINTMENT_TYPE_."
+        },
+        "update": {
+          "title": "Update appointment type confirmation",
+          "message": "Please confirm to update _APPOINTMENT_TYPE_."
+        },
+        "button": {
+          "cancel": "Cancel",
+          "confirm": "Confirm",
+          "saving": "Saving..."
+        }
+      },
+      "action": {
+        "create": {
+          "success": "Appointment type created successfully",
+          "error": "Failed to create appointment type"
+        },
+        "update": {
+          "success": "Appointment type updated successfully",
+          "error": "Failed to update appointment type"
+        },
+        "button": {
+          "save": "Save",
+          "delete": "Delete",
+          "reset": "Reset"
+        }
+      },
+      "metrics": {
+        "total": "Total Appointment Types",
+        "active": "Active Appointment Types",
+        "inactive": "Inactive Appointment Types"
+      }
+    },
+    "property": {
+      "name": "Property",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search properties..."
+          }
+        },
+        "header": {
+          "name": "Name",
+          "status": "Status"
+        },
+        "preview": {
+          "header": "Property Information"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "Create Property",
+          "update": "Edit Property"
+        },
+        "th": {
+          "label": "Name (TH)",
+          "placeholder": "Enter property name in Thai language",
+          "required": "Property name (Thai) is required"
+        },
+        "en": {
+          "label": "Name (EN)",
+          "placeholder": "Enter property name in English language",
+          "required": "Property name (English) is required"
+        },
+        "active": {
+          "label": "Active"
+        }
+      },
+      "confirm": {
+        "create": {
+          "title": "Create property confirmation",
+          "message": "Please confirm to create _PROPERTY_."
+        },
+        "update": {
+          "title": "Update property confirmation",
+          "message": "Please confirm to update _PROPERTY_."
+        },
+        "button": {
+          "cancel": "Cancel",
+          "confirm": "Confirm",
+          "saving": "Saving..."
+        }
+      },
+      "action": {
+        "create": {
+          "success": "Property created successfully",
+          "error": "Failed to create property"
+        },
+        "update": {
+          "success": "Property updated successfully",
+          "error": "Failed to update property"
+        },
+        "button": {
+          "save": "Save",
+          "delete": "Delete",
+          "reset": "Reset"
+        }
+      },
+      "metrics": {
+        "total": "Total Properties",
+        "active": "Active Properties",
+        "inactive": "Inactive Properties"
+      }
+    },
     "unit": {
       "name": "Unit",
       "list": {
@@ -2122,6 +2331,7 @@
             "header": {
               "overview": "Basic Info",
               "skill": "Skills",
+              "property": "Properties",
               "location": "Location"
             },
             "unitId": "ID",

@@ -34,7 +34,7 @@ export interface Column<T> extends Grid {
 export interface FieldConfig extends Grid {
   name: string;
   label: string;
-  type: "customizable-select" | "datetime-local" | "file" | "input-group" | "number" | "select" | "text" | "textarea";
+  type: "customizable-select" | "datetime-local" | "file" | "input-group" | "number" | "select" | "text" | "textarea" | "toggle";
   required?: boolean;
   placeholder?: string;
   options?: { value: string; label: string }[];

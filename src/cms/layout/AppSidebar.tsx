@@ -211,6 +211,11 @@ const AppSidebar: React.FC = () => {
           permission: permissions.hasPermission("unit.view"),
         },
         {
+          name: t("navigation.sidebar.main.system_configuration.nested.property_management"),
+          path: "/property",
+          permission: permissions.hasPermission("unit.view"),
+        },
+        {
           name: t("navigation.sidebar.main.system_configuration.nested.skill_management"),
           path: "/skill",
           permission: permissions.hasAnyPermission(["unit.view"]),
@@ -237,6 +242,14 @@ const AppSidebar: React.FC = () => {
         {
           name: "Service",
           path: "/services",
+        },
+        {
+          name: "Brand",
+          path: "/brands",
+        },
+        {
+          name: "Category",
+          path: "/categories",
         },
       ],
     },

@@ -21,6 +21,7 @@ export interface CategoryCreateData {
 export interface CategoryQueryParams {
   start: number;
   length: number;
+  search?: string;
   type?: string;
   categoryId?: string;
   active?: boolean;

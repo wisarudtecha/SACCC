@@ -24,7 +24,9 @@ export interface BrandCreateData {
   th: string;
   active: boolean;
   type: string;
-  file: File;
+  // Optional: the brand management form does not upload a logo yet, so create posts plain JSON
+  // the same way createCategory/createProduct do.
+  file?: File;
 }
 
 export interface BrandQueryParams {

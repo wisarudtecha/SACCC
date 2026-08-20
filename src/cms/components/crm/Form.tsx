@@ -14,6 +14,7 @@ import Label from "@/core/components/form/Label";
 import CustomizableSelect from "@/core/components/form/CustomizableSelect";
 import Button from "@/core/components/ui/button/Button";
 import Select from "@/core/components/form/Select";
+import Switch from "@/core/components/form/switch/Switch";
 import ImageWithValidation from "@/cms/components/crm/ImageWithValidation";
 
 export interface FormProps<T> {
@@ -381,6 +382,22 @@ const Form = <T extends Record<string, unknown>>({
             placeholder={field.placeholder}
           />
         );
+
+      case "toggle": {
+        // Switch is uncontrolled - it seeds useState(defaultChecked) and never resyncs - which
+        // is only safe because Form is conditionally mounted by its callers ({showForm && <Form/>}),
+        // so it remounts with a fresh defaultChecked every time the modal opens.
+        // The on/off wording comes from the field's own options, so this stays generic.
+        const checked = Boolean(value);
+        const stateLabel = field.options?.find(option => String(option.value) === String(checked))?.label ?? "";
+        return (
+          <Switch
+            label={stateLabel}
+            defaultChecked={checked}
+            onChange={isChecked => handleChange(field.name, isChecked)}
+          />
+        );
+      }
 
       case "textarea":
         return (

@@ -296,7 +296,8 @@
           "title": "联系人",
           "menu": {
             "list": "联系人列表",
-            "appointment": "预约"
+            "appointment": "预约",
+            "appointment_type": "预约类型"
           }
         },
         "case": {
@@ -345,7 +346,9 @@
                 "product_stock": "产品库存",
                 "inventory": "备件",
                 "inventory_stock": "备件库存",
-                "inventory_request": "申请备件"
+                "inventory_request": "申请备件",
+                "brand": "品牌",
+                "category": "类别"
               }
             },
             "case": {
@@ -362,6 +365,7 @@
               "sub_menu": {
                 "service_type": "服务类型管理",
                 "unit": "单位管理",
+                "property": "属性管理",
                 "skill": "技能管理",
                 "area": "区域管理"
               }
@@ -381,7 +385,8 @@
               "sub_menu": {
                 "list": "联系人列表",
                 "config": "联系人配置",
-                "appointment": "预约"
+                "appointment": "预约",
+                "appointment_type": "预约类型"
               }
             },
             "dashboard_analytic": {
@@ -668,6 +673,68 @@
     }
   },
   "crud": {
+    "brand": {
+      "name": "品牌",
+      "type": {
+        "product": "产品",
+        "part": "备件"
+      },
+      "list": {
+        "header": {
+          "name": "品牌名称",
+          "type": "类型",
+          "status": "状态"
+        }
+      },
+      "form": {
+        "th": {
+          "label": "品牌名称 (TH)",
+          "placeholder": "输入泰语品牌名称",
+          "required": "必须填写品牌名称 (TH)"
+        },
+        "en": {
+          "label": "品牌名称 (EN)",
+          "placeholder": "输入英文品牌名称",
+          "required": "必须填写品牌名称 (EN)"
+        },
+        "type": {
+          "label": "类型",
+          "placeholder": "选择类型",
+          "required": "必须选择类型"
+        }
+      }
+    },
+    "category": {
+      "name": "类别",
+      "type": {
+        "product": "产品",
+        "part": "备件"
+      },
+      "list": {
+        "header": {
+          "name": "类别名称",
+          "type": "类型",
+          "status": "状态"
+        }
+      },
+      "form": {
+        "th": {
+          "label": "类别名称 (TH)",
+          "placeholder": "输入泰语类别名称",
+          "required": "必须填写类别名称 (TH)"
+        },
+        "en": {
+          "label": "类别名称 (EN)",
+          "placeholder": "输入英文类别名称",
+          "required": "必须填写类别名称 (EN)"
+        },
+        "type": {
+          "label": "类型",
+          "placeholder": "选择类型",
+          "required": "必须选择类型"
+        }
+      }
+    },
     "common": {
       "processing": "正在处理...",
       "search": "搜索",
@@ -1987,6 +2054,148 @@
         }
       }
     },
+    "appointment_type": {
+      "name": "预约类型",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索预约类型..."
+          }
+        },
+        "header": {
+          "name": "名称",
+          "status": "状态"
+        },
+        "preview": {
+          "header": "预约类型信息"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "创建预约类型",
+          "update": "编辑预约类型"
+        },
+        "th": {
+          "label": "名称（泰语）",
+          "placeholder": "请输入泰语预约类型名称",
+          "required": "预约类型名称（泰语）为必填项"
+        },
+        "en": {
+          "label": "名称（英语）",
+          "placeholder": "请输入英语预约类型名称",
+          "required": "预约类型名称（英语）为必填项"
+        },
+        "active": {
+          "label": "启用"
+        }
+      },
+      "confirm": {
+        "create": {
+          "title": "创建预约类型确认",
+          "message": "请确认以创建 _APPOINTMENT_TYPE_"
+        },
+        "update": {
+          "title": "更新预约类型确认",
+          "message": "请确认以更新 _APPOINTMENT_TYPE_"
+        },
+        "button": {
+          "cancel": "取消",
+          "confirm": "确认",
+          "saving": "正在保存..."
+        }
+      },
+      "action": {
+        "create": {
+          "success": "预约类型创建成功",
+          "error": "预约类型创建失败"
+        },
+        "update": {
+          "success": "预约类型更新成功",
+          "error": "预约类型更新失败"
+        },
+        "button": {
+          "save": "保存",
+          "delete": "删除",
+          "reset": "重置"
+        }
+      },
+      "metrics": {
+        "total": "预约类型总数",
+        "active": "已启用预约类型",
+        "inactive": "已停用预约类型"
+      }
+    },
+    "property": {
+      "name": "属性",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索属性..."
+          }
+        },
+        "header": {
+          "name": "名称",
+          "status": "状态"
+        },
+        "preview": {
+          "header": "属性信息"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "创建属性",
+          "update": "编辑属性"
+        },
+        "th": {
+          "label": "名称（泰语）",
+          "placeholder": "请输入泰语属性名称",
+          "required": "属性名称（泰语）为必填项"
+        },
+        "en": {
+          "label": "名称（英语）",
+          "placeholder": "请输入英语属性名称",
+          "required": "属性名称（英语）为必填项"
+        },
+        "active": {
+          "label": "启用"
+        }
+      },
+      "confirm": {
+        "create": {
+          "title": "创建属性确认",
+          "message": "请确认以创建 _PROPERTY_"
+        },
+        "update": {
+          "title": "更新属性确认",
+          "message": "请确认以更新 _PROPERTY_"
+        },
+        "button": {
+          "cancel": "取消",
+          "confirm": "确认",
+          "saving": "正在保存..."
+        }
+      },
+      "action": {
+        "create": {
+          "success": "属性创建成功",
+          "error": "属性创建失败"
+        },
+        "update": {
+          "success": "属性更新成功",
+          "error": "属性更新失败"
+        },
+        "button": {
+          "save": "保存",
+          "delete": "删除",
+          "reset": "重置"
+        }
+      },
+      "metrics": {
+        "total": "属性总数",
+        "active": "已启用属性",
+        "inactive": "已停用属性"
+      }
+    },
     "unit": {
       "name": "单位",
       "list": {
@@ -2006,6 +2215,7 @@
             "header": {
               "overview": "基本信息",
               "skill": "技能",
+              "property": "属性",
               "location": "地点"
             },
             "unitId": "ID",

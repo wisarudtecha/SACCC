@@ -148,7 +148,15 @@ const SuperSidebar = (
       permission: permissions.hasAnyPermission([
         "appointment.view"
       ])
-    }
+    },
+    // {
+    //   icon: <Settings />,
+    //   name: t("navigation.super_app.sidebar.contact.menu.appointment_type"),
+    //   path: "/cc/appointment-types",
+    //   permission: permissions.hasAnyPermission([
+    //     "appointment.view"
+    //   ])
+    // }
   ], [permissions, t]);
 
   const casesItems: NavItem[] = useMemo(() => [
