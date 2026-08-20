@@ -52,8 +52,13 @@ const Switch: React.FC<SwitchProps> = ({
       className={`flex cursor-pointer select-none items-center gap-3 text-sm font-medium ${
         disabled ? "text-gray-400" : "text-gray-700 dark:text-gray-400"
       }`}
-      onClick={onChick} // Toggle when the label itself is clicked
-      onChange={handleToggle}
+      onClick={() => {
+        // A <label> never fires a native "change" event on its own, so the toggle must
+        // happen on click; onChick is preserved as an additional external hook for callers
+        // (e.g. ButtonAction.tsx) that relied on it firing on click.
+        handleToggle();
+        onChick?.();
+      }}
     >
       {label}
       <div className="relative">
