@@ -1,4 +1,10 @@
 {
+  "0.51.0": {
+    "date": "2026-08-20",
+    "segment": "MINOR",
+    "notes": "feat(cms): choose a customer's primary contact by hand, make Property Management save for real, and fix two toggle/preview bugs\n- Staff can now pick exactly which phone number, email address or linked account (LINE, Facebook, Text Chat) is a customer's main way of being contacted, instead of it only ever being guessed from the customer's stated preference. The choice can be made from the customer's Contact Channels list, and is available right away while creating a brand-new customer as well as on an existing one.\n- 'Facebook' and 'Text Chat' have been added as choices for a customer's contact preference, alongside the existing Call, SMS, Email and LINE options.\n- The Property Management screen added in the previous release only ever showed sample data and could not actually save anything. It now reads and saves real property records, so properties created, edited or switched active/inactive there are kept.\n- Fixed the active/inactive switch on Brand, Category and Property screens sometimes not responding to a click on its label - only clicking exactly on the switch itself reliably worked before.\n- Fixed the Skills, Area and User Group tabs on a user's preview screen occasionally showing the previous user's data for a moment after switching to a different user.\n- changelog.json / package.json: bump version 0.50.0 -> 0.51.0",
+    "author": "Wisarud Techa"
+  },
   "0.50.0": {
     "date": "2026-08-20",
     "segment": "MINOR",
