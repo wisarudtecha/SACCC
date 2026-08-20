@@ -257,6 +257,36 @@ export interface PropertyQueryParams {
   length?: number | 10;
 }
 
+// Params for GET /mdm/units/properties/{unitId} - `id` is the unitId business code
+// (e.g. "UNIT-001"), matching the GraphQL GetMdmUnitPropById input field name.
+export interface UnitPropertyQueryParams {
+  id: string;
+  start?: number | 0;
+  length?: number | 100;
+}
+
+export interface PropertyCreateData {
+  active: boolean;
+  en: string;
+  th: string;
+}
+
+export interface PropertyUpdateData {
+  active: boolean;
+  en: string;
+  th: string;
+}
+
+export interface PropertyManagementProps {
+  properties?: Property[];
+}
+
+export interface PropertyMetrics {
+  totalProperties: number | string;
+  activeProperties: number | string;
+  inactiveProperties: number | string;
+}
+
 export interface Source extends BaseEntity {
   unitSourceId: string;
   orgId: string;

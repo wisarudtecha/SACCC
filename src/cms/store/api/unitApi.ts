@@ -10,7 +10,7 @@ import type {
   UnitStatus, UnitStatusQueryParams,
   UnitType, UnitTypeQueryParams,
   Company, CompanyQueryParams,
-  Property, PropertyQueryParams,
+  Property, UnitPropertyQueryParams,
   Source, SourceQueryParams,
 } from "@/cms/types/unit";
 
@@ -60,6 +60,19 @@ export const unitApi = baseApi.injectEndpoints({
       invalidatesTags: ["Unit"],
     }),
 
+    // GET /mdm/units/properties/{unitId}
+    // Read-only: the backend exposes no create/update/delete for the unit-property
+    // relationship, and MmdUnitInput carries no property field - so assignments can be
+    // displayed but not edited from the client. The path param is the unitId business
+    // code (e.g. "UNIT-001"), not the numeric/UUID id.
+    getUnitProperties: builder.query<ApiResponse<Property[]>, UnitPropertyQueryParams>({
+      query: ({ id, start = 0, length = 100 }) => {
+        const searchParams = new URLSearchParams({ start: String(start), length: String(length) });
+        return `/mdm/units/properties/${id}?${searchParams.toString()}`;
+      },
+      providesTags: (_result, _error, { id }) => [{ type: "Unit", id }],
+    }),
+
     getCompanies: builder.query<ApiResponse<Company[]>, CompanyQueryParams>({
       query: params => {
         const searchParams = new URLSearchParams();
@@ -69,19 +82,6 @@ export const unitApi = baseApi.injectEndpoints({
           }
         });
         return `/mdm/companies?${searchParams.toString()}`;
-      },
-      providesTags: ["Unit"],
-    }),
-
-    getProperties: builder.query<ApiResponse<Property[]>, PropertyQueryParams>({
-      query: params => {
-        const searchParams = new URLSearchParams();
-        Object.entries(params).forEach(([key, value]) => {
-          if (value !== undefined) {
-            searchParams.append(key, String(value));
-          }
-        });
-        return `/mdm/properties?${searchParams.toString()}`;
       },
       providesTags: ["Unit"],
     }),
@@ -125,8 +125,8 @@ export const {
   useGetUnitsByIdQuery,
   useUpdateUnitsMutation,
   useDeleteUnitsMutation,
+  useGetUnitPropertiesQuery,
   useGetCompaniesQuery,
-  useGetPropertiesQuery,
   useGetSourcesQuery,
   useGetUnitStatusesQuery,
   useGetUnitTypesQuery

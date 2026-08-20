@@ -13,10 +13,11 @@ import { usePermissions } from "@/core/hooks/usePermissions";
 import { useToast } from "@/core/hooks/useToast";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import { useGetUserSkillsByUsernameQuery } from "@/core/store/api/userApi";
+import { useGetUnitPropertiesQuery } from "@/cms/store/api/unitApi";
 import { AuthService } from "@/core/utils/authService";
 import { formatDate } from "@/core/utils/crud";
 import type { PreviewConfig } from "@/core/types/enhanced-crud";
-import type { Unit } from "@/cms/types/unit";
+import type { Property, Unit } from "@/cms/types/unit";
 import type { UserSkill } from "@/core/types/user";
 import UnitCardContent from "@/cms/components/admin/system-configuration/unit/UnitCard";
 import Badge from "@/core/components/ui/badge/Badge";
@@ -65,12 +66,18 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
 
   const [selectedUsername, setSelectedUsername] = useState<string | null>(null);
   const [unitsSkills, setUnitsSkills] = useState<UserSkill[] | null>(null);
+  const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
 
   // ===================================================================
   // Real Functionality Data
   // ===================================================================
 
   const { data: usersSkills } = useGetUserSkillsByUsernameQuery(selectedUsername ?? "", { skip: !selectedUsername });
+
+  const { data: unitPropertiesData, isFetching: isFetchingUnitProperties } = useGetUnitPropertiesQuery(
+    { id: selectedUnitId ?? "" }, { skip: !selectedUnitId }
+  );
+  const unitProperties = unitPropertiesData?.data as unknown as Property[] | undefined;
 
   const data: (Unit & { id: string })[] = unit.map(u => ({
     ...u,
@@ -214,6 +221,46 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
     );
   };
 
+  // Read-only view of the unit's assigned properties. The backend has no write endpoint
+  // for the unit-property relationship, so there is deliberately no edit affordance here.
+  const PropertyTab: React.FC<{ unitItem: Unit }> = ({ unitItem }) => {
+    useEffect(() => {
+      // GetMdmUnitPropById keys on the unitId business code (e.g. "UNIT-001"),
+      // not the numeric/UUID id.
+      setSelectedUnitId(unitItem.unitId);
+    }, [unitItem.unitId]);
+
+    return (
+      <div className="grid grid-cols-1 gap-4">
+        <div className="flex items-start justify-start gap-2">
+          <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
+            {t("crud.unit.list.preview.tab.current_user")}:
+          </label>
+          <div className="font-mono text-gray-900 dark:text-white text-sm">
+            {unitItem.username}
+          </div>
+        </div>
+        <div className="text-sm">
+          {isFetchingUnitProperties && (
+            <span className="text-gray-500 dark:text-gray-400">
+              {t("crud.common.loading_records")}
+            </span>
+          )}
+          {!isFetchingUnitProperties && !unitProperties?.length && (
+            <span className="text-gray-500 dark:text-gray-400">
+              {t("crud.common.empty_table")}
+            </span>
+          )}
+          {!isFetchingUnitProperties && unitProperties?.map(item => (
+            <Badge key={item.propId} className="mr-2">
+              {language === "th" && item.th || item.en || item.propId}
+            </Badge>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const previewConfig: PreviewConfig<Unit> = {
     title: () => t("crud.unit.list.preview.header"),
     size: "xl",
@@ -267,6 +314,13 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
         // icon: InfoIcon,
         render: (unitItem: Unit) => {
           return (<SkillTab unitItem={unitItem} />)
+        }
+      },
+      {
+        key: "property",
+        label: t("crud.unit.list.preview.tab.header.property"),
+        render: (unitItem: Unit) => {
+          return (<PropertyTab unitItem={unitItem} />)
         }
       },
       {
