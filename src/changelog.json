@@ -1,4 +1,10 @@
 {
+  "0.50.0": {
+    "date": "2026-08-20",
+    "segment": "MINOR",
+    "notes": "feat(cms): manage brands and categories, view a unit's assigned properties, and manage appointment types\n- Products and spare parts can now be grouped by brand and by category from two new management screens under Product Management, reachable from the side menu and the top 'More' menu. Staff can add, edit and switch a brand or category active or inactive, and search the list by name.\n- The unit list's detail view now includes a 'Property' tab showing which properties are assigned to that unit. This is a read-only view for now - there is no way yet to change a unit's assigned properties from this screen.\n- 'Property Management' has been added to the System Configuration menu, alongside Unit Management, so property records can be reached directly from the side menu.\n- Appointment types can now be created, edited, deleted and switched active or inactive from a new Appointment Type management screen, reachable from the Contacts menu. Previously, saving a new or edited appointment type did not actually reach the server, so nothing was saved - that is fixed as part of adding this screen.\n- changelog.json / package.json: bump version 0.49.0 -> 0.50.0",
+    "author": "Wisarud Techa"
+  },
   "0.49.0": {
     "date": "2026-08-18",
     "segment": "MINOR",
