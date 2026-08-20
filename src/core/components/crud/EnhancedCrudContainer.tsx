@@ -352,6 +352,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
       // console.log("Executing action from config:", action.key);
       
       if (actionKey === "view" && (
+        module === "appointment" ||
         module === "case" ||
         module === "settings" ||
         module === "skill" ||

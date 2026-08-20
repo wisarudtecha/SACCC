@@ -1,11 +1,12 @@
-
+// src/cms/store/api/appointmentType.ts
+/**
+ * Appointment Type Management API Endpoints
+ * Appointment Type CRUD operations.
+ */
 import { AppointmentType, AppointmentTypeInsert, AppointmentTypeUpdate } from "@/cms/types/appointmentType";
 import { PaginationParams } from "@/cms/types/dispatch";
 import { baseWelcomeCrmApi } from "@/core/store/api/baseApi";
 import { ApiResponse } from "@/core/types";
-
-
-
 
 export const appointmentTypeApi = baseWelcomeCrmApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -18,44 +19,39 @@ export const appointmentTypeApi = baseWelcomeCrmApi.injectEndpoints({
             providesTags: ["AppointmentType"],
         }),
 
-        insertAppointmentType: builder.query<ApiResponse<null>, AppointmentTypeInsert>({
+        insertAppointmentType: builder.mutation<ApiResponse<null>, AppointmentTypeInsert>({
             query: (params) => ({
                 url: "/appointment_types",
                 method: "POST",
-                body:params
+                body: params
             }),
-            providesTags: ["AppointmentType"],
+            invalidatesTags: ["AppointmentType"],
         }),
 
-        updateAppointmentType: builder.query<ApiResponse<null>, AppointmentTypeUpdate>({
+        updateAppointmentType: builder.mutation<ApiResponse<null>, AppointmentTypeUpdate>({
             query: (params) => ({
-                url: "/appointment_types/"+params.appointmentTypeId,
+                url: "/appointment_types/" + params.appointmentTypeId,
                 method: "PUT",
-                body:params
+                body: params
             }),
-            providesTags: ["AppointmentType"],
+            invalidatesTags: ["AppointmentType"],
         }),
 
-        deleteAppointmentType: builder.query<ApiResponse<null>, {appointmentTypeId:string}>({
+        deleteAppointmentType: builder.mutation<ApiResponse<null>, { appointmentTypeId: string }>({
             query: (params) => ({
-                url: "/appointment_types/"+params.appointmentTypeId,
+                url: "/appointment_types/" + params.appointmentTypeId,
                 method: "DELETE",
             }),
-            providesTags: ["AppointmentType"],
+            invalidatesTags: ["AppointmentType"],
         }),
-
-
-
-
-
-
 
     }),
 });
+
 export const {
     useGetAppointmentTypeQuery,
-    useInsertAppointmentTypeQuery,
     useLazyGetAppointmentTypeQuery,
-    useLazyInsertAppointmentTypeQuery,
-
+    useInsertAppointmentTypeMutation,
+    useUpdateAppointmentTypeMutation,
+    useDeleteAppointmentTypeMutation,
 } = appointmentTypeApi;

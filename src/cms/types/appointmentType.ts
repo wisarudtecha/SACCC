@@ -12,7 +12,7 @@ export interface AppointmentType {
 }
 
 export interface AppointmentTypeInsert {
-  appointmentTypeId: string;
+  appointmentTypeId?: string;
   en: string | null;
   th: string | null;
   active: boolean;
@@ -23,4 +23,15 @@ export interface AppointmentTypeUpdate {
   en: string | null;
   th: string | null;
   active: boolean;
+}
+
+export interface AppointmentTypeMetrics {
+  totalAppointmentTypes: number;
+  activeAppointmentTypes: number;
+  inactiveAppointmentTypes: number;
+}
+
+export interface AppointmentTypeManagementProps {
+  appointmentTypes: AppointmentType[];
+  onRefresh?: () => void;
 }

@@ -12,6 +12,7 @@ import CallCenterDashboardPage from "@/cc/pages/Dashboard/CallCenterDashboard";
 import EmailPage from "@/cc/pages/Workspace/Email";
 
 import AppointmentPage from "@/cms/pages/Appointment/Appointment";
+import AppointmentTypeManagementPage from "@/cms/pages/Admin/AppointmentTypeManagement";
 import CustomerPage from "@/cms/pages/Customer/Customer";
 import CustomerFormConfigPage from "@/cms/pages/Customer/CustomerFormConfig";
 
@@ -28,6 +29,15 @@ export default function CcApp() {
           element={
             <ProtectedRoute requiredPermissions={["appointment.view"]}>
               <AppointmentPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/appointment-types"
+          element={
+            <ProtectedRoute requiredPermissions={["appointment.view"]}>
+              <AppointmentTypeManagementPage />
             </ProtectedRoute>
           }
         />
