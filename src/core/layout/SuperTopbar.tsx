@@ -35,6 +35,7 @@ import {
   Settings,
   ShieldCheck,
   ShoppingCart,
+  Store,
   Tag,
   User,
   UserCheck,
@@ -201,6 +202,12 @@ const SuperTopbar = (
           icon: <Layers />,
           name: t("navigation.super_app.topbar.more.menu.product.sub_menu.category"),
           path: "/cms/categories",
+          permission: permissions.hasPermission("product.view")
+        },
+        {
+          icon: <Store />,
+          name: t("navigation.super_app.topbar.more.menu.product.sub_menu.store"),
+          path: "/cms/stores",
           permission: permissions.hasPermission("product.view")
         },
         // {

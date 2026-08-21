@@ -21,6 +21,9 @@ export interface StoreCreateData {
 export interface StoreQueryParams {
   start: number;
   length: number;
+  // View's search box writes `search` straight into the query object it hands back, and the
+  // shared ListDataInput! already carries the field (/brand filters through it the same way).
+  search?: string;
   active?: boolean;
   orderBy?: string;
   direction?: string;

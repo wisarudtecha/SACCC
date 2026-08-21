@@ -5,12 +5,14 @@
  */
 import { baseApiCrm } from "@/core/store/api/baseApi";
 import type { ApiResponse } from "@/core/types";
-import type { Store, StoreQueryParams, StoreUpdateData } from "@/cms/types/store";
+import type { Store, StoreCreateData, StoreQueryParams, StoreUpdateData } from "@/cms/types/store";
 
 export const storeApi = baseApiCrm.injectEndpoints({
   endpoints: builder => ({
     // POST api/v1/store
-    createStore: builder.mutation<ApiResponse<string>, FormData>({
+    // Body is plain JSON, not FormData: Store carries no attachment, StoreCreateData already
+    // described this shape, and the GraphQL mapping types create and update alike as StoreInput!.
+    createStore: builder.mutation<ApiResponse<string>, StoreCreateData>({
       query: data => ({
         url: "/store",
         method: "POST",

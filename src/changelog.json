@@ -1,4 +1,10 @@
 {
+  "0.52.0": {
+    "date": "2026-08-21",
+    "segment": "MINOR",
+    "notes": "feat(cms): add Store management to Product Management, and let a brand's logo be uploaded\n- Product Management now has a Store screen, reachable from the side menu and the top 'More' menu. Staff can create and edit stores, give each one a name in Thai and English, set a discount percentage, and switch it active or inactive.\n- Each store's screen shows what stock is actually held there, in separate Products and Spare Parts tabs, including serial numbers where the item is tracked by serial number.\n- A picture can now be uploaded for a brand's logo when creating or editing it, matching how a product's own picture already works. Editing a brand without changing its logo keeps the existing picture instead of clearing it.\n- If uploading a picture fails while saving a brand, the save now stops and shows an error instead of going ahead and silently clearing the brand's existing logo.\n- Fixed newly created or edited stores sometimes not showing up right away in store dropdowns elsewhere in the app until the page was reloaded.\n- changelog.json / package.json: bump version 0.51.0 -> 0.52.0",
+    "author": "Wisarud Techa"
+  },
   "0.51.0": {
     "date": "2026-08-20",
     "segment": "MINOR",

@@ -56,6 +56,7 @@ import ProductDashboardPage from "@/cms/pages/Crm/Products/ProductDashboard";
 import ProductListPage from "@/cms/pages/Crm/Products/ProductListPage";
 import ProductStockPage from "@/cms/pages/Crm/Products/ProductStockPage";
 import ServiceListPage from "@/cms/pages/Crm/Services/ServiceListPage";
+import StoreListPage from "@/cms/pages/Crm/Stores/StoreListPage";
 
 // Security & Error Handling Imports
 import OfflineState from "@/core/components/offline/OfflineManager";
@@ -178,6 +179,17 @@ export default function CmsApp() {
             element={
               <ProtectedRoute requiredPermissions={["product.view"]}>
                 <CategoryListPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Stores hold the serialized stock of both products and spare parts, so like brand
+              and category they sit alongside the product routes and reuse product.view. */}
+          <Route
+            path="/stores"
+            element={
+              <ProtectedRoute requiredPermissions={["product.view"]}>
+                <StoreListPage />
               </ProtectedRoute>
             }
           />

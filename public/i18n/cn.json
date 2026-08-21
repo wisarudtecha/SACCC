@@ -348,7 +348,8 @@
                 "inventory_stock": "备件库存",
                 "inventory_request": "申请备件",
                 "brand": "品牌",
-                "category": "类别"
+                "category": "类别",
+                "store": "门店"
               }
             },
             "case": {
@@ -673,6 +674,47 @@
     }
   },
   "crud": {
+    "store": {
+      "name": "门店",
+      "list": {
+        "header": {
+          "name": "门店名称",
+          "discount": "折扣",
+          "products": "产品",
+          "parts": "备件",
+          "status": "状态"
+        }
+      },
+      "form": {
+        "th": {
+          "label": "门店名称（泰文）",
+          "placeholder": "请输入泰文门店名称",
+          "required": "必须填写门店名称（泰文）"
+        },
+        "en": {
+          "label": "门店名称（英文）",
+          "placeholder": "请输入英文门店名称",
+          "required": "必须填写门店名称（英文）"
+        },
+        "discount": {
+          "label": "折扣（%）",
+          "placeholder": "请输入折扣百分比"
+        }
+      },
+      "stock": {
+        "title": "_STORE_ 的库存",
+        "tab": {
+          "products": "产品",
+          "parts": "备件"
+        },
+        "header": {
+          "item": "项目",
+          "quantity": "数量",
+          "serials": "序列号"
+        },
+        "empty": "该门店暂无库存"
+      }
+    },
     "brand": {
       "name": "品牌",
       "type": {
@@ -687,6 +729,9 @@
         }
       },
       "form": {
+        "attachment": {
+          "label": "品牌标志"
+        },
         "th": {
           "label": "品牌名称 (TH)",
           "placeholder": "输入泰语品牌名称",

@@ -441,7 +441,8 @@
                 "inventory_stock": "Spare Parts Stock",
                 "inventory_request": "Orders",
                 "brand": "Brands",
-                "category": "Categories"
+                "category": "Categories",
+                "store": "Stores"
               }
             },
             "case": {
@@ -773,6 +774,47 @@
     }
   },
   "crud": {
+    "store": {
+      "name": "Stores",
+      "list": {
+        "header": {
+          "name": "Store Name",
+          "discount": "Discount",
+          "products": "Products",
+          "parts": "Spare Parts",
+          "status": "Status"
+        }
+      },
+      "form": {
+        "th": {
+          "label": "Store Name (TH)",
+          "placeholder": "Enter store name in Thai",
+          "required": "Store Name (TH) is required"
+        },
+        "en": {
+          "label": "Store Name (EN)",
+          "placeholder": "Enter store name in English",
+          "required": "Store Name (EN) is required"
+        },
+        "discount": {
+          "label": "Discount (%)",
+          "placeholder": "Enter discount percentage"
+        }
+      },
+      "stock": {
+        "title": "Stock at _STORE_",
+        "tab": {
+          "products": "Products",
+          "parts": "Spare Parts"
+        },
+        "header": {
+          "item": "Item",
+          "quantity": "Quantity",
+          "serials": "Serial Numbers"
+        },
+        "empty": "No stock held at this store"
+      }
+    },
     "brand": {
       "name": "Brands",
       "type": {
@@ -787,6 +829,9 @@
         }
       },
       "form": {
+        "attachment": {
+          "label": "Brand Logo"
+        },
         "th": {
           "label": "Brand Name (TH)",
           "placeholder": "Enter brand name in Thai",

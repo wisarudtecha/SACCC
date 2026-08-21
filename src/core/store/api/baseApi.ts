@@ -193,6 +193,9 @@ export const baseApiCrm = createApi({
     "CustomerProduct",
     "Service",
     "Category",
+    // storeApi has always tagged with "Store", but an unregistered tag is silently inert -
+    // its invalidatesTags never fired, so store mutations left every store dropdown stale.
+    "Store",
   ],
   baseQuery: createHybridBaseQuery(
     API_CONFIG.BASE_URL_CRM,
