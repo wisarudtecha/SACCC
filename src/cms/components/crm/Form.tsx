@@ -210,10 +210,26 @@ const Form = <T extends Record<string, unknown>>({
     const selectedFile = fileField ? formData[fileField.name] : null;
 
     if (selectedFile instanceof File && uploadPath) {
-      const uploadResponse = await fileUploader({ file: selectedFile, path: uploadPath }).unwrap();
-      if (uploadResponse?.data) {
-        (formData as unknown as Record<string, unknown>).image = uploadResponse.data?.attUrl || "";
+      // v2.0 - A rejected upload used to escape handleSubmit entirely: no toast, no aborted
+      // submit. Falling through to onSubmit is worse than failing - the record would save with
+      // the previous image blanked out - so the submit stops here instead.
+      try {
+        const uploadResponse = await fileUploader({ file: selectedFile, path: uploadPath }).unwrap();
+        if (uploadResponse?.data) {
+          (formData as unknown as Record<string, unknown>).image = uploadResponse.data?.attUrl || "";
+        }
       }
+      catch (error: unknown) {
+        console.error("Upload error:", error);
+        addToast("error", (error as { data?: { message?: string } })?.data?.message || `${t("common.error")}`);
+        return;
+      }
+
+      // v1.0 - Upload without error handling
+      // const uploadResponse = await fileUploader({ file: selectedFile, path: uploadPath }).unwrap();
+      // if (uploadResponse?.data) {
+      //   (formData as unknown as Record<string, unknown>).image = uploadResponse.data?.attUrl || "";
+      // }
     }
     else {
       (formData as unknown as Record<string, unknown>).image = (formData.attachment as { attUrl?: string })?.attUrl || "";

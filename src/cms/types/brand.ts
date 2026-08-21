@@ -24,8 +24,10 @@ export interface BrandCreateData {
   th: string;
   active: boolean;
   type: string;
-  // Optional: the brand management form does not upload a logo yet, so create posts plain JSON
-  // the same way createCategory/createProduct do.
+  // The logo travels as a URL, not as bytes: Form uploads the picked file to /upload/brand first
+  // and writes the returned attUrl here, the same way ProductCreateData.image works. `file` is
+  // only the in-form staging value and is never sent to /brand.
+  image?: string;
   file?: File;
 }
 
@@ -43,5 +45,8 @@ export interface BrandUpdateData {
   th: string;
   active: boolean;
   type: string;
+  // See BrandCreateData.image - an unchanged logo re-sends the existing attachment's attUrl,
+  // so omitting this on update would clear the brand's logo.
+  image?: string;
   file?: File;
 }

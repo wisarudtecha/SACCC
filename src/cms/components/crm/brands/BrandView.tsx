@@ -85,6 +85,15 @@ const BrandView = () => {
   // Field configuration for the form
   const formFields: FieldConfig[] = useMemo(() => [
     {
+      // The name must stay "attachment": Form reads back an unchanged logo from
+      // formData.attachment by that exact key when no new file was picked.
+      name: "attachment",
+      label: t("crud.brand.form.attachment.label"),
+      type: "file",
+      colSpan: 1,
+      accept: "image/*"
+    },
+    {
       name: "th",
       label: t("crud.brand.form.th.label"),
       type: "text",
@@ -194,6 +203,9 @@ const BrandView = () => {
       const data = {
         active: Boolean(formData.active),
         en: String(formData.en),
+        // Form resolves the logo before calling onSubmit: the attUrl of a freshly uploaded file,
+        // or the existing attachment's attUrl when the picker was left untouched.
+        image: String(formData.image ?? ""),
         th: String(formData.th),
         type: String(formData.type)
       };
@@ -311,12 +323,17 @@ const BrandView = () => {
           initialValues={editingBrand
             ? {
               active: editingBrand.active,
+              // Form rebuilds its state from `fields` alone, so the current attachment has to be
+              // seeded here - without it the edit form shows an empty avatar and saving would
+              // clear the brand's existing logo.
+              attachment: editingBrand.attachment,
               en: editingBrand.en,
               th: editingBrand.th,
               type: editingBrand.type
             }
             : {
               active: true,
+              attachment: "",
               en: "",
               th: "",
               type: ""
@@ -331,6 +348,7 @@ const BrandView = () => {
             ? t("common.edit_entity")
             : t("crud.common.create")
           ).replace("_ENTITY_", t("crud.brand.name"))}`}
+          uploadPath="brand"
           onCancel={() => {
             setShowForm(false);
             setEditingBrand(null);
