@@ -1,4 +1,10 @@
 {
+  "0.57.0": {
+    "date": "2026-08-25",
+    "segment": "MINOR",
+    "notes": "feat(cms): manage area details more reliably and control who can change them\n- When editing a country, province or district under Area Management, all of the area's details are now loaded freshly from the record being edited, so saving no longer risks quietly clearing information that was not shown on the form.\n- The edit form now also lets staff set an area's grouping key (namespace) and switch it active or inactive.\n- Area Management now has a 'Show inactive' option, so areas that were switched off can be found again and reactivated instead of disappearing from the list.\n- The edit and delete buttons in Area Management now appear only for staff who are allowed to change areas.\n- When updating an organization's areas from a template, the screen now remembers which template each country was last based on and preselects it, and clearly warns before any option that would overwrite the organization's own edits, which cannot be undone.\n- Available in Thai, English and Chinese.\n- changelog.json / package.json: bump version 0.56.1 -> 0.57.0",
+    "author": "Wisarud Techa"
+  },
   "0.56.1": {
     "date": "2026-08-24",
     "segment": "PATCH",

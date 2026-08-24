@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { CloseIcon, FileIcon } from "@/core/icons";
 import { Modal } from "@/core/components/ui/modal";
 import { useTranslation } from "@/core/hooks/useTranslation";
-import type { AreaCountryTree, AreaRecordExtras, Country, PolygonCoordinates } from "@/cms/types/area";
+import type { AreaCountryTree, Country } from "@/cms/types/area";
 import { describeGeometry } from "@/cms/utils/areaGeometry";
 import { capitalizeWords } from "@/core/utils/stringFormatters";
 import type { HierarchyItem, HierarchyConfig } from "@/core/types/hierarchy";
@@ -30,32 +30,24 @@ interface AreaHierarchyViewProps {
   countries: Country[];
   showInactive: boolean;
   handleCountryDelete: (id: number) => void;
-  handleCountryReset: () => void;
   handleProvinceDelete: (id: number) => void;
-  handleProvinceReset: () => void;
   handleDistrictDelete: (id: number) => void;
-  handleDistrictReset: () => void;
-  setCountryId: (id: string) => void;
-  setCountryIsOpen: (isOpen: boolean) => void;
-  setCountryCode: (code: string) => void;
-  setCountryTh: (th: string) => void;
-  setCountryEn: (en: string) => void;
-  setCountryExtras: (extras: AreaRecordExtras) => void;
-  setProvId: (id: string) => void;
-  setProvinceIsOpen: (isOpen: boolean) => void;
-  setProvinceCode: (code: string) => void;
-  setProvCountryId: (countryId: string) => void;
-  setProvinceTh: (th: string) => void;
-  setProvinceEn: (en: string) => void;
-  setProvinceExtras: (extras: AreaRecordExtras) => void;
-  setDistId: (id: string) => void;
-  setDistrictIsOpen: (isOpen: boolean) => void;
-  setDistrictCode: (code: string) => void;
-  setDistCountryId: (countryId: string) => void;
-  setDistProvId: (provId: string) => void;
-  setDistrictTh: (th: string) => void;
-  setDistrictEn: (en: string) => void;
-  setDistrictExtras: (extras: AreaRecordExtras) => void;
+  /**
+   * Open the edit form for one record. The parent fetches it by id rather than
+   * being handed field-by-field setters: the tree omits nameSpace entirely and is
+   * a server-side cache besides, so seeding a form from it dropped whatever it
+   * did not carry.
+   */
+  onEditRecord: (level: AreaLevelPrefix, id: number) => void;
+  /**
+   * Open the create form for a child of `parentId`. Parent codes come from tree
+   * metadata because they are structural (which country/province the new row
+   * hangs off), not record data that needs to survive a round-trip.
+   */
+  onCreateChild: (level: AreaLevelPrefix, parent: { countryCode?: string; provinceCode?: string }) => void;
+  /** Whether the current user may see the edit / delete actions at all. */
+  canUpdate: boolean;
+  canDelete: boolean;
 }
 
 const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
@@ -63,32 +55,12 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
   countries,
   showInactive,
   handleCountryDelete,
-  handleCountryReset,
   handleProvinceDelete,
-  handleProvinceReset,
   handleDistrictDelete,
-  handleDistrictReset,
-  setCountryId,
-  setCountryIsOpen,
-  setCountryCode,
-  setCountryTh,
-  setCountryEn,
-  setCountryExtras,
-  setProvId,
-  setProvinceIsOpen,
-  setProvinceCode,
-  setProvCountryId,
-  setProvinceTh,
-  setProvinceEn,
-  setProvinceExtras,
-  setDistId,
-  setDistrictIsOpen,
-  setDistrictCode,
-  setDistCountryId,
-  setDistProvId,
-  setDistrictTh,
-  setDistrictEn,
-  setDistrictExtras,
+  onEditRecord,
+  onCreateChild,
+  canUpdate,
+  canDelete,
 }) => {
   const { language, t } = useTranslation();
 
@@ -107,10 +79,9 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
   // which mis-parented districts whenever two countries shared a province code -
   // walking the tree makes that class of bug unrepresentable.
   //
-  // Tree province nodes carry no countryId and district nodes carry neither
-  // countryId nor provId, so the parent codes are threaded down while walking.
-  // The metadata keys are unchanged, which is why every edit/create handler
-  // below still works untouched.
+  // Metadata carries only what the UI reads directly: the codes create-child needs,
+  // the postcode and geometry summary shown on a row, and country provenance.
+  // Record data for editing is fetched by id instead - see onEditRecord.
   const sourceTemplateIdByCountry = useMemo(
     () => new Map((countries || []).map(country => [country.id, country.sourceTemplateId])),
     [countries]
@@ -130,12 +101,6 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
         metadata: {
           countryCode: country.countryId,
           geometry: describeGeometry(country.coordinates),
-          // Raw rings so the edit form can pre-fill and, crucially, resend them -
-          // an update that omits coordinates may blank the boundary.
-          coordinates: country.coordinates,
-          yearOfData: country.yearOfData,
-          shapeArea: country.shapeArea,
-          shapeLength: country.shapeLength,
           // Provenance is country-only: GetOrgCountryTree's payload has no
           // sourceTemplateId, so it comes from the country list instead. The
           // province/district equivalents would need the flat lists this page
@@ -155,8 +120,7 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
           metadata: {
             countryCode: country.countryId,
             provinceCode: province.provId,
-            geometry: describeGeometry(province.coordinates),
-            coordinates: province.coordinates
+            geometry: describeGeometry(province.coordinates)
           }
         });
 
@@ -173,8 +137,7 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
               provinceCode: province.provId,
               districtCode: district.distId,
               postcode: district.postcode,
-              geometry: describeGeometry(district.coordinates),
-              coordinates: district.coordinates
+              geometry: describeGeometry(district.coordinates)
             }
           });
         });
@@ -231,56 +194,12 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
   }
 
   // Event handlers (converted to work with generic hierarchy items)
-  const handleEditCountry = useCallback((item: HierarchyItem) => {
-    handleProvinceReset();
-    handleDistrictReset();
-    setCountryId(stripPrefix(String(item.id)));
-    setCountryCode(item.metadata?.countryCode as string || "");
-    setCountryTh(language === "th" && item.name || item.secondaryName || "");
-    setCountryEn(language === "th" && item.secondaryName || item.name || "");
-    setCountryExtras({
-      coordinates: item.metadata?.coordinates as PolygonCoordinates | null | undefined,
-      yearOfData: item.metadata?.yearOfData as number | null | undefined,
-      shapeArea: item.metadata?.shapeArea as number | null | undefined,
-      shapeLength: item.metadata?.shapeLength as number | null | undefined
-    });
-    setCountryIsOpen(true);
-    setProvinceIsOpen(false);
-    setDistrictIsOpen(false);
-  }, [language, handleProvinceReset, handleDistrictReset, setCountryId, setCountryCode, setCountryTh, setCountryEn, setCountryExtras, setCountryIsOpen, setProvinceIsOpen, setDistrictIsOpen]);
-
-  const handleEditProvince = useCallback((item: HierarchyItem) => {
-    handleCountryReset();
-    handleDistrictReset();
-    setProvId(stripPrefix(String(item.id)));
-    setProvinceCode(item.metadata?.provinceCode as string || "");
-    setProvinceTh(language === "th" && item.name || item.secondaryName || "");
-    setProvinceEn(language === "th" && item.secondaryName || item.name || "");
-    setProvCountryId(item?.metadata?.countryCode as string || "");
-    setProvinceExtras({
-      coordinates: item.metadata?.coordinates as PolygonCoordinates | null | undefined
-    });
-    setCountryIsOpen(false);
-    setProvinceIsOpen(true);
-    setDistrictIsOpen(false);
-  }, [language, handleCountryReset, handleDistrictReset, setProvinceEn, setProvinceCode, setProvinceTh, setProvCountryId, setProvinceExtras, setProvId, setProvinceIsOpen, setCountryIsOpen, setDistrictIsOpen]);
-
-  const handleEditDistrict = useCallback((item: HierarchyItem) => {
-    handleCountryReset();
-    handleProvinceReset();
-    setDistId(stripPrefix(String(item.id)));
-    setDistrictCode(item.metadata?.districtCode as string || "");
-    setDistrictTh(language === "th" && item.name || item.secondaryName || "");
-    setDistrictEn(language === "th" && item.secondaryName || item.name || "");
-    setDistProvId(item?.metadata?.provinceCode as string || "");
-    setDistCountryId(item?.metadata?.countryCode as string || "");
-    setDistrictExtras({
-      coordinates: item.metadata?.coordinates as PolygonCoordinates | null | undefined
-    });
-    setCountryIsOpen(false);
-    setProvinceIsOpen(false);
-    setDistrictIsOpen(true);
-  }, [language, handleCountryReset, handleProvinceReset, setDistId, setDistrictCode, setDistrictTh, setDistrictEn, setDistProvId, setDistCountryId, setDistrictExtras, setCountryIsOpen, setProvinceIsOpen, setDistrictIsOpen]);
+  // Edit hands the id up; the parent fetches the authoritative record. Names and
+  // codes are deliberately NOT passed from the tree - seeding a form from tree
+  // metadata is what let nameSpace (absent from the tree payload) get blanked.
+  const handleEdit = useCallback((level: AreaLevelPrefix, item: HierarchyItem) => {
+    onEditRecord(level, Number(stripPrefix(String(item.id))));
+  }, [onEditRecord]);
 
   // Read-only geometry indicator. Polygons arrive with the tree but are authored
   // in area templates, not here, so this only reports what a row carries.
@@ -342,11 +261,13 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
           {
             label: t("crud.common.update"),
             variant: "warning",
-            onClick: (item) => handleEditCountry(item)
+            showWhen: () => canUpdate,
+            onClick: (item) => handleEdit("country", item)
           },
           {
             label: t("crud.common.delete"),
             variant: "outline",
+            showWhen: () => canDelete,
             onClick: (item) => handleDelete(item, "country")
           }
         ]
@@ -382,11 +303,13 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
           {
             label: t("crud.common.update"),
             variant: "warning",
-            onClick: (item) => handleEditProvince(item)
+            showWhen: () => canUpdate,
+            onClick: (item) => handleEdit("province", item)
           },
           {
             label: t("crud.common.delete"),
             variant: "outline",
+            showWhen: () => canDelete,
             onClick: (item) => handleDelete(item, "province")
           }
         ]
@@ -415,47 +338,32 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
           {
             label: t("crud.common.update"),
             variant: "warning",
-            onClick: (item) => handleEditDistrict(item)
+            showWhen: () => canUpdate,
+            onClick: (item) => handleEdit("district", item)
           },
           {
             label: t("crud.common.delete"),
             variant: "outline",
+            showWhen: () => canDelete,
             onClick: (item) => handleDelete(item, "district")
           }
         ]
       }
     ]
-  }), [geometryLabels, handleDelete, handleEditCountry, handleEditProvince, handleEditDistrict, t]);
+  }), [canUpdate, canDelete, geometryLabels, handleDelete, handleEdit, t]);
 
-  const handleCreateChild = (
-    parentId: string,
-    level: number
-  ) => {
-    handleCountryReset();
-    handleProvinceReset();
-    handleDistrictReset();
-
+  // Creating a child needs only the parent's codes, which are structural rather
+  // than record data - the new row has no id to fetch yet.
+  const handleCreateChild = (parentId: string, level: number) => {
     const parentItem = hierarchyItems.find(hi => String(hi.id) === parentId);
+    const countryCode = parentItem?.metadata?.countryCode as string | undefined;
+    const provinceCode = parentItem?.metadata?.provinceCode as string | undefined;
 
     if (level === 1) {
-      // Create province under the given country
-      setProvCountryId(parentItem?.metadata?.countryCode as string || "");
-      setCountryIsOpen(false);
-      setProvinceIsOpen(true);
-      setDistrictIsOpen(false);
+      onCreateChild("province", { countryCode });
     }
     else if (level === 2) {
-      // Create district under the given province
-      setDistCountryId(parentItem?.metadata?.countryCode as string || "");
-      setDistProvId(parentItem?.metadata?.provinceCode as string || "");
-      setCountryIsOpen(false);
-      setProvinceIsOpen(false);
-      setDistrictIsOpen(true);
-    }
-    else {
-      setCountryIsOpen(false);
-      setProvinceIsOpen(false);
-      setDistrictIsOpen(false);
+      onCreateChild("district", { countryCode, provinceCode });
     }
   };
 

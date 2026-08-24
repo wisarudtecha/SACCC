@@ -949,7 +949,8 @@
         "toolbar": {
           "search": {
             "placeholder": "Search _ENTITY_..."
-          }
+          },
+          "show_inactive": "Show inactive"
         }
       },
       "form": {
@@ -1949,6 +1950,10 @@
     "areaTemplate": {
       "name": "Area Template",
       "locked_notice": "This template is published and locked. Fork it into a new version to make changes.",
+      "tree": {
+        "title": "Tree preview",
+        "empty": "No cached tree yet. Use Regenerate tree to build it."
+      },
       "provenance": {
         "from_template": "From template #_ID_"
       },
@@ -2057,6 +2062,7 @@
         "title": "Use an area template",
         "description": "Import a published template as a new country, or sync it into a country you already have.",
         "no_published": "No published templates are available yet.",
+        "overwrite_warning": "This mode overwrites the organization's own edits for this country. There is no undo.",
         "field": {
           "template": {
             "label": "Template",
@@ -2129,6 +2135,15 @@
         }
       },
       "form": {
+        "nameSpace": {
+          "label": "Namespace",
+          "placeholder": "e.g. th",
+          "hint": "Optional grouping key used by the backend."
+        },
+        "active": {
+          "label": "Status",
+          "placeholder": "Active"
+        },
         "geometry": {
           "hint": "Optional. Leave blank for no boundary."
         },

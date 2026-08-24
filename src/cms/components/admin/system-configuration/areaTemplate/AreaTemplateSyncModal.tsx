@@ -10,7 +10,7 @@
  * Only published templates are offered - a draft is still being edited, and the
  * backend locks adoption to published lineages.
  */
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { CloseIcon } from "@/core/icons";
 import { Modal } from "@/core/components/ui/modal";
 import { useTranslation } from "@/core/hooks/useTranslation";
@@ -19,7 +19,7 @@ import {
   useCreateOrgAreaFromTemplateCountryMutation,
   useSyncTemplateCountryMutation
 } from "@/cms/store/api/areaTemplateApi";
-import type { AreaCountryTree } from "@/cms/types/area";
+import type { AreaCountryTree, Country } from "@/cms/types/area";
 import type { SyncTemplateMode, TemplateCountry } from "@/cms/types/areaTemplate";
 import { isApiSuccess, resolveApiError, resolveApiMessage } from "@/cms/utils/apiResponse";
 import Button from "@/core/components/ui/button/Button";
@@ -36,10 +36,18 @@ const SYNC_MODES: SyncTemplateMode[] = [
   "replace_coodinates"
 ];
 
+/** Modes that overwrite what the org already has, rather than only filling gaps. */
+const DESTRUCTIVE_MODES: SyncTemplateMode[] = ["replace_all", "replace_label", "replace_coodinates"];
+
 interface AreaTemplateSyncModalProps {
   isOpen: boolean;
   /** The org's existing country trees - sync targets. */
   trees: AreaCountryTree[];
+  /**
+   * Country list records, for `sourceTemplateId` - the tree payload omits it.
+   * Used to preselect the lineage a country was last synced with.
+   */
+  countries: Country[];
   onClose: () => void;
   onSuccess: (message: string) => void;
   onError: (message: string) => void;
@@ -48,6 +56,7 @@ interface AreaTemplateSyncModalProps {
 const AreaTemplateSyncModal: React.FC<AreaTemplateSyncModalProps> = ({
   isOpen,
   trees,
+  countries,
   onClose,
   onSuccess,
   onError
@@ -104,6 +113,13 @@ const AreaTemplateSyncModal: React.FC<AreaTemplateSyncModalProps> = ({
     [t]
   );
 
+  // sourceTemplateId records which lineage a country was created from or last
+  // synced with, so it is the sensible default when syncing again.
+  const sourceTemplateIdByCountry = useMemo(
+    () => new Map((countries || []).map(country => [String(country.id), country.sourceTemplateId])),
+    [countries]
+  );
+
   // Reopening should not inherit the previous run's selection.
   useEffect(() => {
     if (isOpen) {
@@ -114,6 +130,20 @@ const AreaTemplateSyncModal: React.FC<AreaTemplateSyncModalProps> = ({
       setValidationError("");
     }
   }, [isOpen, trees]);
+
+  // Following the selected target's provenance, unless the user has picked a
+  // template themselves.
+  const previousCountryRef = useRef("");
+  useEffect(() => {
+    if (!isOpen || adoptionMode !== "sync" || orgCountryId === previousCountryRef.current) {
+      return;
+    }
+    previousCountryRef.current = orgCountryId;
+    const source = sourceTemplateIdByCountry.get(orgCountryId);
+    if (source) {
+      setTemplateId(String(source));
+    }
+  }, [isOpen, adoptionMode, orgCountryId, sourceTemplateIdByCountry]);
 
   const handleSubmit = async () => {
     if (!templateId) {
@@ -240,6 +270,14 @@ const AreaTemplateSyncModal: React.FC<AreaTemplateSyncModalProps> = ({
                 {t(`crud.areaTemplate.sync.mode_hint.${syncMode}`)}
               </span>
             </div>
+
+            {/* These modes overwrite the org's own edits rather than only filling
+                gaps, and there is no undo - say so before the button is pressed. */}
+            {DESTRUCTIVE_MODES.includes(syncMode) && (
+              <p className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-400 cursor-default">
+                {t("crud.areaTemplate.sync.overwrite_warning")}
+              </p>
+            )}
           </>
         )}
 

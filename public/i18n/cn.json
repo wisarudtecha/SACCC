@@ -848,7 +848,8 @@
         "toolbar": {
           "search": {
             "placeholder": "搜索 _ENTITY_..."
-          }
+          },
+          "show_inactive": "显示已停用项"
         }
       },
       "form": {
@@ -1832,6 +1833,10 @@
     "areaTemplate": {
       "name": "区域模板",
       "locked_notice": "该模板已发布并锁定。如需修改，请派生为新版本。",
+      "tree": {
+        "title": "结构预览",
+        "empty": "尚无缓存的结构。请点击“重建结构”生成。"
+      },
       "provenance": {
         "from_template": "来自模板 #_ID_"
       },
@@ -1940,6 +1945,7 @@
         "title": "使用区域模板",
         "description": "将已发布的模板导入为新国家，或同步到已有的国家。",
         "no_published": "暂无已发布的模板。",
+        "overwrite_warning": "该模式会覆盖本组织对此国家所做的修改，且无法撤销。",
         "field": {
           "template": {
             "label": "模板",
@@ -2012,6 +2018,15 @@
         }
       },
       "form": {
+        "nameSpace": {
+          "label": "命名空间",
+          "placeholder": "例如 th",
+          "hint": "可选的分组键，由后端使用。"
+        },
+        "active": {
+          "label": "状态",
+          "placeholder": "启用"
+        },
         "geometry": {
           "hint": "可选。留空表示没有边界。"
         },

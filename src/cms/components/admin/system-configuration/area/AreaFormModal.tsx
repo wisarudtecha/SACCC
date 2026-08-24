@@ -20,7 +20,8 @@ export interface AreaFormField {
   key: string;
   label: string;
   placeholder: string;
-  type: "text" | "number" | "select" | "textarea";
+  type: "text" | "number" | "select" | "textarea" | "toggle";
+  /** Toggle fields read "true"/"false"; every other type reads its raw text. */
   value: string;
   error?: string;
   /** Shown under the field when there is no error - units, format hints. */
@@ -35,7 +36,10 @@ interface AreaFormModalProps {
   isOpen: boolean;
   title: string;
   fields: AreaFormField[];
+  /** A save is in flight. */
   loading: boolean;
+  /** The record is still being fetched - fields are seeded but not yet real. */
+  isLoadingRecord?: boolean;
   onClose: () => void;
   onReset: () => void;
   onSave: () => void;
@@ -46,6 +50,7 @@ const AreaFormModal: React.FC<AreaFormModalProps> = ({
   title,
   fields,
   loading,
+  isLoadingRecord = false,
   onClose,
   onReset,
   onSave
@@ -67,8 +72,19 @@ const AreaFormModal: React.FC<AreaFormModalProps> = ({
         </Button>
       </div>
 
+      {isLoadingRecord && (
+        <div className="mb-4 text-sm text-gray-500 dark:text-gray-400 cursor-default">
+          {t("crud.common.loading_records")}
+        </div>
+      )}
+
       <div className="space-y-4">
-        {fields.map(field => (
+        {fields.map(field => {
+          // While the record is loading the fields hold placeholder state, so
+          // editing them would be edits against the wrong record.
+          const disabled = field.disabled || isLoadingRecord;
+
+          return (
           <div key={field.key}>
             <label
               htmlFor={field.key}
@@ -77,6 +93,27 @@ const AreaFormModal: React.FC<AreaFormModalProps> = ({
               {field.label}
             </label>
 
+            {field.type === "toggle" && (
+              // Deliberately a controlled checkbox rather than core's Switch:
+              // Switch seeds useState(defaultChecked) and never resyncs, and these
+              // modals stay mounted with `isOpen` toggling visibility, so opening a
+              // second record would keep showing the first one's value. crm/Form can
+              // use Switch only because its callers mount it conditionally.
+              <label className="mt-1 flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  id={field.key}
+                  type="checkbox"
+                  checked={field.value === "true"}
+                  disabled={disabled}
+                  onChange={event => field.onChange(String(event.target.checked))}
+                  className="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 disabled:cursor-not-allowed disabled:opacity-60"
+                />
+                <span className="text-sm text-gray-700 dark:text-gray-200">
+                  {field.placeholder}
+                </span>
+              </label>
+            )}
+
             {field.type === "select" && (
               <Select
                 value={field.value || ""}
@@ -84,7 +121,7 @@ const AreaFormModal: React.FC<AreaFormModalProps> = ({
                 options={field.options || []}
                 placeholder={field.placeholder}
                 className="cursor-pointer"
-                disabled={field.disabled}
+                disabled={disabled}
               />
             )}
 
@@ -94,7 +131,7 @@ const AreaFormModal: React.FC<AreaFormModalProps> = ({
                 rows={4}
                 placeholder={field.placeholder}
                 value={field.value}
-                disabled={field.disabled}
+                disabled={disabled}
                 onChange={event => field.onChange(event.target.value)}
                 className="dark:bg-dark-900 h-auto w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm font-mono text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 disabled:cursor-not-allowed disabled:opacity-60"
               />
@@ -106,7 +143,7 @@ const AreaFormModal: React.FC<AreaFormModalProps> = ({
                 type={field.type}
                 placeholder={field.placeholder}
                 value={field.value}
-                disabled={field.disabled}
+                disabled={disabled}
                 onChange={event => field.onChange(event.target.value)}
               />
             )}
@@ -115,7 +152,8 @@ const AreaFormModal: React.FC<AreaFormModalProps> = ({
               ? <span className="text-red-500 dark:text-red-400 text-xs">{field.error}</span>
               : field.hint && <span className="text-gray-500 dark:text-gray-400 text-xs">{field.hint}</span>}
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
@@ -126,8 +164,8 @@ const AreaFormModal: React.FC<AreaFormModalProps> = ({
           <Button
             onClick={onSave}
             variant="primary"
-            disabled={loading}
-            className={`${loading && "cursor-not-allowed disabled"}`}
+            disabled={loading || isLoadingRecord}
+            className={`${(loading || isLoadingRecord) && "cursor-not-allowed disabled"}`}
           >
             {!loading && t("crud.area.confirm.button.confirm") || t("crud.area.confirm.button.saving")}
           </Button>

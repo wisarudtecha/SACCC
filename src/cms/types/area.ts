@@ -231,25 +231,14 @@ export interface AreaDistrict extends AreaAuditFields {
   sourceTemplateId?: number | null;
 }
 
-// AreaManagementProps used to live here, describing the three flat arrays the
-// area page passed down. The page now fetches nested trees instead, and the
-// component owns its own prop type - see
-// components/admin/system-configuration/area/AreaManagement.tsx.
-
-/**
- * The non-label fields an area form edits, bundled so the hierarchy view can
- * hand them over in one setter per level instead of one per field - that prop
- * list is already long enough.
- *
- * Only the country uses the shape metrics; province and district carry
- * coordinates alone.
- */
-export interface AreaRecordExtras {
-  coordinates?: PolygonCoordinates | null;
-  yearOfData?: number | null;
-  shapeArea?: number | null;
-  shapeLength?: number | null;
-}
+// Two types used to live here and no longer do:
+//
+// - AreaManagementProps, describing the three flat arrays the area page passed
+//   down. The page fetches nested trees now and the component owns its own props.
+// - AreaRecordExtras, which bundled the non-label fields the hierarchy handed to
+//   the edit form. The edit form fetches the record by id instead (see
+//   onEditRecord in AreaHierarchyView), because the tree omits nameSpace and any
+//   field the form does not load is a field the next save silently drops.
 
 
 // ===================================================================

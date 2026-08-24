@@ -20,12 +20,15 @@ import {
   useUpdateDistrictMutation,
   useDeleteDistrictMutation,
   useGenerateOrgCountryTreeMutation,
+  useLazyGetCountryByIdQuery,
+  useLazyGetProvinceByIdQuery,
+  useLazyGetDistrictByIdQuery,
 } from "@/cms/store/api/area";
 import type {
   CountryCreateData, CountryUpdateData,
   AreaProvinceCreateData, AreaProvinceUpdateData,
   AreaDistrictCreateData, AreaDistrictUpdateData,
-  AreaCountryTree, AreaRecordExtras, Country, PolygonCoordinates
+  AreaCountryTree, AreaDistrict, AreaProvince, Country, PolygonCoordinates
 } from "@/cms/types/area";
 import { isApiSuccess, resolveApiError, resolveApiMessage } from "@/cms/utils/apiResponse";
 import { formatPolygonRings, parsePolygonRings, toCoordinatesPayload } from "@/cms/utils/areaGeometry";
@@ -65,6 +68,13 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
   const [deleteDistrict] = useDeleteDistrictMutation();
   const [generateOrgCountryTree] = useGenerateOrgCountryTreeMutation();
 
+  // Editing reads the authoritative record rather than the tree: the tree omits
+  // nameSpace entirely and is a server-side cache, so a form seeded from it would
+  // silently drop whatever it does not carry on the next save.
+  const [fetchCountryById] = useLazyGetCountryByIdQuery();
+  const [fetchProvinceById] = useLazyGetProvinceByIdQuery();
+  const [fetchDistrictById] = useLazyGetDistrictByIdQuery();
+
   // ===================================================================
   // State management
   // ===================================================================
@@ -84,6 +94,8 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
   const [countryYearOfData, setCountryYearOfData] = useState("");
   const [countryShapeArea, setCountryShapeArea] = useState("");
   const [countryShapeLength, setCountryShapeLength] = useState("");
+  const [countryNameSpace, setCountryNameSpace] = useState("");
+  const [countryActive, setCountryActive] = useState(true);
 
   // Province
   const [provId, setProvId] = useState<string>("");
@@ -94,6 +106,8 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
   const [provValidateErrors, setProvValidateErrors] = useState({ provinceCode: "", countryId: "", provinceTh: "", provinceEn: "", coordinates: "" });
   const [provinceCoordinatesText, setProvinceCoordinatesText] = useState("");
   const [existingProvinceCoordinates, setExistingProvinceCoordinates] = useState<PolygonCoordinates | null>(null);
+  const [provinceNameSpace, setProvinceNameSpace] = useState("");
+  const [provinceActive, setProvinceActive] = useState(true);
 
   // District
   const [distId, setDistId] = useState<string>("");
@@ -105,8 +119,13 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
   const [distValidateErrors, setDistValidateErrors] = useState({ districtCode: "", countryId: "", provId: "", districtTh: "", districtEn: "", coordinates: "" });
   const [districtCoordinatesText, setDistrictCoordinatesText] = useState("");
   const [existingDistrictCoordinates, setExistingDistrictCoordinates] = useState<PolygonCoordinates | null>(null);
+  const [districtNameSpace, setDistrictNameSpace] = useState("");
+  const [districtActive, setDistrictActive] = useState(true);
 
   const [loading, setLoading] = useState(false);
+  // A record fetch is in flight; the open form is showing placeholder values.
+  const [isLoadingRecord, setIsLoadingRecord] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [localValue, setLocalValue] = useState<string>("");
 
@@ -150,6 +169,9 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
   );
 
   const hasRecords = (trees || []).length > 0;
+
+  const canUpdate = permissions.hasAnyPermission(["area.create", "area.update"]);
+  const canDelete = permissions.hasAnyPermission(["area.delete"]);
 
   // ===================================================================
   // Post-write refresh
@@ -238,16 +260,9 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
     setCountryYearOfData("");
     setCountryShapeArea("");
     setCountryShapeLength("");
+    setCountryNameSpace("");
+    setCountryActive(true);
     setCountryValidateErrors({ countryCode: "", countryTh: "", countryEn: "", coordinates: "" });
-  }, []);
-
-  /** Seeds the non-label country fields when the hierarchy opens an edit. */
-  const applyCountryExtras = useCallback((extras: AreaRecordExtras) => {
-    setCountryCoordinatesText(formatPolygonRings(extras.coordinates));
-    setExistingCountryCoordinates(extras.coordinates ?? null);
-    setCountryYearOfData(extras.yearOfData != null ? String(extras.yearOfData) : "");
-    setCountryShapeArea(extras.shapeArea != null ? String(extras.shapeArea) : "");
-    setCountryShapeLength(extras.shapeLength != null ? String(extras.shapeLength) : "");
   }, []);
 
   const handleCountryDelete = useCallback(async (id: number) => {
@@ -283,10 +298,10 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
     // fail here; rings is [] when the field is empty.
     const { rings = [] } = parsePolygonRings(countryCoordinatesText);
     const countryData: CountryCreateData | CountryUpdateData = {
-      active: true,
+      active: countryActive,
       countryId: countryCode,
       en: countryEn,
-      nameSpace: "",
+      nameSpace: countryNameSpace,
       th: countryTh,
       // Resends the existing boundary when the user did not touch it. Dropping
       // the field here is what would let a rename blank the geometry.
@@ -327,7 +342,8 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
     }
   }, [
     countryCode, countryEn, countryId, countryTh, countryCoordinatesText, existingCountryCoordinates,
-    countryYearOfData, countryShapeArea, countryShapeLength, permissions, addToast,
+    countryYearOfData, countryShapeArea, countryShapeLength, countryNameSpace, countryActive,
+    permissions, addToast,
     createCountry, updateCountry, validateCountry, handleCountryReset, refreshAfterWrite, t
   ]);
 
@@ -343,12 +359,9 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
     setProvinceEn("");
     setProvinceCoordinatesText("");
     setExistingProvinceCoordinates(null);
+    setProvinceNameSpace("");
+    setProvinceActive(true);
     setProvValidateErrors({ provinceCode: "", countryId: "", provinceTh: "", provinceEn: "", coordinates: "" });
-  }, []);
-
-  const applyProvinceExtras = useCallback((extras: AreaRecordExtras) => {
-    setProvinceCoordinatesText(formatPolygonRings(extras.coordinates));
-    setExistingProvinceCoordinates(extras.coordinates ?? null);
   }, []);
 
   const handleProvinceDelete = useCallback(async (id: number) => {
@@ -383,10 +396,10 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
     }
     const { rings = [] } = parsePolygonRings(provinceCoordinatesText);
     const provinceData: AreaProvinceCreateData | AreaProvinceUpdateData = {
-      active: true,
+      active: provinceActive,
       countryId: provCountryId,
       en: provinceEn,
-      nameSpace: "",
+      nameSpace: provinceNameSpace,
       provId: provinceCode,
       th: provinceTh,
       coordinates: toCoordinatesPayload(rings, existingProvinceCoordinates),
@@ -422,7 +435,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
     }
   }, [
     provCountryId, provId, provinceCode, provinceEn, provinceTh, provinceCoordinatesText,
-    existingProvinceCoordinates, permissions, addToast,
+    existingProvinceCoordinates, provinceNameSpace, provinceActive, permissions, addToast,
     createProvince, updateProvince, validateProvince, handleProvinceReset, refreshAfterWrite, t
   ]);
 
@@ -439,12 +452,9 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
     setDistrictEn("");
     setDistrictCoordinatesText("");
     setExistingDistrictCoordinates(null);
+    setDistrictNameSpace("");
+    setDistrictActive(true);
     setDistValidateErrors({ districtCode: "", countryId: "", provId: "", districtTh: "", districtEn: "", coordinates: "" });
-  }, []);
-
-  const applyDistrictExtras = useCallback((extras: AreaRecordExtras) => {
-    setDistrictCoordinatesText(formatPolygonRings(extras.coordinates));
-    setExistingDistrictCoordinates(extras.coordinates ?? null);
   }, []);
 
   const handleDistrictDelete = useCallback(async (id: number) => {
@@ -482,11 +492,11 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
     }
     const { rings = [] } = parsePolygonRings(districtCoordinatesText);
     const districtData: AreaDistrictCreateData | AreaDistrictUpdateData = {
-      active: true,
+      active: districtActive,
       countryId: distCountryId,
       distId: districtCode,
       en: districtEn,
-      nameSpace: "",
+      nameSpace: districtNameSpace,
       provId: distProvId,
       th: districtTh,
       coordinates: toCoordinatesPayload(rings, existingDistrictCoordinates),
@@ -522,9 +532,134 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
     }
   }, [
     distCountryId, distId, distProvId, districtCode, districtEn, districtTh, districtCoordinatesText,
-    existingDistrictCoordinates, permissions, addToast,
+    existingDistrictCoordinates, districtNameSpace, districtActive, permissions, addToast,
     createDistrict, updateDistrict, validateDistrict, handleDistrictReset, refreshAfterWrite, t
   ]);
+
+  // ===================================================================
+  // Opening the forms
+  // ===================================================================
+
+  const closeAllForms = useCallback(() => {
+    setCountryIsOpen(false);
+    setProvinceIsOpen(false);
+    setDistrictIsOpen(false);
+  }, []);
+
+  const resetAllForms = useCallback(() => {
+    handleCountryReset();
+    handleProvinceReset();
+    handleDistrictReset();
+  }, [handleCountryReset, handleProvinceReset, handleDistrictReset]);
+
+  /**
+   * Opens an edit form seeded from the authoritative record.
+   *
+   * Every writable field is read here and resent on save. That is the whole
+   * point: the form is the only thing that decides what a PATCH carries, so any
+   * field it does not load is a field the next save silently drops. nameSpace is
+   * the concrete example - it is absent from the tree, so a tree-seeded form
+   * blanked it.
+   */
+  const handleEditRecord = useCallback(async (level: "country" | "province" | "district", id: number) => {
+    resetAllForms();
+    closeAllForms();
+    setIsLoadingRecord(true);
+
+    // Open immediately so the click feels responsive; fields stay disabled until
+    // the record lands.
+    if (level === "country") {
+      setCountryId(String(id));
+      setCountryIsOpen(true);
+    }
+    else if (level === "province") {
+      setProvId(String(id));
+      setProvinceIsOpen(true);
+    }
+    else {
+      setDistId(String(id));
+      setDistrictIsOpen(true);
+    }
+
+    try {
+      if (level === "country") {
+        const record = (await fetchCountryById(id).unwrap())?.data as Country | undefined;
+        if (!record) {
+          throw new Error(t("errors.unknownApi"));
+        }
+        setCountryCode(record.countryId || "");
+        setCountryTh(record.th || "");
+        setCountryEn(record.en || "");
+        setCountryNameSpace(record.nameSpace || "");
+        setCountryActive(record.active);
+        setCountryCoordinatesText(formatPolygonRings(record.coordinates));
+        setExistingCountryCoordinates(record.coordinates ?? null);
+        setCountryYearOfData(record.yearOfData != null ? String(record.yearOfData) : "");
+        setCountryShapeArea(record.shapeArea != null ? String(record.shapeArea) : "");
+        setCountryShapeLength(record.shapeLength != null ? String(record.shapeLength) : "");
+      }
+      else if (level === "province") {
+        const record = (await fetchProvinceById(id).unwrap())?.data as AreaProvince | undefined;
+        if (!record) {
+          throw new Error(t("errors.unknownApi"));
+        }
+        setProvinceCode(record.provId || "");
+        setProvCountryId(record.countryId || "");
+        setProvinceTh(record.th || "");
+        setProvinceEn(record.en || "");
+        setProvinceNameSpace(record.nameSpace || "");
+        setProvinceActive(record.active);
+        setProvinceCoordinatesText(formatPolygonRings(record.coordinates));
+        setExistingProvinceCoordinates(record.coordinates ?? null);
+      }
+      else {
+        const record = (await fetchDistrictById(id).unwrap())?.data as AreaDistrict | undefined;
+        if (!record) {
+          throw new Error(t("errors.unknownApi"));
+        }
+        setDistrictCode(record.distId || "");
+        setDistCountryId(record.countryId || "");
+        setDistProvId(record.provId || "");
+        setDistrictTh(record.th || "");
+        setDistrictEn(record.en || "");
+        setDistrictNameSpace(record.nameSpace || "");
+        setDistrictActive(record.active);
+        setDistrictCoordinatesText(formatPolygonRings(record.coordinates));
+        setExistingDistrictCoordinates(record.coordinates ?? null);
+      }
+    }
+    catch (error) {
+      // Saving a half-loaded form would write blanks over real data, so close it.
+      closeAllForms();
+      resetAllForms();
+      addToast("error", resolveApiError(error, t("errors.unknownApi")));
+    }
+    finally {
+      setIsLoadingRecord(false);
+    }
+  }, [
+    fetchCountryById, fetchProvinceById, fetchDistrictById,
+    resetAllForms, closeAllForms, addToast, t
+  ]);
+
+  /** Opens a create form for a child, seeded with its parent's codes. */
+  const handleCreateChild = useCallback((
+    level: "country" | "province" | "district",
+    parent: { countryCode?: string; provinceCode?: string }
+  ) => {
+    resetAllForms();
+    closeAllForms();
+
+    if (level === "province") {
+      setProvCountryId(parent.countryCode || "");
+      setProvinceIsOpen(true);
+    }
+    else if (level === "district") {
+      setDistCountryId(parent.countryCode || "");
+      setDistProvId(parent.provinceCode || "");
+      setDistrictIsOpen(true);
+    }
+  }, [resetAllForms, closeAllForms]);
 
   // ===================================================================
   // Form field definitions
@@ -583,6 +718,23 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
       onChange: setCountryShapeLength
     },
     {
+      key: "countryNameSpace",
+      type: "text",
+      label: t("crud.area.form.nameSpace.label"),
+      placeholder: t("crud.area.form.nameSpace.placeholder"),
+      value: countryNameSpace,
+      hint: t("crud.area.form.nameSpace.hint"),
+      onChange: setCountryNameSpace
+    },
+    {
+      key: "countryActive",
+      type: "toggle",
+      label: t("crud.area.form.active.label"),
+      placeholder: t("crud.area.form.active.placeholder"),
+      value: String(countryActive),
+      onChange: value => setCountryActive(value === "true")
+    },
+    {
       key: "countryCoordinates",
       type: "textarea",
       label: t("crud.areaTemplate.field.coordinates.label"),
@@ -631,6 +783,23 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
       value: provinceEn,
       error: provValidateErrors.provinceEn,
       onChange: setProvinceEn
+    },
+    {
+      key: "provinceNameSpace",
+      type: "text",
+      label: t("crud.area.form.nameSpace.label"),
+      placeholder: t("crud.area.form.nameSpace.placeholder"),
+      value: provinceNameSpace,
+      hint: t("crud.area.form.nameSpace.hint"),
+      onChange: setProvinceNameSpace
+    },
+    {
+      key: "provinceActive",
+      type: "toggle",
+      label: t("crud.area.form.active.label"),
+      placeholder: t("crud.area.form.active.placeholder"),
+      value: String(provinceActive),
+      onChange: value => setProvinceActive(value === "true")
     },
     {
       key: "provinceCoordinates",
@@ -699,6 +868,23 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
       onChange: setDistrictEn
     },
     {
+      key: "districtNameSpace",
+      type: "text",
+      label: t("crud.area.form.nameSpace.label"),
+      placeholder: t("crud.area.form.nameSpace.placeholder"),
+      value: districtNameSpace,
+      hint: t("crud.area.form.nameSpace.hint"),
+      onChange: setDistrictNameSpace
+    },
+    {
+      key: "districtActive",
+      type: "toggle",
+      label: t("crud.area.form.active.label"),
+      placeholder: t("crud.area.form.active.placeholder"),
+      value: String(districtActive),
+      onChange: value => setDistrictActive(value === "true")
+    },
+    {
       key: "districtCoordinates",
       type: "textarea",
       label: t("crud.areaTemplate.field.coordinates.label"),
@@ -758,6 +944,20 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
                         {t("crud.common.search")}
                       </Button>
                     </div>
+
+                    {/* Inactive rows are hidden by default. Without this they were
+                        unreachable entirely - and so was any way to reactivate them. */}
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={showInactive}
+                        onChange={event => setShowInactive(event.target.checked)}
+                        className="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900"
+                      />
+                      <span className="text-sm text-gray-700 dark:text-gray-200">
+                        {t("crud.common.list.toolbar.show_inactive")}
+                      </span>
+                    </label>
                   </div>
                 </div>
                 <div className="mt-4 sm:mt-0 xl:flex space-y-2 xl:space-y-0 items-center space-x-3">
@@ -789,34 +989,14 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
               <AreaHierarchyView
                 trees={filteredTrees}
                 countries={countries || []}
-                showInactive={false}
+                showInactive={showInactive}
+                canUpdate={canUpdate}
+                canDelete={canDelete}
                 handleCountryDelete={handleCountryDelete}
-                handleCountryReset={handleCountryReset}
                 handleProvinceDelete={handleProvinceDelete}
-                handleProvinceReset={handleProvinceReset}
                 handleDistrictDelete={handleDistrictDelete}
-                handleDistrictReset={handleDistrictReset}
-                setCountryId={setCountryId}
-                setCountryIsOpen={setCountryIsOpen}
-                setCountryCode={setCountryCode}
-                setCountryTh={setCountryTh}
-                setCountryEn={setCountryEn}
-                setCountryExtras={applyCountryExtras}
-                setProvId={setProvId}
-                setProvinceIsOpen={setProvinceIsOpen}
-                setProvinceCode={setProvinceCode}
-                setProvCountryId={setProvCountryId}
-                setProvinceTh={setProvinceTh}
-                setProvinceEn={setProvinceEn}
-                setProvinceExtras={applyProvinceExtras}
-                setDistId={setDistId}
-                setDistrictIsOpen={setDistrictIsOpen}
-                setDistrictCode={setDistrictCode}
-                setDistCountryId={setDistCountryId}
-                setDistProvId={setDistProvId}
-                setDistrictTh={setDistrictTh}
-                setDistrictEn={setDistrictEn}
-                setDistrictExtras={applyDistrictExtras}
+                onEditRecord={handleEditRecord}
+                onCreateChild={handleCreateChild}
               />
             )}
             {/* Empty state */}
@@ -853,6 +1033,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
         title={countryId && t("crud.area.form.country.header.update") || t("crud.area.form.country.header.create")}
         fields={countryFields}
         loading={loading}
+        isLoadingRecord={isLoadingRecord}
         onClose={() => {
           setCountryIsOpen(false);
           handleCountryReset();
@@ -867,6 +1048,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
         title={provId && t("crud.area.form.province.header.update") || t("crud.area.form.province.header.create")}
         fields={provinceFields}
         loading={loading}
+        isLoadingRecord={isLoadingRecord}
         onClose={() => {
           setProvinceIsOpen(false);
           handleProvinceReset();
@@ -881,6 +1063,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
         title={distId && t("crud.area.form.district.header.update") || t("crud.area.form.district.header.create")}
         fields={districtFields}
         loading={loading}
+        isLoadingRecord={isLoadingRecord}
         onClose={() => {
           setDistrictIsOpen(false);
           handleDistrictReset();
@@ -893,6 +1076,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
       <AreaTemplateSyncModal
         isOpen={syncIsOpen}
         trees={trees || []}
+        countries={countries || []}
         onClose={() => setSyncIsOpen(false)}
         onSuccess={message => {
           addToast("success", message);
