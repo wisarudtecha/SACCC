@@ -43,17 +43,8 @@ interface KbTabCardProps {
   onCopy?: (article: KbTabCard) => void;
 }
 
-const KbTabCardItem = ({ article, onOpen, onCopy }: KbTabCardProps) => {
-  const [copied, setCopied] = useState(false);
+const KbTabCardItem = ({ article, onOpen }: KbTabCardProps) => {
   const { t } = useTranslation();
-  const handleCopy = () => {
-    const text = article.url ?? window.location.href;
-    void navigator.clipboard.writeText(text).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
-    onCopy?.(article);
-  };
   const handleOpen = () => {
     const url  = article.url ?? window.location.href;
      window.open(url, "_blank", "noopener,noreferrer");
@@ -164,7 +155,7 @@ const KbTabCardItem = ({ article, onOpen, onCopy }: KbTabCardProps) => {
         </button>
 
         {/* Copy button */}
-        <button
+        {/* <button
           type="button"
           onClick={handleCopy}
           title={copied ? t("knowledge.case.panel.copied") : t("knowledge.case.panel.copy")}
@@ -199,7 +190,7 @@ const KbTabCardItem = ({ article, onOpen, onCopy }: KbTabCardProps) => {
               />
             </svg>
           )}
-        </button>
+        </button> */}
       </div>
 
       {/* Last updated */}
@@ -233,7 +224,7 @@ const KbTabCardListContent = ({
   const [filter, setFilter] = useState<KbTabCardFilter>({
     category: "All",
     page: 1,
-    pageSize: 20,
+    pageSize: 50,
   });
   const { t, language } = useTranslation();
   const { data, isLoading, isError } = useKbTabCards(filter);

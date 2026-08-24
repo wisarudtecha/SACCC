@@ -92,7 +92,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
     style: "solid", width: 1, color: "#d1d5db",
   });
 
-  // ── Image resize state (จับมุมแล้วลาก resize รูปภาพ) ──
+    // ── Image resize state (จับมุมแล้วลาก resize รูปภาพ) ──
   const selectedImgRef = useRef<HTMLImageElement | null>(null);
   const [imgBox, setImgBox] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
   const imgResizeRef = useRef<{
@@ -101,6 +101,21 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
     startX: number; startY: number;
     startW: number; startH: number;
   } | null>(null);
+
+    // ── Image drag-move state (ลากรูปภายใน editor เพื่อย้ายตำแหน่ง) ──
+  // ใช้ custom mouse drag (ไม่ใช้ HTML5 DnD เพราะ mousedown บนรูปมี preventDefault
+  // กัน native drag/text selection ทำให้ onDragStart ไม่ถูกเรียก)
+  // → mousedown เริ่มจับ → mousemove เกิน threshold = กำลังลาก → mouseup วางรูป
+    const imgDragRef = useRef<{
+    img: HTMLImageElement;
+    startX: number;
+    startY: number;
+    dragging: boolean;
+  } | null>(null);
+
+  // ── Visual ขณะลาก: ghost รูป (ตามเมาส์) + indicator ตำแหน่งที่จะแทรก ──
+  const dragGhostRef = useRef<HTMLImageElement | null>(null);
+  const dropBarRef = useRef<HTMLDivElement | null>(null);
 
   const exec = useCallback((command: string, arg?: string) => {
     document.execCommand(command, false, arg);
@@ -570,6 +585,289 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
     setImgBox(null);
   };
 
+      // ===========================================================================
+  //  Image Drag-Move ภายใน Editor (ย้ายตำแหน่งรูป เข้า/ออก Table ได้)
+  // ===========================================================================
+  //  หมายเหตุ: ใช้ custom mouse drag แทน HTML5 DnD เพราะ mousedown บนรูป
+  //  มี e.preventDefault() (กัน native drag / text selection) ทำให้ onDragStart
+  //  ของ HTML5 DnD ไม่ถูกเรียก → เลยต้องจัดการด้วย mouse event เอง
+  //
+  //  หลักการ:
+  //  - mousedown บนรูป → เริ่ม "ติดตามการลาก" (จับ startX/startY + ref รูป)
+  //  - mousemove (window) → ถ้าขยับเกิน 5px ถือว่า "กำลังลาก" (ทำให้รูปโปร่งแสง)
+  //  - mouseup (window) → หาตำแหน่ง cursor จากพิกัดเมาส์ แล้ว insertHTML รูปใหม่
+  //     พร้อมลบรูปต้นฉบับ (ย้ายจริง) — รองรับการวางทั้งใน cell และนอก cell
+  //
+  //  จุดเริ่มต้นตั้งค่าไว้ใน handleEditorMouseDown (ตอนคลิกที่ img)
+    const onImgDragMove = (e: MouseEvent) => {
+    const st = imgDragRef.current;
+    const editor = editorRef.current;
+    if (!st || !editor) return;
+
+    // ขยับเกิน 5px → เริ่มลากจริง (กันการกดคลิกเฉยๆ)
+    if (!st.dragging) {
+      const dx = Math.abs(e.clientX - st.startX);
+      const dy = Math.abs(e.clientY - st.startY);
+      if (dx + dy < 5) return;
+      st.dragging = true;
+      // Visual feedback: รูปต้นฉบับโปร่งแสง + cursor grabbing
+      st.img.style.opacity = "0.4";
+      document.body.style.cursor = "grabbing";
+      document.body.style.userSelect = "none";
+      clearImgSelection(); // ซ่อน overlay resize ขณะลาก
+
+      // สร้าง "ghost" (รูปโปร่งแสง) ตามเมาส์ แทนภาพ native drag
+      const ghost = document.createElement("img");
+      ghost.src = st.img.currentSrc || st.img.src;
+      ghost.draggable = false;
+      ghost.style.cssText =
+        "position:fixed;top:0;left:0;z-index:99999;pointer-events:none;" +
+        "opacity:0.65;border:1px dashed #3b82f6;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,0.15);";
+      // รักษาขนาดที่เลือกไว้ (width/height เดิม)
+      const w = parseFloat(st.img.style.width) || st.img.getBoundingClientRect().width;
+      const h = parseFloat(st.img.style.height) || st.img.getBoundingClientRect().height;
+      ghost.style.width = `${w}px`;
+      ghost.style.height = `${h}px`;
+      document.body.appendChild(ghost);
+      dragGhostRef.current = ghost;
+
+                  // สร้าง "indicator" เส้นบอกตำแหน่งแทรก (ใน flow) อยู่ภายใน editor
+      const bar = document.createElement("div");
+      bar.className = "kms-dropbar";
+      bar.style.cssText =
+        "position:absolute;left:0;top:0;height:3px;z-index:40;pointer-events:none;" +
+        "background:#3b82f6;box-shadow:0 0 0 1px #fff;border-radius:2px;";
+      editor.appendChild(bar);
+      dropBarRef.current = bar;
+    }
+
+    // ย้าย ghost ตามเมาส์ (ชดเชยเล็กน้อย เพื่อไม่บัง cursor)
+    if (dragGhostRef.current) {
+      dragGhostRef.current.style.left = `${e.clientX + 12}px`;
+      dragGhostRef.current.style.top = `${e.clientY - 12}px`;
+    }
+
+    // อัปเดต indicator ตำแหน่งที่จะแทรก (ทั้งแนวตั้งและแนวนอน)
+    updateDropIndicator(e.clientX, e.clientY);
+  };
+
+    // ── อัปเดต "เส้น indicator" ว่ากำลังจะแทรก (ใน flow) ที่ตำแหน่งไหน ──
+    const updateDropIndicator = (cx: number, cy: number) => {
+      cx = cx;
+      const editor = editorRef.current;
+      const bar = dropBarRef.current;
+      if (!editor || !bar) return;
+
+      const er = editor.getBoundingClientRect();
+
+      // หา block ที่อยู่ "เหนือ" จุด drop → วาดเส้นแนวนอนไว้ที่ขอบล่าง
+      let anchor: HTMLElement | null = null;
+      const blocks = Array.from(editor.children) as HTMLElement[];
+      for (const b of blocks) {
+        if (b.className && b.className.split(" ").includes("kms-dropbar")) continue; // ข้ามตัว indicator เอง
+        if (b.contains(dragGhostRef.current)) continue;
+        const r = b.getBoundingClientRect();
+        if (r.top + r.height / 2 <= cy) anchor = b;
+        else break;
+      }
+      let y: number;
+      if (anchor) {
+        const ar = anchor.getBoundingClientRect();
+        y = ar.bottom - er.top;
+      } else {
+        y = 0;
+      }
+
+      // วาดเส้นแนวนอน (เต็มความกว้าง) ที่ตำแหน่งแทรก
+      bar.style.display = "block";
+      bar.style.left = "0px";
+      bar.style.top = `${Math.round(y)}px`;
+      bar.style.width = `${editor.clientWidth}px`;
+      bar.style.height = "3px";
+    };
+
+  // วางภาพที่ตำแหน่ง cursor (ย้ายรูปไปตำแหน่งใหม่)
+  const onImgDragUp = (e: MouseEvent) => {
+    const st = imgDragRef.current;
+    imgDragRef.current = null;
+    window.removeEventListener("mousemove", onImgDragMove);
+    window.removeEventListener("mouseup", onImgDragUp);
+    if (!st) return;
+
+        // คืนค่า visual หลังลาก
+    st.img.style.opacity = "";
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
+    clearDragVisual();
+
+    // ถ้าแค่คลิก (ไม่ได้ลาก) → ให้ selection รูปค้างไว้ (เป็น behavior เดิม)
+    if (!st.dragging) return;
+
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    // ถ้าวางนอกพื้นที่ editor → ยกเลิก (รูปอยู่ที่เดิม)
+    const er = editor.getBoundingClientRect();
+    if (
+      e.clientX < er.left || e.clientX > er.right ||
+      e.clientY < er.top || e.clientY > er.bottom
+    ) return;
+
+        const { img } = st;
+        const src = img.currentSrc || img.src;
+        const width = img.style.width || (img.getAttribute("width") || "");
+        const height = img.style.height || (img.getAttribute("height") || "");
+
+        let styleAttr = "max-width:100%;";
+        if (width) styleAttr += `width:${width};`;
+        if (height) styleAttr += `height:${height};`;
+        if (img.getAttribute("srcset")) styleAttr += `srcset:${img.getAttribute("srcset")};`;
+        const imgHtml = `<img src="${src}" style="${styleAttr}" draggable="false" />`;
+
+        // ─────────────────────────────────────────────────────────────
+        // แทรกรูป "ในช่องว่าง/flow" (ไม่ทับ/บังข้อความ)
+        //   • ใช้ caretRangeFromPoint หาตำแหน่งแทรก ณ พิกัดที่ปล่อย
+        //     → รูปถูกแทรกเป็น inline ใน flow (วางได้ตามแนวข้อความ ไม่บัง)
+        //   • ถ้าเป็นที่ว่างระหว่างย่อหน้า → สร้าง <p> ใหม่ (รูปเป็นย่อหน้าของตนเอง)
+        //   • ไม่ลบ/แก้ block อื่นใดใน editor เลย → video/ข้อความไม่หาย
+        // ─────────────────────────────────────────────────────────────
+        editor.focus();
+
+        // วาง cursor ที่จุด drop
+        let insertRange: Range | null = null;
+        if (document.caretRangeFromPoint) {
+          insertRange = document.caretRangeFromPoint(e.clientX, e.clientY);
+        } else if ((document as any).caretPositionFromPoint) {
+          const pos = (document as any).caretPositionFromPoint(e.clientX, e.clientY);
+          if (pos) {
+            insertRange = document.createRange();
+            insertRange.setStart(pos.offsetNode, pos.offset);
+            insertRange.collapse(true);
+          }
+        }
+
+        const rangeOk =
+          insertRange &&
+          insertRange.startContainer &&
+          editor.contains(insertRange.startContainer) &&
+          insertRange.startContainer !== editor;
+
+        if (rangeOk) {
+          // ◉ แทรกรูปเป็น inline ที่ cursor (อยู่ใน flow เดียวกับข้อความ)
+          //    ใส่ zero-width space (U+200B) คั่นหน้า/หลังรูป เพื่อให้วาง cursor
+          //    แล้วพิมพ์ข้อความได้ทั้งหน้าและหลังรูป
+          const sel = window.getSelection();
+          sel?.removeAllRanges();
+          sel?.addRange(insertRange!);
+          document.execCommand("insertHTML", false, `\u200B${imgHtml}\u200B`);
+
+          // ลบรูปต้นฉบับ (ย้ายจริง)
+          if (img && img.isConnected) img.remove();
+          onChange(editor.innerHTML);
+          clearImgSelection();
+          return;
+        }
+
+        // ◉ ปล่อยในที่ว่าง (ไม่มี text node ตรงจุด) → แทรกเป็น <p> ใหม่ ระหว่าง block
+        const blocks = Array.from(editor.children) as HTMLElement[];
+        let anchor: HTMLElement | null = null;
+        for (const b of blocks) {
+          if (b.contains(img)) continue;
+          const r = b.getBoundingClientRect();
+          if (r.top + r.height / 2 <= e.clientY) anchor = b;
+          else break;
+        }
+                const newBlock = document.createElement("p");
+        newBlock.style.margin = "8px 0";
+        // ◉ <br> คั่นท้าย + ZWSP คั่นหน้า/หลังรูป ให้วาง cursor พิมพ์ได้ทั้งหน้า/หลัง
+        //    (ไม่มี <br> → cursor วางไม่ง่าย เพราะคลิกโดนรูปตลอด)
+        newBlock.innerHTML = `\u200B${imgHtml}\u200B<br/>`;
+        if (!anchor) {
+          editor.insertBefore(newBlock, editor.firstChild);
+        } else {
+          anchor.after(newBlock);
+        }
+
+        // วาง cursor ต่อท้ายรูป (หลัง <br>) ให้พิมพ์ข้อความตามได้ทันที
+        const insertedImg = newBlock.querySelector("img");
+        if (insertedImg) {
+          const range = document.createRange();
+          range.setStartAfter(insertedImg); // ระหว่าง img กับ <br> → พิมพ์ต่อท้ายรูปในบรรทัดเดียวกัน
+          range.collapse(true);
+          const sel = window.getSelection();
+          sel?.removeAllRanges();
+          sel?.addRange(range);
+          editor.focus();
+        }
+
+        // ลบรูปต้นฉบับ (ย้ายจริง)
+        if (img && img.isConnected) img.remove();
+
+        onChange(editor.innerHTML);
+        clearImgSelection();
+  };
+
+  // ── ล้าง visual ขณะลาก (ghost + indicator) ──
+  const clearDragVisual = () => {
+    if (dragGhostRef.current) {
+      dragGhostRef.current.remove();
+      dragGhostRef.current = null;
+    }
+    if (dropBarRef.current) {
+      dropBarRef.current.remove();
+      dropBarRef.current = null;
+    }
+  };
+
+  // อนุญาตให้วางไฟล์/HTML/Text จากภายนอกได้ (ลากมาจากนอก editor)
+  const handleEditorDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+  };
+
+    // จัดการการวางเนื้อหาจากภายนอก (ไฟล์/HTML/Text) → แทรกเข้า editor
+  const handleEditorDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    // ▸ กรณีลากมาจากภายนอก (ไฟล์/HTML/Text) → แทรกใหม่
+    const { files } = e.dataTransfer;
+    if (files && files.length) {
+      for (const file of Array.from(files)) {
+        if (file.type.startsWith("image/")) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            if (!editorRef.current) return;
+            editorRef.current.focus();
+            const styleAttr = "max-width:100%;";
+            const data = typeof reader.result === "string" ? reader.result : "";
+            document.execCommand("insertHTML", false, `<img src="${data}" style="${styleAttr}" draggable="false" />`);
+            onChange(editorRef.current.innerHTML);
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+      return;
+    }
+
+    const html = e.dataTransfer.getData("text/html");
+    const text = e.dataTransfer.getData("text/plain");
+    if (html) {
+      // ลบ wrapper ที่ไม่จำเป็น แล้ว insert HTML ที่ถูกต้องลงไป
+      const trimmed = html.trim();
+      editor.focus();
+      document.execCommand("insertHTML", false, trimmed);
+      onChange(editor.innerHTML);
+    } else if (text) {
+      editor.focus();
+      document.execCommand("insertText", false, text);
+      onChange(editor.innerHTML);
+    }
+  };
+
   // Handler: คลิกใน editor -> จับว่าเป็น cell-table หรือไม่
   const handleEditorClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // ถ้าคลิกที่ img → เลือกรูป (ถ้ายังไม่ถูก mousedown จัดการ)
@@ -635,11 +933,20 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
       return;
     }
 
-    // ถ้าคลิกที่ img → เลือกรูป (ไม่เข้า resize cell)
+        // ถ้าคลิกที่ img → เลือกรูป + เริ่ม "ติดตามการลากย้ายรูป"
     if ((e.target as HTMLElement).closest?.("img")) {
       const img = (e.target as HTMLElement).closest("img") as HTMLImageElement;
       selectedImgRef.current = img;
       updateImgBox();
+      // เริ่ม tracking การลาก (คลิกเฉยๆ จะไม่ลาก ถ้าไม่ขยับเมาส์เกิน 5px)
+      imgDragRef.current = {
+        img,
+        startX: e.clientX,
+        startY: e.clientY,
+        dragging: false,
+      };
+      window.addEventListener("mousemove", onImgDragMove);
+      window.addEventListener("mouseup", onImgDragUp);
       e.preventDefault();
       e.stopPropagation();
       return;
@@ -710,9 +1017,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
   };
 
   // Handler: mouseover – เปลี่ยน cursor เป็น resize เมื่อชิดขอบขวา/ซ้าย/ล่างของ cell
-  const handleEditorMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    // ถ้ากำลังลาก resize อยู่ ไม่ต้องยุ่ง
+    const handleEditorMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    // ถ้ากำลังลาก resize อยู่ หรือกำลังลากย้ายรูป ไม่ต้องยุ่ง
     if (resizeStateRef.current) return;
+    if (imgDragRef.current?.dragging) return;
     const cctx = cellFromTarget(e.target);
     if (!cctx) { document.body.style.cursor = ""; return; }
     const rect = cctx.cell.getBoundingClientRect();
@@ -1411,9 +1719,11 @@ className="sr-only"
           <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
         </ToolbarBtn>
         <ToolbarBtn
-          onClick={() => {
+                    onClick={() => {
             const url = window.prompt("Image URL:");
-            if (url) exec("insertImage", url);
+            if (url) {
+              exec("insertHTML", `<img src="${url}" style="max-width:100%;" draggable="false" />`);
+            }
           }}
           title="Insert image"
         >
@@ -1629,17 +1939,21 @@ className="sr-only"
           onPaste={handlePaste}
           onClick={handleEditorClick}
           onContextMenu={handleTableContextMenu}
-          onMouseDown={(e) => { handleEditorMouseDown(e); setTableContextMenu(null); }}
-          onMouseMove={handleEditorMouseMove}
+                    onMouseDown={(e) => { handleEditorMouseDown(e); setTableContextMenu(null); }}
+                    onMouseMove={handleEditorMouseMove}
+                    onDragStart={(e) => { e.preventDefault(); }}
+          onDragOver={handleEditorDragOver}
+          onDrop={handleEditorDrop}
           onKeyDown={(e) => { if (e.key === "Escape") { clearBlockSelection(); clearImgSelection(); setTableContextMenu(null); } }}
-          className="
+                    className="
         prose 
         prose-sm 
         max-w-none 
         min-h-[300px] 
+        relative
         bg-white 
         p-4 
-        text-sm 
+        text-sm      
         text-gray-900 
         focus:outline-none 
         dark:prose-invert 
@@ -1688,7 +2002,7 @@ className="sr-only"
         dark:[&_td]:border-slate-600
         dark:[&_th]:border-slate-600
         dark:[&_th]:bg-slate-700
-        [&_table]:relative
+                [&_table]:relative
                 [&_[data-sel-mark]]:outline
         [&_[data-sel-mark]]:outline-2
         [&_[data-sel-mark]]:outline-blue-500

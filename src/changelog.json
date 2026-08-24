@@ -1,4 +1,10 @@
 {
+  "0.55.0": {
+    "date": "2026-08-24",
+    "segment": "MINOR",
+    "notes": "feat(kms): let article pictures be dragged into place while writing\n- A picture placed inside an article's content can now be dragged to a new position while writing, including moving it into or out of a table cell, with a preview line showing where it will land before it's dropped.\n- Picture files can now be dragged in directly from outside the browser (for example, from a folder on the computer) and dropped straight into the article content, instead of only through the existing upload button.\n- Inserting a picture by pasting in its web address now looks and behaves the same as a picture that was uploaded.\n- The knowledge base article cards shown on the case screen and the knowledge dashboard now load more articles at once, and the unused 'copy link' button on each card has been removed.\n- changelog.json / package.json: bump version 0.54.0 -> 0.55.0",
+    "author": "Wisarud Techa"
+  },
   "0.54.0": {
     "date": "2026-08-24",
     "segment": "MINOR",

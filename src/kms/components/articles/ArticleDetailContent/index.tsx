@@ -266,14 +266,14 @@ const ArticleDetailContent: React.FC<Props> = ({
           {html ? (
             <div
               ref={contentRef}
-              className="
-                prose 
+                            className="
+                              prose 
         prose-sm 
         max-w-none 
         min-h-[300px] 
         bg-white 
         p-4 
-        text-sm 
+        text-sm   
         text-gray-900 
         focus:outline-none 
         dark:prose-invert 
@@ -318,14 +318,13 @@ const ArticleDetailContent: React.FC<Props> = ({
         [&_th]:font-semibold
         [&_th]:text-left
         [&_th]:align-top
-        dark:[&_table]:text-slate-200
-        dark:[&_td]:border-slate-600
-        dark:[&_th]:border-slate-600
-        dark:[&_th]:bg-slate-700
-        [&_table]:relative
-    
+                dark:[&_table]:text-slate-200
+                dark:[&_td]:border-slate-600
+                dark:[&_th]:border-slate-600
+                dark:[&_th]:bg-slate-700
+                [&_table]:relative
 
-        [&_img]:cursor-pointer
+                [&_img]:cursor-pointer
         [&_img]:select-none
         [&_img]:[-webkit-user-drag:none]
 
