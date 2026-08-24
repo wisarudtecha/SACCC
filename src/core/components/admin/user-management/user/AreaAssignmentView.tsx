@@ -4,7 +4,7 @@ import { ChevronDown, ChevronRight, Minus } from "lucide-react";
 import { CheckLineIcon, LockIcon } from "@/core/icons";
 import { useSyncPreviewedIdentity } from "@/core/hooks/useSyncPreviewedIdentity";
 import { useTranslation } from "@/core/hooks/useTranslation";
-import type { Country, AreaProvince, AreaDistrict } from "@/cms/types/area";
+import type { AreaCountryTree } from "@/cms/types/area";
 import Button from "@/core/components/ui/button/Button";
 
 type CheckState = "checked" | "indeterminate" | "unchecked";
@@ -38,21 +38,23 @@ const AreaCheckbox: React.FC<{
 
 const AreaAssignmentContent: React.FC<{
   loading: boolean;
-  countries: Country[];
-  provinces: AreaProvince[];
-  districts: AreaDistrict[];
+  /** The org's nested country trees - parentage comes from the structure itself. */
+  trees: AreaCountryTree[];
   areaList: string[];
   userName: string;
   trackedUsername: string;
   onAreaToggle: (distId: string) => void;
-  onAreaCascadeToggle: (scopeType: "country" | "province", scopeId: string) => void;
+  /**
+   * `countryId` scopes a province cascade to one country. Province codes are not
+   * globally unique - two countries can both have province "10" - so without it
+   * selecting one province would tick the other country's districts too.
+   */
+  onAreaCascadeToggle: (scopeType: "country" | "province", scopeId: string, countryId?: string) => void;
   onUserAreaSave: () => void;
   onUserChange: (userName: string) => void;
 }> = ({
   loading,
-  countries,
-  provinces,
-  districts,
+  trees,
   areaList,
   userName,
   trackedUsername,
@@ -82,10 +84,17 @@ const AreaAssignmentContent: React.FC<{
     setter(next);
   };
 
-  const districtsOfProvince = (provId: string) => districts.filter(d => d.provId === provId);
-  const provincesOfCountry = (countryId: string) => provinces.filter(p => p.countryId === countryId);
-  const districtsOfCountry = (countryId: string) =>
-    provincesOfCountry(countryId).flatMap(p => districtsOfProvince(p.provId));
+  // Children come straight off the tree node. The previous version re-joined
+  // three flat lists by provId/countryId, which mis-grouped districts whenever
+  // two countries shared a province code - walking the tree makes that
+  // unrepresentable.
+  const districtsOfCountry = (country: AreaCountryTree) =>
+    (country.provinces || []).flatMap(province => province.districts || []);
+
+  // Province and district codes are only unique within their country, so both the
+  // expansion set and the React keys are namespaced. Bare codes made two
+  // countries' identically-coded provinces expand and collapse as one.
+  const scopedKey = (countryId: string, code: string) => `${countryId}:${code}`;
 
   const isDisabled = !userName;
 
@@ -98,12 +107,12 @@ const AreaAssignmentContent: React.FC<{
       </div>
 
       <div className="divide-y divide-gray-200 dark:divide-gray-700">
-        {countries.map(country => {
-          const countryDistricts = districtsOfCountry(country.countryId);
+        {trees.map(country => {
+          const countryDistricts = districtsOfCountry(country);
           const countrySelected = countryDistricts.filter(d => areaList.includes(d.distId)).length;
           const countryState = getCheckState(countryDistricts.length, countrySelected);
           const isCountryExpanded = expandedCountries.has(country.countryId);
-          const countryProvinces = provincesOfCountry(country.countryId);
+          const countryProvinces = country.provinces || [];
 
           return (
             <div key={country.countryId}>
@@ -127,16 +136,17 @@ const AreaAssignmentContent: React.FC<{
               {isCountryExpanded && (
                 <div className="pl-10 bg-gray-50 dark:bg-gray-800/50">
                   {countryProvinces.map(province => {
-                    const provinceDistricts = districtsOfProvince(province.provId);
+                    const provinceDistricts = province.districts || [];
                     const provinceSelected = provinceDistricts.filter(d => areaList.includes(d.distId)).length;
                     const provinceState = getCheckState(provinceDistricts.length, provinceSelected);
-                    const isProvinceExpanded = expandedProvinces.has(province.provId);
+                    const provinceKey = scopedKey(country.countryId, province.provId);
+                    const isProvinceExpanded = expandedProvinces.has(provinceKey);
 
                     return (
-                      <div key={province.provId} className="border-t border-gray-200 dark:border-gray-700">
+                      <div key={provinceKey} className="border-t border-gray-200 dark:border-gray-700">
                         <div className="flex items-center gap-3 px-6 py-2 hover:bg-gray-100 dark:hover:bg-gray-700/50">
                           <button
-                            onClick={() => toggleExpanded(expandedProvinces, setExpandedProvinces, province.provId)}
+                            onClick={() => toggleExpanded(expandedProvinces, setExpandedProvinces, provinceKey)}
                             className="p-1 rounded text-gray-400 dark:text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600 shrink-0"
                           >
                             {isProvinceExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
@@ -144,7 +154,7 @@ const AreaAssignmentContent: React.FC<{
                           <AreaCheckbox
                             state={provinceState}
                             disabled={isDisabled}
-                            onClick={() => onAreaCascadeToggle("province", province.provId)}
+                            onClick={() => onAreaCascadeToggle("province", province.provId, country.countryId)}
                           />
                           <span className="text-sm font-medium text-gray-800 dark:text-gray-100 capitalize">
                             {language === "th" && province.th || province.en}
@@ -160,7 +170,7 @@ const AreaAssignmentContent: React.FC<{
 
                               return (
                                 <div
-                                  key={district.distId}
+                                  key={scopedKey(provinceKey, district.distId)}
                                   className="flex items-center gap-3 px-6 py-2 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200/50 dark:hover:bg-gray-600/30"
                                 >
                                   <span className="w-6 shrink-0" />
@@ -187,7 +197,7 @@ const AreaAssignmentContent: React.FC<{
         })}
       </div>
 
-      {countries.length === 0 && (
+      {trees.length === 0 && (
         <div className="text-center py-12">
           <LockIcon className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">

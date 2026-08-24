@@ -24,11 +24,12 @@ import { ProtectedRoute } from "@/core/components/auth/ProtectedRoute";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import { useGetCommandsQuery, useGetDepartmentsQuery, useGetStationsQuery } from "@/core/store/api/organizationApi";
 import { useGetSkillQuery } from "@/cms/store/api/skillApi";
-import { useGetCountriesQuery, useGetProvincesQuery, useGetDistrictsQuery } from "@/cms/store/api/area";
+import { useGetCountriesQuery } from "@/cms/store/api/area";
+import { useOrgAreaTrees } from "@/cms/hooks/useOrgAreaTrees";
 import { useGetUsersQuery, useGetUserRolesQuery, useGetUserGroupQuery } from "@/core/store/api/userApi";
 import type { Command, Department, Station } from "@/core/types/organization";
 import type { Skill } from "@/cms/types/skill";
-import type { Country, AreaProvince, AreaDistrict } from "@/cms/types/area";
+import type { Country } from "@/cms/types/area";
 import type { Role, UserGroup, UserProfile } from "@/core/types/user";
 import PageBreadcrumb from "@/core/components/common/PageBreadCrumb";
 import PageMeta from "@/core/components/common/PageMeta";
@@ -83,14 +84,15 @@ const UserManagementPage: React.FC = () => {
   const { data: groupsData } = useGetUserGroupQuery({ start: 0, length: 1000 });
   const groups = groupsData?.data as unknown as UserGroup[] || [];
 
+  // Area assignment reads the org's nested country trees rather than three flat
+  // lists. The country list only enumerates which trees to fetch; it replaces a
+  // length:10000 province + length:20000 district request that the browser then
+  // re-joined by provId - a join that mis-grouped districts whenever two
+  // countries shared a province code.
   const { data: countriesData } = useGetCountriesQuery({ start: 0, length: 1000 });
   const countries = countriesData?.data as unknown as Country[] || [];
 
-  const { data: provincesData } = useGetProvincesQuery({ start: 0, length: 10000 });
-  const provinces = provincesData?.data as unknown as AreaProvince[] || [];
-
-  const { data: districtsData } = useGetDistrictsQuery({ start: 0, length: 20000 });
-  const districts = districtsData?.data as unknown as AreaDistrict[] || [];
+  const { trees } = useOrgAreaTrees(countries);
 
   return (users && departments && roles) ? (
     <>
@@ -102,7 +104,7 @@ const UserManagementPage: React.FC = () => {
       <ProtectedRoute requiredPermissions={["user.view"]}>
         <PageBreadcrumb pageTitle={t("navigation.sidebar.main.user_management.nested.user.header")} />
 
-        <UserManagementComponent usr={users} dept={departments} cmd={commands} stn={stations} role={roles} skill={skills} groups={groups} countries={countries} provinces={provinces} districts={districts} />
+        <UserManagementComponent usr={users} dept={departments} cmd={commands} stn={stations} role={roles} skill={skills} groups={groups} trees={trees} />
       </ProtectedRoute>
 
       {/* Toast Notification */}

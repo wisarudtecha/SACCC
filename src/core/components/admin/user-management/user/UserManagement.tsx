@@ -35,7 +35,7 @@ import type { PreviewConfig } from "@/core/types/enhanced-crud";
 import type { Command, Department, Station } from "@/core/types/organization";
 import type { Role } from "@/core/types/role";
 import type { Skill } from "@/cms/types/skill";
-import type { Country, AreaProvince, AreaDistrict } from "@/cms/types/area";
+import type { AreaCountryTree } from "@/cms/types/area";
 import type {
   // Address,
   // Department,
@@ -67,10 +67,9 @@ const UserManagementComponent: React.FC<{
   role: Role[];
   skill?: Skill[];
   groups?: UserGroup[];
-  countries?: Country[];
-  provinces?: AreaProvince[];
-  districts?: AreaDistrict[];
-}> = ({ usr, dept, cmd, stn, role, skill, groups, countries, provinces, districts }) => {
+  /** The org's nested country trees, used by the area-assignment tab. */
+  trees?: AreaCountryTree[];
+}> = ({ usr, dept, cmd, stn, role, skill, groups, trees }) => {
   const isSystemAdmin = AuthService.isSystemAdmin();
   const navigate = useNavigate();
   const permissions = usePermissions();
@@ -258,14 +257,28 @@ const UserManagementComponent: React.FC<{
     );
   }, []);
 
-  const handleAreaCascadeToggle = useCallback((scopeType: "country" | "province", scopeId: string) => {
+  // Scope ids are the business codes the tree renders with, so resolve them
+  // through the tree rather than by filtering flat lists. The previous version
+  // matched districts on provId alone, which pulled in another country's
+  // districts whenever two countries shared a province code.
+  const handleAreaCascadeToggle = useCallback((
+    scopeType: "country" | "province",
+    scopeId: string,
+    countryId?: string
+  ) => {
     const scopedDistrictIds = scopeType === "country"
-      ? (provinces || [])
-        .filter(p => p.countryId === scopeId)
-        .flatMap(p => (districts || []).filter(d => d.provId === p.provId))
+      ? (trees || [])
+        .filter(country => country.countryId === scopeId)
+        .flatMap(country => (country.provinces || []).flatMap(p => p.districts || []))
         .map(d => d.distId)
-      : (districts || [])
-        .filter(d => d.provId === scopeId)
+      : (trees || [])
+        // countryId narrows to the province's own country. Province codes repeat
+        // across countries, so without it a cascade would reach into another
+        // country's districts.
+        .filter(country => !countryId || country.countryId === countryId)
+        .flatMap(country => country.provinces || [])
+        .filter(province => province.provId === scopeId)
+        .flatMap(province => province.districts || [])
         .map(d => d.distId);
 
     setAreaList(prev => {
@@ -274,7 +287,7 @@ const UserManagementComponent: React.FC<{
         ? prev.filter(id => !scopedDistrictIds.includes(id))
         : [...new Set([...prev, ...scopedDistrictIds])];
     });
-  }, [provinces, districts]);
+  }, [trees]);
 
   const [updateUserAreaMutation] = useUpdateUserAreaMutation();
 
@@ -651,9 +664,7 @@ const UserManagementComponent: React.FC<{
             <div className="space-y-6">
               <AreaAssignmentContent
                 loading={loading}
-                countries={countries || []}
-                provinces={provinces || []}
-                districts={districts || []}
+                trees={trees || []}
                 areaList={areaList || []}
                 userName={userItem.username || ""}
                 trackedUsername={userName}

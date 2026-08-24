@@ -1,4 +1,10 @@
 {
+  "0.56.1": {
+    "date": "2026-08-24",
+    "segment": "PATCH",
+    "notes": "fix(core): correct the user area-assignment screen when two countries use the same province code\n- On a user's Area tab, the countries, provinces and districts are now read from the organization's own nested area structure instead of three separate flat lists that the screen re-joined by itself.\n- This fixes a case where ticking a province, or a whole country, could also tick districts belonging to a different country whenever the two countries happened to use the same province code.\n- Expanding or collapsing a province no longer also opens or closes the identically-coded province under another country.\n- The screen also no longer loads the full province and district lists up front, which were far larger than this screen needs.\n- changelog.json / package.json: bump version 0.56.0 -> 0.56.1",
+    "author": "Wisarud Techa"
+  },
   "0.56.0": {
     "date": "2026-08-24",
     "segment": "MINOR",
