@@ -1,4 +1,10 @@
 {
+  "0.54.0": {
+    "date": "2026-08-24",
+    "segment": "MINOR",
+    "notes": "feat(kms): browse knowledge base articles by category\n- Added a new 'Articles' screen where readers can browse knowledge base articles organized by category, using a folder-style category list and a search box to narrow results.\n- Each article is shown as a card with its cover picture, description, keywords, view count and rating, and a 'Load more' button brings in further articles without leaving the page.\n- The article management screens used to create and edit articles have moved into the top 'More' menu under Knowledge, separate from the new browsing screen in the side menu, so everyday reading and content management are kept clearly apart.\n- Available in Thai and English; the Chinese menu label for this change is pending.\n- changelog.json / package.json: bump version 0.53.0 -> 0.54.0",
+    "author": "Wisarud Techa"
+  },
   "0.53.0": {
     "date": "2026-08-24",
     "segment": "MINOR",

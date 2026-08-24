@@ -46,7 +46,8 @@ import {
   ListIcon,
   Presentation,
   BoxesIcon,
-  Bell
+  Bell,
+  FilePenLine
 } from "lucide-react";
 import { ThemeToggleButton } from "@/core/components/common/ThemeToggleButton";
 import { Dropdown } from "@/core/components/ui/dropdown/Dropdown";
@@ -446,7 +447,8 @@ const SuperTopbar = (
       KbPermission.KB_BANNER_VIEW,
       KbPermission.KB_SOURCE_VIEW,
       KbPermission.KB_FILE_VIEW,
-      KbPermission.KB_BROADCAST_VIEW
+      KbPermission.KB_BROADCAST_VIEW,
+      KbPermission.KB_ARTICLE_MGMT_VIEW
     ])
       ? [{
         icon: <Package />,
@@ -458,6 +460,14 @@ const SuperTopbar = (
             name: t("navigation.super_app.topbar.more.menu.knowledge.sub_menu.category"),
             path: "/kms/category-manager",
             permission: permissions.hasPermission(KbPermission.KB_CATEGORY_VIEW)
+          },
+          {
+            icon: <FilePenLine />,
+            name: t("navigation.super_app.sidebar.knowledge.menu.articles"),
+            path: "/kms/articles",
+            permission: permissions.hasAnyPermission([
+              KbPermission.KB_ARTICLE_VIEW, KbPermission.KB_ARTICLE_MGMT_VIEW
+            ])
           },
           {
             icon: <BoxesIcon />,

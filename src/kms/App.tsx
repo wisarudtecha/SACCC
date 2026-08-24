@@ -13,6 +13,7 @@ import ArticleDetailPage from "./articles-detail";
 import ArticleReviewPage from "./articles-review";
 import ArticleFormPage from "./articles-create-update";
 import CategoryManagerPage from "./category-manager";
+import CategoryPage from './categorys'
 import BannerManagementPage from "./banner-management";
 import SourcePage from "./source";
 import DetailModal from "./components/broadcast/DetailModal";
@@ -48,6 +49,7 @@ export default function KmsApp() {
         <Route path="articles/:id" element={<ArticleDetailPage />} />
         <Route path="articles/review/:id" element={<ArticleReviewPage />} />
         <Route path="category-manager" element={<CategoryManagerPage />} />
+        <Route path="categorys-articles" element={<CategoryPage />} />
         <Route path="banner-management" element={<BannerManagementPage />} />
         <Route path="source" element={<SourcePage />} />
       </Routes>

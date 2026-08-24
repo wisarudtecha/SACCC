@@ -19,9 +19,9 @@ import {
   Phone,
   // Settings,
   Users,
-  //BoxesIcon,
-  FilePenLine,
-  Bell
+  // BoxesIcon,
+  Bell,
+  ListIcon
 } from "lucide-react";
 import { useSidebar } from "@/core/context/SidebarContext";
 import { Modal } from "@/core/components/ui/modal";
@@ -239,39 +239,16 @@ const SuperSidebar = (
     },
     {
       icon: <Bell />,
-      name: t("navigation.super_app.sidebar.knowledge.menu.broadcast"),
-      path: "/kms/broadcast",
-      permission: permissions.hasAnyPermission([
-        KbPermission.KB_BROADCAST_VIEW
-      ])
+      name: t("navigation.super_app.topbar.more.menu.knowledge.sub_menu.boardcastlog"),
+      path: "/kms/broadcast-log",
+      permission: permissions.hasPermission(KbPermission.KB_BROADCAST_VIEW)
     },
-    // {
-    //   icon: <Bell />,
-    //   name: t("navigation.super_app.topbar.more.menu.knowledge.sub_menu.boardcastlog"),
-    //   path: "/kms/broadcast-log",
-    //   permission: permissions.hasPermission(KbPermission.KB_BROADCAST_VIEW)
-    // },
-    // {
-    //   icon: <BoxesIcon />,
-    //   name: t("navigation.super_app.sidebar.knowledge.menu.files"),
-    //   path: "/kms/files",
-    //   permission: permissions.hasAnyPermission([
-    //     KbPermission.KB_FILE_VIEW
-    //   ])
-    // },
     {
-      icon: <FilePenLine />,
-      name: t("navigation.super_app.sidebar.knowledge.menu.articles"),
-      path: "/kms/articles",
-      permission: permissions.hasAnyPermission([
-        KbPermission.KB_ARTICLE_VIEW, KbPermission.KB_ARTICLE_MGMT_VIEW
-      ])
+      icon: <ListIcon />,
+      name: t("navigation.super_app.sidebar.knowledge.menu.category-articles"),
+      path: "/kms/categorys-articles",
+      permission: permissions.hasPermission(KbPermission.KB_ARTICLE_VIEW)
     },
-    // {
-    //   icon: <ListIcon />,
-    //   name: t("navigation.super_app.sidebar.knowledge.menu.category"),
-    //   path: "/kms/category-manager"
-    // },
     // {
     //   icon: <Presentation />,
     //   name: t("navigation.super_app.sidebar.knowledge.menu.banner"),
@@ -527,7 +504,7 @@ const SuperSidebar = (
           {!isIconOnly ? (
             <>
               <Link to="/">
-                <img src="/images/logo/logo.svg" alt="Logo"/>
+                <img src="/images/logo/logo.svg" alt="Logo" />
               </Link>
 
               <div className="font-light flex items-center text-[#8A99AF] text-sm">
