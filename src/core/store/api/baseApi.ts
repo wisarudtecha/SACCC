@@ -41,6 +41,7 @@ const commonTagTypes = [
   "Dispatch",
   "Customer",
   "Area",
+  "AreaTemplate",
   "Device Iot",
   "Unit",
   "Files",

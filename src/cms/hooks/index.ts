@@ -13,6 +13,7 @@ export { usePermissions } from "@/core/hooks/usePermissions";
 // Data Hooks
 export { useCustomerNotes } from "@/cms/hooks/useCustomerNotes";
 export { useNoteCategories } from "@/cms/hooks/useNoteCategories";
+export { useOrgAreaTrees } from "@/cms/hooks/useOrgAreaTrees";
 // export { useTickets } from "@/core/hooks/useTickets";
 // export { useWorkflows } from "@/core/hooks/useWorkflows";
 // export { useNotifications } from "@/core/hooks/useNotifications";

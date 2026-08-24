@@ -89,6 +89,27 @@ export interface Subdistrict extends Province {
 }
 
 // ===================================================================
+// Shared geography / provenance primitives
+// ===================================================================
+// Used by both the org-level area records below and the area-template
+// records in @/cms/types/areaTemplate.
+
+/**
+ * Polygon rings, GeoJSON-ordered: [ ring ][ point ][ lng, lat ].
+ * Distinct from ResponseArea.geometry.coordinates above (number[][]), which
+ * models a single unclosed ring for the legacy mock area designer.
+ */
+export type PolygonCoordinates = number[][][];
+
+/** Row provenance returned by the newer area / area-template read endpoints. */
+export interface AreaAuditFields {
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  createdBy?: string | null;
+  updatedBy?: string | null;
+}
+
+// ===================================================================
 // Country / Province / District hierarchy CRUD (Area Management)
 // ===================================================================
 // Named Country*/AreaProvince*/AreaDistrict* (not bare Province*/District*)
@@ -142,16 +163,25 @@ export interface AreaDistrictUpdateData extends AreaDistrictCreateData {
 // rows in store/api/area.ts's `Area`, and from the address-lookup
 // Province/District above) - each carries its own real numeric `id`.
 
-export interface Country {
+// The geometry/provenance fields below are read-only: the org-level write
+// inputs (AreaCountryInput / AreaProvinceInput / AreaDistrictInput) carry no
+// coordinates, so an org area only gains geometry by being created from, or
+// synced with, an area template - see @/cms/types/areaTemplate.
+
+export interface Country extends AreaAuditFields {
   id: number;
   countryId: string;
   en: string;
   th: string;
   active: boolean;
   nameSpace?: string;
+  coordinates?: PolygonCoordinates | null;
+  yearOfData?: number | null;
+  shapeArea?: number | null;
+  shapeLength?: number | null;
 }
 
-export interface AreaProvince {
+export interface AreaProvince extends AreaAuditFields {
   id: number;
   provId: string;
   countryId: string;
@@ -159,9 +189,10 @@ export interface AreaProvince {
   th: string;
   active: boolean;
   nameSpace?: string;
+  coordinates?: PolygonCoordinates | null;
 }
 
-export interface AreaDistrict {
+export interface AreaDistrict extends AreaAuditFields {
   id: number;
   distId: string;
   provId: string;
@@ -170,12 +201,63 @@ export interface AreaDistrict {
   th: string;
   active: boolean;
   nameSpace?: string;
+  postcode?: string | null;
+  coordinates?: PolygonCoordinates | null;
 }
 
-export interface AreaManagementProps {
-  countries?: Country[];
-  provinces?: AreaProvince[];
-  districts?: AreaDistrict[];
-  className?: string;
+// AreaManagementProps used to live here, describing the three flat arrays the
+// area page passed down. The page now fetches nested trees instead, and the
+// component owns its own prop type - see
+// components/admin/system-configuration/area/AreaManagement.tsx.
+
+
+// ===================================================================
+// Nested area tree (cached, join-free)
+// ===================================================================
+// Returned by GetOrgCountryTree (GET /area/countries/{id}/tree) and, with the
+// same node shape, by GetTemplateCountryTree. Deliberately not reusing the
+// list-record types above: the cached tree payload omits nameSpace, the
+// parent-id columns and the audit fields, and nests children instead.
+
+export interface AreaTreeDistrictNode {
+  id: number;
+  distId: string;
+  en: string;
+  th: string;
+  active: boolean;
+  postcode?: string | null;
+  coordinates?: PolygonCoordinates | null;
 }
 
+export interface AreaTreeProvinceNode {
+  id: number;
+  provId: string;
+  en: string;
+  th: string;
+  active: boolean;
+  coordinates?: PolygonCoordinates | null;
+  districts: AreaTreeDistrictNode[];
+}
+
+export interface AreaCountryTree {
+  id: number;
+  countryId: string;
+  en: string;
+  th: string;
+  active: boolean;
+  coordinates?: PolygonCoordinates | null;
+  yearOfData?: number | null;
+  shapeArea?: number | null;
+  shapeLength?: number | null;
+  provinces: AreaTreeProvinceNode[];
+}
+
+/**
+ * GetOrgCountryTree (GET /api/v1/area/countries/{id}/tree).
+ *
+ * Identical to AreaCountryTree - confirmed against the --response-body in
+ * src/cms/mocks/areaCURL.sh. An org tree carries no version and no status;
+ * those are template-lineage fields and appear only on TemplateCountryTree.
+ * The alias exists so call sites read as what they fetch.
+ */
+export type OrgCountryTree = AreaCountryTree;

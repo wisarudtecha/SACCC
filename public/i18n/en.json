@@ -677,7 +677,8 @@
             },
             "skill_management": "Skill Management",
             "property_management": "Property Management",
-            "area_management": "Area Management"
+            "area_management": "Area Management",
+            "area_template_management": "Area Templates"
           }
         }
       },
@@ -1942,6 +1943,162 @@
       },
       "unit": {
         "minutes": " min."
+      }
+    },
+    "areaTemplate": {
+      "name": "Area Template",
+      "locked_notice": "This template is published and locked. Fork it into a new version to make changes.",
+      "status": {
+        "draft": "Draft",
+        "published": "Published"
+      },
+      "province": {
+        "name": "Template Province"
+      },
+      "district": {
+        "name": "Template District",
+        "select_province": "Select a province to manage its districts."
+      },
+      "versions": {
+        "name": "Versions"
+      },
+      "column": {
+        "name": "Name",
+        "countryCode": "Country Code",
+        "provinceCode": "Province Code",
+        "districtCode": "District Code",
+        "postcode": "Postcode",
+        "version": "Version",
+        "status": "Status",
+        "geometry": "Boundary",
+        "yearOfData": "Year of Data",
+        "publishedBy": "Published By"
+      },
+      "field": {
+        "countryCode": {
+          "label": "Country Code",
+          "placeholder": "e.g. TH"
+        },
+        "provinceCode": {
+          "label": "Province Code",
+          "placeholder": "e.g. 10"
+        },
+        "districtCode": {
+          "label": "District Code",
+          "placeholder": "e.g. 1001"
+        },
+        "postcode": {
+          "label": "Postcode",
+          "placeholder": "e.g. 10200"
+        },
+        "th": {
+          "label": "Name (TH)",
+          "placeholder": "Name in Thai"
+        },
+        "en": {
+          "label": "Name (EN)",
+          "placeholder": "Name in English"
+        },
+        "yearOfData": {
+          "label": "Year of Data",
+          "placeholder": "e.g. 2026"
+        },
+        "coordinates": {
+          "label": "Boundary (GeoJSON rings)",
+          "placeholder": "[[[100.4,13.7],[100.6,13.7],[100.6,13.9],[100.4,13.7]]]"
+        }
+      },
+      "action": {
+        "manage": "Manage",
+        "districts": "Districts",
+        "versions": "Versions",
+        "back_to_template": "Back to template",
+        "publish": "Publish",
+        "publish_success": "Template published",
+        "publish_error": "Failed to publish template",
+        "fork": "Fork",
+        "fork_success": "New draft version created",
+        "fork_error": "Failed to fork template",
+        "generate_tree": "Rebuild tree",
+        "generate_tree_success": "Template tree rebuilt",
+        "generate_tree_error": "Failed to rebuild template tree"
+      },
+      "fork": {
+        "title": "Fork template",
+        "description": "Creates a new draft version from _VERSION_. The published version stays unchanged.",
+        "name": {
+          "label": "New version name",
+          "placeholder": "Name for the new draft"
+        },
+        "name_required": "Please name the new version"
+      },
+      "geometry": {
+        "none": "No boundary",
+        "summary": "Boundary · _POINTS_ points",
+        "error": {
+          "invalid_json": "Boundary must be valid JSON.",
+          "not_rings": "Boundary must be an array of rings.",
+          "empty": "Boundary has no rings.",
+          "ring_not_array": "Each ring must be an array of points.",
+          "too_few_points": "Each ring needs at least 4 points.",
+          "point_not_pair": "Each point must be a [longitude, latitude] pair.",
+          "point_not_number": "Longitude and latitude must be numbers.",
+          "lng_out_of_range": "Longitude must be between -180 and 180.",
+          "lat_out_of_range": "Latitude must be between -90 and 90.",
+          "ring_not_closed": "Each ring must close - the last point must repeat the first."
+        }
+      },
+      "sync": {
+        "button": "Use a template",
+        "title": "Use an area template",
+        "description": "Import a published template as a new country, or sync it into a country you already have.",
+        "no_published": "No published templates are available yet.",
+        "field": {
+          "template": {
+            "label": "Template",
+            "placeholder": "Select a published template"
+          },
+          "action": {
+            "label": "Action",
+            "placeholder": "Select an action"
+          },
+          "country": {
+            "label": "Target country",
+            "placeholder": "Select one of your countries"
+          },
+          "mode": {
+            "label": "Merge mode",
+            "placeholder": "Select a merge mode"
+          }
+        },
+        "action": {
+          "import": {
+            "label": "Import as a new country",
+            "success": "Template imported",
+            "error": "Failed to import template"
+          },
+          "sync": {
+            "label": "Sync into an existing country",
+            "success": "Template synced",
+            "error": "Failed to sync template"
+          }
+        },
+        "error": {
+          "template_required": "Please select a template.",
+          "country_required": "Please select the country to sync into."
+        },
+        "mode": {
+          "merge": "Merge",
+          "replace_all": "Replace everything",
+          "replace_label": "Replace names only",
+          "replace_coodinates": "Replace boundaries only"
+        },
+        "mode_hint": {
+          "merge": "Adds anything missing and leaves your existing records alone.",
+          "replace_all": "Overwrites names and boundaries from the template.",
+          "replace_label": "Overwrites Thai and English names, keeps your boundaries.",
+          "replace_coodinates": "Overwrites boundaries, keeps your names."
+        }
       }
     },
     "area": {

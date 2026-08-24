@@ -1,12 +1,11 @@
 // /src/components/admin/system-configuration/area/AreaManagement.tsx
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   Folder,
   Plus,
 } from "lucide-react";
 import { CloseIcon } from "@/core/icons";
 import { ToastContainer } from "@/core/components/crud/ToastContainer";
-import { Modal } from "@/core/components/ui/modal";
 import { usePermissions } from "@/core/hooks/usePermissions";
 import { useToast } from "@/core/hooks/useToast";
 import { useTranslation } from "@/core/hooks/useTranslation";
@@ -20,19 +19,31 @@ import {
   useCreateDistrictMutation,
   useUpdateDistrictMutation,
   useDeleteDistrictMutation,
+  useGenerateOrgCountryTreeMutation,
 } from "@/cms/store/api/area";
 import type {
   CountryCreateData, CountryUpdateData,
   AreaProvinceCreateData, AreaProvinceUpdateData,
   AreaDistrictCreateData, AreaDistrictUpdateData,
-  Country, AreaProvince, AreaDistrict, AreaManagementProps
+  AreaCountryTree
 } from "@/cms/types/area";
+import { isApiSuccess, resolveApiError, resolveApiMessage } from "@/cms/utils/apiResponse";
+import { filterAreaTrees, findCountryIdByCode } from "@/cms/utils/areaTree";
+import AreaFormModal, { type AreaFormField } from "@/cms/components/admin/system-configuration/area/AreaFormModal";
 import AreaHierarchyView from "@/cms/components/admin/system-configuration/area/AreaHierarchyView";
+import AreaTemplateSyncModal from "@/cms/components/admin/system-configuration/areaTemplate/AreaTemplateSyncModal";
 import Input from "@/core/components/form/input/InputField";
-import Select from "@/core/components/form/Select";
 import Button from "@/core/components/ui/button/Button";
 
-const AreaManagementComponent: React.FC<AreaManagementProps> = ({ countries, provinces, districts }) => {
+interface AreaManagementProps {
+  /** The org's country trees, already nested by the BFF. */
+  trees: AreaCountryTree[];
+  isLoading: boolean;
+  /** Re-runs the tree fetches after data changes underneath them. */
+  onReloadTrees: () => void;
+}
+
+const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoading, onReloadTrees }) => {
   const permissions = usePermissions();
   const { toasts, addToast, removeToast } = useToast();
   const { language, t } = useTranslation();
@@ -46,14 +57,11 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ countries, pro
   const [createDistrict] = useCreateDistrictMutation();
   const [updateDistrict] = useUpdateDistrictMutation();
   const [deleteDistrict] = useDeleteDistrictMutation();
+  const [generateOrgCountryTree] = useGenerateOrgCountryTreeMutation();
 
   // ===================================================================
   // State management
   // ===================================================================
-
-  const [country, setCountryList] = useState<Country[]>(countries || []);
-  const [province, setProvinceList] = useState<AreaProvince[]>(provinces || []);
-  const [district, setDistrictList] = useState<AreaDistrict[]>(districts || []);
 
   // Country - countryId identifies the record being edited (empty = create mode);
   // countryCode is the user-editable business code sent as the "countryId" API field.
@@ -80,12 +88,9 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ countries, pro
   const [districtEn, setDistrictEn] = useState("");
   const [distValidateErrors, setDistValidateErrors] = useState({ districtCode: "", countryId: "", provId: "", districtTh: "", districtEn: "" });
 
-  const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showInactive, ] = useState(false);
-  const [viewMode, ] = useState<"hierarchy" | "list">("hierarchy");
-  const [, setValidationErrors] = useState<string[]>([]);
+  const [localValue, setLocalValue] = useState<string>("");
 
   // ===================================================================
   // Modals and dialogs
@@ -94,196 +99,143 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ countries, pro
   const [countryIsOpen, setCountryIsOpen] = useState(false);
   const [provinceIsOpen, setProvinceIsOpen] = useState(false);
   const [districtIsOpen, setDistrictIsOpen] = useState(false);
+  const [syncIsOpen, setSyncIsOpen] = useState(false);
 
   // ===================================================================
   // Fill select option
   // ===================================================================
 
-  const [countriesOptions, setCountriesOptions] = useState<{ value: string; label: string }[]>([]);
-  const [provincesOptions, setProvincesOptions] = useState<{ value: string; label: string; countryId: string }[]>([]);
+  const countriesOptions = useMemo(
+    () => (trees || []).map(country => ({
+      value: country.countryId,
+      label: language === "th" && `${country.th} (${country.en})` || `${country.en} (${country.th})`
+    })),
+    [trees, language]
+  );
 
-  useEffect(() => {
-    setCountriesOptions((countries || []).map(c => ({
-      value: c.countryId,
-      label: language === "th" && `${c.th} (${c.en})` || `${c.en} (${c.th})`
-    })));
-  }, [countries, language]);
-
-  useEffect(() => {
-    setProvincesOptions((provinces || []).map(p => ({
-      value: p.provId,
-      label: language === "th" && `${p.th} (${p.en})` || `${p.en} (${p.th})`,
-      countryId: p.countryId
-    })));
-  }, [provinces, language]);
+  const provincesOptions = useMemo(
+    () => (trees || []).flatMap(country => (country.provinces || []).map(province => ({
+      value: province.provId,
+      label: language === "th" && `${province.th} (${province.en})` || `${province.en} (${province.th})`,
+      countryId: country.countryId
+    }))),
+    [trees, language]
+  );
 
   // ===================================================================
   // Filter and search logic
   // ===================================================================
 
-  const { filteredCountries, filteredProvinces, filteredDistricts } = useMemo(() => {
-    if (!searchQuery) {
-      return {
-        filteredCountries: country,
-        filteredProvinces: province,
-        filteredDistricts: district
-      };
+  const filteredTrees = useMemo(
+    () => filterAreaTrees(trees || [], searchQuery),
+    [trees, searchQuery]
+  );
+
+  const hasRecords = (trees || []).length > 0;
+
+  // ===================================================================
+  // Post-write refresh
+  // ===================================================================
+
+  /**
+   * The org tree is a server-side cache: the country/province/district mutations
+   * do not touch it, so invalidating "Area" on its own just refetches the
+   * pre-edit shape. Regenerate the affected country first, then reload.
+   *
+   * `countryCode` is the business code the form carries; the tree endpoint wants
+   * the row's numeric id, hence the lookup.
+   */
+  const refreshAfterWrite = useCallback(async (countryCode?: string) => {
+    const numericId = countryCode ? findCountryIdByCode(trees || [], countryCode) : undefined;
+    if (numericId !== undefined) {
+      try {
+        await generateOrgCountryTree(numericId).unwrap();
+      }
+      catch {
+        // A failed regenerate is not a failed write - the record did change, the
+        // cached tree is just stale. Reloading below still shows the old shape,
+        // which is better than reporting the write itself as failed.
+      }
     }
-
-    const searchLower = searchQuery.toLowerCase();
-
-    const matchingCountryIds = new Set<string>();
-    const matchingProvIds = new Set<string>();
-    const matchingDistIds = new Set<string>();
-
-    country.forEach(c => {
-      const matches = c.th.toLowerCase().includes(searchLower) || c.en.toLowerCase().includes(searchLower);
-      if (matches) {
-        matchingCountryIds.add(c.countryId);
-      }
-    });
-
-    province.forEach(p => {
-      const matches = p.th.toLowerCase().includes(searchLower) || p.en.toLowerCase().includes(searchLower);
-      if (matches) {
-        matchingProvIds.add(p.provId);
-        matchingCountryIds.add(p.countryId); // Also include parent country
-      }
-    });
-
-    district.forEach(d => {
-      const matches = d.th.toLowerCase().includes(searchLower) || d.en.toLowerCase().includes(searchLower);
-      if (matches) {
-        matchingDistIds.add(d.distId);
-        matchingProvIds.add(d.provId); // Also include parent province
-        matchingCountryIds.add(d.countryId); // Also include parent country
-      }
-    });
-
-    return {
-      filteredCountries: country.filter(c => matchingCountryIds.has(c.countryId)),
-      filteredProvinces: province.filter(p => matchingProvIds.has(p.provId) || matchingCountryIds.has(p.countryId)),
-      filteredDistricts: district.filter(d => matchingDistIds.has(d.distId) || matchingProvIds.has(d.provId))
-    };
-  }, [country, province, district, searchQuery]);
+    onReloadTrees();
+  }, [trees, generateOrgCountryTree, onReloadTrees]);
 
   // ===================================================================
   // Validation before saving
   // ===================================================================
 
-  const validateCountry = useCallback((): string[] => {
-    const errors: string[] = [];
-    if (!countryCode.trim()) {
-      errors.push(t("crud.area.form.country.countryCode.required"));
-      setCountryValidateErrors(prev => ({ ...prev, countryCode: t("crud.area.form.country.countryCode.required") }));
-    }
-    if (!countryTh.trim()) {
-      errors.push(t("crud.area.form.country.countryTh.required"));
-      setCountryValidateErrors(prev => ({ ...prev, countryTh: t("crud.area.form.country.countryTh.required") }));
-    }
-    if (!countryEn.trim()) {
-      errors.push(t("crud.area.form.country.countryEn.required"));
-      setCountryValidateErrors(prev => ({ ...prev, countryEn: t("crud.area.form.country.countryEn.required") }));
-    }
-    return errors;
+  const validateCountry = useCallback((): boolean => {
+    const errors = {
+      countryCode: countryCode.trim() ? "" : t("crud.area.form.country.countryCode.required"),
+      countryTh: countryTh.trim() ? "" : t("crud.area.form.country.countryTh.required"),
+      countryEn: countryEn.trim() ? "" : t("crud.area.form.country.countryEn.required"),
+    };
+    setCountryValidateErrors(errors);
+    return Object.values(errors).every(message => !message);
   }, [countryCode, countryEn, countryTh, t]);
 
-  const validateProvince = useCallback((): string[] => {
-    const errors: string[] = [];
-    if (!provCountryId.trim()) {
-      errors.push(t("crud.area.form.province.provinceCountryId.required"));
-      setProvValidateErrors(prev => ({ ...prev, countryId: t("crud.area.form.province.provinceCountryId.required") }));
-    }
-    if (!provinceCode.trim()) {
-      errors.push(t("crud.area.form.province.provinceCode.required"));
-      setProvValidateErrors(prev => ({ ...prev, provinceCode: t("crud.area.form.province.provinceCode.required") }));
-    }
-    if (!provinceTh.trim()) {
-      errors.push(t("crud.area.form.province.provinceTh.required"));
-      setProvValidateErrors(prev => ({ ...prev, provinceTh: t("crud.area.form.province.provinceTh.required") }));
-    }
-    if (!provinceEn.trim()) {
-      errors.push(t("crud.area.form.province.provinceEn.required"));
-      setProvValidateErrors(prev => ({ ...prev, provinceEn: t("crud.area.form.province.provinceEn.required") }));
-    }
-    return errors;
+  const validateProvince = useCallback((): boolean => {
+    const errors = {
+      countryId: provCountryId.trim() ? "" : t("crud.area.form.province.provinceCountryId.required"),
+      provinceCode: provinceCode.trim() ? "" : t("crud.area.form.province.provinceCode.required"),
+      provinceTh: provinceTh.trim() ? "" : t("crud.area.form.province.provinceTh.required"),
+      provinceEn: provinceEn.trim() ? "" : t("crud.area.form.province.provinceEn.required"),
+    };
+    setProvValidateErrors(errors);
+    return Object.values(errors).every(message => !message);
   }, [provCountryId, provinceCode, provinceEn, provinceTh, t]);
 
-  const validateDistrict = useCallback((): string[] => {
-    const errors: string[] = [];
-    if (!distCountryId.trim()) {
-      errors.push(t("crud.area.form.district.districtCountryId.required"));
-      setDistValidateErrors(prev => ({ ...prev, countryId: t("crud.area.form.district.districtCountryId.required") }));
-    }
-    if (!distProvId.trim()) {
-      errors.push(t("crud.area.form.district.districtProvId.required"));
-      setDistValidateErrors(prev => ({ ...prev, provId: t("crud.area.form.district.districtProvId.required") }));
-    }
-    if (!districtCode.trim()) {
-      errors.push(t("crud.area.form.district.districtCode.required"));
-      setDistValidateErrors(prev => ({ ...prev, districtCode: t("crud.area.form.district.districtCode.required") }));
-    }
-    if (!districtTh.trim()) {
-      errors.push(t("crud.area.form.district.districtTh.required"));
-      setDistValidateErrors(prev => ({ ...prev, districtTh: t("crud.area.form.district.districtTh.required") }));
-    }
-    if (!districtEn.trim()) {
-      errors.push(t("crud.area.form.district.districtEn.required"));
-      setDistValidateErrors(prev => ({ ...prev, districtEn: t("crud.area.form.district.districtEn.required") }));
-    }
-    return errors;
+  const validateDistrict = useCallback((): boolean => {
+    const errors = {
+      countryId: distCountryId.trim() ? "" : t("crud.area.form.district.districtCountryId.required"),
+      provId: distProvId.trim() ? "" : t("crud.area.form.district.districtProvId.required"),
+      districtCode: districtCode.trim() ? "" : t("crud.area.form.district.districtCode.required"),
+      districtTh: districtTh.trim() ? "" : t("crud.area.form.district.districtTh.required"),
+      districtEn: districtEn.trim() ? "" : t("crud.area.form.district.districtEn.required"),
+    };
+    setDistValidateErrors(errors);
+    return Object.values(errors).every(message => !message);
   }, [distCountryId, distProvId, districtCode, districtEn, districtTh, t]);
 
   // ===================================================================
   // Country CRUD
   // ===================================================================
 
-  const handleCountryDelete = useCallback(async (id: number) => {
-    if (!id) {
-      return;
-    }
-    try {
-      setLoading(true);
-      let response;
-      if (permissions.hasAnyPermission(["area.delete"])) {
-        response = await deleteCountry(id).unwrap();
-      }
-      else {
-        throw new Error(t("crud.common.permission_denied"));
-      }
-      if (response?.status) {
-        addToast("success", response?.message || response?.desc || response?.msg || t("crud.area.action.country.delete.success"));
-        setTimeout(() => {
-          window.location.replace(`/cms/area`);
-        }, 1000);
-      }
-      else {
-        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
-      }
-    }
-    catch (error) {
-      addToast("error", `${(error as { data?: { message?: string } })?.data?.message
-        || (error as { data?: { desc?: string } })?.data?.desc
-        || (error as { data?: { msg?: string } })?.data?.msg
-        || t("crud.area.action.country.delete.error")}: ${error}`);
-    }
-    finally {
-      setLoading(false);
-    }
-  }, [permissions, addToast, deleteCountry, t]);
-
-  const handleCountryReset = () => {
+  const handleCountryReset = useCallback(() => {
     setCountryId("");
     setCountryCode("");
     setCountryTh("");
     setCountryEn("");
     setCountryValidateErrors({ countryCode: "", countryTh: "", countryEn: "" });
-  };
+  }, []);
+
+  const handleCountryDelete = useCallback(async (id: number) => {
+    if (!id) {
+      return;
+    }
+    const affectedCode = (trees || []).find(country => country.id === id)?.countryId;
+    try {
+      setLoading(true);
+      if (!permissions.hasAnyPermission(["area.delete"])) {
+        throw new Error(t("crud.common.permission_denied"));
+      }
+      const response = await deleteCountry(id).unwrap();
+      if (!isApiSuccess(response)) {
+        throw new Error(resolveApiError(response, t("errors.unknownApi")));
+      }
+      addToast("success", resolveApiMessage(response, t("crud.area.action.country.delete.success")));
+      await refreshAfterWrite(affectedCode);
+    }
+    catch (error) {
+      addToast("error", resolveApiError(error, t("crud.area.action.country.delete.error")));
+    }
+    finally {
+      setLoading(false);
+    }
+  }, [trees, permissions, addToast, deleteCountry, refreshAfterWrite, t]);
 
   const handleCountrySave = useCallback(async () => {
-    const errors = validateCountry();
-    setValidationErrors(errors);
-    if (errors.length > 0) {
+    if (!validateCountry()) {
       return;
     }
     const countryData: CountryCreateData | CountryUpdateData = {
@@ -295,93 +247,80 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ countries, pro
     };
     try {
       setLoading(true);
-      let response;
-      if (permissions.hasAnyPermission(["area.create", "area.update"])) {
-        if (countryId) {
-          response = await updateCountry({
-            id: countryId, data: { ...countryData, id: Number(countryId) }
-          }).unwrap();
-        }
-        else {
-          response = await createCountry(countryData).unwrap();
-        }
-      }
-      else {
+      if (!permissions.hasAnyPermission(["area.create", "area.update"])) {
         throw new Error(t("crud.common.permission_denied"));
       }
-      if (response?.status) {
-        addToast("success", response?.message || response?.desc || response?.msg || (countryId && t("crud.area.action.country.update.success")) || t("crud.area.action.country.create.success"));
-        setTimeout(() => {
-          window.location.replace(`/cms/area`);
-        }, 1000);
+      const response = countryId
+        ? await updateCountry({ id: countryId, data: { ...countryData, id: Number(countryId) } }).unwrap()
+        : await createCountry(countryData).unwrap();
+
+      if (!isApiSuccess(response)) {
+        throw new Error(resolveApiError(response, t("errors.unknownApi")));
       }
-      else {
-        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
-      }
+      addToast("success", resolveApiMessage(
+        response,
+        countryId ? t("crud.area.action.country.update.success") : t("crud.area.action.country.create.success")
+      ));
+      // Only a successful save closes the form - a failure keeps the user's input.
+      setCountryIsOpen(false);
+      handleCountryReset();
+      await refreshAfterWrite(countryCode);
     }
     catch (error) {
-      addToast("error", `${(error as { data?: { message?: string } })?.data?.message
-        || (error as { data?: { desc?: string } })?.data?.desc
-        || (error as { data?: { msg?: string } })?.data?.msg
-        || (countryId && t("crud.area.action.country.update.success")) || t("crud.area.action.country.create.success")}: ${error}`);
+      addToast("error", resolveApiError(
+        error,
+        countryId ? t("crud.area.action.country.update.error") : t("crud.area.action.country.create.error")
+      ));
     }
     finally {
-      setCountryIsOpen(false);
       setLoading(false);
     }
-  }, [countryCode, countryEn, countryId, countryTh, permissions, addToast, createCountry, t, updateCountry, validateCountry]);
+  }, [
+    countryCode, countryEn, countryId, countryTh, permissions, addToast,
+    createCountry, updateCountry, validateCountry, handleCountryReset, refreshAfterWrite, t
+  ]);
 
   // ===================================================================
   // Province CRUD
   // ===================================================================
 
-  const handleProvinceDelete = useCallback(async (id: number) => {
-    if (!id) {
-      return;
-    }
-    try {
-      setLoading(true);
-      let response;
-      if (permissions.hasAnyPermission(["area.delete"])) {
-        response = await deleteProvince(id).unwrap();
-      }
-      else {
-        throw new Error(t("crud.common.permission_denied"));
-      }
-      if (response?.status) {
-        addToast("success", response?.message || response?.desc || response?.msg || t("crud.area.action.province.delete.success"));
-        setTimeout(() => {
-          window.location.replace(`/cms/area`);
-        }, 1000);
-      }
-      else {
-        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
-      }
-    }
-    catch (error) {
-      addToast("error", `${(error as { data?: { message?: string } })?.data?.message
-        || (error as { data?: { desc?: string } })?.data?.desc
-        || (error as { data?: { msg?: string } })?.data?.msg
-        || t("crud.area.action.province.delete.error")}: ${error}`);
-    }
-    finally {
-      setLoading(false);
-    }
-  }, [permissions, addToast, deleteProvince, t]);
-
-  const handleProvinceReset = () => {
+  const handleProvinceReset = useCallback(() => {
     setProvId("");
     setProvinceCode("");
     setProvCountryId("");
     setProvinceTh("");
     setProvinceEn("");
     setProvValidateErrors({ provinceCode: "", countryId: "", provinceTh: "", provinceEn: "" });
-  };
+  }, []);
+
+  const handleProvinceDelete = useCallback(async (id: number) => {
+    if (!id) {
+      return;
+    }
+    const affectedCode = (trees || [])
+      .find(country => (country.provinces || []).some(province => province.id === id))?.countryId;
+    try {
+      setLoading(true);
+      if (!permissions.hasAnyPermission(["area.delete"])) {
+        throw new Error(t("crud.common.permission_denied"));
+      }
+      const response = await deleteProvince(id).unwrap();
+      if (!isApiSuccess(response)) {
+        throw new Error(resolveApiError(response, t("errors.unknownApi")));
+      }
+      addToast("success", resolveApiMessage(response, t("crud.area.action.province.delete.success")));
+      await refreshAfterWrite(affectedCode);
+    }
+    catch (error) {
+      addToast("error", resolveApiError(error, t("crud.area.action.province.delete.error")));
+    }
+    finally {
+      setLoading(false);
+    }
+  }, [trees, permissions, addToast, deleteProvince, refreshAfterWrite, t]);
 
   const handleProvinceSave = useCallback(async () => {
-    const errors = validateProvince();
-    setValidationErrors(errors);
-    if (errors.length > 0) {
+    if (!validateProvince()) {
       return;
     }
     const provinceData: AreaProvinceCreateData | AreaProvinceUpdateData = {
@@ -394,81 +333,43 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ countries, pro
     };
     try {
       setLoading(true);
-      let response;
-      if (permissions.hasAnyPermission(["area.create", "area.update"])) {
-        if (provId) {
-          response = await updateProvince({
-            id: provId, data: { ...provinceData, id: Number(provId) }
-          }).unwrap();
-        }
-        else {
-          response = await createProvince(provinceData).unwrap();
-        }
-      }
-      else {
+      if (!permissions.hasAnyPermission(["area.create", "area.update"])) {
         throw new Error(t("crud.common.permission_denied"));
       }
-      if (response?.status) {
-        addToast("success", response?.message || response?.desc || response?.msg || (provId && t("crud.area.action.province.update.success")) || t("crud.area.action.province.create.success"));
-        setTimeout(() => {
-          window.location.replace(`/cms/area`);
-        }, 1000);
+      const response = provId
+        ? await updateProvince({ id: provId, data: { ...provinceData, id: Number(provId) } }).unwrap()
+        : await createProvince(provinceData).unwrap();
+
+      if (!isApiSuccess(response)) {
+        throw new Error(resolveApiError(response, t("errors.unknownApi")));
       }
-      else {
-        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
-      }
+      addToast("success", resolveApiMessage(
+        response,
+        provId ? t("crud.area.action.province.update.success") : t("crud.area.action.province.create.success")
+      ));
+      setProvinceIsOpen(false);
+      handleProvinceReset();
+      await refreshAfterWrite(provCountryId);
     }
     catch (error) {
-      addToast("error", `${(error as { data?: { message?: string } })?.data?.message
-        || (error as { data?: { desc?: string } })?.data?.desc
-        || (error as { data?: { msg?: string } })?.data?.msg
-        || (provId && t("crud.area.action.province.update.success")) || t("crud.area.action.province.create.success")}: ${error}`);
+      addToast("error", resolveApiError(
+        error,
+        provId ? t("crud.area.action.province.update.error") : t("crud.area.action.province.create.error")
+      ));
     }
     finally {
-      setProvinceIsOpen(false);
       setLoading(false);
     }
-  }, [provCountryId, provId, provinceCode, provinceEn, provinceTh, permissions, addToast, createProvince, t, updateProvince, validateProvince]);
+  }, [
+    provCountryId, provId, provinceCode, provinceEn, provinceTh, permissions, addToast,
+    createProvince, updateProvince, validateProvince, handleProvinceReset, refreshAfterWrite, t
+  ]);
 
   // ===================================================================
   // District CRUD
   // ===================================================================
 
-  const handleDistrictDelete = useCallback(async (id: number) => {
-    if (!id) {
-      return;
-    }
-    try {
-      setLoading(true);
-      let response;
-      if (permissions.hasAnyPermission(["area.delete"])) {
-        response = await deleteDistrict(id).unwrap();
-      }
-      else {
-        throw new Error(t("crud.common.permission_denied"));
-      }
-      if (response?.status) {
-        addToast("success", response?.message || response?.desc || response?.msg || t("crud.area.action.district.delete.success"));
-        setTimeout(() => {
-          window.location.replace(`/cms/area`);
-        }, 1000);
-      }
-      else {
-        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
-      }
-    }
-    catch (error) {
-      addToast("error", `${(error as { data?: { message?: string } })?.data?.message
-        || (error as { data?: { desc?: string } })?.data?.desc
-        || (error as { data?: { msg?: string } })?.data?.msg
-        || t("crud.area.action.district.delete.error")}: ${error}`);
-    }
-    finally {
-      setLoading(false);
-    }
-  }, [permissions, addToast, deleteDistrict, t]);
-
-  const handleDistrictReset = () => {
+  const handleDistrictReset = useCallback(() => {
     setDistId("");
     setDistrictCode("");
     setDistCountryId("");
@@ -476,12 +377,39 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ countries, pro
     setDistrictTh("");
     setDistrictEn("");
     setDistValidateErrors({ districtCode: "", countryId: "", provId: "", districtTh: "", districtEn: "" });
-  };
+  }, []);
+
+  const handleDistrictDelete = useCallback(async (id: number) => {
+    if (!id) {
+      return;
+    }
+    const affectedCode = (trees || []).find(country =>
+      (country.provinces || []).some(province =>
+        (province.districts || []).some(district => district.id === id)
+      )
+    )?.countryId;
+    try {
+      setLoading(true);
+      if (!permissions.hasAnyPermission(["area.delete"])) {
+        throw new Error(t("crud.common.permission_denied"));
+      }
+      const response = await deleteDistrict(id).unwrap();
+      if (!isApiSuccess(response)) {
+        throw new Error(resolveApiError(response, t("errors.unknownApi")));
+      }
+      addToast("success", resolveApiMessage(response, t("crud.area.action.district.delete.success")));
+      await refreshAfterWrite(affectedCode);
+    }
+    catch (error) {
+      addToast("error", resolveApiError(error, t("crud.area.action.district.delete.error")));
+    }
+    finally {
+      setLoading(false);
+    }
+  }, [trees, permissions, addToast, deleteDistrict, refreshAfterWrite, t]);
 
   const handleDistrictSave = useCallback(async () => {
-    const errors = validateDistrict();
-    setValidationErrors(errors);
-    if (errors.length > 0) {
+    if (!validateDistrict()) {
       return;
     }
     const districtData: AreaDistrictCreateData | AreaDistrictUpdateData = {
@@ -495,101 +423,178 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ countries, pro
     };
     try {
       setLoading(true);
-      let response;
-      if (permissions.hasAnyPermission(["area.create", "area.update"])) {
-        if (distId) {
-          response = await updateDistrict({
-            id: distId, data: { ...districtData, id: Number(distId) }
-          }).unwrap();
-        }
-        else {
-          response = await createDistrict(districtData).unwrap();
-        }
-      }
-      else {
+      if (!permissions.hasAnyPermission(["area.create", "area.update"])) {
         throw new Error(t("crud.common.permission_denied"));
       }
-      if (response?.status) {
-        addToast("success", response?.message || response?.desc || response?.msg || (distId && t("crud.area.action.district.update.success")) || t("crud.area.action.district.create.success"));
-        setTimeout(() => {
-          window.location.replace(`/cms/area`);
-        }, 1000);
+      const response = distId
+        ? await updateDistrict({ id: distId, data: { ...districtData, id: Number(distId) } }).unwrap()
+        : await createDistrict(districtData).unwrap();
+
+      if (!isApiSuccess(response)) {
+        throw new Error(resolveApiError(response, t("errors.unknownApi")));
       }
-      else {
-        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
-      }
+      addToast("success", resolveApiMessage(
+        response,
+        distId ? t("crud.area.action.district.update.success") : t("crud.area.action.district.create.success")
+      ));
+      setDistrictIsOpen(false);
+      handleDistrictReset();
+      await refreshAfterWrite(distCountryId);
     }
     catch (error) {
-      addToast("error", `${(error as { data?: { message?: string } })?.data?.message
-        || (error as { data?: { desc?: string } })?.data?.desc
-        || (error as { data?: { msg?: string } })?.data?.msg
-        || (distId && t("crud.area.action.district.update.success")) || t("crud.area.action.district.create.success")}: ${error}`);
+      addToast("error", resolveApiError(
+        error,
+        distId ? t("crud.area.action.district.update.error") : t("crud.area.action.district.create.error")
+      ));
     }
     finally {
-      setDistrictIsOpen(false);
       setLoading(false);
     }
-  }, [distCountryId, distId, distProvId, districtCode, districtEn, districtTh, permissions, addToast, createDistrict, t, updateDistrict, validateDistrict]);
+  }, [
+    distCountryId, distId, distProvId, districtCode, districtEn, districtTh, permissions, addToast,
+    createDistrict, updateDistrict, validateDistrict, handleDistrictReset, refreshAfterWrite, t
+  ]);
+
+  // ===================================================================
+  // Form field definitions
+  // ===================================================================
+
+  const countryFields: AreaFormField[] = [
+    {
+      key: "countryCode",
+      type: "text",
+      label: t("crud.area.form.country.countryCode.label"),
+      placeholder: t("crud.area.form.country.countryCode.placeholder"),
+      value: countryCode,
+      error: countryValidateErrors.countryCode,
+      onChange: setCountryCode
+    },
+    {
+      key: "countryTh",
+      type: "text",
+      label: t("crud.area.form.country.countryTh.label"),
+      placeholder: t("crud.area.form.country.countryTh.placeholder"),
+      value: countryTh,
+      error: countryValidateErrors.countryTh,
+      onChange: setCountryTh
+    },
+    {
+      key: "countryEn",
+      type: "text",
+      label: t("crud.area.form.country.countryEn.label"),
+      placeholder: t("crud.area.form.country.countryEn.placeholder"),
+      value: countryEn,
+      error: countryValidateErrors.countryEn,
+      onChange: setCountryEn
+    }
+  ];
+
+  const provinceFields: AreaFormField[] = [
+    {
+      key: "provinceCountryId",
+      type: "select",
+      label: t("crud.area.form.province.provinceCountryId.label"),
+      placeholder: t("crud.area.form.province.provinceCountryId.placeholder"),
+      value: provCountryId,
+      error: provValidateErrors.countryId,
+      options: countriesOptions,
+      onChange: setProvCountryId
+    },
+    {
+      key: "provinceCode",
+      type: "text",
+      label: t("crud.area.form.province.provinceCode.label"),
+      placeholder: t("crud.area.form.province.provinceCode.placeholder"),
+      value: provinceCode,
+      error: provValidateErrors.provinceCode,
+      onChange: setProvinceCode
+    },
+    {
+      key: "provinceTh",
+      type: "text",
+      label: t("crud.area.form.province.provinceTh.label"),
+      placeholder: t("crud.area.form.province.provinceTh.placeholder"),
+      value: provinceTh,
+      error: provValidateErrors.provinceTh,
+      onChange: setProvinceTh
+    },
+    {
+      key: "provinceEn",
+      type: "text",
+      label: t("crud.area.form.province.provinceEn.label"),
+      placeholder: t("crud.area.form.province.provinceEn.placeholder"),
+      value: provinceEn,
+      error: provValidateErrors.provinceEn,
+      onChange: setProvinceEn
+    }
+  ];
+
+  const districtFields: AreaFormField[] = [
+    {
+      key: "districtCountryId",
+      type: "select",
+      label: t("crud.area.form.district.districtCountryId.label"),
+      placeholder: t("crud.area.form.district.districtCountryId.placeholder"),
+      value: distCountryId,
+      error: distValidateErrors.countryId,
+      options: countriesOptions,
+      onChange: value => {
+        setDistCountryId(value);
+        // The province list is scoped to the country, so a stale selection here
+        // would silently submit a province from a different country.
+        setDistProvId("");
+      }
+    },
+    {
+      key: "districtProvId",
+      type: "select",
+      label: t("crud.area.form.district.districtProvId.label"),
+      placeholder: t("crud.area.form.district.districtProvId.placeholder"),
+      value: distProvId,
+      error: distValidateErrors.provId,
+      options: provincesOptions.filter(option => option.countryId === distCountryId),
+      disabled: !distCountryId,
+      onChange: setDistProvId
+    },
+    {
+      key: "districtCode",
+      type: "text",
+      label: t("crud.area.form.district.districtCode.label"),
+      placeholder: t("crud.area.form.district.districtCode.placeholder"),
+      value: districtCode,
+      error: distValidateErrors.districtCode,
+      onChange: setDistrictCode
+    },
+    {
+      key: "districtTh",
+      type: "text",
+      label: t("crud.area.form.district.districtTh.label"),
+      placeholder: t("crud.area.form.district.districtTh.placeholder"),
+      value: districtTh,
+      error: distValidateErrors.districtTh,
+      onChange: setDistrictTh
+    },
+    {
+      key: "districtEn",
+      type: "text",
+      label: t("crud.area.form.district.districtEn.label"),
+      placeholder: t("crud.area.form.district.districtEn.placeholder"),
+      value: districtEn,
+      error: distValidateErrors.districtEn,
+      onChange: setDistrictEn
+    }
+  ];
 
   // ===================================================================
   // Render
   // ===================================================================
 
-  useEffect(() => {
-    setCountryList(countries || []);
-    setProvinceList(provinces || []);
-    setDistrictList(districts || []);
-  }, [countries, provinces, districts]);
-
-  useEffect(() => {
-    setIsLoading(
-      (countries?.length === 0 && provinces?.length === 0 && districts?.length === 0) ? true : false
-    );
-  }, [countries?.length, provinces?.length, districts?.length]);
-
-  const renderAreaHierarchy = () => (
-    <AreaHierarchyView
-      countries={filteredCountries || country || []}
-      provinces={filteredProvinces || province || []}
-      districts={filteredDistricts || district || []}
-      showInactive={showInactive}
-      handleCountryDelete={handleCountryDelete}
-      handleCountryReset={handleCountryReset}
-      handleProvinceDelete={handleProvinceDelete}
-      handleProvinceReset={handleProvinceReset}
-      handleDistrictDelete={handleDistrictDelete}
-      handleDistrictReset={handleDistrictReset}
-      setCountryId={setCountryId}
-      setCountryIsOpen={setCountryIsOpen}
-      setCountryCode={setCountryCode}
-      setCountryTh={setCountryTh}
-      setCountryEn={setCountryEn}
-      setProvId={setProvId}
-      setProvinceIsOpen={setProvinceIsOpen}
-      setProvinceCode={setProvinceCode}
-      setProvCountryId={setProvCountryId}
-      setProvinceTh={setProvinceTh}
-      setProvinceEn={setProvinceEn}
-      setDistId={setDistId}
-      setDistrictIsOpen={setDistrictIsOpen}
-      setDistrictCode={setDistrictCode}
-      setDistCountryId={setDistCountryId}
-      setDistProvId={setDistProvId}
-      setDistrictTh={setDistrictTh}
-      setDistrictEn={setDistrictEn}
-    />
-  );
-
-  const [localValue, setLocalValue] = useState<string>("");
-
   const handleResetQuery = () => {
-    if (setLocalValue) {
-      setLocalValue("");
-    }
-    if (setSearchQuery) {
-      setSearchQuery("");
-    }
-  }
+    setLocalValue("");
+    setSearchQuery("");
+  };
+
+  const canAdopt = permissions.hasAnyPermission(["area.create", "area.update"]);
 
   return (
     <>
@@ -607,7 +612,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ countries, pro
                       <div className="relative">
                         <Input
                           value={localValue}
-                          onChange={e => setLocalValue && setLocalValue(e.target.value)}
+                          onChange={e => setLocalValue(e.target.value)}
                           placeholder={t("crud.area.list.toolbar.search.placeholder")}
                         />
                         {localValue && (
@@ -621,7 +626,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ countries, pro
                         )}
                       </div>
                       <Button
-                        onClick={() => setSearchQuery && setSearchQuery(localValue)}
+                        onClick={() => setSearchQuery(localValue)}
                         variant="dark"
                         className="h-11"
                       >
@@ -631,7 +636,12 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ countries, pro
                   </div>
                 </div>
                 <div className="mt-4 sm:mt-0 xl:flex space-y-2 xl:space-y-0 items-center space-x-3">
-                  <div className="xl:flex">
+                  <div className="xl:flex gap-3">
+                    {canAdopt && (
+                      <Button onClick={() => setSyncIsOpen(true)} size="sm" variant="outline">
+                        {t("crud.areaTemplate.sync.button")}
+                      </Button>
+                    )}
                     <Button
                       onClick={() => {
                         handleCountryReset();
@@ -650,13 +660,38 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ countries, pro
               </div>
             )}
             {/* Content */}
-            {!isLoading && (country?.length > 0 || province?.length > 0 || district?.length > 0) && (
-              <>
-                {viewMode === "hierarchy" && renderAreaHierarchy()}
-              </>
+            {!isLoading && hasRecords && (
+              <AreaHierarchyView
+                trees={filteredTrees}
+                showInactive={false}
+                handleCountryDelete={handleCountryDelete}
+                handleCountryReset={handleCountryReset}
+                handleProvinceDelete={handleProvinceDelete}
+                handleProvinceReset={handleProvinceReset}
+                handleDistrictDelete={handleDistrictDelete}
+                handleDistrictReset={handleDistrictReset}
+                setCountryId={setCountryId}
+                setCountryIsOpen={setCountryIsOpen}
+                setCountryCode={setCountryCode}
+                setCountryTh={setCountryTh}
+                setCountryEn={setCountryEn}
+                setProvId={setProvId}
+                setProvinceIsOpen={setProvinceIsOpen}
+                setProvinceCode={setProvinceCode}
+                setProvCountryId={setProvCountryId}
+                setProvinceTh={setProvinceTh}
+                setProvinceEn={setProvinceEn}
+                setDistId={setDistId}
+                setDistrictIsOpen={setDistrictIsOpen}
+                setDistrictCode={setDistrictCode}
+                setDistCountryId={setDistCountryId}
+                setDistProvId={setDistProvId}
+                setDistrictTh={setDistrictTh}
+                setDistrictEn={setDistrictEn}
+              />
             )}
             {/* Empty state */}
-            {!isLoading && country?.length === 0 && province?.length === 0 && district?.length === 0 && (
+            {!isLoading && !hasRecords && (
               <div className="text-center py-12">
                 <Folder className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100 mb-2 cursor-default">
@@ -684,260 +719,58 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ countries, pro
       <ToastContainer toasts={toasts} onRemove={removeToast} />
 
       {/* Create / Update Country */}
-      <Modal
+      <AreaFormModal
         isOpen={countryIsOpen}
+        title={countryId && t("crud.area.form.country.header.update") || t("crud.area.form.country.header.create")}
+        fields={countryFields}
+        loading={loading}
         onClose={() => {
           setCountryIsOpen(false);
           handleCountryReset();
         }}
-        className="max-w-4xl p-6 max-h-[80vh] overflow-y-auto"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
-            {countryId && t("crud.area.form.country.header.update") || t("crud.area.form.country.header.create")}
-          </h3>
-          <Button
-            onClick={() => setCountryIsOpen(false)}
-            variant="ghost"
-            size="sm"
-          >
-            <CloseIcon className="w-4 h-4" />
-          </Button>
-        </div>
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="countryCode" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              {t("crud.area.form.country.countryCode.label")}
-            </label>
-            <Input
-              id="countryCode"
-              placeholder={t("crud.area.form.country.countryCode.placeholder")}
-              value={countryCode}
-              onChange={(e) => setCountryCode && setCountryCode(e.target.value)}
-            />
-            <span className="text-red-500 dark:text-red-400 text-xs">{countryValidateErrors.countryCode}</span>
-          </div>
-          <div>
-            <label htmlFor="countryTh" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              {t("crud.area.form.country.countryTh.label")}
-            </label>
-            <Input
-              id="countryTh"
-              placeholder={t("crud.area.form.country.countryTh.placeholder")}
-              value={countryTh}
-              onChange={(e) => setCountryTh && setCountryTh(e.target.value)}
-            />
-            <span className="text-red-500 dark:text-red-400 text-xs">{countryValidateErrors.countryTh}</span>
-          </div>
-          <div>
-            <label htmlFor="countryEn" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              {t("crud.area.form.country.countryEn.label")}
-            </label>
-            <Input
-              id="countryEn"
-              placeholder={t("crud.area.form.country.countryEn.placeholder")}
-              value={countryEn}
-              onChange={(e) => setCountryEn && setCountryEn(e.target.value)}
-            />
-            <span className="text-red-500 dark:text-red-400 text-xs">{countryValidateErrors.countryEn}</span>
-          </div>
-        </div>
-        <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex gap-3">
-            <Button onClick={handleCountryReset} variant="outline">
-              {t("crud.area.action.button.reset")}
-            </Button>
-            <Button onClick={handleCountrySave} variant="primary" disabled={loading} className={`${loading && "cursor-not-allowed disabled"}`}>
-              {!loading && t("crud.area.confirm.button.confirm") || t("crud.area.confirm.button.saving")}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        onReset={handleCountryReset}
+        onSave={handleCountrySave}
+      />
 
       {/* Create / Update Province */}
-      <Modal
+      <AreaFormModal
         isOpen={provinceIsOpen}
+        title={provId && t("crud.area.form.province.header.update") || t("crud.area.form.province.header.create")}
+        fields={provinceFields}
+        loading={loading}
         onClose={() => {
           setProvinceIsOpen(false);
           handleProvinceReset();
         }}
-        className="max-w-4xl p-6 max-h-[80vh] overflow-y-auto"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
-            {provId && t("crud.area.form.province.header.update") || t("crud.area.form.province.header.create")}
-          </h3>
-          <Button
-            onClick={() => setProvinceIsOpen(false)}
-            variant="ghost"
-            size="sm"
-          >
-            <CloseIcon className="w-4 h-4" />
-          </Button>
-        </div>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              {t("crud.area.form.province.provinceCountryId.label")}
-            </label>
-            <Select
-              value={provCountryId || ""}
-              onChange={value => setProvCountryId && setProvCountryId(value)}
-              options={countriesOptions || []}
-              placeholder={t("crud.area.form.province.provinceCountryId.placeholder")}
-              className="cursor-pointer"
-            />
-            <span className="text-red-500 dark:text-red-400 text-xs">{provValidateErrors.countryId}</span>
-          </div>
-          <div>
-            <label htmlFor="provinceCode" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              {t("crud.area.form.province.provinceCode.label")}
-            </label>
-            <Input
-              id="provinceCode"
-              placeholder={t("crud.area.form.province.provinceCode.placeholder")}
-              value={provinceCode}
-              onChange={(e) => setProvinceCode && setProvinceCode(e.target.value)}
-            />
-            <span className="text-red-500 dark:text-red-400 text-xs">{provValidateErrors.provinceCode}</span>
-          </div>
-          <div>
-            <label htmlFor="provinceTh" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              {t("crud.area.form.province.provinceTh.label")}
-            </label>
-            <Input
-              id="provinceTh"
-              placeholder={t("crud.area.form.province.provinceTh.placeholder")}
-              value={provinceTh}
-              onChange={(e) => setProvinceTh && setProvinceTh(e.target.value)}
-            />
-            <span className="text-red-500 dark:text-red-400 text-xs">{provValidateErrors.provinceTh}</span>
-          </div>
-          <div>
-            <label htmlFor="provinceEn" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              {t("crud.area.form.province.provinceEn.label")}
-            </label>
-            <Input
-              id="provinceEn"
-              placeholder={t("crud.area.form.province.provinceEn.placeholder")}
-              value={provinceEn}
-              onChange={(e) => setProvinceEn && setProvinceEn(e.target.value)}
-            />
-            <span className="text-red-500 dark:text-red-400 text-xs">{provValidateErrors.provinceEn}</span>
-          </div>
-        </div>
-        <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex gap-3">
-            <Button onClick={handleProvinceReset} variant="outline">
-              {t("crud.area.action.button.reset")}
-            </Button>
-            <Button onClick={handleProvinceSave} variant="primary" disabled={loading} className={`${loading && "cursor-not-allowed disabled"}`}>
-              {!loading && t("crud.area.confirm.button.confirm") || t("crud.area.confirm.button.saving")}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        onReset={handleProvinceReset}
+        onSave={handleProvinceSave}
+      />
 
       {/* Create / Update District */}
-      <Modal
+      <AreaFormModal
         isOpen={districtIsOpen}
+        title={distId && t("crud.area.form.district.header.update") || t("crud.area.form.district.header.create")}
+        fields={districtFields}
+        loading={loading}
         onClose={() => {
           setDistrictIsOpen(false);
           handleDistrictReset();
         }}
-        className="max-w-4xl p-6 max-h-[80vh] overflow-y-auto"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
-            {distId && t("crud.area.form.district.header.update") || t("crud.area.form.district.header.create")}
-          </h3>
-          <Button
-            onClick={() => setDistrictIsOpen(false)}
-            variant="ghost"
-            size="sm"
-          >
-            <CloseIcon className="w-4 h-4" />
-          </Button>
-        </div>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              {t("crud.area.form.district.districtCountryId.label")}
-            </label>
-            <Select
-              value={distCountryId || ""}
-              onChange={value => {
-                setDistCountryId(value);
-                setDistProvId("");
-              }}
-              options={countriesOptions || []}
-              placeholder={t("crud.area.form.district.districtCountryId.placeholder")}
-              className="cursor-pointer"
-            />
-            <span className="text-red-500 dark:text-red-400 text-xs">{distValidateErrors.countryId}</span>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              {t("crud.area.form.district.districtProvId.label")}
-            </label>
-            <Select
-              value={distProvId || ""}
-              onChange={value => setDistProvId && setDistProvId(value)}
-              options={provincesOptions?.filter(option => option.countryId === distCountryId) || []}
-              placeholder={t("crud.area.form.district.districtProvId.placeholder")}
-              className="cursor-pointer"
-              disabled={!distCountryId}
-            />
-            <span className="text-red-500 dark:text-red-400 text-xs">{distValidateErrors.provId}</span>
-          </div>
-          <div>
-            <label htmlFor="districtCode" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              {t("crud.area.form.district.districtCode.label")}
-            </label>
-            <Input
-              id="districtCode"
-              placeholder={t("crud.area.form.district.districtCode.placeholder")}
-              value={districtCode}
-              onChange={(e) => setDistrictCode && setDistrictCode(e.target.value)}
-            />
-            <span className="text-red-500 dark:text-red-400 text-xs">{distValidateErrors.districtCode}</span>
-          </div>
-          <div>
-            <label htmlFor="districtTh" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              {t("crud.area.form.district.districtTh.label")}
-            </label>
-            <Input
-              id="districtTh"
-              placeholder={t("crud.area.form.district.districtTh.placeholder")}
-              value={districtTh}
-              onChange={(e) => setDistrictTh && setDistrictTh(e.target.value)}
-            />
-            <span className="text-red-500 dark:text-red-400 text-xs">{distValidateErrors.districtTh}</span>
-          </div>
-          <div>
-            <label htmlFor="districtEn" className="text-sm font-medium text-gray-700 dark:text-gray-200">
-              {t("crud.area.form.district.districtEn.label")}
-            </label>
-            <Input
-              id="districtEn"
-              placeholder={t("crud.area.form.district.districtEn.placeholder")}
-              value={districtEn}
-              onChange={(e) => setDistrictEn && setDistrictEn(e.target.value)}
-            />
-            <span className="text-red-500 dark:text-red-400 text-xs">{distValidateErrors.districtEn}</span>
-          </div>
-        </div>
-        <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex gap-3">
-            <Button onClick={handleDistrictReset} variant="outline">
-              {t("crud.area.action.button.reset")}
-            </Button>
-            <Button onClick={handleDistrictSave} variant="primary" disabled={loading} className={`${loading && "cursor-not-allowed disabled"}`}>
-              {!loading && t("crud.area.confirm.button.confirm") || t("crud.area.confirm.button.saving")}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        onReset={handleDistrictReset}
+        onSave={handleDistrictSave}
+      />
+
+      {/* Import / sync from an area template */}
+      <AreaTemplateSyncModal
+        isOpen={syncIsOpen}
+        trees={trees || []}
+        onClose={() => setSyncIsOpen(false)}
+        onSuccess={message => {
+          addToast("success", message);
+          onReloadTrees();
+        }}
+        onError={message => addToast("error", message)}
+      />
     </>
   );
 };

@@ -225,6 +225,11 @@ const AppSidebar: React.FC = () => {
           path: "/area",
           permission: permissions.hasPermission("settings.view"),
         },
+        {
+          name: t("navigation.sidebar.main.system_configuration.nested.area_template_management"),
+          path: "/area-template",
+          permission: permissions.hasPermission("settings.view"),
+        },
       ],
     },
     {

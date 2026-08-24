@@ -3,7 +3,8 @@ import type {
     CountryCreateData, CountryUpdateData,
     AreaProvinceCreateData, AreaProvinceUpdateData,
     AreaDistrictCreateData, AreaDistrictUpdateData,
-    Country, AreaProvince, AreaDistrict
+    Country, AreaProvince, AreaDistrict,
+    OrgCountryTree
 } from "@/cms/types/area";
 import { PaginationParams } from "@/cms/types/dispatch";
 import { baseApi, baseWelcomeCrmApi } from "@/core/store/api/baseApi";
@@ -92,6 +93,7 @@ export const areaApi = baseApi.injectEndpoints({
                 method: "POST",
                 body: data,
             }),
+            invalidatesTags: ["Area"],
         }),
 
         // PATCH api/v1/countries/{id}
@@ -100,7 +102,8 @@ export const areaApi = baseApi.injectEndpoints({
                 url: `/countries/${id}`,
                 method: "PATCH",
                 body: data
-            })
+            }),
+            invalidatesTags: ["Area"],
         }),
 
         // DELETE api/v1/countries/{id}
@@ -109,6 +112,7 @@ export const areaApi = baseApi.injectEndpoints({
                 url: `/countries/${id}`,
                 method: "DELETE"
             }),
+            invalidatesTags: ["Area"],
         }),
 
         // ===================================================================
@@ -122,6 +126,7 @@ export const areaApi = baseApi.injectEndpoints({
                 method: "POST",
                 body: data,
             }),
+            invalidatesTags: ["Area"],
         }),
 
         // PATCH api/v1/provinces/{id}
@@ -130,7 +135,8 @@ export const areaApi = baseApi.injectEndpoints({
                 url: `/provinces/${id}`,
                 method: "PATCH",
                 body: data
-            })
+            }),
+            invalidatesTags: ["Area"],
         }),
 
         // DELETE api/v1/provinces/{id}
@@ -139,6 +145,7 @@ export const areaApi = baseApi.injectEndpoints({
                 url: `/provinces/${id}`,
                 method: "DELETE"
             }),
+            invalidatesTags: ["Area"],
         }),
 
         // ===================================================================
@@ -152,6 +159,7 @@ export const areaApi = baseApi.injectEndpoints({
                 method: "POST",
                 body: data,
             }),
+            invalidatesTags: ["Area"],
         }),
 
         // PATCH api/v1/districts/{id}
@@ -160,7 +168,8 @@ export const areaApi = baseApi.injectEndpoints({
                 url: `/districts/${id}`,
                 method: "PATCH",
                 body: data
-            })
+            }),
+            invalidatesTags: ["Area"],
         }),
 
         // DELETE api/v1/districts/{id}
@@ -169,9 +178,40 @@ export const areaApi = baseApi.injectEndpoints({
                 url: `/districts/${id}`,
                 method: "DELETE"
             }),
+            invalidatesTags: ["Area"],
         }),
 
+        // ===================================================================
+        // Org country tree
+        // ===================================================================
+        // Both of these sit under the /area/ REST path but resolve to the
+        // AreaTemplate GraphQL root, not Area - see GQL_AREA in
+        // store/api/graphql/areaQueries.ts. That is the BFF's shape, not a typo.
 
+        // GET api/v1/area/countries/{id}/tree
+        // The cached country -> provinces -> districts tree for this org, built
+        // without DB joins. It is a *cache*: the country/province/district
+        // mutations above do not refresh it, so call generateOrgCountryTree
+        // after editing or this keeps serving the pre-edit shape.
+        getOrgCountryTree: builder.query<ApiResponse<OrgCountryTree>, string | number>({
+            query: id => ({
+                url: `/area/countries/${id}/tree`,
+            }),
+            providesTags: ["Area"],
+        }),
+
+        // POST api/v1/area/countries/{id}/generate_tree
+        // Regenerates the cache read by getOrgCountryTree. The explicit body is
+        // required: buildGraphQLQuery returns null for a POST with no body, which
+        // is a hard error wherever VITE_USE_GRAPHQL is true.
+        generateOrgCountryTree: builder.mutation<ApiResponse<unknown>, string | number>({
+            query: id => ({
+                url: `/area/countries/${id}/generate_tree`,
+                method: "POST",
+                body: { id },
+            }),
+            invalidatesTags: ["Area"],
+        }),
 
     }),
 });
@@ -189,6 +229,9 @@ export const {
     useCreateDistrictMutation,
     useUpdateDistrictMutation,
     useDeleteDistrictMutation,
+    useGetOrgCountryTreeQuery,
+    useLazyGetOrgCountryTreeQuery,
+    useGenerateOrgCountryTreeMutation,
 } = areaApi;
 
 

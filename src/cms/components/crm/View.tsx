@@ -253,7 +253,10 @@ const Pagination = ({
   );
 }
 
-const View = <T extends { id?: string }>({
+// `id` is only ever read to build React keys here, so it is widened to accept
+// numeric ids too - the area-template records key on a numeric DB id, unlike the
+// CRM entities this component was first written for.
+const View = <T extends { id?: string | number }>({
   columns,
   createLabel = "Create New",
   customActions = [],

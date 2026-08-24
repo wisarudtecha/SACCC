@@ -3,7 +3,8 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { CloseIcon, FileIcon } from "@/core/icons";
 import { Modal } from "@/core/components/ui/modal";
 import { useTranslation } from "@/core/hooks/useTranslation";
-import type { Country, AreaProvince, AreaDistrict } from "@/cms/types/area";
+import type { AreaCountryTree } from "@/cms/types/area";
+import { describeGeometry } from "@/cms/utils/areaGeometry";
 import { capitalizeWords } from "@/core/utils/stringFormatters";
 import type { HierarchyItem, HierarchyConfig } from "@/core/types/hierarchy";
 import HierarchyView from "@/core/components/admin/HierarchyView";
@@ -21,9 +22,9 @@ const compositeId = (prefix: AreaLevelPrefix, id: number) => `${prefix}:${id}`;
 const stripPrefix = (id: string) => id.slice(id.indexOf(":") + 1);
 
 interface AreaHierarchyViewProps {
-  countries: Country[];
-  provinces: AreaProvince[];
-  districts: AreaDistrict[];
+  // The org's country trees, already nested by the BFF. Replaces the three flat
+  // lists this component used to re-join in the browser.
+  trees: AreaCountryTree[];
   showInactive: boolean;
   handleCountryDelete: (id: number) => void;
   handleCountryReset: () => void;
@@ -52,9 +53,7 @@ interface AreaHierarchyViewProps {
 }
 
 const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
-  countries,
-  provinces,
-  districts,
+  trees,
   showInactive,
   handleCountryDelete,
   handleCountryReset,
@@ -90,13 +89,22 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
   const [deleteType, setDeleteType] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Convert countries, provinces and districts (each carrying its own real
-  // numeric id) into generic hierarchy items, namespacing ids via
+  // Flatten the nested trees into generic hierarchy items, namespacing ids via
   // compositeId() so same-numbered rows at different levels never collide.
+  //
+  // Parentage now comes from the tree structure itself. The previous version
+  // rebuilt it by string-matching countryId/provId across three flat lists,
+  // which mis-parented districts whenever two countries shared a province code -
+  // walking the tree makes that class of bug unrepresentable.
+  //
+  // Tree province nodes carry no countryId and district nodes carry neither
+  // countryId nor provId, so the parent codes are threaded down while walking.
+  // The metadata keys are unchanged, which is why every edit/create handler
+  // below still works untouched.
   const convertToHierarchyItems = useCallback((): HierarchyItem[] => {
     const items: HierarchyItem[] = [];
 
-    (countries || []).forEach(country => {
+    (trees || []).forEach(country => {
       items.push({
         id: compositeId("country", country.id),
         parentId: null, // Explicitly set to null for root items
@@ -105,46 +113,48 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
         active: country.active,
         level: 0,
         metadata: {
-          countryCode: country.countryId
+          countryCode: country.countryId,
+          geometry: describeGeometry(country.coordinates)
         }
       });
-    });
 
-    (provinces || []).forEach(province => {
-      const parentCountry = (countries || []).find(c => c.countryId === province.countryId);
-      items.push({
-        id: compositeId("province", province.id),
-        parentId: parentCountry ? compositeId("country", parentCountry.id) : null,
-        name: language === "th" && province.th || capitalizeWords(province.en || ""),
-        secondaryName: language === "th" && capitalizeWords(province.en || "") || province.th,
-        active: province.active,
-        level: 1,
-        metadata: {
-          countryCode: province.countryId,
-          provinceCode: province.provId
-        }
-      });
-    });
+      (country.provinces || []).forEach(province => {
+        items.push({
+          id: compositeId("province", province.id),
+          parentId: compositeId("country", country.id),
+          name: language === "th" && province.th || capitalizeWords(province.en || ""),
+          secondaryName: language === "th" && capitalizeWords(province.en || "") || province.th,
+          active: province.active,
+          level: 1,
+          metadata: {
+            countryCode: country.countryId,
+            provinceCode: province.provId,
+            geometry: describeGeometry(province.coordinates)
+          }
+        });
 
-    (districts || []).forEach(district => {
-      const parentProvince = (provinces || []).find(p => p.provId === district.provId);
-      items.push({
-        id: compositeId("district", district.id),
-        parentId: parentProvince ? compositeId("province", parentProvince.id) : null,
-        name: language === "th" && district.th || capitalizeWords(district.en || ""),
-        secondaryName: language === "th" && capitalizeWords(district.en || "") || district.th,
-        active: district.active,
-        level: 2,
-        metadata: {
-          countryCode: district.countryId,
-          provinceCode: district.provId,
-          districtCode: district.distId
-        }
+        (province.districts || []).forEach(district => {
+          items.push({
+            id: compositeId("district", district.id),
+            parentId: compositeId("province", province.id),
+            name: language === "th" && district.th || capitalizeWords(district.en || ""),
+            secondaryName: language === "th" && capitalizeWords(district.en || "") || district.th,
+            active: district.active,
+            level: 2,
+            metadata: {
+              countryCode: country.countryId,
+              provinceCode: province.provId,
+              districtCode: district.distId,
+              postcode: district.postcode,
+              geometry: describeGeometry(district.coordinates)
+            }
+          });
+        });
       });
     });
 
     return items;
-  }, [countries, provinces, districts, language]);
+  }, [trees, language]);
 
   const [hierarchyItems, setHierarchyItems] = useState<HierarchyItem[]>(
     convertToHierarchyItems()
@@ -153,7 +163,7 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
   // Update hierarchy items when props change
   useEffect(() => {
     setHierarchyItems(convertToHierarchyItems());
-  }, [countries, provinces, districts, convertToHierarchyItems]);
+  }, [convertToHierarchyItems]);
 
   const handleDelete = useCallback(async (item: HierarchyItem, type: string) => {
     const confirmMessage = item?.customName || item.name || "";
@@ -232,6 +242,16 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
     setDistrictIsOpen(true);
   }, [language, handleCountryReset, handleProvinceReset, setDistId, setDistrictCode, setDistrictTh, setDistrictEn, setDistProvId, setDistCountryId, setCountryIsOpen, setProvinceIsOpen, setDistrictIsOpen]);
 
+  // Read-only geometry indicator. Polygons arrive with the tree but are authored
+  // in area templates, not here, so this only reports what a row carries.
+  const geometryLabels = useCallback((item: HierarchyItem): string[] => {
+    const geometry = item.metadata?.geometry as { hasGeometry: boolean; pointCount: number } | undefined;
+    if (!geometry?.hasGeometry) {
+      return [];
+    }
+    return [t("crud.areaTemplate.geometry.summary").replace("_POINTS_", String(geometry.pointCount))];
+  }, [t]);
+
   // Configuration for the hierarchy view
   const hierarchyConfig: HierarchyConfig = useMemo(() => ({
     maxLevels: 3,
@@ -254,7 +274,7 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
         metadataDisplay: {
           showChildCount: true,
           showMetadata: false, // We"ll use custom formatter
-          customMetadataFormatter: (_, childCount) => {
+          customMetadataFormatter: (item, childCount) => {
             const metadata: string[] = [];
             // Show child count with custom label
             if (childCount > 0) {
@@ -262,6 +282,7 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
                 ? t("crud.area.list.header.province.singular")
                 : t("crud.area.list.header.province.plural")}`);
             }
+            metadata.push(...geometryLabels(item));
             return metadata;
           }
         },
@@ -293,7 +314,7 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
         metadataDisplay: {
           showChildCount: true,
           showMetadata: true,
-          customMetadataFormatter: (_, childCount) => {
+          customMetadataFormatter: (item, childCount) => {
             const metadata: string[] = [];
             // Show child count with custom label
             if (childCount > 0) {
@@ -301,6 +322,7 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
                 ? t("crud.area.list.header.district.singular")
                 : t("crud.area.list.header.district.plural")}`);
             }
+            metadata.push(...geometryLabels(item));
             return metadata;
           }
         },
@@ -327,8 +349,13 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
         metadataDisplay: {
           showChildCount: false,
           showMetadata: false,
-          customMetadataFormatter: () => {
+          customMetadataFormatter: (item) => {
             const metadata: string[] = [];
+            const postcode = item.metadata?.postcode as string | undefined;
+            if (postcode) {
+              metadata.push(postcode);
+            }
+            metadata.push(...geometryLabels(item));
             return metadata;
           }
         },
@@ -349,7 +376,7 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
         ]
       }
     ]
-  }), [handleDelete, handleEditCountry, handleEditProvince, handleEditDistrict, t]);
+  }), [geometryLabels, handleDelete, handleEditCountry, handleEditProvince, handleEditDistrict, t]);
 
   const handleCreateChild = (
     parentId: string,

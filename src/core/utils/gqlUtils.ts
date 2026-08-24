@@ -2,9 +2,17 @@
 import { FetchArgs } from "@reduxjs/toolkit/query";
 import type { ExtractedFile } from "@/core/types/gql";
 
+// Fields that must reach GraphQL as Int, not String, when they arrive as part
+// of a URL query string. Endpoints that pass `params` as an object keep their
+// numbers (hybridBaseQuery hands FetchArgs to the mapper before fetchBaseQuery
+// serializes anything); this list only covers endpoints that build the query
+// string into `url` themselves, where extractQueryParams sees strings.
 const NUMBER_FIELDS = [
   "start",
-  "length"
+  "length",
+  // AreaTemplate list filters (GetListTemplateProvince / GetListTemplateDistrict)
+  "templateCountryId",
+  "templateProvinceId"
 ];
 
 export const isBlob = (value: unknown): value is Blob => {

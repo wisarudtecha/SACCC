@@ -577,7 +577,8 @@
             },
             "skill_management": "技能管理",
             "property_management": "属性管理",
-            "area_management": "区域管理"
+            "area_management": "区域管理",
+            "area_template_management": "区域模板"
           }
         }
       },
@@ -1826,6 +1827,162 @@
       },
       "unit": {
         "minutes": " 分钟"
+      }
+    },
+    "areaTemplate": {
+      "name": "区域模板",
+      "locked_notice": "该模板已发布并锁定。如需修改，请派生为新版本。",
+      "status": {
+        "draft": "草稿",
+        "published": "已发布"
+      },
+      "province": {
+        "name": "模板省份"
+      },
+      "district": {
+        "name": "模板区/县",
+        "select_province": "请选择省份以管理其下的区/县。"
+      },
+      "versions": {
+        "name": "版本"
+      },
+      "column": {
+        "name": "名称",
+        "countryCode": "国家代码",
+        "provinceCode": "省份代码",
+        "districtCode": "区/县代码",
+        "postcode": "邮政编码",
+        "version": "版本",
+        "status": "状态",
+        "geometry": "边界",
+        "yearOfData": "数据年份",
+        "publishedBy": "发布人"
+      },
+      "field": {
+        "countryCode": {
+          "label": "国家代码",
+          "placeholder": "例如 TH"
+        },
+        "provinceCode": {
+          "label": "省份代码",
+          "placeholder": "例如 10"
+        },
+        "districtCode": {
+          "label": "区/县代码",
+          "placeholder": "例如 1001"
+        },
+        "postcode": {
+          "label": "邮政编码",
+          "placeholder": "例如 10200"
+        },
+        "th": {
+          "label": "名称（泰文）",
+          "placeholder": "泰文名称"
+        },
+        "en": {
+          "label": "名称（英文）",
+          "placeholder": "英文名称"
+        },
+        "yearOfData": {
+          "label": "数据年份",
+          "placeholder": "例如 2026"
+        },
+        "coordinates": {
+          "label": "边界（GeoJSON 环）",
+          "placeholder": "[[[100.4,13.7],[100.6,13.7],[100.6,13.9],[100.4,13.7]]]"
+        }
+      },
+      "action": {
+        "manage": "管理",
+        "districts": "区/县",
+        "versions": "版本",
+        "back_to_template": "返回模板",
+        "publish": "发布",
+        "publish_success": "模板已发布",
+        "publish_error": "发布模板失败",
+        "fork": "派生",
+        "fork_success": "已创建新的草稿版本",
+        "fork_error": "派生模板失败",
+        "generate_tree": "重建结构",
+        "generate_tree_success": "模板结构已重建",
+        "generate_tree_error": "重建模板结构失败"
+      },
+      "fork": {
+        "title": "派生模板",
+        "description": "基于 _VERSION_ 创建新的草稿版本，已发布的版本保持不变。",
+        "name": {
+          "label": "新版本名称",
+          "placeholder": "为新草稿命名"
+        },
+        "name_required": "请为新版本命名"
+      },
+      "geometry": {
+        "none": "无边界",
+        "summary": "边界 · _POINTS_ 个点",
+        "error": {
+          "invalid_json": "边界必须是有效的 JSON。",
+          "not_rings": "边界必须是环（ring）的数组。",
+          "empty": "边界中没有任何环。",
+          "ring_not_array": "每个环必须是点的数组。",
+          "too_few_points": "每个环至少需要 4 个点。",
+          "point_not_pair": "每个点必须是 [经度, 纬度] 的组合。",
+          "point_not_number": "经度和纬度必须是数字。",
+          "lng_out_of_range": "经度必须在 -180 到 180 之间。",
+          "lat_out_of_range": "纬度必须在 -90 到 90 之间。",
+          "ring_not_closed": "每个环必须闭合，最后一个点需与第一个点相同。"
+        }
+      },
+      "sync": {
+        "button": "使用模板",
+        "title": "使用区域模板",
+        "description": "将已发布的模板导入为新国家，或同步到已有的国家。",
+        "no_published": "暂无已发布的模板。",
+        "field": {
+          "template": {
+            "label": "模板",
+            "placeholder": "选择已发布的模板"
+          },
+          "action": {
+            "label": "操作",
+            "placeholder": "选择操作"
+          },
+          "country": {
+            "label": "目标国家",
+            "placeholder": "选择您的国家"
+          },
+          "mode": {
+            "label": "合并方式",
+            "placeholder": "选择合并方式"
+          }
+        },
+        "action": {
+          "import": {
+            "label": "导入为新国家",
+            "success": "模板已导入",
+            "error": "导入模板失败"
+          },
+          "sync": {
+            "label": "同步到已有国家",
+            "success": "模板已同步",
+            "error": "同步模板失败"
+          }
+        },
+        "error": {
+          "template_required": "请选择模板。",
+          "country_required": "请选择要同步的国家。"
+        },
+        "mode": {
+          "merge": "合并",
+          "replace_all": "全部替换",
+          "replace_label": "仅替换名称",
+          "replace_coodinates": "仅替换边界"
+        },
+        "mode_hint": {
+          "merge": "仅补充缺失的记录，不改动现有数据。",
+          "replace_all": "用模板覆盖名称和边界。",
+          "replace_label": "覆盖泰文和英文名称，保留现有边界。",
+          "replace_coodinates": "覆盖边界，保留现有名称。"
+        }
       }
     },
     "area": {

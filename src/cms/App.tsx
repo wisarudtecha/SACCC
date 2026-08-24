@@ -37,6 +37,9 @@ import WorkflowEditorPage from "@/cms/pages/Workflow/Editor";
 
 // System Configuration Imports
 import AreaManagementPage from "@/cms/pages/Admin/AreaManagement";
+import AreaTemplateDetailPage from "@/cms/pages/Admin/AreaTemplateDetail";
+import AreaTemplateManagementPage from "@/cms/pages/Admin/AreaTemplateManagement";
+import AreaTemplateVersionsPage from "@/cms/pages/Admin/AreaTemplateVersions";
 import PropertyManagementPage from "@/cms/pages/Admin/PropertyManagement";
 import ServiceManagementPage from "@/cms/pages/Admin/ServiceManagement";
 import SkillManagementPage from "@/cms/pages/Admin/SkillManagement";
@@ -151,6 +154,12 @@ export default function CmsApp() {
 
           {/* System Configuration */}
           <Route path="/area" element={<AreaManagementPage />} />
+          {/* Area templates: versioned, publishable geography an org adopts into its own areas.
+              The :id routes come after the list route but React Router matches on
+              specificity, not order. */}
+          <Route path="/area-template" element={<AreaTemplateManagementPage />} />
+          <Route path="/area-template/:id" element={<AreaTemplateDetailPage />} />
+          <Route path="/area-template/:id/versions" element={<AreaTemplateVersionsPage />} />
           <Route path="/property" element={<PropertyManagementPage />} />
           <Route path="/service" element={<ServiceManagementPage />} />
           <Route path="/skill" element={<SkillManagementPage />} />

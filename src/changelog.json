@@ -1,4 +1,10 @@
 {
+  "0.53.0": {
+    "date": "2026-08-24",
+    "segment": "MINOR",
+    "notes": "feat(cms): add area templates and improve area management\n- Administrators can now create and manage reusable area templates for countries, provinces and districts, including the boundary shapes used on maps.\n- Templates support draft and published versions, so a published set of areas can be kept as a reliable reference while a new version is prepared.\n- A published version can be copied into a new draft, and every version in the same template history can be viewed from one place.\n- Administrators can now add, edit and remove provinces and districts in an editable template, while published templates remain protected from accidental changes.\n- An organization's areas can now be created from a published template or updated from one, with choices to merge information or replace selected details.\n- Area Management now presents area information in a clearer hierarchy, with improved loading, searching and selection behavior.\n- Available in Thai, English and Chinese.",
+    "author": "Wisarud Techa"
+  },
   "0.52.0": {
     "date": "2026-08-21",
     "segment": "MINOR",

@@ -19,6 +19,7 @@ import { GQL_USER_GROUP } from "@/core/store/api/graphql/userGroupQueries";
 import { GQL_DASHBOARD_LAYOUT } from "@/core/store/api/graphql/dashboardLayoutQueries";
 // CMS Import
 import { GQL_AREA } from "@/cms/store/api/graphql/areaQueries";
+import { GQL_AREA_TEMPLATE } from "@/cms/store/api/graphql/areaTemplateQueries";
 import { GQL_ATTACHMENT } from "@/cms/store/api/graphql/attachmentQueries";
 import { GQL_CASE } from "@/cms/store/api/graphql/caseQueries";
 import { GQL_CASE_HISTORY } from "@/cms/store/api/graphql/caseHistoryQueries";
@@ -66,6 +67,7 @@ const GQL_MAP: Record<string, GqlMapConfig | Record<string, GqlMapConfig>> = {
   ...GQL_USER_GROUP,
   // CMS
   ...GQL_AREA,
+  ...GQL_AREA_TEMPLATE,
   ...GQL_ATTACHMENT,
   ...GQL_FORM,
   ...GQL_CASE,

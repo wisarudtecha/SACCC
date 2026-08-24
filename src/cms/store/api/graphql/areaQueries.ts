@@ -60,6 +60,26 @@ const GET_DISTRICT_HIERARCHY_LISTS_QUERY = {
   fields: `status msg data desc`
 };
 
+// ─── Org country tree ─────────────────────────────────────────────────────────
+// These two REST paths live under /area/ but resolve to the AreaTemplate root,
+// not Area. That is how the BFF exposes them (see src/cms/mocks/areaCURL.sh) -
+// resist "correcting" the root to "Area", the operations do not exist there.
+
+const GET_ORG_COUNTRY_TREE_QUERY = {
+  operationName: "GetOrgCountryTree",
+  root: "AreaTemplate",
+  inputType: "GetIdInput!",
+  fields: `status msg data desc`
+};
+
+const GENERATE_ORG_COUNTRY_TREE_MUTATION = {
+  operationName: "GenerateOrgCountryTree",
+  root: "AreaTemplate",
+  inputType: "GetIdInput!",
+  fields: `status msg data desc`,
+  mutation: true
+};
+
 // ─── Country Mutations ────────────────────────────────────────────────────────
 
 const CREATE_COUNTRY_MUTATION = {
@@ -149,6 +169,14 @@ export const GQL_AREA = {
   "/area/countries": GET_COUNTRY_LISTS_QUERY,
   "/area/provinces": GET_PROVINCE_HIERARCHY_LISTS_QUERY,
   "/area/districts": GET_DISTRICT_HIERARCHY_LISTS_QUERY,
+
+  // Org country tree (cached read + regenerate)
+  "/area/countries/:id/tree": {
+    GET: GET_ORG_COUNTRY_TREE_QUERY,
+  },
+  "/area/countries/:id/generate_tree": {
+    POST: GENERATE_ORG_COUNTRY_TREE_MUTATION,
+  },
 
   // Countries
   "/countries/add": CREATE_COUNTRY_MUTATION,
