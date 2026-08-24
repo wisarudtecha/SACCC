@@ -14,6 +14,7 @@ import { useNavigate } from "react-router";
 import { Edit, GitFork, History, Layers, Send, Trash2 } from "lucide-react";
 import { ToastContainer } from "@/core/components/crud/ToastContainer";
 import { useToast } from "@/core/hooks/useToast";
+import { usePermissions } from "@/core/hooks/usePermissions";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import {
   useGetTemplateCountriesQuery,
@@ -40,6 +41,7 @@ const isPublished = (template: TemplateCountry) => template.status === "publishe
 
 const AreaTemplateCountryView: React.FC = () => {
   const { language, t } = useTranslation();
+  const permissions = usePermissions();
   const { toasts, addToast, removeToast } = useToast();
   const navigate = useNavigate();
 
@@ -127,6 +129,18 @@ const AreaTemplateCountryView: React.FC = () => {
       placeholder: t("crud.areaTemplate.field.yearOfData.placeholder"),
       type: "number"
     },
+      {
+        name: "shapeArea",
+        label: t("crud.area.form.country.shapeArea.label"),
+        placeholder: t("crud.area.form.country.shapeArea.placeholder"),
+        type: "number"
+      },
+      {
+        name: "shapeLength",
+        label: t("crud.area.form.country.shapeLength.label"),
+        placeholder: t("crud.area.form.country.shapeLength.placeholder"),
+        type: "number"
+      },
     {
       name: "coordinates",
       label: t("crud.areaTemplate.field.coordinates.label"),
@@ -141,6 +155,12 @@ const AreaTemplateCountryView: React.FC = () => {
   ], [t]);
 
   const handleSubmit = async (formData: Record<string, unknown>) => {
+    // The action buttons are permission-gated, but a handler that trusts the UI
+    // is one refactor away from being reachable without one.
+    if (!permissions.hasAnyPermission(["area.create", "area.update"])) {
+      addToast("error", t("crud.common.permission_denied"));
+      return;
+    }
     // Form validates required-ness only, so geometry is parsed here. A bad paste
     // keeps the dialog open with the input intact rather than silently sending
     // coordinates the map will not be able to draw.
@@ -158,6 +178,8 @@ const AreaTemplateCountryView: React.FC = () => {
       nameSpace: "",
       // An untouched number input hands back "", which must not become 0.
       yearOfData: formData.yearOfData ? Number(formData.yearOfData) : null,
+      shapeArea: formData.shapeArea ? Number(formData.shapeArea) : null,
+      shapeLength: formData.shapeLength ? Number(formData.shapeLength) : null,
       coordinates: toCoordinatesPayload(parsed.rings, editing?.coordinates)
     };
 
@@ -191,8 +213,14 @@ const AreaTemplateCountryView: React.FC = () => {
   const runAction = async (
     action: () => Promise<unknown>,
     successKey: string,
-    errorKey: string
+    errorKey: string,
+    /** The permission this action needs; the matching button declares the same one. */
+    permission: string
   ) => {
+    if (!permissions.hasPermission(permission)) {
+      addToast("error", t("crud.common.permission_denied"));
+      return;
+    }
     try {
       const response = await action() as Parameters<typeof isApiSuccess>[0];
       if (!isApiSuccess(response)) {
@@ -222,6 +250,7 @@ const AreaTemplateCountryView: React.FC = () => {
     {
       icon: <Edit className="w-3 h-3" />,
       label: t("crud.common.update"),
+      permission: "area.update",
       variant: "outline",
       show: isDraft,
       onClick: template => {
@@ -232,17 +261,20 @@ const AreaTemplateCountryView: React.FC = () => {
     {
       icon: <Send className="w-3 h-3" />,
       label: t("crud.areaTemplate.action.publish"),
+      permission: "area.update",
       variant: "primary",
       show: isDraft,
       onClick: template => runAction(
         () => publishTemplate(template.id).unwrap(),
         "crud.areaTemplate.action.publish_success",
-        "crud.areaTemplate.action.publish_error"
+        "crud.areaTemplate.action.publish_error",
+        "area.update"
       )
     },
     {
       icon: <GitFork className="w-3 h-3" />,
       label: t("crud.areaTemplate.action.fork"),
+      permission: "area.create",
       variant: "outline",
       show: isPublished,
       onClick: template => setForking(template)
@@ -250,12 +282,14 @@ const AreaTemplateCountryView: React.FC = () => {
     {
       icon: <Trash2 className="w-3 h-3" />,
       label: t("crud.common.delete"),
+      permission: "area.delete",
       variant: "outline-error",
       show: isDraft,
       onClick: template => runAction(
         () => deleteTemplate(template.id).unwrap(),
         "crud.common.form.action.delete.success",
-        "crud.common.form.action.delete.error"
+        "crud.common.form.action.delete.error",
+        "area.delete"
       )
     }
     // runAction closes over stable RTK triggers and t; re-creating the array on
@@ -295,6 +329,8 @@ const AreaTemplateCountryView: React.FC = () => {
               th: editing.th,
               en: editing.en,
               yearOfData: editing.yearOfData ?? "",
+              shapeArea: editing.shapeArea ?? "",
+              shapeLength: editing.shapeLength ?? "",
               coordinates: formatPolygonRings(editing.coordinates),
               active: editing.active
             }
@@ -303,6 +339,8 @@ const AreaTemplateCountryView: React.FC = () => {
               th: "",
               en: "",
               yearOfData: "",
+              shapeArea: "",
+              shapeLength: "",
               coordinates: "",
               active: true
             }}
@@ -326,7 +364,8 @@ const AreaTemplateCountryView: React.FC = () => {
           await runAction(
             () => forkTemplate({ id: template.id, data: { en: name } }).unwrap(),
             "crud.areaTemplate.action.fork_success",
-            "crud.areaTemplate.action.fork_error"
+            "crud.areaTemplate.action.fork_error",
+            "area.create"
           );
           setForking(null);
         }}

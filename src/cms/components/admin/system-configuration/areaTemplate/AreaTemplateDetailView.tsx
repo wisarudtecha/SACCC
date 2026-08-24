@@ -13,15 +13,17 @@ import { useToast } from "@/core/hooks/useToast";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import {
   useGetTemplateCountryByIdQuery,
+  useGetTemplateCountryTreeQuery,
   useGenerateTemplateCountryTreeMutation
 } from "@/cms/store/api/areaTemplateApi";
 import { ROUTE_PREFIX } from "@/core/router/routePrefix";
-import type { TemplateCountry, TemplateProvince } from "@/cms/types/areaTemplate";
+import type { TemplateCountry, TemplateCountryTree, TemplateProvince } from "@/cms/types/areaTemplate";
 import { isApiSuccess, resolveApiError, resolveApiMessage } from "@/cms/utils/apiResponse";
 import { describeGeometry } from "@/cms/utils/areaGeometry";
 import AreaTemplateDistrictView from "@/cms/components/admin/system-configuration/areaTemplate/AreaTemplateDistrictView";
 import AreaTemplateProvinceView from "@/cms/components/admin/system-configuration/areaTemplate/AreaTemplateProvinceView";
 import AreaTemplateStatusBadge from "@/cms/components/admin/system-configuration/areaTemplate/AreaTemplateStatusBadge";
+import AreaTreePreview from "@/cms/components/admin/system-configuration/areaTemplate/AreaTreePreview";
 import Button from "@/core/components/ui/button/Button";
 
 interface AreaTemplateDetailViewProps {
@@ -37,6 +39,9 @@ const AreaTemplateDetailView: React.FC<AreaTemplateDetailViewProps> = ({ templat
 
   const { data, isLoading } = useGetTemplateCountryByIdQuery(templateId);
   const [generateTree, { isLoading: isGenerating }] = useGenerateTemplateCountryTreeMutation();
+  // The cache the regenerate button rebuilds; both share the "AreaTemplate" tag,
+  // so a successful regenerate refetches this on its own.
+  const { data: treeData, isFetching: isFetchingTree } = useGetTemplateCountryTreeQuery(templateId);
 
   const template = data?.data as TemplateCountry | undefined;
   const locked = template?.status === "published";
@@ -139,6 +144,12 @@ const AreaTemplateDetailView: React.FC<AreaTemplateDetailViewProps> = ({ templat
             </p>
           )}
         </div>
+
+        {/* The cached tree, so "Regenerate tree" has something visible to change */}
+        <AreaTreePreview
+          tree={treeData?.data as TemplateCountryTree | undefined}
+          isLoading={isFetchingTree}
+        />
 
         {/* Provinces */}
         <AreaTemplateProvinceView

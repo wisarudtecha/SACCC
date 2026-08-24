@@ -1,6 +1,7 @@
 // /src/cms/components/admin/system-configuration/areaTemplate/AreaTemplateProvinceView.tsx
 import React, { useMemo, useState } from "react";
 import { MapPin } from "lucide-react";
+import { usePermissions } from "@/core/hooks/usePermissions";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import {
   useGetTemplateProvincesQuery,
@@ -37,6 +38,7 @@ const AreaTemplateProvinceView: React.FC<AreaTemplateProvinceViewProps> = ({
   addToast
 }) => {
   const { language, t } = useTranslation();
+  const permissions = usePermissions();
 
   const [query, setQuery] = useState<LocalTableQuery>(INITIAL_LOCAL_QUERY);
   const [showForm, setShowForm] = useState(false);
@@ -111,6 +113,12 @@ const AreaTemplateProvinceView: React.FC<AreaTemplateProvinceViewProps> = ({
   ], [t]);
 
   const handleSubmit = async (formData: Record<string, unknown>) => {
+    // The action buttons are permission-gated, but a handler that trusts the UI
+    // is one refactor away from being reachable without one.
+    if (!permissions.hasAnyPermission(["area.create", "area.update"])) {
+      addToast("error", t("crud.common.permission_denied"));
+      return;
+    }
     const parsed = parsePolygonRings(String(formData.coordinates || ""));
     if (parsed.error) {
       addToast("error", t(`crud.areaTemplate.geometry.error.${parsed.error}`));

@@ -1,4 +1,10 @@
 {
+  "0.58.0": {
+    "date": "2026-08-25",
+    "segment": "MINOR",
+    "notes": "feat(cms): preview an area template's structure and restrict template actions\n- On an area template's detail screen, staff can now expand a 'Tree preview' to see the template's country, province and district structure, making it easy to confirm the structure matches recent edits before publishing and giving the 'Regenerate tree' action a visible result.\n- The country-level template form can now record a shape area and shape length alongside the year the boundary data is from.\n- Editing, publishing, forking, deleting and syncing area templates are now available only to staff with the matching permission, both on the buttons and when the action is carried out.\n- Available in Thai, English and Chinese.\n- changelog.json / package.json: bump version 0.57.0 -> 0.58.0",
+    "author": "Wisarud Techa"
+  },
   "0.57.0": {
     "date": "2026-08-25",
     "segment": "MINOR",

@@ -27,6 +27,14 @@ export interface Action<T> {
   variant?: "outline" | "primary" | "error" | "outline-error";
   onClick: (item: T) => void;
   show?: (item: T) => boolean;
+  /**
+   * Permission required to see this action, e.g. "area.update". Omit for actions
+   * that need none (navigation, drill-down).
+   *
+   * `show` and this are different questions: `show` is about the row's state
+   * (a published template cannot be edited by anyone), this is about the user.
+   */
+  permission?: string;
 }
 
 export type CellProps<T> = {
@@ -482,7 +490,7 @@ const View = <T extends { id?: string | number }>({
     customActions
       .filter(action => !action.show || action.show(item))
       .forEach((action, idx) => {
-        actions.push(
+        const button = (
           <Button
             key={`custom-${idx}-${item.id}`}
             variant={action.variant || "outline"}
@@ -492,6 +500,20 @@ const View = <T extends { id?: string | number }>({
           >
             {action.icon}
           </Button>
+        );
+
+        // Wrap ONLY when a permission is declared. PermissionGate with no
+        // permission/permissions/module leaves hasAccess false and renders its
+        // fallback, so wrapping unconditionally would hide every action that
+        // does not declare one - from any caller.
+        actions.push(
+          action.permission
+            ? (
+              <PermissionGate permission={action.permission} key={`PermissionGate-custom-${idx}-${item.id}`}>
+                {button}
+              </PermissionGate>
+            )
+            : button
         );
       });
 

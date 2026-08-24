@@ -92,6 +92,7 @@ const AreaTemplateVersionsView: React.FC<AreaTemplateVersionsViewProps> = ({ tem
     {
       icon: <GitFork className="w-3 h-3" />,
       label: t("crud.areaTemplate.action.fork"),
+      permission: "area.create",
       variant: "outline",
       show: version => version.status === "published",
       onClick: version => setForking(version)
