@@ -60,6 +60,29 @@ const GET_DISTRICT_HIERARCHY_LISTS_QUERY = {
   fields: `status msg data desc`
 };
 
+// ─── Single-record reads ──────────────────────────────────────────────────────
+
+const GET_COUNTRY_BY_ID_QUERY = {
+  operationName: "GetCountryById",
+  root: "Area",
+  inputType: "GetIdInput!",
+  fields: `status msg data desc`
+};
+
+const GET_PROVINCE_BY_ID_QUERY = {
+  operationName: "GetProvinceById",
+  root: "Area",
+  inputType: "GetIdInput!",
+  fields: `status msg data desc`
+};
+
+const GET_DISTRICT_BY_ID_QUERY = {
+  operationName: "GetDistrictById",
+  root: "Area",
+  inputType: "GetIdInput!",
+  fields: `status msg data desc`
+};
+
 // ─── Org country tree ─────────────────────────────────────────────────────────
 // These two REST paths live under /area/ but resolve to the AreaTemplate root,
 // not Area. That is how the BFF exposes them (see src/cms/mocks/areaCURL.sh) -
@@ -170,12 +193,27 @@ export const GQL_AREA = {
   "/area/provinces": GET_PROVINCE_HIERARCHY_LISTS_QUERY,
   "/area/districts": GET_DISTRICT_HIERARCHY_LISTS_QUERY,
 
-  // Org country tree (cached read + regenerate)
+  // Org country tree (cached read + regenerate). Declared before the ":id" keys
+  // below: these are anchored regexes so they do not actually collide, but
+  // keeping literal-tailed paths first is the habit that stops a future addition
+  // from being swallowed by ":id".
   "/area/countries/:id/tree": {
     GET: GET_ORG_COUNTRY_TREE_QUERY,
   },
   "/area/countries/:id/generate_tree": {
     POST: GENERATE_ORG_COUNTRY_TREE_MUTATION,
+  },
+
+  // Single-record reads. Method-keyed, never bare - a bare config satisfies
+  // matchUrl's definesMethod guard for every method.
+  "/area/countries/:id": {
+    GET: GET_COUNTRY_BY_ID_QUERY,
+  },
+  "/area/provinces/:id": {
+    GET: GET_PROVINCE_BY_ID_QUERY,
+  },
+  "/area/districts/:id": {
+    GET: GET_DISTRICT_BY_ID_QUERY,
   },
 
   // Countries

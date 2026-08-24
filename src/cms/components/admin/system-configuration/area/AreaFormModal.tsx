@@ -20,9 +20,11 @@ export interface AreaFormField {
   key: string;
   label: string;
   placeholder: string;
-  type: "text" | "select";
+  type: "text" | "number" | "select" | "textarea";
   value: string;
   error?: string;
+  /** Shown under the field when there is no error - units, format hints. */
+  hint?: string;
   /** Required for type "select". */
   options?: { value: string; label: string }[];
   disabled?: boolean;
@@ -75,7 +77,7 @@ const AreaFormModal: React.FC<AreaFormModalProps> = ({
               {field.label}
             </label>
 
-            {field.type === "select" ? (
+            {field.type === "select" && (
               <Select
                 value={field.value || ""}
                 onChange={value => field.onChange(value)}
@@ -84,9 +86,24 @@ const AreaFormModal: React.FC<AreaFormModalProps> = ({
                 className="cursor-pointer"
                 disabled={field.disabled}
               />
-            ) : (
+            )}
+
+            {field.type === "textarea" && (
+              <textarea
+                id={field.key}
+                rows={4}
+                placeholder={field.placeholder}
+                value={field.value}
+                disabled={field.disabled}
+                onChange={event => field.onChange(event.target.value)}
+                className="dark:bg-dark-900 h-auto w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm font-mono text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 disabled:cursor-not-allowed disabled:opacity-60"
+              />
+            )}
+
+            {(field.type === "text" || field.type === "number") && (
               <Input
                 id={field.key}
+                type={field.type}
                 placeholder={field.placeholder}
                 value={field.value}
                 disabled={field.disabled}
@@ -94,7 +111,9 @@ const AreaFormModal: React.FC<AreaFormModalProps> = ({
               />
             )}
 
-            <span className="text-red-500 dark:text-red-400 text-xs">{field.error}</span>
+            {field.error
+              ? <span className="text-red-500 dark:text-red-400 text-xs">{field.error}</span>
+              : field.hint && <span className="text-gray-500 dark:text-gray-400 text-xs">{field.hint}</span>}
           </div>
         ))}
       </div>

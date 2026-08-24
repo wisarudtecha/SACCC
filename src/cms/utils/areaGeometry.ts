@@ -107,6 +107,39 @@ export const formatPolygonRings = (rings?: PolygonCoordinates | null): string =>
   return JSON.stringify(rings);
 };
 
+/**
+ * Builds the `coordinates` value for a create/update payload.
+ *
+ * Three cases, because "omit" and "clear" are different intents that the
+ * transport does not distinguish for us. buildGraphQLQuery strips undefined and
+ * null from every mutation input (gqlMapper.ts), so `coordinates: null` is
+ * indistinguishable from never having sent the field - and whether the BFF reads
+ * an absent field as "keep" or "set null" is not documented. Callers therefore
+ * resend the existing rings on every update, and only an empty array can mean
+ * "clear this".
+ *
+ * NOTE: that `[]` clears rather than, say, being rejected as an empty polygon is
+ * the one unverified assumption here. It is deliberately confined to this
+ * function - if the backend disagrees, this is the only line that changes.
+ *
+ * @param rings    what the user has in the form now (empty = they cleared it)
+ * @param existing what the record currently has, for the round-trip on update
+ */
+export const toCoordinatesPayload = (
+  rings: PolygonCoordinates,
+  existing?: PolygonCoordinates | null
+): PolygonCoordinates | undefined => {
+  if (rings.length > 0) {
+    return rings;
+  }
+  if (existing && existing.length > 0) {
+    return [];
+  }
+  // Nothing entered and nothing to clear - omit the field entirely rather than
+  // send a clear signal for geometry that never existed.
+  return undefined;
+};
+
 export interface GeometrySummary {
   hasGeometry: boolean;
   ringCount: number;

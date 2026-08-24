@@ -54,6 +54,7 @@ const AreaManagementPage: React.FC = () => {
 
         <AreaManagementComponent
           trees={trees}
+          countries={countries}
           isLoading={isLoadingCountries || isLoadingTrees}
           onReloadTrees={reloadTrees}
         />

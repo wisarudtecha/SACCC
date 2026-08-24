@@ -116,12 +116,23 @@ export interface AreaAuditFields {
 // to avoid colliding with the unrelated Province/District/Subdistrict
 // address-lookup types above, which model a different API.
 
+// Geometry is optional on every level: AreaCountryInput / AreaProvinceInput /
+// AreaDistrictInput all accept `coordinates`, and the country additionally
+// accepts the shape metrics. Omitting the field is not the same as clearing it -
+// gqlMapper strips undefined/null from mutation inputs, so a cleared boundary
+// has to travel as an empty array. Build these payloads with
+// toCoordinatesPayload() from @/cms/utils/areaGeometry rather than by hand.
+
 export interface CountryCreateData {
   active: boolean;
   countryId: string;
   en: string;
   nameSpace: string;
   th: string;
+  coordinates?: PolygonCoordinates;
+  yearOfData?: number | null;
+  shapeArea?: number | null;
+  shapeLength?: number | null;
 }
 
 export interface CountryUpdateData extends CountryCreateData {
@@ -135,12 +146,17 @@ export interface AreaProvinceCreateData {
   nameSpace: string;
   provId: string;
   th: string;
+  coordinates?: PolygonCoordinates;
 }
 
 export interface AreaProvinceUpdateData extends AreaProvinceCreateData {
   id: number;
 }
 
+// No `postcode`: AreaDistrictInput has no such field, even though the district
+// read response and the org tree both carry one and TemplateDistrictInput does
+// accept it. Org postcode is therefore read-only - raised with backend as a
+// probable oversight; adding it here would only send a field that gets dropped.
 export interface AreaDistrictCreateData {
   active: boolean;
   countryId: string;
@@ -149,6 +165,7 @@ export interface AreaDistrictCreateData {
   nameSpace: string;
   provId: string;
   th: string;
+  coordinates?: PolygonCoordinates;
 }
 
 export interface AreaDistrictUpdateData extends AreaDistrictCreateData {
@@ -163,13 +180,17 @@ export interface AreaDistrictUpdateData extends AreaDistrictCreateData {
 // rows in store/api/area.ts's `Area`, and from the address-lookup
 // Province/District above) - each carries its own real numeric `id`.
 
-// The geometry/provenance fields below are read-only: the org-level write
-// inputs (AreaCountryInput / AreaProvinceInput / AreaDistrictInput) carry no
-// coordinates, so an org area only gains geometry by being created from, or
-// synced with, an area template - see @/cms/types/areaTemplate.
+// `orgId` and `sourceTemplateId` are server-owned and read-only. The rest,
+// geometry included, is writable - see the *CreateData types above.
+//
+// sourceTemplateId is the provenance link back to the area template a record was
+// imported from or last synced with (@/cms/types/areaTemplate). It is absent on
+// records authored by hand, which is what distinguishes local geography from
+// adopted geography.
 
 export interface Country extends AreaAuditFields {
   id: number;
+  orgId?: string;
   countryId: string;
   en: string;
   th: string;
@@ -179,10 +200,12 @@ export interface Country extends AreaAuditFields {
   yearOfData?: number | null;
   shapeArea?: number | null;
   shapeLength?: number | null;
+  sourceTemplateId?: number | null;
 }
 
 export interface AreaProvince extends AreaAuditFields {
   id: number;
+  orgId?: string;
   provId: string;
   countryId: string;
   en: string;
@@ -190,10 +213,12 @@ export interface AreaProvince extends AreaAuditFields {
   active: boolean;
   nameSpace?: string;
   coordinates?: PolygonCoordinates | null;
+  sourceTemplateId?: number | null;
 }
 
 export interface AreaDistrict extends AreaAuditFields {
   id: number;
+  orgId?: string;
   distId: string;
   provId: string;
   countryId: string;
@@ -203,12 +228,28 @@ export interface AreaDistrict extends AreaAuditFields {
   nameSpace?: string;
   postcode?: string | null;
   coordinates?: PolygonCoordinates | null;
+  sourceTemplateId?: number | null;
 }
 
 // AreaManagementProps used to live here, describing the three flat arrays the
 // area page passed down. The page now fetches nested trees instead, and the
 // component owns its own prop type - see
 // components/admin/system-configuration/area/AreaManagement.tsx.
+
+/**
+ * The non-label fields an area form edits, bundled so the hierarchy view can
+ * hand them over in one setter per level instead of one per field - that prop
+ * list is already long enough.
+ *
+ * Only the country uses the shape metrics; province and district carry
+ * coordinates alone.
+ */
+export interface AreaRecordExtras {
+  coordinates?: PolygonCoordinates | null;
+  yearOfData?: number | null;
+  shapeArea?: number | null;
+  shapeLength?: number | null;
+}
 
 
 // ===================================================================

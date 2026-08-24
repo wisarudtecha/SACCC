@@ -1,4 +1,10 @@
 {
+  "0.56.0": {
+    "date": "2026-08-24",
+    "segment": "MINOR",
+    "notes": "feat(cms): edit an area's map boundary and shape details directly, and see which areas came from a template\n- When creating or editing a country, province or district under Area Management, staff can now enter or change its map boundary directly on the form, instead of a boundary only ever coming from an area template.\n- A country can additionally record its shape area, shape length and the year its boundary data is from.\n- Editing an area without touching its boundary now keeps the existing boundary instead of clearing it, and a boundary left blank is treated as having no boundary.\n- The area list now marks each country that was created from, or last updated from, an area template and shows which template it came from, so hand-drawn areas and template-based ones can be told apart at a glance.\n- The boundary entered on the form is checked before saving, so a badly formatted boundary is reported on the form itself rather than failing only when saved.\n- Available in Thai, English and Chinese.\n- changelog.json / package.json: bump version 0.55.0 -> 0.56.0",
+    "author": "Wisarud Techa"
+  },
   "0.55.0": {
     "date": "2026-08-24",
     "segment": "MINOR",

@@ -1832,6 +1832,9 @@
     "areaTemplate": {
       "name": "区域模板",
       "locked_notice": "该模板已发布并锁定。如需修改，请派生为新版本。",
+      "provenance": {
+        "from_template": "来自模板 #_ID_"
+      },
       "status": {
         "draft": "草稿",
         "published": "已发布"
@@ -2009,6 +2012,9 @@
         }
       },
       "form": {
+        "geometry": {
+          "hint": "可选。留空表示没有边界。"
+        },
         "country": {
           "header": {
             "create": "新建国家",
@@ -2028,6 +2034,14 @@
             "label": "名称（英文）",
             "placeholder": "请输入英文国家名称",
             "required": "英文国家名称为必填项"
+          },
+          "shapeArea": {
+            "label": "图形面积",
+            "placeholder": "例如 513120"
+          },
+          "shapeLength": {
+            "label": "图形周长",
+            "placeholder": "例如 5326"
           }
         },
         "province": {

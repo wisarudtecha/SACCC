@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { CloseIcon, FileIcon } from "@/core/icons";
 import { Modal } from "@/core/components/ui/modal";
 import { useTranslation } from "@/core/hooks/useTranslation";
-import type { AreaCountryTree } from "@/cms/types/area";
+import type { AreaCountryTree, AreaRecordExtras, Country, PolygonCoordinates } from "@/cms/types/area";
 import { describeGeometry } from "@/cms/utils/areaGeometry";
 import { capitalizeWords } from "@/core/utils/stringFormatters";
 import type { HierarchyItem, HierarchyConfig } from "@/core/types/hierarchy";
@@ -25,6 +25,9 @@ interface AreaHierarchyViewProps {
   // The org's country trees, already nested by the BFF. Replaces the three flat
   // lists this component used to re-join in the browser.
   trees: AreaCountryTree[];
+  // Country list records, purely for the fields the tree payload omits -
+  // currently just sourceTemplateId. Not a second source of hierarchy.
+  countries: Country[];
   showInactive: boolean;
   handleCountryDelete: (id: number) => void;
   handleCountryReset: () => void;
@@ -37,12 +40,14 @@ interface AreaHierarchyViewProps {
   setCountryCode: (code: string) => void;
   setCountryTh: (th: string) => void;
   setCountryEn: (en: string) => void;
+  setCountryExtras: (extras: AreaRecordExtras) => void;
   setProvId: (id: string) => void;
   setProvinceIsOpen: (isOpen: boolean) => void;
   setProvinceCode: (code: string) => void;
   setProvCountryId: (countryId: string) => void;
   setProvinceTh: (th: string) => void;
   setProvinceEn: (en: string) => void;
+  setProvinceExtras: (extras: AreaRecordExtras) => void;
   setDistId: (id: string) => void;
   setDistrictIsOpen: (isOpen: boolean) => void;
   setDistrictCode: (code: string) => void;
@@ -50,10 +55,12 @@ interface AreaHierarchyViewProps {
   setDistProvId: (provId: string) => void;
   setDistrictTh: (th: string) => void;
   setDistrictEn: (en: string) => void;
+  setDistrictExtras: (extras: AreaRecordExtras) => void;
 }
 
 const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
   trees,
+  countries,
   showInactive,
   handleCountryDelete,
   handleCountryReset,
@@ -66,12 +73,14 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
   setCountryCode,
   setCountryTh,
   setCountryEn,
+  setCountryExtras,
   setProvId,
   setProvinceIsOpen,
   setProvinceCode,
   setProvCountryId,
   setProvinceTh,
   setProvinceEn,
+  setProvinceExtras,
   setDistId,
   setDistrictIsOpen,
   setDistrictCode,
@@ -79,6 +88,7 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
   setDistProvId,
   setDistrictTh,
   setDistrictEn,
+  setDistrictExtras,
 }) => {
   const { language, t } = useTranslation();
 
@@ -101,6 +111,11 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
   // countryId nor provId, so the parent codes are threaded down while walking.
   // The metadata keys are unchanged, which is why every edit/create handler
   // below still works untouched.
+  const sourceTemplateIdByCountry = useMemo(
+    () => new Map((countries || []).map(country => [country.id, country.sourceTemplateId])),
+    [countries]
+  );
+
   const convertToHierarchyItems = useCallback((): HierarchyItem[] => {
     const items: HierarchyItem[] = [];
 
@@ -114,7 +129,18 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
         level: 0,
         metadata: {
           countryCode: country.countryId,
-          geometry: describeGeometry(country.coordinates)
+          geometry: describeGeometry(country.coordinates),
+          // Raw rings so the edit form can pre-fill and, crucially, resend them -
+          // an update that omits coordinates may blank the boundary.
+          coordinates: country.coordinates,
+          yearOfData: country.yearOfData,
+          shapeArea: country.shapeArea,
+          shapeLength: country.shapeLength,
+          // Provenance is country-only: GetOrgCountryTree's payload has no
+          // sourceTemplateId, so it comes from the country list instead. The
+          // province/district equivalents would need the flat lists this page
+          // deliberately stopped fetching.
+          sourceTemplateId: sourceTemplateIdByCountry.get(country.id)
         }
       });
 
@@ -129,7 +155,8 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
           metadata: {
             countryCode: country.countryId,
             provinceCode: province.provId,
-            geometry: describeGeometry(province.coordinates)
+            geometry: describeGeometry(province.coordinates),
+            coordinates: province.coordinates
           }
         });
 
@@ -146,7 +173,8 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
               provinceCode: province.provId,
               districtCode: district.distId,
               postcode: district.postcode,
-              geometry: describeGeometry(district.coordinates)
+              geometry: describeGeometry(district.coordinates),
+              coordinates: district.coordinates
             }
           });
         });
@@ -154,7 +182,7 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
     });
 
     return items;
-  }, [trees, language]);
+  }, [trees, language, sourceTemplateIdByCountry]);
 
   const [hierarchyItems, setHierarchyItems] = useState<HierarchyItem[]>(
     convertToHierarchyItems()
@@ -210,10 +238,16 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
     setCountryCode(item.metadata?.countryCode as string || "");
     setCountryTh(language === "th" && item.name || item.secondaryName || "");
     setCountryEn(language === "th" && item.secondaryName || item.name || "");
+    setCountryExtras({
+      coordinates: item.metadata?.coordinates as PolygonCoordinates | null | undefined,
+      yearOfData: item.metadata?.yearOfData as number | null | undefined,
+      shapeArea: item.metadata?.shapeArea as number | null | undefined,
+      shapeLength: item.metadata?.shapeLength as number | null | undefined
+    });
     setCountryIsOpen(true);
     setProvinceIsOpen(false);
     setDistrictIsOpen(false);
-  }, [language, handleProvinceReset, handleDistrictReset, setCountryId, setCountryCode, setCountryTh, setCountryEn, setCountryIsOpen, setProvinceIsOpen, setDistrictIsOpen]);
+  }, [language, handleProvinceReset, handleDistrictReset, setCountryId, setCountryCode, setCountryTh, setCountryEn, setCountryExtras, setCountryIsOpen, setProvinceIsOpen, setDistrictIsOpen]);
 
   const handleEditProvince = useCallback((item: HierarchyItem) => {
     handleCountryReset();
@@ -223,10 +257,13 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
     setProvinceTh(language === "th" && item.name || item.secondaryName || "");
     setProvinceEn(language === "th" && item.secondaryName || item.name || "");
     setProvCountryId(item?.metadata?.countryCode as string || "");
+    setProvinceExtras({
+      coordinates: item.metadata?.coordinates as PolygonCoordinates | null | undefined
+    });
     setCountryIsOpen(false);
     setProvinceIsOpen(true);
     setDistrictIsOpen(false);
-  }, [language, handleCountryReset, handleDistrictReset, setProvinceEn, setProvinceCode, setProvinceTh, setProvCountryId, setProvId, setProvinceIsOpen, setCountryIsOpen, setDistrictIsOpen]);
+  }, [language, handleCountryReset, handleDistrictReset, setProvinceEn, setProvinceCode, setProvinceTh, setProvCountryId, setProvinceExtras, setProvId, setProvinceIsOpen, setCountryIsOpen, setDistrictIsOpen]);
 
   const handleEditDistrict = useCallback((item: HierarchyItem) => {
     handleCountryReset();
@@ -237,19 +274,31 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
     setDistrictEn(language === "th" && item.secondaryName || item.name || "");
     setDistProvId(item?.metadata?.provinceCode as string || "");
     setDistCountryId(item?.metadata?.countryCode as string || "");
+    setDistrictExtras({
+      coordinates: item.metadata?.coordinates as PolygonCoordinates | null | undefined
+    });
     setCountryIsOpen(false);
     setProvinceIsOpen(false);
     setDistrictIsOpen(true);
-  }, [language, handleCountryReset, handleProvinceReset, setDistId, setDistrictCode, setDistrictTh, setDistrictEn, setDistProvId, setDistCountryId, setCountryIsOpen, setProvinceIsOpen, setDistrictIsOpen]);
+  }, [language, handleCountryReset, handleProvinceReset, setDistId, setDistrictCode, setDistrictTh, setDistrictEn, setDistProvId, setDistCountryId, setDistrictExtras, setCountryIsOpen, setProvinceIsOpen, setDistrictIsOpen]);
 
   // Read-only geometry indicator. Polygons arrive with the tree but are authored
   // in area templates, not here, so this only reports what a row carries.
   const geometryLabels = useCallback((item: HierarchyItem): string[] => {
+    const labels: string[] = [];
+
     const geometry = item.metadata?.geometry as { hasGeometry: boolean; pointCount: number } | undefined;
-    if (!geometry?.hasGeometry) {
-      return [];
+    if (geometry?.hasGeometry) {
+      labels.push(t("crud.areaTemplate.geometry.summary").replace("_POINTS_", String(geometry.pointCount)));
     }
-    return [t("crud.areaTemplate.geometry.summary").replace("_POINTS_", String(geometry.pointCount))];
+
+    // Country rows only - see the note in convertToHierarchyItems.
+    const sourceTemplateId = item.metadata?.sourceTemplateId as number | null | undefined;
+    if (sourceTemplateId) {
+      labels.push(t("crud.areaTemplate.provenance.from_template").replace("_ID_", String(sourceTemplateId)));
+    }
+
+    return labels;
   }, [t]);
 
   // Configuration for the hierarchy view

@@ -539,11 +539,34 @@ curl --location 'http://localhost:3000/graphql' \
   "query": "mutation ($input: AreaCountryInput!) { Area { CreateCountry(input: $input) { status msg data desc } } }",
   "variables": {
     "input": {
+      "countryId": "AA",
+      "en": "AA",
+      "th": "ZZ",
       "active": true,
-      "countryId": "string",
-      "en": "string",
-      "nameSpace": "string",
-      "th": "string"
+      "nameSpace": "",
+      "coordinates": [
+        [
+          [
+            100.0,
+            13.0
+          ],
+          [
+            101.0,
+            13.0
+          ],
+          [
+            101.0,
+            14.0
+          ],
+          [
+            100.0,
+            13.0
+          ]
+        ]
+      ],
+      "yearOfData": 2026,
+      "shapeArea": 513120.0,
+      "shapeLength": 5326.0
     }
   }
 }'
@@ -558,12 +581,35 @@ curl --location 'http://localhost:3000/graphql' \
   "query": "mutation ($input: AreaCountryInput!) { Area { UpdateCountry(input: $input) { status msg data desc } } }",
   "variables": {
     "input": {
-      "id": 2,
+      "id": "21",
+      "countryId": "xxxx",
+      "en": "ppp",
+      "th": "ssss",
       "active": true,
-      "countryId": "string----",
-      "en": "string",
-      "nameSpace": "string",
-      "th": "string"
+      "nameSpace": "",
+      "coordinates": [
+        [
+          [
+            100.0,
+            13.0
+          ],
+          [
+            101.0,
+            13.0
+          ],
+          [
+            101.0,
+            14.0
+          ],
+          [
+            100.0,
+            13.0
+          ]
+        ]
+      ],
+      "yearOfData": 2026,
+      "shapeArea": 513120.0,
+      "shapeLength": 5326.0
     }
   }
 }'
@@ -593,12 +639,32 @@ curl --location 'http://localhost:3000/graphql' \
   "query": "mutation ($input: AreaProvinceInput!) { Area { CreateProvince(input: $input) { status msg data desc } } }",
   "variables": {
     "input": {
-      "provId": "ssss",
+      "countryId": "xxxx",
+      "provId": "10",
+      "en": "Sub-area",
+      "th": "Sub-area",
       "active": true,
-      "countryId": "string",
-      "en": "string",
-      "nameSpace": "string",
-      "th": "string"
+      "nameSpace": "",
+      "coordinates": [
+        [
+          [
+            100.4,
+            13.7
+          ],
+          [
+            100.6,
+            13.7
+          ],
+          [
+            100.6,
+            13.9
+          ],
+          [
+            100.4,
+            13.7
+          ]
+        ]
+      ]
     }
   }
 }'
@@ -613,13 +679,33 @@ curl --location 'http://localhost:3000/graphql' \
   "query": "mutation ($input: AreaProvinceInput!) { Area { UpdateProvince(input: $input) { status msg data desc } } }",
   "variables": {
     "input": {
-      "id": "1",
-      "provId": "AAA",
+      "id": "26",
+      "countryId": "xxxx",
+      "provId": "10",
+      "en": "AA",
+      "th": "BB",
       "active": true,
-      "countryId": "string",
-      "en": "string",
-      "nameSpace": "string",
-      "th": "string"
+      "nameSpace": "",
+      "coordinates": [
+        [
+          [
+            100.4,
+            13.7
+          ],
+          [
+            100.6,
+            13.7
+          ],
+          [
+            100.6,
+            13.9
+          ],
+          [
+            100.4,
+            13.7
+          ]
+        ]
+      ]
     }
   }
 }'
@@ -649,13 +735,33 @@ curl --location 'http://localhost:3000/graphql' \
   "query": "mutation ($input: AreaDistrictInput!) { Area { CreateDistrict(input: $input) { status msg data desc } } }",
   "variables": {
     "input": {
-      "countryId": "111",
-      "provId": "222",
-      "distId": "444",
+      "countryId": "xxxx",
+      "provId": "10",
+      "distId": "101",
       "active": true,
-      "en": "string",
+      "en": "D-1",
       "nameSpace": "string",
-      "th": "string"
+      "th": "D-1",
+      "coordinates": [
+        [
+          [
+            100.49,
+            13.75
+          ],
+          [
+            100.50,
+            13.75
+          ],
+          [
+            100.50,
+            13.76
+          ],
+          [
+            100.49,
+            13.75
+          ]
+        ]
+      ]
     }
   }
 }'
@@ -663,21 +769,41 @@ curl --location 'http://localhost:3000/graphql' \
 ## UpdateDistrict
 ### Description: Update an existing district
 ### REST API Endpoint: PATCH /api/v1/districts/{id}
-curl --location 'http://localhost:3000/graphql' \
+curl --location 'https://cc-bff-stg.one-sky.ai/graphql' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "mutation ($input: AreaDistrictInput!) { Area { UpdateDistrict(input: $input) { status msg data desc } } }",
   "variables": {
     "input": {
-      "id": "52",
+      "id": "106",
       "countryId": "111-",
       "provId": "222-",
       "distId": "444x",
       "active": true,
       "en": "stringp",
       "nameSpace": "string",
-      "th": "string"
+      "th": "string",
+      "coordinates": [
+        [
+          [
+            100.49,
+            13.75
+          ],
+          [
+            100.50,
+            13.75
+          ],
+          [
+            100.50,
+            13.76
+          ],
+          [
+            100.49,
+            13.75
+          ]
+        ]
+      ]
     }
   }
 }'

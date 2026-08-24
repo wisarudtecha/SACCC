@@ -10,7 +10,7 @@ import {
 import type { Column, FieldConfig } from "@/cms/types/product";
 import type { TemplateDistrict, TemplateProvince } from "@/cms/types/areaTemplate";
 import { isApiSuccess, resolveApiError, resolveApiMessage } from "@/cms/utils/apiResponse";
-import { formatPolygonRings, parsePolygonRings } from "@/cms/utils/areaGeometry";
+import { formatPolygonRings, parsePolygonRings, toCoordinatesPayload } from "@/cms/utils/areaGeometry";
 import { applyLocalTableQuery, INITIAL_LOCAL_QUERY, type LocalTableQuery } from "@/cms/utils/localTableQuery";
 import Form from "@/cms/components/crm/Form";
 import GeometryCell from "@/cms/components/admin/system-configuration/areaTemplate/GeometryCell";
@@ -128,7 +128,7 @@ const AreaTemplateDistrictView: React.FC<AreaTemplateDistrictViewProps> = ({
       postcode: String(formData.postcode || ""),
       active: Boolean(formData.active),
       nameSpace: "",
-      coordinates: parsed.rings.length > 0 ? parsed.rings : null
+      coordinates: toCoordinatesPayload(parsed.rings, editing?.coordinates)
     };
 
     try {

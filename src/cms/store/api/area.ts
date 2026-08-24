@@ -83,6 +83,37 @@ export const areaApi = baseApi.injectEndpoints({
         }),
 
         // ===================================================================
+        // Single records
+        // ===================================================================
+        // The authoritative read for one row. The org tree carries the same data
+        // but is a server-side cache, so prefer these wherever a stale record
+        // would be written back.
+
+        // GET api/v1/area/countries/{id}
+        getCountryById: builder.query<ApiResponse<Country>, string | number>({
+            query: id => ({
+                url: `/area/countries/${id}`,
+            }),
+            providesTags: ["Area"],
+        }),
+
+        // GET api/v1/area/provinces/{id}
+        getProvinceById: builder.query<ApiResponse<AreaProvince>, string | number>({
+            query: id => ({
+                url: `/area/provinces/${id}`,
+            }),
+            providesTags: ["Area"],
+        }),
+
+        // GET api/v1/area/districts/{id}
+        getDistrictById: builder.query<ApiResponse<AreaDistrict>, string | number>({
+            query: id => ({
+                url: `/area/districts/${id}`,
+            }),
+            providesTags: ["Area"],
+        }),
+
+        // ===================================================================
         // Country
         // ===================================================================
 
@@ -220,6 +251,12 @@ export const {
     useGetCountriesQuery,
     useGetProvincesQuery,
     useGetDistrictsQuery,
+    useGetCountryByIdQuery,
+    useGetProvinceByIdQuery,
+    useGetDistrictByIdQuery,
+    useLazyGetCountryByIdQuery,
+    useLazyGetProvinceByIdQuery,
+    useLazyGetDistrictByIdQuery,
     useCreateCountryMutation,
     useUpdateCountryMutation,
     useDeleteCountryMutation,

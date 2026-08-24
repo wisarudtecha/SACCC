@@ -8,9 +8,12 @@
 // hierarchy that carries real polygon geometry. Templates are edited as drafts,
 // locked by publishing, and forked into a new draft version to change again.
 // An organization takes one on via CreateOrgAreaFromTemplateCountry (first import)
-// or SyncTemplateCountry (subsequent merges) - the org-level write inputs in
-// @/cms/types/area carry no coordinates, so this is the only route by which org
-// area data gains geometry.
+// or SyncTemplateCountry (subsequent merges).
+//
+// Adopting a template is one way an org gets geometry, not the only one: the
+// org-level write inputs accept `coordinates` directly, so an org area can also
+// be authored by hand. A record that came from a template is identifiable by its
+// `sourceTemplateId` (see Country/AreaProvince/AreaDistrict in @/cms/types/area).
 
 import type {
   AreaAuditFields,

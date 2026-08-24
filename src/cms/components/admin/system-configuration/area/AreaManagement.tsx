@@ -25,9 +25,10 @@ import type {
   CountryCreateData, CountryUpdateData,
   AreaProvinceCreateData, AreaProvinceUpdateData,
   AreaDistrictCreateData, AreaDistrictUpdateData,
-  AreaCountryTree
+  AreaCountryTree, AreaRecordExtras, Country, PolygonCoordinates
 } from "@/cms/types/area";
 import { isApiSuccess, resolveApiError, resolveApiMessage } from "@/cms/utils/apiResponse";
+import { formatPolygonRings, parsePolygonRings, toCoordinatesPayload } from "@/cms/utils/areaGeometry";
 import { filterAreaTrees, findCountryIdByCode } from "@/cms/utils/areaTree";
 import AreaFormModal, { type AreaFormField } from "@/cms/components/admin/system-configuration/area/AreaFormModal";
 import AreaHierarchyView from "@/cms/components/admin/system-configuration/area/AreaHierarchyView";
@@ -38,12 +39,17 @@ import Button from "@/core/components/ui/button/Button";
 interface AreaManagementProps {
   /** The org's country trees, already nested by the BFF. */
   trees: AreaCountryTree[];
+  /**
+   * Country list records. The hierarchy comes from `trees`; this supplies only
+   * the fields the tree payload omits - currently `sourceTemplateId`.
+   */
+  countries: Country[];
   isLoading: boolean;
   /** Re-runs the tree fetches after data changes underneath them. */
   onReloadTrees: () => void;
 }
 
-const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoading, onReloadTrees }) => {
+const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countries, isLoading, onReloadTrees }) => {
   const permissions = usePermissions();
   const { toasts, addToast, removeToast } = useToast();
   const { language, t } = useTranslation();
@@ -69,7 +75,15 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
   const [countryCode, setCountryCode] = useState("");
   const [countryTh, setCountryTh] = useState("");
   const [countryEn, setCountryEn] = useState("");
-  const [countryValidateErrors, setCountryValidateErrors] = useState({ countryCode: "", countryTh: "", countryEn: "" });
+  const [countryValidateErrors, setCountryValidateErrors] = useState({ countryCode: "", countryTh: "", countryEn: "", coordinates: "" });
+  // Geometry is edited as text and submitted as rings. `existing*` holds what the
+  // record already had, so an edit that never touches the boundary still resends
+  // it - see toCoordinatesPayload for why omitting is not safe.
+  const [countryCoordinatesText, setCountryCoordinatesText] = useState("");
+  const [existingCountryCoordinates, setExistingCountryCoordinates] = useState<PolygonCoordinates | null>(null);
+  const [countryYearOfData, setCountryYearOfData] = useState("");
+  const [countryShapeArea, setCountryShapeArea] = useState("");
+  const [countryShapeLength, setCountryShapeLength] = useState("");
 
   // Province
   const [provId, setProvId] = useState<string>("");
@@ -77,7 +91,9 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
   const [provCountryId, setProvCountryId] = useState("");
   const [provinceTh, setProvinceTh] = useState("");
   const [provinceEn, setProvinceEn] = useState("");
-  const [provValidateErrors, setProvValidateErrors] = useState({ provinceCode: "", countryId: "", provinceTh: "", provinceEn: "" });
+  const [provValidateErrors, setProvValidateErrors] = useState({ provinceCode: "", countryId: "", provinceTh: "", provinceEn: "", coordinates: "" });
+  const [provinceCoordinatesText, setProvinceCoordinatesText] = useState("");
+  const [existingProvinceCoordinates, setExistingProvinceCoordinates] = useState<PolygonCoordinates | null>(null);
 
   // District
   const [distId, setDistId] = useState<string>("");
@@ -86,7 +102,9 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
   const [distProvId, setDistProvId] = useState("");
   const [districtTh, setDistrictTh] = useState("");
   const [districtEn, setDistrictEn] = useState("");
-  const [distValidateErrors, setDistValidateErrors] = useState({ districtCode: "", countryId: "", provId: "", districtTh: "", districtEn: "" });
+  const [distValidateErrors, setDistValidateErrors] = useState({ districtCode: "", countryId: "", provId: "", districtTh: "", districtEn: "", coordinates: "" });
+  const [districtCoordinatesText, setDistrictCoordinatesText] = useState("");
+  const [existingDistrictCoordinates, setExistingDistrictCoordinates] = useState<PolygonCoordinates | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -164,15 +182,22 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
   // Validation before saving
   // ===================================================================
 
+  /** Geometry is optional; only a non-empty, malformed value is an error. */
+  const geometryError = useCallback((text: string): string => {
+    const parsed = parsePolygonRings(text);
+    return parsed.error ? t(`crud.areaTemplate.geometry.error.${parsed.error}`) : "";
+  }, [t]);
+
   const validateCountry = useCallback((): boolean => {
     const errors = {
       countryCode: countryCode.trim() ? "" : t("crud.area.form.country.countryCode.required"),
       countryTh: countryTh.trim() ? "" : t("crud.area.form.country.countryTh.required"),
       countryEn: countryEn.trim() ? "" : t("crud.area.form.country.countryEn.required"),
+      coordinates: geometryError(countryCoordinatesText),
     };
     setCountryValidateErrors(errors);
     return Object.values(errors).every(message => !message);
-  }, [countryCode, countryEn, countryTh, t]);
+  }, [countryCode, countryCoordinatesText, countryEn, countryTh, geometryError, t]);
 
   const validateProvince = useCallback((): boolean => {
     const errors = {
@@ -180,10 +205,11 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
       provinceCode: provinceCode.trim() ? "" : t("crud.area.form.province.provinceCode.required"),
       provinceTh: provinceTh.trim() ? "" : t("crud.area.form.province.provinceTh.required"),
       provinceEn: provinceEn.trim() ? "" : t("crud.area.form.province.provinceEn.required"),
+      coordinates: geometryError(provinceCoordinatesText),
     };
     setProvValidateErrors(errors);
     return Object.values(errors).every(message => !message);
-  }, [provCountryId, provinceCode, provinceEn, provinceTh, t]);
+  }, [provCountryId, provinceCode, provinceCoordinatesText, provinceEn, provinceTh, geometryError, t]);
 
   const validateDistrict = useCallback((): boolean => {
     const errors = {
@@ -192,10 +218,11 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
       districtCode: districtCode.trim() ? "" : t("crud.area.form.district.districtCode.required"),
       districtTh: districtTh.trim() ? "" : t("crud.area.form.district.districtTh.required"),
       districtEn: districtEn.trim() ? "" : t("crud.area.form.district.districtEn.required"),
+      coordinates: geometryError(districtCoordinatesText),
     };
     setDistValidateErrors(errors);
     return Object.values(errors).every(message => !message);
-  }, [distCountryId, distProvId, districtCode, districtEn, districtTh, t]);
+  }, [distCountryId, distProvId, districtCode, districtCoordinatesText, districtEn, districtTh, geometryError, t]);
 
   // ===================================================================
   // Country CRUD
@@ -206,7 +233,21 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
     setCountryCode("");
     setCountryTh("");
     setCountryEn("");
-    setCountryValidateErrors({ countryCode: "", countryTh: "", countryEn: "" });
+    setCountryCoordinatesText("");
+    setExistingCountryCoordinates(null);
+    setCountryYearOfData("");
+    setCountryShapeArea("");
+    setCountryShapeLength("");
+    setCountryValidateErrors({ countryCode: "", countryTh: "", countryEn: "", coordinates: "" });
+  }, []);
+
+  /** Seeds the non-label country fields when the hierarchy opens an edit. */
+  const applyCountryExtras = useCallback((extras: AreaRecordExtras) => {
+    setCountryCoordinatesText(formatPolygonRings(extras.coordinates));
+    setExistingCountryCoordinates(extras.coordinates ?? null);
+    setCountryYearOfData(extras.yearOfData != null ? String(extras.yearOfData) : "");
+    setCountryShapeArea(extras.shapeArea != null ? String(extras.shapeArea) : "");
+    setCountryShapeLength(extras.shapeLength != null ? String(extras.shapeLength) : "");
   }, []);
 
   const handleCountryDelete = useCallback(async (id: number) => {
@@ -238,12 +279,21 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
     if (!validateCountry()) {
       return;
     }
+    // validateCountry already rejected malformed geometry, so this parse cannot
+    // fail here; rings is [] when the field is empty.
+    const { rings = [] } = parsePolygonRings(countryCoordinatesText);
     const countryData: CountryCreateData | CountryUpdateData = {
       active: true,
       countryId: countryCode,
       en: countryEn,
       nameSpace: "",
       th: countryTh,
+      // Resends the existing boundary when the user did not touch it. Dropping
+      // the field here is what would let a rename blank the geometry.
+      coordinates: toCoordinatesPayload(rings, existingCountryCoordinates),
+      yearOfData: countryYearOfData.trim() ? Number(countryYearOfData) : null,
+      shapeArea: countryShapeArea.trim() ? Number(countryShapeArea) : null,
+      shapeLength: countryShapeLength.trim() ? Number(countryShapeLength) : null,
     };
     try {
       setLoading(true);
@@ -276,7 +326,8 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
       setLoading(false);
     }
   }, [
-    countryCode, countryEn, countryId, countryTh, permissions, addToast,
+    countryCode, countryEn, countryId, countryTh, countryCoordinatesText, existingCountryCoordinates,
+    countryYearOfData, countryShapeArea, countryShapeLength, permissions, addToast,
     createCountry, updateCountry, validateCountry, handleCountryReset, refreshAfterWrite, t
   ]);
 
@@ -290,7 +341,14 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
     setProvCountryId("");
     setProvinceTh("");
     setProvinceEn("");
-    setProvValidateErrors({ provinceCode: "", countryId: "", provinceTh: "", provinceEn: "" });
+    setProvinceCoordinatesText("");
+    setExistingProvinceCoordinates(null);
+    setProvValidateErrors({ provinceCode: "", countryId: "", provinceTh: "", provinceEn: "", coordinates: "" });
+  }, []);
+
+  const applyProvinceExtras = useCallback((extras: AreaRecordExtras) => {
+    setProvinceCoordinatesText(formatPolygonRings(extras.coordinates));
+    setExistingProvinceCoordinates(extras.coordinates ?? null);
   }, []);
 
   const handleProvinceDelete = useCallback(async (id: number) => {
@@ -323,6 +381,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
     if (!validateProvince()) {
       return;
     }
+    const { rings = [] } = parsePolygonRings(provinceCoordinatesText);
     const provinceData: AreaProvinceCreateData | AreaProvinceUpdateData = {
       active: true,
       countryId: provCountryId,
@@ -330,6 +389,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
       nameSpace: "",
       provId: provinceCode,
       th: provinceTh,
+      coordinates: toCoordinatesPayload(rings, existingProvinceCoordinates),
     };
     try {
       setLoading(true);
@@ -361,7 +421,8 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
       setLoading(false);
     }
   }, [
-    provCountryId, provId, provinceCode, provinceEn, provinceTh, permissions, addToast,
+    provCountryId, provId, provinceCode, provinceEn, provinceTh, provinceCoordinatesText,
+    existingProvinceCoordinates, permissions, addToast,
     createProvince, updateProvince, validateProvince, handleProvinceReset, refreshAfterWrite, t
   ]);
 
@@ -376,7 +437,14 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
     setDistProvId("");
     setDistrictTh("");
     setDistrictEn("");
-    setDistValidateErrors({ districtCode: "", countryId: "", provId: "", districtTh: "", districtEn: "" });
+    setDistrictCoordinatesText("");
+    setExistingDistrictCoordinates(null);
+    setDistValidateErrors({ districtCode: "", countryId: "", provId: "", districtTh: "", districtEn: "", coordinates: "" });
+  }, []);
+
+  const applyDistrictExtras = useCallback((extras: AreaRecordExtras) => {
+    setDistrictCoordinatesText(formatPolygonRings(extras.coordinates));
+    setExistingDistrictCoordinates(extras.coordinates ?? null);
   }, []);
 
   const handleDistrictDelete = useCallback(async (id: number) => {
@@ -412,6 +480,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
     if (!validateDistrict()) {
       return;
     }
+    const { rings = [] } = parsePolygonRings(districtCoordinatesText);
     const districtData: AreaDistrictCreateData | AreaDistrictUpdateData = {
       active: true,
       countryId: distCountryId,
@@ -420,6 +489,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
       nameSpace: "",
       provId: distProvId,
       th: districtTh,
+      coordinates: toCoordinatesPayload(rings, existingDistrictCoordinates),
     };
     try {
       setLoading(true);
@@ -451,7 +521,8 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
       setLoading(false);
     }
   }, [
-    distCountryId, distId, distProvId, districtCode, districtEn, districtTh, permissions, addToast,
+    distCountryId, distId, distProvId, districtCode, districtEn, districtTh, districtCoordinatesText,
+    existingDistrictCoordinates, permissions, addToast,
     createDistrict, updateDistrict, validateDistrict, handleDistrictReset, refreshAfterWrite, t
   ]);
 
@@ -486,6 +557,40 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
       value: countryEn,
       error: countryValidateErrors.countryEn,
       onChange: setCountryEn
+    },
+    {
+      key: "countryYearOfData",
+      type: "number",
+      label: t("crud.areaTemplate.field.yearOfData.label"),
+      placeholder: t("crud.areaTemplate.field.yearOfData.placeholder"),
+      value: countryYearOfData,
+      onChange: setCountryYearOfData
+    },
+    {
+      key: "countryShapeArea",
+      type: "number",
+      label: t("crud.area.form.country.shapeArea.label"),
+      placeholder: t("crud.area.form.country.shapeArea.placeholder"),
+      value: countryShapeArea,
+      onChange: setCountryShapeArea
+    },
+    {
+      key: "countryShapeLength",
+      type: "number",
+      label: t("crud.area.form.country.shapeLength.label"),
+      placeholder: t("crud.area.form.country.shapeLength.placeholder"),
+      value: countryShapeLength,
+      onChange: setCountryShapeLength
+    },
+    {
+      key: "countryCoordinates",
+      type: "textarea",
+      label: t("crud.areaTemplate.field.coordinates.label"),
+      placeholder: t("crud.areaTemplate.field.coordinates.placeholder"),
+      value: countryCoordinatesText,
+      error: countryValidateErrors.coordinates,
+      hint: t("crud.area.form.geometry.hint"),
+      onChange: setCountryCoordinatesText
     }
   ];
 
@@ -526,6 +631,16 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
       value: provinceEn,
       error: provValidateErrors.provinceEn,
       onChange: setProvinceEn
+    },
+    {
+      key: "provinceCoordinates",
+      type: "textarea",
+      label: t("crud.areaTemplate.field.coordinates.label"),
+      placeholder: t("crud.areaTemplate.field.coordinates.placeholder"),
+      value: provinceCoordinatesText,
+      error: provValidateErrors.coordinates,
+      hint: t("crud.area.form.geometry.hint"),
+      onChange: setProvinceCoordinatesText
     }
   ];
 
@@ -582,6 +697,16 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
       value: districtEn,
       error: distValidateErrors.districtEn,
       onChange: setDistrictEn
+    },
+    {
+      key: "districtCoordinates",
+      type: "textarea",
+      label: t("crud.areaTemplate.field.coordinates.label"),
+      placeholder: t("crud.areaTemplate.field.coordinates.placeholder"),
+      value: districtCoordinatesText,
+      error: distValidateErrors.coordinates,
+      hint: t("crud.area.form.geometry.hint"),
+      onChange: setDistrictCoordinatesText
     }
   ];
 
@@ -663,6 +788,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
             {!isLoading && hasRecords && (
               <AreaHierarchyView
                 trees={filteredTrees}
+                countries={countries || []}
                 showInactive={false}
                 handleCountryDelete={handleCountryDelete}
                 handleCountryReset={handleCountryReset}
@@ -675,12 +801,14 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
                 setCountryCode={setCountryCode}
                 setCountryTh={setCountryTh}
                 setCountryEn={setCountryEn}
+                setCountryExtras={applyCountryExtras}
                 setProvId={setProvId}
                 setProvinceIsOpen={setProvinceIsOpen}
                 setProvinceCode={setProvinceCode}
                 setProvCountryId={setProvCountryId}
                 setProvinceTh={setProvinceTh}
                 setProvinceEn={setProvinceEn}
+                setProvinceExtras={applyProvinceExtras}
                 setDistId={setDistId}
                 setDistrictIsOpen={setDistrictIsOpen}
                 setDistrictCode={setDistrictCode}
@@ -688,6 +816,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, isLoadi
                 setDistProvId={setDistProvId}
                 setDistrictTh={setDistrictTh}
                 setDistrictEn={setDistrictEn}
+                setDistrictExtras={applyDistrictExtras}
               />
             )}
             {/* Empty state */}

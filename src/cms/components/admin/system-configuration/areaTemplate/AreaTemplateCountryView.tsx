@@ -27,7 +27,7 @@ import { ROUTE_PREFIX } from "@/core/router/routePrefix";
 import type { Column, FieldConfig } from "@/cms/types/product";
 import type { TemplateCountry, TemplateCountryCreateData } from "@/cms/types/areaTemplate";
 import { isApiSuccess, resolveApiError, resolveApiMessage } from "@/cms/utils/apiResponse";
-import { formatPolygonRings, parsePolygonRings } from "@/cms/utils/areaGeometry";
+import { formatPolygonRings, parsePolygonRings, toCoordinatesPayload } from "@/cms/utils/areaGeometry";
 import { applyLocalTableQuery, INITIAL_LOCAL_QUERY, type LocalTableQuery } from "@/cms/utils/localTableQuery";
 import AreaTemplateForkModal from "@/cms/components/admin/system-configuration/areaTemplate/AreaTemplateForkModal";
 import AreaTemplateStatusBadge from "@/cms/components/admin/system-configuration/areaTemplate/AreaTemplateStatusBadge";
@@ -158,7 +158,7 @@ const AreaTemplateCountryView: React.FC = () => {
       nameSpace: "",
       // An untouched number input hands back "", which must not become 0.
       yearOfData: formData.yearOfData ? Number(formData.yearOfData) : null,
-      coordinates: parsed.rings.length > 0 ? parsed.rings : null
+      coordinates: toCoordinatesPayload(parsed.rings, editing?.coordinates)
     };
 
     try {
