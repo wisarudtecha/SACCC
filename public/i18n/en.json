@@ -4872,6 +4872,14 @@
       "borderColor": "Border Color",
       "fillColor": "Fill Color",
       "clearFillColor": "Clear Fill Color"
+    },
+    "category-article": {
+      "category": "Category",
+      "search-label": "Search",
+      "loading": "Loading...",
+      "load-more": "Load More",
+      "noresult": "No results found",
+      "noresult-des": "There are no articles in this category."
     }
   }
 }

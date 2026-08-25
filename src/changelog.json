@@ -1,4 +1,10 @@
 {
+  "0.60.1": {
+    "date": "2026-08-25",
+    "segment": "PATCH",
+    "notes": "chore(kms): complete the translations for the knowledge article browser\n- The Chinese menu labels for the knowledge base now separate 'Articles' (browsing) from 'Article management', matching how the Thai and English menus already read.\n- The category list, search box, loading and empty-result wording on the article browsing screen are now translated in Thai and English.\n- changelog.json / package.json: bump version 0.60.0 -> 0.60.1",
+    "author": "Wisarud Techa"
+  },
   "0.60.0": {
     "date": "2026-08-25",
     "segment": "MINOR",

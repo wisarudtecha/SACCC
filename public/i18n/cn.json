@@ -324,10 +324,11 @@
             "dashboard": "仪表板",
             "broadcast": "公告",
             "files": "文件",
-            "articles": "文章",
+            "articles": "文章管理",
             "category": "分类管理",
             "banner": "横幅管理",
-            "source": "来源管理"
+            "source": "来源管理",
+            "category-articles": "文章"
           }
         }
       },

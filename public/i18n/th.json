@@ -4903,6 +4903,14 @@
       "borderColor": "สีเส้นขอบ",
       "fillColor": "สีพื้น",
       "clearFillColor": "ล้างสีพื้น"
+    },
+     "category-article": {
+      "category": "หมวดหมู่",
+      "search-label": "ค้นหา",
+      "loading": "กำลังโหลด..",
+      "load-more": "เพิ่มเติม",
+      "noresult": "ไม่พบข้อมูล",
+      "noresult-des": "ไม่มีบทความในหมวดหมู่"
     }
   }
 }
