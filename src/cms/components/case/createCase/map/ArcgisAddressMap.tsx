@@ -206,6 +206,17 @@ function makePoint({ latitude, longitude }: ArcgisLatLon): Point {
   return new Point({ latitude, longitude });
 }
 
+/**
+ * True for the `AbortError` the SDK rejects a basemap/view load with when its
+ * request is cancelled mid-flight - most commonly React Strict Mode's dev-only
+ * mount -> unmount -> remount, which aborts the first mount's in-flight loads.
+ * The second mount's loads complete normally, so these are expected noise, not
+ * failures worth reporting.
+ */
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === "AbortError";
+}
+
 function ArcgisAddressMapBase({
   value,
   onSelect,
@@ -353,6 +364,11 @@ function ArcgisAddressMapBase({
       map.basemap = basemap;
 
       basemap.load().catch((error: unknown) => {
+        if (isAbortError(error)) {
+          // Cancelled, not failed (see isAbortError) - nothing to fall back
+          // from, since a newer selection or an unmount already superseded it.
+          return;
+        }
         // The Basemap Styles service rejected the request - most likely the API
         // key lacks the Basemaps privilege. Fall back to the legacy well-known
         // basemap so the user still gets a usable map. Not routed through
@@ -469,7 +485,15 @@ function ArcgisAddressMapBase({
         }
         setIsReady(true);
       },
-      (error: unknown) => reportError("Failed to initialise map", error)
+      (error: unknown) => {
+        if (isAbortError(error)) {
+          // This mount was unmounted before the view finished loading (see
+          // isAbortError) - `setIsReady` correctly never fires, and cleanup
+          // below has already run `view.destroy()`.
+          return;
+        }
+        reportError("Failed to initialise map", error);
+      }
     );
 
     // Reverse geocode: user clicked a point on the map.
