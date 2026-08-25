@@ -61,6 +61,7 @@ export const CaseLocationSection = ({
                             value={mapValue}
                             onSelect={handleMapSelect}
                             onError={handleMapError}
+                            address={caseState?.location}
                             readOnly={false}
                             height={320}
                             showPlaceButton

@@ -187,6 +187,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                                         caseId={staffOverlay.caseId}
                                         value={mapValue}
                                         onSelect={noopSelect}
+                                        address={caseData?.location}
                                         readOnly
                                         height={320}
                                         assignment={staffOverlay.assignment}
@@ -195,6 +196,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                                     <BoundaryMapField
                                         value={mapValue}
                                         onSelect={noopSelect}
+                                        address={caseData?.location}
                                         readOnly
                                         height={220}
                                         showPlaceButton

@@ -35,6 +35,8 @@ interface BoundaryMapFieldProps {
   value?: ArcgisLatLon | null;
   onSelect: (result: ArcgisAddressResult) => void;
   onError?: (message: string) => void;
+  /** Free-text location description, forwarded to ArcgisAddressMapField. */
+  address?: string;
   readOnly?: boolean;
   searchMode?: "always" | "expanded-only" | "never";
   height?: number | string;
@@ -63,6 +65,7 @@ function BoundaryMapFieldBase({
   value,
   onSelect,
   onError,
+  address,
   readOnly = false,
   searchMode,
   height = 320,
@@ -165,6 +168,7 @@ function BoundaryMapFieldBase({
       value={value}
       onSelect={onSelect}
       onError={onError}
+      address={address}
       readOnly={readOnly}
       searchMode={searchMode}
       height={height}

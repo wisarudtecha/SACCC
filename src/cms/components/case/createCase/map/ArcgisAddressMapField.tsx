@@ -40,6 +40,11 @@ interface ArcgisAddressMapFieldProps {
   value?: ArcgisLatLon | null;
   onSelect: (result: ArcgisAddressResult) => void;
   onError?: (message: string) => void;
+  /**
+   * Free-text location description, shown together with `value`'s coordinates
+   * on the expanded map only - see ArcgisAddressMap's `showLocationInfo`.
+   */
+  address?: string;
   /** View-only: clicks don't change the location. */
   readOnly?: boolean;
   /** Defaults to "always" for an editable map, "never" for a view-only one. */
@@ -92,6 +97,7 @@ function ArcgisAddressMapFieldBase({
   value,
   onSelect,
   onError,
+  address,
   readOnly = false,
   searchMode,
   height = 320,
@@ -210,6 +216,8 @@ function ArcgisAddressMapFieldBase({
             showTrail={showTrail}
             boundaries={boundaries}
             viewpointRef={expandedViewpointRef}
+            address={address}
+            showLocationInfo
             overlaySlot={overlaySlot?.({ isExpanded: true })}
             toolbarSlot={toolbarSlot?.({ isExpanded: true })}
           />

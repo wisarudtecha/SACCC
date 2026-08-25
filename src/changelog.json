@@ -1,4 +1,10 @@
 {
+  "0.60.0": {
+    "date": "2026-08-25",
+    "segment": "MINOR",
+    "notes": "feat(cms): show the case location and coordinates on the expanded map\n- Expanding a case map now shows the case's location description together with its coordinates in a small card at the bottom-left of the map, so the point on the map can be checked against the recorded address without leaving the map.\n- The card appears on the expanded map only, where there is room for it; the inline map on the form is unchanged.\n- This applies to the case location map on the case form, the read-only map on the case detail screen, and the staff map.\n- changelog.json / package.json: bump version 0.59.1 -> 0.60.0",
+    "author": "Wisarud Techa"
+  },
   "0.59.1": {
     "date": "2026-08-25",
     "segment": "PATCH",

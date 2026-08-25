@@ -164,6 +164,19 @@ interface ArcgisAddressMapProps {
    * survive that unmount - same reasoning as the staff/boundary state.
    */
   viewpointRef?: React.MutableRefObject<ArcgisMapViewpoint | null>;
+  /**
+   * Free-text location description to show alongside the coordinates in the
+   * on-map readout (see `showLocationInfo`). Owned by the caller - this
+   * component only knows `{ latitude, longitude }` via `value`, never an
+   * address string.
+   */
+  address?: string;
+  /**
+   * Show a persistent address + coordinates card, bottom-left. Off by default:
+   * ArcgisAddressMapField turns it on for the expanded map only, which has the
+   * room for it - the inline map does not.
+   */
+  showLocationInfo?: boolean;
   className?: string;
 }
 
@@ -243,6 +256,8 @@ function ArcgisAddressMapBase({
   onExpand,
   compactControls = false,
   viewpointRef,
+  address,
+  showLocationInfo = false,
   className = ""
 }: ArcgisAddressMapProps) {
   const { t, language } = useTranslation();
@@ -663,20 +678,32 @@ function ArcgisAddressMapBase({
           )}
         </div>
       )}
-      {/* One status line in this corner. Geocoding wins: it is transient and
-          tied to something the user just did, whereas a failed boundary load
-          persists and will still be there once the lookup finishes. */}
-      {isGeocoding ? (
-        <div className="absolute bottom-2 left-2 z-10 rounded bg-black/60 px-2 py-1 text-xs text-white">
-          Looking up address…
-        </div>
-      ) : (
-        hasBoundaryError && (
-          <div className="absolute bottom-2 left-2 z-10 rounded bg-black/60 px-2 py-1 text-xs text-white">
-            {t("case.display.map_boundary_error")}
+      {/* Bottom-left column: the persistent address/coordinates card (when
+          enabled) on top, then one status line below it. Geocoding wins over
+          the boundary error: it is transient and tied to something the user
+          just did, whereas a failed boundary load persists and will still be
+          there once the lookup finishes. */}
+      <div className="absolute bottom-2 left-2 z-10 flex flex-col gap-1">
+        {showLocationInfo && value && (
+          <div className="max-w-xs rounded-md bg-white/90 px-2 py-1 text-xs text-gray-700 shadow-sm dark:bg-gray-800/90 dark:text-gray-200">
+            {address && <div className="truncate font-medium">{address}</div>}
+            <div className="text-gray-500 dark:text-gray-400">
+              {t("case.display.location_coordinates")}: {value.latitude}, {value.longitude}
+            </div>
           </div>
-        )
-      )}
+        )}
+        {isGeocoding ? (
+          <div className="rounded bg-black/60 px-2 py-1 text-xs text-white">
+            Looking up address…
+          </div>
+        ) : (
+          hasBoundaryError && (
+            <div className="rounded bg-black/60 px-2 py-1 text-xs text-white">
+              {t("case.display.map_boundary_error")}
+            </div>
+          )
+        )}
+      </div>
       {overlaySlot}
     </div>
   );

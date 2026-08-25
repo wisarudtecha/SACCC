@@ -61,6 +61,8 @@ interface CaseStaffMapFieldProps {
   value?: ArcgisLatLon | null;
   onSelect: (result: ArcgisAddressResult) => void;
   onError?: (message: string) => void;
+  /** Free-text location description, forwarded to BoundaryMapField. */
+  address?: string;
   readOnly?: boolean;
   height?: number | string;
   className?: string;
@@ -76,6 +78,7 @@ function CaseStaffMapFieldBase({
   value,
   onSelect,
   onError,
+  address,
   readOnly = false,
   height = 320,
   className = "",
@@ -356,6 +359,7 @@ function CaseStaffMapFieldBase({
       value={value}
       onSelect={onSelect}
       onError={onError}
+      address={address}
       readOnly={readOnly}
       // Read-only map, but a dispatcher still needs to look around: selecting a
       // result moves the view without touching the case location. Large map
