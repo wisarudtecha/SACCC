@@ -12,13 +12,8 @@ import { memo } from "react";
 import { X } from "lucide-react";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import BoundaryLevelSection from "./BoundaryLevelSection";
-import { ADMIN_LEVELS, type AdminLevel, type BoundaryOption, type BoundarySelection } from "./boundaryTypes";
-
-const LEVEL_LABEL_KEYS: Readonly<Record<AdminLevel, string>> = {
-  province: "case.display.map_boundary_province",
-  district: "case.display.map_boundary_district",
-  subdistrict: "case.display.map_boundary_subdistrict"
-};
+import { BOUNDARY_LEVELS } from "./boundaryLevels";
+import type { AdminLevel, BoundaryOption, BoundarySelection } from "./boundaryTypes";
 
 interface BoundaryPickerPanelProps {
   options: Readonly<Record<AdminLevel, readonly BoundaryOption[]>>;
@@ -75,19 +70,19 @@ function BoundaryPickerPanelBase({
         // Scrolls as a whole as well as per section: three expanded sections are
         // taller than the panel's share of the map.
         <div className="min-h-0 flex-1 overflow-y-auto">
-          {ADMIN_LEVELS.map((level) => (
+          {BOUNDARY_LEVELS.map(({ level, labelKey, defaultVisible }) => (
             <BoundaryLevelSection
               key={level}
               level={level}
-              labelKey={LEVEL_LABEL_KEYS[level]}
+              labelKey={labelKey}
               options={options[level]}
               selectedCodes={draft[level]}
               onToggleCode={onToggleCode}
               onSetCodes={onSetCodes}
               isDarkTheme={isDarkTheme}
-              // District is the level dispatchers work in and the only one
-              // visible by default, so it is the one worth opening.
-              defaultOpen={level === "district"}
+              // The default-visible level is the only one drawn when the panel
+              // opens, so it is the one worth expanding.
+              defaultOpen={defaultVisible}
             />
           ))}
         </div>

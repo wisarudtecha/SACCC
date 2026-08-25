@@ -5,32 +5,42 @@
 // chunk that only renders a list of checkboxes.
 import type { Language } from "@/core/config/i18n";
 
-/** The three administrative levels, coarsest first. */
-export type AdminLevel = "province" | "district" | "subdistrict";
-
 /**
- * Iteration order for anything that walks all three levels. Coarsest first, so
- * a UI rendering in this order reads Province -> District -> Sub-district.
- * Note this is the opposite of DRAW order, where the finest level sits on top.
+ * Every administrative level either data source can produce, coarsest first.
+ *
+ * Four names for three layers, because the two sources do not use the same
+ * three. The static /geo files are Bangkok-shaped (province -> district ->
+ * subdistrict); the org area API is country-shaped (country -> province ->
+ * district). Which three are live is decided by the active source's level table
+ * - see BOUNDARY_LEVELS in boundaryLevels.ts. Nothing outside that table should
+ * name a level literally.
  */
-export const ADMIN_LEVELS: readonly AdminLevel[] = ["province", "district", "subdistrict"];
+export type AdminLevel = "country" | "province" | "district" | "subdistrict";
 
 /**
- * One selectable area, from the geometry-free index file. The picker renders
- * these; the map never reads them.
+ * One selectable area, from the geometry-free index. The picker renders these;
+ * the map never reads them.
  */
 export interface BoundaryOption {
-  /** Unique code for the level: "10", "1001", "104901". */
+  /** Unique code for the level: "TH", "10", "1001". */
   code: string;
-  /** Parent's code - province for a district, district for a sub-district. */
+  /** Parent's code - one level up, per the active level table. */
   parent: string | null;
   th: string;
   en: string;
   cn: string;
-  /** Palette slot, precomputed by adjacency colouring at build time. */
+  /** Palette slot. Baked into the static files; computed for the org source. */
   color: number;
 }
 
+/**
+ * Per-level records covering EVERY AdminLevel, not just the active three.
+ *
+ * Deliberately a full Record rather than a Partial: each source populates only
+ * the levels it has, but every consumer iterates the active level list, so the
+ * inactive key is allocated and never read. That costs one empty array and
+ * saves optional-chaining at a dozen call sites.
+ */
 export type BoundaryIndex = Readonly<Record<AdminLevel, readonly BoundaryOption[]>>;
 
 /** Which area codes are drawn, per level. */
@@ -50,7 +60,16 @@ export interface BoundaryLayerConfig {
   visibility: BoundaryVisibility;
 }
 
+/** Every level empty. Built once; the shape is the same for both sources. */
 export const EMPTY_BOUNDARY_SELECTION: BoundarySelection = {
+  country: [],
+  province: [],
+  district: [],
+  subdistrict: []
+};
+
+export const EMPTY_BOUNDARY_INDEX: BoundaryIndex = {
+  country: [],
   province: [],
   district: [],
   subdistrict: []
@@ -59,10 +78,10 @@ export const EMPTY_BOUNDARY_SELECTION: BoundarySelection = {
 /**
  * An option's name in the active language.
  *
- * Falls back to English, matching what the map's labels do: the generated data
- * already substitutes English where a Chinese name was unavailable, so this
- * guards only against a malformed index rather than the normal missing-name
- * case.
+ * Falls back to English. For the static files this guards only against a
+ * malformed index, since the generator already substitutes English where a
+ * Chinese name was unavailable. For the org source it is load-bearing: the area
+ * API carries `en` and `th` only, so `cn` is always the English name.
  */
 export function boundaryOptionName(option: BoundaryOption, language: Language): string {
   if (language === "th") {

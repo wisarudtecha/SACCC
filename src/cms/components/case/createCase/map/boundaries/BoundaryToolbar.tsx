@@ -18,23 +18,8 @@ import { Layers3, Shapes } from "lucide-react";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import MapControlGroup from "../MapControlGroup";
 import { MAP_CONTROL_SEGMENT_CLASS } from "../mapControlStyles";
-import { ADMIN_LEVELS, type AdminLevel, type BoundaryVisibility } from "./boundaryTypes";
-
-/**
- * Short labels - the row already carries map style, expand and (in the case
- * detail view) the staff controls, so the full level names would not fit.
- */
-const LEVEL_SHORT_KEYS: Readonly<Record<AdminLevel, string>> = {
-  province: "case.display.map_boundary_province_short",
-  district: "case.display.map_boundary_district_short",
-  subdistrict: "case.display.map_boundary_subdistrict_short"
-};
-
-const LEVEL_LABEL_KEYS: Readonly<Record<AdminLevel, string>> = {
-  province: "case.display.map_boundary_province",
-  district: "case.display.map_boundary_district",
-  subdistrict: "case.display.map_boundary_subdistrict"
-};
+import { BOUNDARY_LEVELS } from "./boundaryLevels";
+import type { AdminLevel, BoundaryVisibility } from "./boundaryTypes";
 
 interface BoundaryToolbarProps {
   visibility: BoundaryVisibility;
@@ -68,7 +53,7 @@ function BoundaryToolbarBase({
   const pickerLabel = t("case.display.map_boundary");
   // Also drives the collapsed trigger's highlight, so a small map still shows
   // at a glance that boundaries are switched on.
-  const isAnyLevelVisible = ADMIN_LEVELS.some((level) => visibility[level]);
+  const isAnyLevelVisible = BOUNDARY_LEVELS.some((config) => visibility[config.level]);
 
   return (
     <MapControlGroup
@@ -78,9 +63,9 @@ function BoundaryToolbarBase({
       isActive={isAnyLevelVisible}
       className={className}
     >
-      {ADMIN_LEVELS.map((level) => {
+      {BOUNDARY_LEVELS.map(({ level, labelKey, shortLabelKey }) => {
         const isActive = visibility[level];
-        const label = t(LEVEL_LABEL_KEYS[level]);
+        const label = t(labelKey);
         return (
           <button
             key={level}
@@ -95,7 +80,7 @@ function BoundaryToolbarBase({
                 : "text-gray-700 hover:bg-black/5 dark:text-gray-200 dark:hover:bg-white/10"
             }`}
           >
-            {t(LEVEL_SHORT_KEYS[level])}
+            {t(shortLabelKey)}
           </button>
         );
       })}

@@ -28,7 +28,6 @@
 // middle of the basemap, so a blue fill would compete with both. The validator
 // offered a blue-containing set with identical scores; this one was chosen for
 // that reason.
-import type { AdminLevel } from "./boundaryTypes";
 
 type Rgb = readonly [number, number, number];
 
@@ -53,13 +52,18 @@ const BOUNDARY_HUES: readonly BoundaryHue[] = [
 export const BOUNDARY_PALETTE_SIZE = BOUNDARY_HUES.length;
 
 /**
- * Per-level symbol weights.
+ * Symbol weights, by DEPTH rather than by level name.
  *
  * All three levels can be switched on at once, so they are told apart by FILL
  * WEIGHT and OUTLINE, not by hue - the hue is already spent on identifying the
- * area. Reading inward: a thick solid province edge, a medium solid district
- * edge, and a thin dashed sub-district edge, which is the conventional way to
- * draw a subdivision of the region it sits inside.
+ * area. Reading inward: a thick solid coarse edge, a medium solid middle edge,
+ * and a thin dashed fine edge, which is the conventional way to draw a
+ * subdivision of the region it sits inside.
+ *
+ * Keyed by depth because the level NAMES are not stable across data sources -
+ * "province" is the coarsest level in the local table and the middle one in the
+ * org table (see boundaryLevels.ts). Each level config picks the style for the
+ * slot it actually occupies.
  *
  * Fills stay faint on purpose. An operator is locating an incident against
  * street names on the basemap, not reading a choropleth, so the basemap has to
@@ -73,15 +77,26 @@ export interface BoundaryLevelStyle {
   outlineAlpha: number;
 }
 
-const LEVEL_STYLES: Readonly<Record<AdminLevel, BoundaryLevelStyle>> = {
-  province: { fillAlpha: 0.05, outlineWidth: 3, outlineStyle: "solid", outlineAlpha: 0.95 },
-  district: { fillAlpha: 0.15, outlineWidth: 1.5, outlineStyle: "solid", outlineAlpha: 0.9 },
-  subdistrict: { fillAlpha: 0.08, outlineWidth: 1, outlineStyle: "dash", outlineAlpha: 0.85 }
+export const TOP_LEVEL_STYLE: BoundaryLevelStyle = {
+  fillAlpha: 0.05,
+  outlineWidth: 3,
+  outlineStyle: "solid",
+  outlineAlpha: 0.95
 };
 
-export function getLevelStyle(level: AdminLevel): BoundaryLevelStyle {
-  return LEVEL_STYLES[level];
-}
+export const MID_LEVEL_STYLE: BoundaryLevelStyle = {
+  fillAlpha: 0.15,
+  outlineWidth: 1.5,
+  outlineStyle: "solid",
+  outlineAlpha: 0.9
+};
+
+export const FINE_LEVEL_STYLE: BoundaryLevelStyle = {
+  fillAlpha: 0.08,
+  outlineWidth: 1,
+  outlineStyle: "dash",
+  outlineAlpha: 0.85
+};
 
 /**
  * RGB for a palette slot. Out-of-range indexes wrap rather than throw: the index

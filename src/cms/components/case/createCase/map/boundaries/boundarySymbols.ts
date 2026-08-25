@@ -26,7 +26,7 @@ import SimpleLineSymbol from "@arcgis/core/symbols/SimpleLineSymbol.js";
 import TextSymbol from "@arcgis/core/symbols/TextSymbol.js";
 import UniqueValueRenderer from "@arcgis/core/renderers/UniqueValueRenderer.js";
 import type { Language } from "@/core/config/i18n";
-import { BOUNDARY_PALETTE_SIZE, boundaryRgba, getLevelStyle } from "./boundaryColors";
+import { BOUNDARY_PALETTE_SIZE, boundaryRgba } from "./boundaryColors";
 import type { BoundaryLevelConfig } from "./boundaryLevels";
 
 /** Label ink and halo. Halo is what keeps a name readable over any basemap. */
@@ -53,7 +53,7 @@ export function createBoundaryRenderer(
   config: BoundaryLevelConfig,
   isDarkTheme: boolean
 ): UniqueValueRenderer {
-  const style = getLevelStyle(config.level);
+  const style = config.style;
 
   const symbolFor = (colorIndex: number) =>
     new SimpleFillSymbol({
@@ -110,7 +110,9 @@ export function createBoundaryLabelClass(
       // No `family` - see the note at the top of this file.
       font: {
         size: config.labelSize,
-        weight: config.level === "subdistrict" ? "normal" : "bold"
+        // From the table, not from the level name: the finest level is called
+        // "subdistrict" in one data source and "district" in the other.
+        weight: config.labelWeight
       }
     })
   });

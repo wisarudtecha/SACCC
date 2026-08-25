@@ -1,4 +1,10 @@
 {
+  "0.59.0": {
+    "date": "2026-08-25",
+    "segment": "MINOR",
+    "notes": "feat(cms): draw the case map's administrative boundaries from the organization's own areas\n- The boundary layers on the case map now come from the organization's own area records instead of a fixed sample file covering Bangkok only, so every country, province and district the organization has set up can be shown on the map.\n- The boundary layer list now offers Country, Province and District, and opens with Province switched on; the previous Province / District / Sub-district set remains available as a reference view when needed.\n- Neighbouring areas are automatically given different colours so that areas sharing a border can always be told apart, and each area is labelled in the language the user is working in.\n- Areas that have been switched off are no longer drawn on the map, and editing an area now refreshes the map boundaries without needing a page reload.\n- Available in Thai, English and Chinese.\n- changelog.json / package.json: bump version 0.58.1 -> 0.59.0",
+    "author": "Wisarud Techa"
+  },
   "0.58.1": {
     "date": "2026-08-25",
     "segment": "PATCH",

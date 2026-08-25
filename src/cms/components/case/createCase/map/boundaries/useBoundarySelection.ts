@@ -16,8 +16,9 @@
 // state rather than letting the map own it.
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { boundarySource } from "./boundarySource";
+import { ADMIN_LEVELS, BOUNDARY_LEVELS } from "./boundaryLevels";
 import {
-  ADMIN_LEVELS,
+  EMPTY_BOUNDARY_INDEX,
   EMPTY_BOUNDARY_SELECTION,
   type AdminLevel,
   type BoundaryIndex,
@@ -28,19 +29,22 @@ import {
 } from "./boundaryTypes";
 
 /**
- * District is the level a dispatcher works in, so it is the one that starts on.
- * The other two are opt-in - three sets of polygons at once is a lot to hand
- * someone who only opened a case form.
+ * Exactly one level starts on - the one the active table marks defaultVisible
+ * (province for the org data, district for the local files). Three sets of
+ * polygons at once is a lot to hand someone who only opened a case form, so the
+ * rest are opt-in.
+ *
+ * Derived rather than written out, because the two sources do not share level
+ * names and a literal here would silently mean different things under each.
  */
-const DEFAULT_VISIBILITY: BoundaryVisibility = {
-  province: false,
-  district: true,
-  subdistrict: false
-};
+const DEFAULT_VISIBILITY: BoundaryVisibility = BOUNDARY_LEVELS.reduce<BoundaryVisibility>(
+  (visibility, config) => ({ ...visibility, [config.level]: config.defaultVisible }),
+  { country: false, province: false, district: false, subdistrict: false }
+);
 
 type OptionsByLevel = Readonly<Record<AdminLevel, readonly BoundaryOption[]>>;
 
-const EMPTY_OPTIONS: OptionsByLevel = { province: [], district: [], subdistrict: [] };
+const EMPTY_OPTIONS: OptionsByLevel = EMPTY_BOUNDARY_INDEX;
 
 export interface UseBoundarySelectionResult {
   /** Hand straight to ArcgisAddressMapField's `boundaries` prop. */
@@ -73,11 +77,10 @@ function sameCodes(a: readonly string[], b: readonly string[]): boolean {
 }
 
 function selectAll(index: BoundaryIndex): BoundarySelection {
-  return {
-    province: index.province.map((option) => option.code),
-    district: index.district.map((option) => option.code),
-    subdistrict: index.subdistrict.map((option) => option.code)
-  };
+  return ADMIN_LEVELS.reduce<BoundarySelection>(
+    (selection, level) => ({ ...selection, [level]: index[level].map((option) => option.code) }),
+    EMPTY_BOUNDARY_SELECTION
+  );
 }
 
 /**
@@ -86,29 +89,36 @@ function selectAll(index: BoundaryIndex): BoundarySelection {
  * Without this, deselecting a province would leave its districts selected but
  * unreachable in the picker - they would vanish from the list while still
  * drawing on the map, which reads as a bug.
+ *
+ * Walks the active levels top-down, carrying the set of codes that survived the
+ * level above; the top level has no parent to answer to and passes through
+ * untouched. Written as a fold over ADMIN_LEVELS rather than three named steps
+ * so it holds for whichever three levels the active source declares.
  */
 function pruneOrphans(index: BoundaryIndex, draft: BoundarySelection): BoundarySelection {
-  const provinces = new Set(draft.province);
-  const districts = new Set(
-    index.district
-      .filter((option) => option.parent !== null && provinces.has(option.parent))
-      .map((option) => option.code)
-  );
-  const nextDistricts = draft.district.filter((code) => districts.has(code));
+  let keptParents: Set<string> | null = null;
+  const pruned: Record<string, readonly string[]> = {};
 
-  const keptDistricts = new Set(nextDistricts);
-  const subdistricts = new Set(
-    index.subdistrict
-      .filter((option) => option.parent !== null && keptDistricts.has(option.parent))
-      .map((option) => option.code)
-  );
-  const nextSubdistricts = draft.subdistrict.filter((code) => subdistricts.has(code));
+  for (const level of ADMIN_LEVELS) {
+    if (keptParents === null) {
+      pruned[level] = draft[level];
+    }
+    else {
+      // Copied to a const so it narrows inside the callback - TypeScript widens
+      // a `let` back to its declared type across a closure boundary.
+      const parents = keptParents;
+      // Reachable codes at this level: those whose parent survived above.
+      const reachable = new Set(
+        index[level]
+          .filter((option) => option.parent !== null && parents.has(option.parent))
+          .map((option) => option.code)
+      );
+      pruned[level] = draft[level].filter((code) => reachable.has(code));
+    }
+    keptParents = new Set(pruned[level]);
+  }
 
-  return {
-    province: draft.province,
-    district: nextDistricts,
-    subdistrict: nextSubdistricts
-  };
+  return { ...EMPTY_BOUNDARY_SELECTION, ...pruned };
 }
 
 export function useBoundarySelection(): UseBoundarySelectionResult {
@@ -147,21 +157,35 @@ export function useBoundarySelection(): UseBoundarySelectionResult {
     // nothing until Apply.
     //
     // Each level narrows by what is SELECTED above it, not merely by what is
-    // available above it. Filtering sub-districts by "districts in the selected
-    // provinces" would still list all 180 of Bangkok's whenever Bangkok was
-    // ticked, which is exactly the list the cascade exists to avoid - and at
-    // country scale that would be ~7,255 rows. This also mirrors pruneOrphans,
-    // which drops the selection of any child whose parent is deselected.
-    const provinces = new Set(draft.province);
-    const districts = index.district.filter(
-      (option) => option.parent !== null && provinces.has(option.parent)
-    );
-    const selectedDistricts = new Set(draft.district);
-    const subdistricts = index.subdistrict.filter(
-      (option) => option.parent !== null && selectedDistricts.has(option.parent)
-    );
-    return { province: index.province, district: districts, subdistrict: subdistricts };
-  }, [index, draft.province, draft.district]);
+    // available above it. Filtering the finest level by "everything under the
+    // selected top level" would still list all 180 of Bangkok's sub-districts
+    // whenever Bangkok was ticked, which is exactly the list the cascade exists
+    // to avoid. This also mirrors pruneOrphans, which drops the selection of any
+    // child whose parent is deselected.
+    //
+    // Same top-down walk as pruneOrphans, over whichever levels are active.
+    const narrowed: Record<string, readonly BoundaryOption[]> = {};
+    let selectedParents: Set<string> | null = null;
+
+    for (const level of ADMIN_LEVELS) {
+      if (selectedParents === null) {
+        narrowed[level] = index[level];
+      }
+      else {
+        const parents = selectedParents;
+        narrowed[level] = index[level].filter(
+          (option) => option.parent !== null && parents.has(option.parent)
+        );
+      }
+      selectedParents = new Set(draft[level]);
+    }
+
+    return { ...EMPTY_OPTIONS, ...narrowed };
+    // Keyed on the whole draft rather than on the parent levels individually:
+    // which levels are "parents" depends on the active table, and recomputing a
+    // few hundred filtered options when only the finest level changed is
+    // cheaper than the machinery to avoid it.
+  }, [index, draft]);
 
   const updateDraft = useCallback(
     (level: AdminLevel, codes: readonly string[]) => {

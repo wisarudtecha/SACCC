@@ -70,13 +70,21 @@ export function useAdminBoundaryLayers({
   const visibilityRef = useRef(visibility);
   const languageRef = useRef(language);
   const isDarkThemeRef = useRef(isDarkTheme);
+  const suppressLabelsRef = useRef(suppressLabels);
   selectionRef.current = selection;
   visibilityRef.current = visibility;
   languageRef.current = language;
   isDarkThemeRef.current = isDarkTheme;
+  suppressLabelsRef.current = suppressLabels;
 
   // Build the layers once. Deliberately does NOT depend on selection/language/
   // theme - those are applied by the effects below, onto the same layer objects.
+  //
+  // Async, because a server-backed source has to fetch before it can produce a
+  // URL (see boundarySource.ts). That makes two things load-bearing: the
+  // `isCancelled` guard, since the effect can resolve after unmount or after a
+  // re-run, and releasing the URLs in cleanup, since a blob: URL that is never
+  // revoked leaks its whole FeatureCollection for the life of the document.
   useEffect(() => {
     const map = mapRef.current;
     if (!isReady || !map || !isEnabled) {
@@ -84,57 +92,101 @@ export function useAdminBoundaryLayers({
     }
     setIsError(false);
 
-    // `isEnabled` guarantees these are set, but the refs are typed optional and
-    // TypeScript cannot narrow through a ref - fall back rather than assert.
-    const initialSelection = selectionRef.current ?? EMPTY_BOUNDARY_SELECTION;
+    let isCancelled = false;
+    // Populated as the effect resolves, and read by cleanup - which may run
+    // before any of it exists.
+    let created: GeoJSONLayer[] = [];
+    let retainedUrls: string[] = [];
 
-    const created = BOUNDARY_LEVELS.map((config) => {
-      const layer = new GeoJSONLayer({
-        id: `boundary-${config.level}`,
-        url: boundarySource.getLayerUrl(config.level, initialSelection),
-        objectIdField: "OBJECTID",
-        outFields: outFieldsFor(config),
-        // REQUIRED. A popup would swallow map clicks, breaking the
-        // reverse-geocode in create mode and the staff hit-test in detail mode.
-        popupEnabled: false,
-        legendEnabled: false,
-        visible: visibilityRef.current?.[config.level] ?? false,
-        definitionExpression: buildDefinitionExpression(config, initialSelection),
-        renderer: createBoundaryRenderer(config, isDarkThemeRef.current),
-        labelingInfo: [createBoundaryLabelClass(config, languageRef.current, isDarkThemeRef.current)],
-        labelsVisible: true
+    const build = async () => {
+      // `isEnabled` guarantees the selection is set, but the ref is typed
+      // optional and TypeScript cannot narrow through one - fall back to the
+      // empty selection rather than assert.
+      const urls = await Promise.all(
+        BOUNDARY_LEVELS.map((config) =>
+          boundarySource.getLayerUrl(config.level, selectionRef.current ?? EMPTY_BOUNDARY_SELECTION)
+        )
+      );
+
+      // Unmounted while fetching: hand the URLs straight back, since cleanup has
+      // already run and will not see them.
+      if (isCancelled) {
+        urls.forEach((url) => boundarySource.releaseLayerUrl(url));
+        return;
+      }
+      retainedUrls = urls;
+
+      // Read AFTER the await, not before it. The selection is empty on the first
+      // render and only fills in once the index resolves, so a value captured at
+      // the top of the effect would usually be the empty one - and because the
+      // selection effect below runs while layersRef is still empty, its update
+      // would be lost and every layer would stay filtered to "1=0", drawing
+      // nothing at all. The ref is reassigned on every render, so by the time
+      // this line runs it holds the current applied selection.
+      const selectionNow = selectionRef.current ?? EMPTY_BOUNDARY_SELECTION;
+
+      created = BOUNDARY_LEVELS.map((config, index) => {
+        const layer = new GeoJSONLayer({
+          id: `boundary-${config.level}`,
+          url: urls[index],
+          objectIdField: "OBJECTID",
+          outFields: outFieldsFor(config),
+          // REQUIRED. A popup would swallow map clicks, breaking the
+          // reverse-geocode in create mode and the staff hit-test in detail mode.
+          popupEnabled: false,
+          legendEnabled: false,
+          visible: visibilityRef.current?.[config.level] ?? false,
+          definitionExpression: buildDefinitionExpression(config, selectionNow),
+          renderer: createBoundaryRenderer(config, isDarkThemeRef.current),
+          labelingInfo: [createBoundaryLabelClass(config, languageRef.current, isDarkThemeRef.current)],
+          // From the ref, not a literal true: the effect below may already have
+          // run and found no layers to suppress, so a layer built afterwards has
+          // to start in whatever state that effect would have put it in.
+          labelsVisible: !suppressLabelsRef.current
+        });
+
+        layer.load().catch((error: unknown) => {
+          console.error(`Failed to load the ${config.level} boundary layer`, error);
+          setIsError(true);
+        });
+
+        return layer;
       });
 
-      layer.load().catch((error: unknown) => {
-        console.error(`Failed to load the ${config.level} boundary layer`, error);
-        setIsError(true);
-      });
+      map.addMany(created);
+      // Bottom of the stack, finest level highest within the group, so the case
+      // marker and the staff layer always stay clickable above them. Done after
+      // addMany because reorder needs the layer to already be in the map.
+      BOUNDARY_LEVELS.forEach((config, index) => map.reorder(created[index], config.drawIndex));
+      layersRef.current = created;
+    };
 
-      return layer;
+    build().catch((error: unknown) => {
+      if (isCancelled) {
+        return;
+      }
+      console.error("Failed to build the administrative boundary layers", error);
+      setIsError(true);
     });
 
-    map.addMany(created);
-    // Bottom of the stack, finest level highest within the group, so the case
-    // marker and the staff layer always stay clickable above them. Done after
-    // addMany because reorder needs the layer to already be in the map.
-    BOUNDARY_LEVELS.forEach((config, index) => map.reorder(created[index], config.drawIndex));
-    layersRef.current = created;
-
     return () => {
+      isCancelled = true;
       created.forEach((layer) => {
         map.remove(layer);
         layer.destroy();
       });
+      retainedUrls.forEach((url) => boundarySource.releaseLayerUrl(url));
       layersRef.current = [];
     };
   }, [isReady, isEnabled, mapRef]);
 
   // Applied selection -> which areas are drawn.
   //
-  // When the country-wide BFF replaces the static files, this is the one place
-  // that changes: the selection will also have to go into the layer's `url`
-  // (then `layer.refresh()`), because the server, not the browser, will be doing
-  // the filtering. definitionExpression stays as a final client-side tidy-up.
+  // Still a pure client-side filter under both sources, because both deliver
+  // their whole dataset in one payload - one city of static geometry, or one
+  // organization's area tree. Only a source scoped to the country-wide,
+  // every-sub-district dataset would have to put the selection into the layer's
+  // `url` and `layer.refresh()` instead; see the note in boundarySource.ts.
   useEffect(() => {
     if (!isReady || !selection) {
       return;

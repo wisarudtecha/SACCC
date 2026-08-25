@@ -144,6 +144,14 @@ export const API_CONFIG = {
   ARCGIS_ROUTE_URL:
     import.meta.env.VITE_ARCGIS_ROUTE_URL ||
     "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World",
+  // Which administrative boundary polygons the case maps draw.
+  //   "org"   (default) the organization's own area data from the BFF,
+  //           levelled country -> province -> district
+  //   "local"           the static Bangkok GeoJSON files under public/geo,
+  //           levelled province -> district -> subdistrict
+  // Anything other than the literal "local" resolves to "org", so an unset or
+  // mistyped value fails towards real data rather than towards the fixtures.
+  BOUNDARY_SOURCE: import.meta.env.VITE_BOUNDARY_SOURCE === "local" ? "local" : "org",
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000, // 1 second
   TIMEOUT: 10000 // 10 seconds
