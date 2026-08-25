@@ -12,6 +12,7 @@ Cloud Contact Center — a React/TypeScript enterprise web app for case manageme
 - Break down components to make them smaller and easier to read.
 - Write readable code rather than overly short code.
 - Do not delete existing code if you don't understand its function.
+- Every time you make a mistake. Write that lesson in CLAUDE.md so you don't have to repeat it next time.
 
 ## Workflow
 
@@ -91,6 +92,7 @@ Implications when adding a new endpoint:
 - If a GraphQL equivalent exists on the BFF, add a matching entry to the relevant `graphql/*Queries.ts` file keyed by the exact REST `url` string, and register it in `GQL_MAP` (`src/core/utils/gqlMapper.ts`).
 - There is no REST fallback once GraphQL is enabled (`VITE_USE_GRAPHQL === "true"`): a URL with no `GQL_MAP` entry, or a GraphQL call that errors, is logged via `console.error` and returned to the caller as a hard error — it does not silently retry via REST. This means enabling GraphQL in an environment requires `GQL_MAP` coverage for everything that environment actually calls; any gap is a user-facing failure, not a silent degrade. (The separate `VITE_USE_GRAPHQL !== "true"` switch still routes everything through REST directly, with GraphQL never attempted — that's unaffected.)
 - File uploads (variables containing a `File`/`Blob`) are routed through `graphqlBaseQuery` (multipart) instead of `fetchBaseQuery`, since the latter would `JSON.stringify` and lose the file.
+- **A business failure is a real RTK error, but only when it is conclusive.** The BFF answers a rejected operation with HTTP 200 and `{ status: "-1", msg: "...", data: null }`. `hybridBaseQuery` runs every response (both transports) through `readEnvelopeStatus` (`src/core/utils/apiResponseStatus.ts`) and converts a `"failure"` verdict into an RTK error carrying the envelope in `error.data` — so `.unwrap()` rejects and a query hook reports `isError`. An **inconclusive** status deliberately still resolves: the *number* `-1` is what `normalizeToApiResponse` substitutes when the server omits `status`, so treating it as a failure would break every endpoint that just doesn't return the field. Two consequences worth knowing: `normalizeToApiResponse` also coerces `data: extracted?.data ?? []`, and `Boolean([])` is `true` — so a resolved response can still carry a truthy-but-empty payload, and callers must validate the payload's *shape*, never its truthiness (see `isAreaCountryTree` in `src/cms/utils/areaTree.ts`). Login is unaffected by any of this: it runs on the `graphqlApi` slice, whose base query is `graphqlBaseQuery`, not the hybrid one.
 
 ## Auth, permissions, and routing guards
 
@@ -131,3 +133,11 @@ When `VITE_MOCK_API=true` (checked in `src/core/utils/constants.ts` / `src/cms/u
 - Vite `manualChunks` currently just splits everything under `node_modules` into a single `vendor` chunk; there's commented-out finer-grained chunking left in `vite.config.ts` if bundle-size work is needed later.
 - Docker build (`Dockerfile`) is a two-stage build: `npm run build -- --mode ${ENVIRONMENT}` then served via nginx (`nginx.conf`).
 - Dev server proxies `/api` and `/ws` to `VITE_BASE_URL`/`VITE_WEBSOCKET_BASE_URL` to avoid CORS in local dev.
+
+## Anti-Regression
+
+Every mistake or correction must become a reusable rule in
+`.agents/skills/anti-regression/SKILL.md`.
+
+Fix → Learn → Document → Check before repeating similar work.
+Never repeat a documented mistake.
