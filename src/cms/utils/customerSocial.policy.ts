@@ -529,13 +529,14 @@ export const isCustomerSocial = (value: unknown): value is CustomerSocial => {
 /**
  * Did this write actually succeed?
  *
- * Not rhetorical. The hybrid base query only turns transport and GraphQL-schema failures
- * into RTK errors, so a *business* failure — HTTP 200 with `{ status: false, data: null }`
- * — arrives FULFILLED and `.unwrap()` resolves. That matters more here than almost
- * anywhere else in the app: the uniqueness constraint that stops two customer profiles
- * claiming the same LINE account is enforced backend-side, and its rejection arrives
- * through exactly this path. A caller that reads a resolved promise as success will tell
- * the agent the account was linked when it was not.
+ * Not rhetorical. The hybrid base query now rejects a *conclusive* business failure
+ * (`{ status: false, ... }`), but an INCONCLUSIVE envelope — no status, or one it cannot
+ * read — still arrives FULFILLED, with its null payload coerced to a truthy `[]`. That
+ * matters more here than almost anywhere else in the app: the uniqueness constraint that
+ * stops two customer profiles claiming the same LINE account is enforced backend-side, and
+ * its rejection arrives through exactly this path — in a shape the contract does not
+ * document, so it cannot be assumed conclusive. A caller that reads a resolved promise as
+ * success will tell the agent the account was linked when it was not.
  *
  * OPEN QUESTION (backend): the contract documents no conflict response, so the specific
  * shape of a duplicate-identity rejection is unknown. Until it is, callers surface the

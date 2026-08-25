@@ -1,4 +1,10 @@
 {
+  "0.58.1": {
+    "date": "2026-08-25",
+    "segment": "PATCH",
+    "notes": "fix(core): report a rejected action as a failure instead of a success\n- When the system rejects an action - for example a contact detail that is already used by another customer, or a record that cannot be saved - the screen now reports it as a failure, instead of showing a success message and continuing as though the change had been saved.\n- Screens that read an organization's area structure no longer treat an empty answer from the system as real data, which previously produced blank, unnamed entries in area lists and selection boxes.\n- changelog.json / package.json: bump version 0.58.0 -> 0.58.1",
+    "author": "Wisarud Techa"
+  },
   "0.58.0": {
     "date": "2026-08-25",
     "segment": "MINOR",

@@ -68,11 +68,11 @@ export const isNoteEdited = (note: Pick<CustomerNote, "createdAt" | "updatedAt">
 /**
  * Did this write actually succeed?
  *
- * Not a rhetorical question here. The hybrid base query only turns transport and
- * GraphQL-schema failures into RTK errors, so a *business* failure — HTTP 200 with
- * `{ status: false, data: null }` — arrives FULFILLED and `.unwrap()` resolves. A
- * caller that treats a resolved promise as success will clear the editor and throw
- * away the agent's text while telling them it was saved.
+ * Not a rhetorical question here. The hybrid base query now rejects a *conclusive*
+ * business failure (`{ status: false, ... }`), but an INCONCLUSIVE envelope — no status,
+ * or one it cannot read — still arrives FULFILLED, and `normalizeToApiResponse` coerces
+ * its null payload to a truthy `[]`. A caller that treats a resolved promise as success
+ * will clear the editor and throw away the agent's text while telling them it was saved.
  *
  * `readEntityVerdict` encodes the "only report success on positive evidence" bias;
  * this wrapper just fixes the entity guard so callers can't pass the wrong one.

@@ -8,6 +8,7 @@
  * three-deep optional chain, which is how a handful of them ended up printing a
  * *success* string inside a catch block.
  */
+import { readEnvelopeStatus } from "@/core/utils/apiResponseStatus";
 import type { ApiResponse } from "@/core/types";
 
 type UnknownRecord = Record<string, unknown>;
@@ -36,9 +37,19 @@ const firstString = (source: UnknownRecord | undefined, keys: string[]): string 
  * behaviour and only adds the numeric 0 case, which would otherwise read as a
  * failure. Widening it further (treating other codes as success) would risk
  * swallowing real errors, so anything else falsy stays a failure.
+ *
+ * The truthiness tail had one hole worth closing: `Boolean("-1")` is true, so the BFF's own
+ * failure code read as SUCCESS and printed a success toast over a rejected write. Explicit
+ * failure tokens are now rejected up front, and everything else keeps its previous answer.
+ * Note this is NOT the same as `readEnvelopeStatus(...) === "success"`: that would also flip
+ * status-less and unrecognised-token responses to failure, which is exactly the widening the
+ * paragraph above warns against.
  */
 export const isApiSuccess = (response: ApiResponse<unknown> | undefined | null): boolean => {
   const status = (response as UnknownRecord | undefined)?.status;
+  if (readEnvelopeStatus(status) === "failure") {
+    return false;
+  }
   if (status === 0 || status === "0") {
     return true;
   }

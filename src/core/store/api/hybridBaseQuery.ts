@@ -4,7 +4,9 @@ import { createBaseQueryWithAuth } from "@/core/store/api/baseQueryFactory";
 import { graphqlBaseQuery } from "@/core/store/api/graphqlBaseQuery";
 import { buildGraphQLQuery } from "@/core/utils/gqlMapper";
 import { containsFile, normalizeToApiResponse } from "@/core/utils/gqlUtils";
+import { readEnvelopeMessage, readEnvelopeStatus } from "@/core/utils/apiResponseStatus";
 import { TokenManager } from "@/core/utils/tokenManager";
+import type { EnvelopeLike } from "@/core/utils/apiResponseStatus";
 import type { RootState } from "@/core/store";
 
 // v2.0 - Simplified version with auto-mapping and global switch
@@ -31,6 +33,51 @@ type HybridArgs = string | FetchArgs;
 
 /** Drops the query string, which on lookup endpoints carries the value being searched for. */
 const stripQueryString = (url: string | undefined): string => (url ?? "").split("?")[0];
+
+/**
+ * A business failure the BFF reports with HTTP 200.
+ *
+ * The BFF answers a rejected operation with `{ status: "-1", msg: "...", data: null }` and no
+ * transport error, so without this the request FULFILS and `.unwrap()` resolves. Worse,
+ * `normalizeToApiResponse` coerces `data: extracted?.data ?? []`, so the payload is even truthy -
+ * which is how a `Boolean(response.data)` check downstream reads a failure as an empty success.
+ * Translating it once here is the consolidation `src/core/utils/apiResponseStatus.ts` was
+ * written to seed.
+ *
+ * Only a *conclusive* failure converts. `readEnvelopeStatus` reports "unknown" for the number
+ * -1 (which `normalizeToApiResponse` itself substitutes when the server omits `status`), for the
+ * empty string, and for any unrecognised token - all of which stay fulfilled, so every endpoint
+ * that simply does not return the field behaves exactly as it did before.
+ *
+ * The envelope rides along in `data` because that is where `resolveApiError` and
+ * `readMutationError` already look for the server's own wording.
+ */
+const readEnvelopeFailure = (
+  envelope: unknown,
+  // args: FetchArgs
+): FetchBaseQueryError | null => {
+  const record = (envelope && typeof envelope === "object")
+    ? envelope as EnvelopeLike
+    : undefined;
+
+  if (!record || readEnvelopeStatus(record.status) !== "failure") {
+    return null;
+  }
+
+  const message = readEnvelopeMessage(record);
+  // Status and message only, and the path without its query string - the same restraint as
+  // summariseGraphQLFailure below, and for the same reason.
+  // console.error(
+  //   `API reported a failure for ${args.method || "GET"} ${stripQueryString(args.url)}:`,
+  //   { status: record.status, message }
+  // );
+
+  return {
+    status: "ENVELOPE_ERROR",
+    data: record,
+    error: message || "The server rejected the request",
+  } as unknown as FetchBaseQueryError;
+};
 
 /**
  * Reduces a failed GraphQL call to what is useful in a console and nothing more.
@@ -111,10 +158,15 @@ export const createHybridBaseQuery = (restBaseUrl: string, gqlBaseUrl: string): 
       if (result.error) {
         return { error: result.error, meta: result.meta };
       }
-      return {
-        data: normalizeToApiResponse(result.data as Record<string, unknown>),
-        meta: result.meta,
-      };
+      const envelope = normalizeToApiResponse(result.data as Record<string, unknown>);
+      const failure = readEnvelopeFailure(
+        envelope,
+        // finalArgs
+      );
+      if (failure) {
+        return { error: failure, meta: result.meta };
+      }
+      return { data: envelope, meta: result.meta };
     }
 
     // =========================
@@ -180,10 +232,16 @@ export const createHybridBaseQuery = (restBaseUrl: string, gqlBaseUrl: string): 
     // re-wrap it so normalizeToApiResponse's envelope-unwrapping sees the same shape either way.
     const gqlData = isUpload ? { data: gqlResult.data } : gqlResult.data;
 
-    return {
-      data: normalizeToApiResponse(gqlData as Record<string, unknown>),
-      meta: gqlResult.meta,
-    };
+    const envelope = normalizeToApiResponse(gqlData as Record<string, unknown>);
+    const failure = readEnvelopeFailure(
+      envelope,
+      // finalArgs
+    );
+    if (failure) {
+      return { error: failure, meta: gqlResult.meta };
+    }
+
+    return { data: envelope, meta: gqlResult.meta };
   };
 
   // v1.0 - Initial version with explicit type and fallback

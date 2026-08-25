@@ -2,22 +2,24 @@
 /**
  * Deciding whether an API call actually succeeded.
  *
- * The hybrid base query (`src/core/store/api/hybridBaseQuery.ts`) only converts transport
- * and GraphQL-schema failures into RTK errors. A *business* failure — the BFF answering
- * HTTP 200 with `{ status: false, msg: "...", data: null }` — arrives as a FULFILLED
- * request, so `.unwrap()` resolves and the caller sees what looks like success. Worse,
- * `normalizeToApiResponse` (src/core/utils/gqlUtils.ts) coerces `data: extracted?.data ?? []`,
- * so the payload is even truthy. Callers must therefore inspect the envelope themselves.
- *
  * `status` is inconsistent across this codebase — it is *declared* `boolean | undefined` on
  * `ApiResponse`, but existing pages test it as a string (`ProductStock.tsx` requires a string
  * !== "-1") or as a bare truthy value (`SkillManagement.tsx`), and `normalizeToApiResponse`
  * defaults it to the number -1. Those checks disagree with each other. Hence `unknown` in,
  * and a three-state outcome out.
  *
- * NOTE: this is additive. No existing page has been migrated onto it. The long-term fix is
- * for `hybridBaseQuery` to translate a negative envelope into an RTK error once, centrally;
- * this module is written to be the seed for that consolidation.
+ * The consolidation this module was written to seed has since happened: `readEnvelopeStatus`
+ * is now called by `hybridBaseQuery`, which turns a *conclusive* business failure — the BFF
+ * answering HTTP 200 with `{ status: "-1", msg: "...", data: null }` — into a real RTK error,
+ * so `.unwrap()` rejects and a query reports `isError`. What still reaches callers fulfilled
+ * is the INCONCLUSIVE case: `readEnvelopeStatus` reports "unknown" for the number -1 (which
+ * `normalizeToApiResponse` itself substitutes when the server omits `status`), for the empty
+ * string, and for unrecognised tokens. That was left resolving on purpose — every endpoint
+ * that simply does not return the field would otherwise start failing.
+ *
+ * So the payload check below still earns its place: `normalizeToApiResponse` coerces
+ * `data: extracted?.data ?? []`, and `Boolean([])` is true, so an inconclusive envelope still
+ * arrives carrying a truthy-but-empty payload. Read the shape, not the truthiness.
  */
 
 export type ApiOutcome = "success" | "failure" | "unknown";
