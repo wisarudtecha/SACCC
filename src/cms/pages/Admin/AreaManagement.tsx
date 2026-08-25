@@ -40,7 +40,10 @@ const AreaManagementPage: React.FC = () => {
   const { data: countriesData, isLoading: isLoadingCountries } = useGetCountriesQuery({ start: 0, length: 1000 });
   const countries = countriesData?.data as unknown as Country[] || [];
 
-  const { trees, isLoading: isLoadingTrees, refetch: reloadTrees } = useOrgAreaTrees(countries);
+  // `missing` names the countries whose tree could not be read - almost always because nothing
+  // has generated it yet. They are absent from `trees` entirely, so without this the page would
+  // simply not show them and give no hint why.
+  const { trees, missing, isLoading: isLoadingTrees, refetch: reloadTrees } = useOrgAreaTrees(countries);
 
   return (
     <>
@@ -54,6 +57,7 @@ const AreaManagementPage: React.FC = () => {
 
         <AreaManagementComponent
           trees={trees}
+          missingTrees={missing}
           countries={countries}
           isLoading={isLoadingCountries || isLoadingTrees}
           onReloadTrees={reloadTrees}

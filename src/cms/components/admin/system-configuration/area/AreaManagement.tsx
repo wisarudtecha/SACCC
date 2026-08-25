@@ -33,6 +33,8 @@ import type {
 import { isApiSuccess, resolveApiError, resolveApiMessage } from "@/cms/utils/apiResponse";
 import { formatPolygonRings, parsePolygonRings, toCoordinatesPayload } from "@/cms/utils/areaGeometry";
 import { filterAreaTrees, findCountryIdByCode } from "@/cms/utils/areaTree";
+import { invalidateOrgBoundaryData } from "@/cms/components/case/createCase/map/boundaries/boundarySource";
+import type { MissingAreaTree } from "@/cms/hooks/useOrgAreaTrees";
 import AreaFormModal, { type AreaFormField } from "@/cms/components/admin/system-configuration/area/AreaFormModal";
 import AreaHierarchyView from "@/cms/components/admin/system-configuration/area/AreaHierarchyView";
 import AreaTemplateSyncModal from "@/cms/components/admin/system-configuration/areaTemplate/AreaTemplateSyncModal";
@@ -43,6 +45,12 @@ interface AreaManagementProps {
   /** The org's country trees, already nested by the BFF. */
   trees: AreaCountryTree[];
   /**
+   * Countries `trees` could not cover. The tree is a server-side cache, so a country nobody has
+   * generated one for is missing from the hierarchy, the selects and the case maps alike, with
+   * nothing on screen to say so - the banner below is the only place it is visible.
+   */
+  missingTrees: MissingAreaTree[];
+  /**
    * Country list records. The hierarchy comes from `trees`; this supplies only
    * the fields the tree payload omits - currently `sourceTemplateId`.
    */
@@ -52,7 +60,13 @@ interface AreaManagementProps {
   onReloadTrees: () => void;
 }
 
-const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countries, isLoading, onReloadTrees }) => {
+const AreaManagementComponent: React.FC<AreaManagementProps> = ({
+  trees,
+  // missingTrees,
+  countries,
+  isLoading,
+  onReloadTrees
+}) => {
   const permissions = usePermissions();
   const { toasts, addToast, removeToast } = useToast();
   const { language, t } = useTranslation();
@@ -197,8 +211,71 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
         // which is better than reporting the write itself as failed.
       }
     }
+    // The case maps derive their boundaries from these same trees and cache them for the
+    // session, so without this an edit is invisible there until a full page reload.
+    invalidateOrgBoundaryData();
     onReloadTrees();
   }, [trees, generateOrgCountryTree, onReloadTrees]);
+
+  // ===================================================================
+  // Countries with no generated tree
+  // ===================================================================
+
+  /** Named for the banner - `missingTrees` carries ids, the country list carries names. */
+  // const ungeneratedCountries = useMemo(
+  //   () => missingTrees
+  //     .filter(entry => entry.outcome === "not-generated")
+  //     .map(entry => {
+  //       const record = (countries || []).find(country => country.id === entry.id);
+  //       if (!record) {
+  //         return { id: entry.id, name: String(entry.id) };
+  //       }
+  //       return {
+  //         id: entry.id,
+  //         name: language === "th" && record.th || record.en || record.countryId
+  //       };
+  //     }),
+  //   [missingTrees, countries, language]
+  // );
+
+  /**
+   * Generates the missing trees, then reloads.
+   *
+   * Deliberately a button rather than something the page does on its own: generate_tree is a
+   * permissioned POST, and firing it from a read path would 403 for every user without
+   * area.update and stampede across open tabs.
+   */
+  // const handleGenerateMissingTrees = useCallback(async () => {
+  //   try {
+  //     setLoading(true);
+  //     if (!permissions.hasAnyPermission(["area.create", "area.update"])) {
+  //       throw new Error(t("crud.common.permission_denied"));
+  //     }
+  //     const results = await Promise.all(
+  //       ungeneratedCountries.map(country =>
+  //         generateOrgCountryTree(country.id)
+  //           .unwrap()
+  //           .then(response => isApiSuccess(response))
+  //           .catch(() => false)
+  //       )
+  //     );
+  //     const failed = results.filter(succeeded => !succeeded).length;
+  //     if (failed > 0) {
+  //       addToast("error", t("crud.area.tree.generate.partial").replace("_COUNT_", String(failed)));
+  //     }
+  //     else {
+  //       addToast("success", t("crud.area.tree.generate.success"));
+  //     }
+  //     invalidateOrgBoundaryData();
+  //     onReloadTrees();
+  //   }
+  //   catch (error) {
+  //     addToast("error", resolveApiError(error, t("crud.area.tree.generate.error")));
+  //   }
+  //   finally {
+  //     setLoading(false);
+  //   }
+  // }, [ungeneratedCountries, permissions, generateOrgCountryTree, addToast, onReloadTrees, t]);
 
   // ===================================================================
   // Validation before saving
@@ -978,6 +1055,34 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({ trees, countri
                 </div>
               </div>
             </div>
+            {/* Countries whose tree has never been generated. They are absent from the
+                hierarchy, the selects and the case maps alike, so this banner is the only
+                place their absence is visible - and the only way to fix it from the UI. */}
+            {/* {!isLoading && ungeneratedCountries.length > 0 && (
+              <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-500/40 dark:bg-amber-500/10">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-amber-800 dark:text-amber-300 cursor-default">
+                      {t("crud.area.tree.missing.title")}
+                    </p>
+                    <p className="mt-1 text-sm text-amber-700 dark:text-amber-400 cursor-default">
+                      {t("crud.area.tree.missing.description")
+                        .replace("_COUNTRIES_", ungeneratedCountries.map(country => country.name).join(", "))}
+                    </p>
+                  </div>
+                  {canUpdate && (
+                    <Button
+                      onClick={handleGenerateMissingTrees}
+                      size="sm"
+                      variant="outline"
+                      disabled={loading}
+                    >
+                      {t("crud.area.tree.generate.button")}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )} */}
             {/* Loading state */}
             {isLoading && (
               <div className="flex items-center justify-center py-12 text-gray-500 dark:text-gray-400 cursor-default">

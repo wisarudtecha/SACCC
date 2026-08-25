@@ -17,9 +17,10 @@ import {
   useGenerateTemplateCountryTreeMutation
 } from "@/cms/store/api/areaTemplateApi";
 import { ROUTE_PREFIX } from "@/core/router/routePrefix";
-import type { TemplateCountry, TemplateCountryTree, TemplateProvince } from "@/cms/types/areaTemplate";
+import type { TemplateCountry, TemplateProvince } from "@/cms/types/areaTemplate";
 import { isApiSuccess, resolveApiError, resolveApiMessage } from "@/cms/utils/apiResponse";
 import { describeGeometry } from "@/cms/utils/areaGeometry";
+import { readAreaCountryTree } from "@/cms/utils/areaTree";
 import AreaTemplateDistrictView from "@/cms/components/admin/system-configuration/areaTemplate/AreaTemplateDistrictView";
 import AreaTemplateProvinceView from "@/cms/components/admin/system-configuration/areaTemplate/AreaTemplateProvinceView";
 import AreaTemplateStatusBadge from "@/cms/components/admin/system-configuration/areaTemplate/AreaTemplateStatusBadge";
@@ -145,9 +146,12 @@ const AreaTemplateDetailView: React.FC<AreaTemplateDetailViewProps> = ({ templat
           )}
         </div>
 
-        {/* The cached tree, so "Regenerate tree" has something visible to change */}
+        {/* The cached tree, so "Regenerate tree" has something visible to change. Read through
+            the shared guard rather than cast: an un-generated cache answers with an empty
+            payload that a cast happily accepts, which rendered a nameless node in place of the
+            preview's own "generate it first" message. */}
         <AreaTreePreview
-          tree={treeData?.data as TemplateCountryTree | undefined}
+          tree={readAreaCountryTree(treeData).tree}
           isLoading={isFetchingTree}
         />
 

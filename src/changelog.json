@@ -1,4 +1,10 @@
 {
+  "0.59.1": {
+    "date": "2026-08-25",
+    "segment": "PATCH",
+    "notes": "fix(cms): handle countries whose area structure has not been generated yet\n- An area template's 'Tree preview' now clearly asks for the structure to be generated first, instead of showing a single blank, unnamed entry when nothing has been generated.\n- Area Management now distinguishes a country whose structure simply has not been generated yet from one that genuinely failed to load, so the reason an organization's country is missing from the area list can be identified instead of the country silently disappearing.\n- Wording for the upcoming on-screen notice and its 'Generate structure' action has been prepared in Thai, English and Chinese.\n- changelog.json / package.json: bump version 0.59.0 -> 0.59.1",
+    "author": "Wisarud Techa"
+  },
   "0.59.0": {
     "date": "2026-08-25",
     "segment": "MINOR",

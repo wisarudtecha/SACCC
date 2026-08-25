@@ -2113,6 +2113,18 @@
     },
     "area": {
       "name": "Area",
+      "tree": {
+        "missing": {
+          "title": "Some countries have no generated area tree",
+          "description": "_COUNTRIES_ will not appear in the list below, in area selects, or on case maps until the tree is generated."
+        },
+        "generate": {
+          "button": "Generate tree",
+          "success": "Area tree generated.",
+          "partial": "_COUNT_ countries could not be generated.",
+          "error": "Could not generate the area tree."
+        }
+      },
       "list": {
         "toolbar": {
           "search": {

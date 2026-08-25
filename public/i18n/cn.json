@@ -1996,6 +1996,18 @@
     },
     "area": {
       "name": "区域",
+      "tree": {
+        "missing": {
+          "title": "部分国家尚未生成区域树",
+          "description": "在生成区域树之前，_COUNTRIES_ 不会出现在下方列表、区域选择项或案件地图中。"
+        },
+        "generate": {
+          "button": "生成区域树",
+          "success": "区域树已生成。",
+          "partial": "有 _COUNT_ 个国家无法生成。",
+          "error": "无法生成区域树。"
+        }
+      },
       "list": {
         "toolbar": {
           "search": {
