@@ -7,6 +7,7 @@ import { PRIORITY_LABELS, PRIORITY_CONFIG } from "@/cms/utils/constants";
 import type {
   EnhancedCaseSubType,
   EnhancedCaseType,
+  ServiceFocusTarget,
   // TypeAnalytics
 } from "@/cms/types/case";
 import type {
@@ -39,6 +40,8 @@ interface ServiceHierarchyViewProps {
   caseTypes?: EnhancedCaseType[];
   className?: string;
   filteredTypes?: EnhancedCaseType[];
+  /** The record a write just created or edited, to be revealed in the tree. */
+  focusTarget?: ServiceFocusTarget | null;
   properties?: Property[];
   searchQuery?: string;
   showInactive?: boolean;
@@ -75,6 +78,7 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
   caseTypes,
   // className,
   // filteredTypes,
+  focusTarget = null,
   // properties,
   // searchQuery,
   showInactive,
@@ -530,11 +534,32 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
     }
   };
 
+  /**
+   * Turns the write's identity into the tree id HierarchyView reveals.
+   *
+   * An edit carries the row id, which is also the item id. A create has to be
+   * matched against the reloaded records instead, because the server assigns the
+   * id - until that arrives this is null and the reveal simply waits.
+   */
+  const focusId = useMemo(() => {
+    if (!focusTarget) {
+      return null;
+    }
+    if (focusTarget.id) {
+      return focusTarget.id;
+    }
+    if (focusTarget.level === "type") {
+      return (caseTypes || []).find(type => type.en === focusTarget.en)?.typeId ?? null;
+    }
+    return (caseSubTypes || []).find(subType => subType.sTypeCode === focusTarget.sTypeCode)?.sTypeId ?? null;
+  }, [focusTarget, caseTypes, caseSubTypes]);
+
   return (
     <>
       <HierarchyView
         // analytics={analytics}
         config={hierarchyConfig}
+        focusId={focusId}
         // defaultExpanded={["EMERGENCY"]}
         isLoading={isLoading}
         items={hierarchyItems}

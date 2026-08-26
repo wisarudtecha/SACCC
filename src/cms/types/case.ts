@@ -102,12 +102,31 @@ export interface CaseStatusQueryParams {
   length?: number;
 }
 
+/**
+ * The row a service write just touched, to be revealed in the hierarchy.
+ *
+ * An edit already knows the row id, because that is what the hierarchy hands to
+ * the form. A create does not - the id is assigned server-side - so it names the
+ * record by something the user typed instead, matched once the reloaded lists
+ * arrive.
+ */
+export interface ServiceFocusTarget {
+  level: "type" | "subType";
+  /** Row id, when the write was an edit. */
+  id?: string;
+  /** Type identity for a create - matched on the English name. */
+  en?: string;
+  /** Sub-type identity for a create. */
+  sTypeCode?: string;
+}
+
 export interface CaseTypeManagementProps {
   analytics?: Record<string, TypeAnalytics>;
   caseSubTypes?: EnhancedCaseSubType[];
   caseTypes?: EnhancedCaseType[];
   className?: string;
   filteredTypes?: EnhancedCaseType[];
+  focusTarget?: ServiceFocusTarget | null;
   properties?: Property[];
   searchQuery?: string;
   showInactive?: boolean;

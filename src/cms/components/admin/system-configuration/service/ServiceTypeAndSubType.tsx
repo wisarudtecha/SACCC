@@ -24,6 +24,7 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
   caseTypes,
   className,
   filteredTypes,
+  focusTarget,
   properties,
   searchQuery,
   skills,
@@ -89,6 +90,7 @@ const ServiceTypeAndSubTypeComponent: React.FC<CaseTypeManagementProps> = ({
       caseSubTypes={caseSubType || []}
       caseTypes={caseType || []}
       filteredTypes={filteredTypes || []}
+      focusTarget={focusTarget}
       properties={properties}
       searchQuery={searchQuery}
       showInactive={showInactive}

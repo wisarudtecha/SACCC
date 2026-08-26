@@ -1,4 +1,10 @@
 {
+  "0.62.0": {
+    "date": "2026-08-26",
+    "segment": "MINOR",
+    "notes": "feat(cms): update the service list in place after saving\n- Adding, editing or deleting a service type or sub-type under Service Management no longer reloads the whole screen. The list refreshes on its own and the branches that were already open stay open.\n- The service type or sub-type that was just saved is now expanded, scrolled into view and briefly highlighted, so it is immediately clear which row the change applied to.\n- The form is cleared after a successful save, ready for the next entry.\n- changelog.json / package.json: bump version 0.61.0 -> 0.62.0",
+    "author": "Wisarud Techa"
+  },
   "0.61.0": {
     "date": "2026-08-26",
     "segment": "MINOR",

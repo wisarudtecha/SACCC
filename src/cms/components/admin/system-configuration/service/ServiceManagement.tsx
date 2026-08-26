@@ -23,6 +23,7 @@ import type {
   CaseTypesUpdateData,
   EnhancedCaseSubType,
   EnhancedCaseType,
+  ServiceFocusTarget,
   // TypeAnalytics
 } from "@/cms/types/case";
 import type { Property } from "@/cms/types/unit";
@@ -77,6 +78,10 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
   // ===================================================================
 
   // Case Sub-Type
+  // The row a successful write just touched, revealed in the hierarchy once the
+  // invalidated lists come back. A delete clears it - nothing left to reveal.
+  const [focusTarget, setFocusTarget] = useState<ServiceFocusTarget | null>(null);
+
   const [caseSubType, setCaseSubType] = useState<EnhancedCaseSubType[]>(caseSubTypes || []);
   const [sTypeId, setSTypeId] = useState<string>("");
   const [sTypeTh, setSTypeTh] = useState<string>("");
@@ -372,9 +377,9 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
       if (response?.status) {
         // addToast("success", `Service Management - Type: ${response?.desc || response?.msg || "Delete successfully"}`);
         addToast("success", response?.message || response?.desc || response?.msg || t("crud.service.action.type.delete.success"));
-        setTimeout(() => {
-          window.location.replace(`/cms/service`);
-        }, 1000);
+        // The lists refresh themselves now that the mutations invalidate "Cases";
+        // reloading the page here was what threw away which rows were expanded.
+        setFocusTarget(null);
       }
       else {
         throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
@@ -434,9 +439,10 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
       if (response?.status) {
         // addToast("success", `Service Management - Type: ${response?.desc || response?.msg || "Save successfully"}`);
         addToast("success", response?.message || response?.desc || response?.msg || (typeId && t("crud.service.action.type.update.success")) || t("crud.service.action.type.create.success"));
-        setTimeout(() => {
-          window.location.replace(`/cms/service`);
-        }, 1000);
+        // An edit knows its row id; a create is matched by name once the
+        // invalidated lists come back - see ServiceFocusTarget.
+        setFocusTarget({ level: "type", id: typeId || undefined, en: typeEn });
+        handleTypeReset();
       }
       else {
         throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
@@ -480,9 +486,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
       if (response?.status) {
         // addToast("success", `Service Management - Sub-Type: ${response?.desc || response?.msg || "Delete successfully"}`);
         addToast("success", response?.message || response?.desc || response?.msg || t("crud.service.action.sub_type.delete.success"));
-        setTimeout(() => {
-          window.location.replace(`/cms/service`);
-        }, 1000);
+        setFocusTarget(null);
       }
       else {
         throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
@@ -574,9 +578,8 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
       if (response?.status) {
         // addToast("success", `Service Management - Sub-Type: ${response?.desc || response?.msg || "Save successfully"}`);
         addToast("success", response?.message || response?.desc || response?.msg || (sTypeId && t("crud.service.action.sub_type.update.success")) || t("crud.service.action.sub_type.create.success"));
-        setTimeout(() => {
-          window.location.replace(`/cms/service`);
-        }, 1000);
+        setFocusTarget({ level: "subType", id: sTypeId || undefined, sTypeCode });
+        handleSTypeReset();
       }
       else {
         throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
@@ -641,6 +644,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
       caseSubTypes={filteredSubTypes || caseSubType || []}
       caseTypes={filteredTypes || caseType || []}
       filteredTypes={filteredTypes || []}
+      focusTarget={focusTarget}
       properties={property}
       searchQuery={searchQuery}
       skills={skills}

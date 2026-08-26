@@ -42,7 +42,10 @@ export const serviceApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      // providesTags: ["Cases"],
+      // Refetches the lists in place. caseApi's getType/getSubType provide this
+      // tag on the same baseApi slice; before this the page reloaded itself to
+      // show what it had just written.
+      invalidatesTags: ["Cases"],
     }),
 
     // GET api/v1/casetypes
@@ -66,7 +69,7 @@ export const serviceApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: data
       }),
-      // providesTags: ["Cases"],
+      invalidatesTags: ["Cases"],
     }),
 
     // DELETE api/v1/casetypes/{id}
@@ -75,7 +78,7 @@ export const serviceApi = baseApi.injectEndpoints({
         url: `/casetypes/${id}`,
         method: "DELETE"
       }),
-      // providesTags: ["Cases"],
+      invalidatesTags: ["Cases"],
     }),
 
     // ===================================================================
@@ -89,7 +92,7 @@ export const serviceApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      // providesTags: ["Cases"],
+      invalidatesTags: ["Cases"],
     }),
 
     // GET api/v1/casesubtypes
@@ -112,7 +115,8 @@ export const serviceApi = baseApi.injectEndpoints({
         url: `/casesubtypes/${id}`,
         method: "PATCH",
         body: data
-      })
+      }),
+      invalidatesTags: ["Cases"]
     }),
 
     // DELETE api/v1/casesubtypes/{id}
@@ -121,7 +125,7 @@ export const serviceApi = baseApi.injectEndpoints({
         url: `/casesubtypes/${id}`,
         method: "DELETE"
       }),
-      // providesTags: ["Cases"],
+      invalidatesTags: ["Cases"],
     }),
 
   }),
