@@ -2,9 +2,14 @@
 import { useMemo } from "react";
 import { useIsSystemAdmin } from "@/core/hooks/useIsSystemAdmin";
 import { usePermissions } from "@/core/hooks/usePermissions";
+import { PII_MASKING_ENABLED } from "@/core/security/piiConfig";
 import {
+  PII_CASE_PHONE_PERMISSION,
+  PII_CUSTOMER_GENERAL_PERMISSION,
+  PII_CUSTOMER_SENSITIVE_PERMISSION,
   PII_FULL_MASK,
-  PII_VIEW_PERMISSION,
+  PII_USER_GENERAL_PERMISSION,
+  PII_USER_SENSITIVE_PERMISSION,
   applyMask,
   getCustomerPiiRule,
   getDynamicFieldPiiRule,
@@ -12,6 +17,9 @@ import {
   maskCustomerField,
 } from "@/core/security/piiFields";
 import type { PiiMarkedField } from "@/core/security/piiFields";
+
+/** Which of the customer's two addresses a path belongs to, for `maskAddress`. */
+export type AddressPrefix = "address" | "currentAddress";
 
 /**
  * Props that lock a form input, spread over whatever the field already declares.
@@ -25,15 +33,26 @@ export interface LockedPiiInputProps {
 }
 
 export interface PiiMasker {
-  /** True when this user may see unmasked customer PII. */
-  canViewPii: boolean;
-  /** Masks `value` if `path` is a classified customer field. Identity when `canViewPii`. */
+  /**
+   * Whether this user may see the real value at `path`.
+   *
+   * A path with no rule is not classified, so it is always viewable — safe to call on a field
+   * whose classification is still being decided.
+   *
+   * This is the write-path gate as much as the read one, and it does **not** consult
+   * `PII_MASKING_ENABLED`: whether the frontend masks is a display question, whereas whether a
+   * user may edit and submit a field is a permission question that holds either way.
+   */
+  canViewField: (path: string) => boolean;
+  /** The same question for a dynamic form field, which carries its own rule. */
+  canViewDynamicField: (field: PiiMarkedField | null | undefined) => boolean;
+  /** Masks `value` if `path` is classified and this user can't see it. Identity when masking is off. */
   maskValue: (path: string, value: string | null | undefined) => string | null | undefined;
-  /** Masks the precise parts of an address. Identity when `canViewPii`. */
-  maskAddress: <T extends object>(address: T | undefined) => T | undefined;
+  /** Masks the precise parts of one of the customer's addresses. Identity when masking is off. */
+  maskAddress: <T extends object>(address: T | undefined, prefix: AddressPrefix) => T | undefined;
   /**
    * Masks `value` per a dynamic form field's own `pii` marker, or returns it unchanged when
-   * the field carries no marker. Identity when `canViewPii`.
+   * the field carries no marker. Identity when masking is off.
    *
    * Distinct from `maskValue`: that one looks up `path` in the static `CUSTOMER_PII_FIELDS`
    * table built for the 22 known customer fields. Dynamic fields carry their own rule
@@ -41,17 +60,14 @@ export interface PiiMasker {
    */
   maskDynamicField: (field: PiiMarkedField, value: string | null | undefined) => string | null | undefined;
   /**
-   * Locks a PII form input for users without `pii.view`.
+   * Blanks and disables a PII form input.
    *
-   * Spread this **after** `value` so it overrides what the field would otherwise render:
-   *
-   * ```tsx
-   * <Input name="citizenId" value={formData.citizenId} onChange={...} {...lockPiiInput("citizenId")} />
-   * ```
-   *
-   * It blanks the *display* only. The real value stays in the form's own state and is what
-   * gets validated and submitted, so locking a field never overwrites the record — which is
-   * exactly why a masked string must never be used here instead.
+   * **Superseded, and retained deliberately.** Unviewable fields now render as plain text and
+   * are stripped from the update payload by `omitUnviewableCustomerPii`, which is correct in
+   * both masking modes — a disabled input still advertises a field the user cannot have, and it
+   * does nothing about the value sitting in form state. Kept because it is the only mechanism
+   * that works without touching a call site's JSX, so it remains the cheap option for any form
+   * that later needs locking without a plain-text branch.
    */
   lockPiiInput: (path: string) => LockedPiiInputProps;
 }
@@ -67,7 +83,7 @@ const UNLOCKED: LockedPiiInputProps = {};
  * a `socials.map(...)`, and the Rules of Hooks forbid a hook call per row. Anything that
  * masks exactly one known field can use `useMaskedValue` below instead.
  *
- * Access mirrors `PermissionGate`: the `pii.view` permission, or system-admin. Note
+ * Access mirrors `PermissionGate`: the field's own permission, or system-admin. Note
  * `useIsSystemAdmin` starts `false` and flips asynchronously, so the first render always
  * reports non-admin. For masking that is the safe direction — masked-then-revealed, never
  * revealed-then-masked.
@@ -76,34 +92,68 @@ export const usePiiMasker = (): PiiMasker => {
   const { hasPermission } = usePermissions();
   const isSystemAdmin = useIsSystemAdmin();
 
-  const canViewPii = hasPermission(PII_VIEW_PERMISSION) || isSystemAdmin;
+  // Resolved eagerly, one boolean per permission in the backend's taxonomy, so the memo below
+  // can depend on stable primitives. `usePermissions()` builds a fresh object on every render,
+  // so depending on it (or on `hasPermission`) directly would hand out a new masker each time
+  // and defeat any downstream memoisation.
+  const canViewCasePhone = isSystemAdmin || hasPermission(PII_CASE_PHONE_PERMISSION);
+  const canViewCustomerGeneral = isSystemAdmin || hasPermission(PII_CUSTOMER_GENERAL_PERMISSION);
+  const canViewCustomerSensitive = isSystemAdmin || hasPermission(PII_CUSTOMER_SENSITIVE_PERMISSION);
+  const canViewUserGeneral = isSystemAdmin || hasPermission(PII_USER_GENERAL_PERMISSION);
+  const canViewUserSensitive = isSystemAdmin || hasPermission(PII_USER_SENSITIVE_PERMISSION);
 
-  // Memoised on the boolean alone. `usePermissions()` builds a fresh object on every render,
-  // so depending on it directly would hand out a new masker each time and defeat any
-  // downstream memoisation.
-  return useMemo<PiiMasker>(() => ({
-    canViewPii,
-    maskValue: (path, value) => (canViewPii ? value : maskCustomerField(path, value)),
-    maskAddress: <T extends object>(address: T | undefined) => {
-      if (canViewPii || !address) {
-        return address;
-      }
-      return maskAddressParts(address);
-    },
-    maskDynamicField: (field, value) => {
-      if (canViewPii) {
-        return value;
-      }
+  return useMemo<PiiMasker>(() => {
+    const grants: Record<string, boolean> = {
+      [PII_CASE_PHONE_PERMISSION]: canViewCasePhone,
+      [PII_CUSTOMER_GENERAL_PERMISSION]: canViewCustomerGeneral,
+      [PII_CUSTOMER_SENSITIVE_PERMISSION]: canViewCustomerSensitive,
+      [PII_USER_GENERAL_PERMISSION]: canViewUserGeneral,
+      [PII_USER_SENSITIVE_PERMISSION]: canViewUserSensitive,
+    };
+
+    // Fails closed on an unrecognised permission. The form builder only ever writes one of the
+    // five above, so reaching this means a hand-edited `formFieldJson` or a permission the
+    // backend renamed — in both cases hiding the field is the safe reading.
+    const isGranted = (permission: string): boolean => grants[permission] ?? false;
+
+    const canViewField = (path: string): boolean => {
+      const rule = getCustomerPiiRule(path);
+      return rule ? isGranted(rule.permission) : true;
+    };
+
+    const canViewDynamicField = (field: PiiMarkedField | null | undefined): boolean => {
       const rule = getDynamicFieldPiiRule(field);
-      return rule ? applyMask(value, rule) : value;
-    },
-    lockPiiInput: (path) => {
-      if (canViewPii || !getCustomerPiiRule(path)) {
-        return UNLOCKED;
-      }
-      return { disabled: true, value: "", placeholder: PII_FULL_MASK };
-    },
-  }), [canViewPii]);
+      return rule ? isGranted(rule.permission) : true;
+    };
+
+    return {
+      canViewField,
+      canViewDynamicField,
+      maskValue: (path, value) =>
+        PII_MASKING_ENABLED && !canViewField(path) ? maskCustomerField(path, value) : value,
+      maskAddress: <T extends object>(address: T | undefined, prefix: AddressPrefix) => {
+        if (!PII_MASKING_ENABLED || !address) {
+          return address;
+        }
+        return maskAddressParts(address, part => !canViewField(`${prefix}.${part}`));
+      },
+      maskDynamicField: (field, value) => {
+        if (!PII_MASKING_ENABLED || canViewDynamicField(field)) {
+          return value;
+        }
+        const rule = getDynamicFieldPiiRule(field);
+        return rule ? applyMask(value, rule) : value;
+      },
+      lockPiiInput: (path) =>
+        canViewField(path) ? UNLOCKED : { disabled: true, value: "", placeholder: PII_FULL_MASK },
+    };
+  }, [
+    canViewCasePhone,
+    canViewCustomerGeneral,
+    canViewCustomerSensitive,
+    canViewUserGeneral,
+    canViewUserSensitive,
+  ]);
 };
 
 /**

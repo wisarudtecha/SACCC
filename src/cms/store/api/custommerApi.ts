@@ -205,7 +205,10 @@ export const customerApi = baseWelcomeCrmApi.injectEndpoints({
       invalidatesTags: ["Customer"],
     }),
 
-    updateCustommersMutation: builder.mutation<ApiResponse<null>, { id: string; data: AddCustomer }>({
+    // `Partial<AddCustomer>`, not `AddCustomer`: callers drop the PII fields the current user
+    // may not see rather than sending back the redacted values the server gave them. This is a
+    // PATCH, so an absent key leaves the stored value alone.
+    updateCustommersMutation: builder.mutation<ApiResponse<null>, { id: string; data: Partial<AddCustomer> }>({
       query: ({ id, data }) => ({
         url: `/customer/${id}`,
         body: data,

@@ -3699,6 +3699,11 @@
       "yearOnly": "Year only",
       "full": "Fully hidden"
     },
+    "piiClass": {
+      "label": "Category of personal data",
+      "customerGeneral": "General personal data",
+      "customerSensitive": "Sensitive personal data"
+    },
     "gridColumns": "Desktop Grid Columns:",
     "columnSpan": "Desktop Column Span:",
     "newOption": "New option",

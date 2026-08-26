@@ -2892,6 +2892,20 @@
     "required": "必填",
     "invalid_email": "无效的邮箱"
   },
+  "formElement": {
+    "containsPersonalData": "包含个人数据",
+    "piiStrategy": {
+      "lastN": "保留后 4 位",
+      "email": "邮箱格式",
+      "yearOnly": "仅显示年份",
+      "full": "完全隐藏"
+    },
+    "piiClass": {
+      "label": "个人数据类别",
+      "customerGeneral": "一般个人数据",
+      "customerSensitive": "敏感个人数据"
+    }
+  },
   "messages": {
     "welcome_user": "欢迎 {{name}}",
     "items_count": "{{count}} 项",

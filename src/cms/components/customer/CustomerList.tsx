@@ -60,7 +60,7 @@ const CustomerListView: React.FC<CustomerListViewProps> = ({ customerData, onEdi
     // Also masks the customer search picker, which renders this same table. Search is
     // server-side, so an agent who typed a full phone number still gets the matching row —
     // and `lastN` leaves the final four digits visible to confirm it is the right one.
-    const { canViewPii, maskValue } = usePiiMasker();
+    const { canViewField, maskValue } = usePiiMasker();
 
     const [sortConfig, setSortConfig] = useState<SortConfig>({
         key: null,
@@ -179,8 +179,9 @@ const CustomerListView: React.FC<CustomerListViewProps> = ({ customerData, onEdi
                                             />
                                             <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-gray-900 ${customer.active ? "bg-green-500" : "bg-red-500"}`} />
                                         </div> */}
-                                        {/* Without `pii.view`, fall through to the initials. */}
-                                        {canViewPii && customer.photo ? (
+                                        {/* Without the sensitive-PII permission, fall through
+                                            to the initials. */}
+                                        {canViewField("photo") && customer.photo ? (
                                             <Avatar className="w-15 h-15 justify-center items-center">
                                                 <img src={customer.photo} alt={customer.displayName} className="h-full w-full object-cover rounded-full"/>
                                             </Avatar>

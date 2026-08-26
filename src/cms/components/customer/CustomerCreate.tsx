@@ -7,11 +7,11 @@ import Checkbox from "@/core/components/form/input/Checkbox";
 import DatePickerLocal from "@/core/components/form/input/DatepicketLocal";
 import Input from "@/core/components/form/input/InputField";
 import { usePiiMasker } from "@/core/hooks/useMaskedValue";
-import type { LockedPiiInputProps } from "@/core/hooks/useMaskedValue";
-import { PII_FULL_MASK } from "@/core/security/piiFields";
+import { MaskedField } from "@/core/components/security/MaskedField";
+import { omitUnviewableCustomerPii } from "@/core/security/piiFields";
 import TextAreaWithCounter from "@/core/components/form/input/TextAreaWithCounter";
 import Select from "@/core/components/form/Select";
-import { FormField } from "@/cms/components/interface/FormField";
+import { FormField, IndividualFormField } from "@/cms/components/interface/FormField";
 import { SearchableSelectApi } from "@/cms/components/SearchInput/SearchSelectInput";
 import { useLazyGetWelcomeAreaQuery, useLazyGetWelcomeSubDistrictsQuery, useGetWelcomeProvinceQuery, useGetWelcomeDistrictsQuery, useGetWelcomeSubDistrictsQuery } from "@/cms/store/api/area";
 import { Customer, CustomerProduct, useInsertCustommersMutationMutation, useUpdateCustommersMutationMutation, useGetCustomerQuery, useGetCustomerFormConfigQuery, useLazyGetCustommerByPhoneNoQuery } from "@/cms/store/api/custommerApi";
@@ -162,22 +162,29 @@ interface CustomerCreateProps {
 const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, customerNumber, minimal = false, setOpenAddCustomerModal, setCaseState, caseWorkOrderNumber, isCreate }) => {
     const { t, language } = useTranslation();
     /**
-     * PII fields are *locked*, not masked, on this form.
+     * PII fields the agent may not see render as **plain text**, not as an input.
      *
-     * `lockPiiInput` blanks what the input displays and disables it; the real value stays in
-     * `formData` and is what `handleCheckRequirePersonalData` validates and `handleSubmit`
-     * sends. Rendering a mask string into `value` instead would write `••••` over the record
-     * on save.
+     * A disabled input still advertises a field they cannot have, and — the part that actually
+     * matters — it does nothing about the value sitting in `formData`. The record now arrives
+     * from the server already redacted, and `handleSubmit` builds its PATCH body from
+     * `formData` rather than from the DOM, so hiding the input would send `••••1234` straight
+     * back over the real number. `omitUnviewableCustomerPii` is what prevents that; the text
+     * render is what stops the agent expecting to be able to edit it.
      *
-     * Locking applies to **edit only**. On create there is no stored value to withhold — the
-     * agent is the source of it — so locking there would disclose nothing and simply make
-     * the form unusable, since `email` and `mobileNo` are required to save.
+     * This holds whether or not the frontend is masking (`PII_MASKING_ENABLED`): it is a
+     * permission question, not a display one.
+     *
+     * Applies to **edit only**. On create there is no stored value to withhold — the agent is
+     * the source of it — so withholding there would disclose nothing and simply make the form
+     * unusable, since `email` and `mobileNo` are required to save.
      */
-    const { canViewPii, lockPiiInput } = usePiiMasker();
+    const { canViewField, canViewDynamicField } = usePiiMasker();
     const isExistingCustomer = Boolean(customer?.id);
-    const canSeePiiFields = canViewPii || !isExistingCustomer;
-    const lockPiiField = (path: string): LockedPiiInputProps =>
-        (isExistingCustomer ? lockPiiInput(path) : {});
+    const canEditPii = (path: string): boolean => !isExistingCustomer || canViewField(path);
+    const canEditDynamicPii = (field: IndividualFormField): boolean =>
+        !isExistingCustomer || canViewDynamicField(field);
+    /** Mirrors `Input`'s own height and text metrics so swapping one for the other doesn't shift the grid. */
+    const PII_TEXT_CLASSES = "h-11 flex items-center px-4 py-2.5 text-sm text-gray-800 dark:text-white/90";
     const [addCustomer, { isLoading: isAddingCustomer }] = useInsertCustommersMutationMutation();
     const [updateCustomer, { isLoading: isUpdatingCustomer }] = useUpdateCustommersMutationMutation();
     const [getCustomerByPhone] = useLazyGetCustommerByPhoneNoQuery();
@@ -383,13 +390,15 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
     const handleCheckRequirePersonalData = () => {
         let isTrue = true;
 
-        if (formData.dynamicForm && !validateDynamicFormInput(formData.dynamicForm)) {
+        // A field the agent can't see arrived redacted and renders as text, so holding it to
+        // its own required/format rules would block them from saving edits to everything else.
+        if (formData.dynamicForm && !validateDynamicFormInput(formData.dynamicForm, field => !canEditDynamicPii(field))) {
             addToast("error", t("input.notEnterSpecifyForm"));
             // return false;
             isTrue = false;
         }
 
-        if (formConfig?.email) {
+        if (formConfig?.email && canEditPii("email")) {
             if (!formData.email?.trim()) {
                 addToast("error", t("input.notEnterEmailError"));
                 setFieldErrors(prev => ({ ...prev, email: t("input.notEnterEmailError") }));
@@ -403,7 +412,7 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
             }
         }
 
-        if (formConfig?.mobileNo) {
+        if (formConfig?.mobileNo && canEditPii("mobileNo")) {
             if (!formData.mobileNo?.trim()) {
                 addToast("error", t("input.notEnterMobileNumberError"));
                 setFieldErrors(prev => ({ ...prev, mobileNo: t("input.notEnterMobileNumberError") }));
@@ -461,11 +470,25 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
                 gender: formData.gender || null,
                 photo: photoUrl,
                 dynamicForm: formData.dynamicForm,
-                displayName: formData.firstName && formData.lastName ? `${formData.firstName} ${formData.lastName}`.trim() : `${resolvedEmail}`
+                // `displayName` is not itself PII, so it is never stripped — which makes the
+                // email fallback a way for a redacted address to reach the record through the
+                // back door. Keep the stored name when the agent cannot see the email.
+                displayName: formData.firstName && formData.lastName
+                    ? `${formData.firstName} ${formData.lastName}`.trim()
+                    : canEditPii("email")
+                        ? `${resolvedEmail}`
+                        : formData.displayName || ""
             };
 
             if (customer?.id) {
-                const updateResult = await updateCustomer({ id: customer.id, data: finalPayload }).unwrap();
+                // Every PII field this agent cannot see is dropped from the body rather than
+                // sent back as the redacted string the server handed us. The endpoint is a
+                // PATCH and ignores absent keys, so the stored values are left alone.
+                //
+                // Only on update: a create has no stored record to overwrite, and its PII came
+                // from the agent in the first place.
+                const updatePayload = omitUnviewableCustomerPii(finalPayload, canViewField);
+                const updateResult = await updateCustomer({ id: customer.id, data: updatePayload }).unwrap();
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (Number((updateResult as any)?.status) < 0) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -625,7 +648,7 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
             addToast("error", t("common.error"));
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [formData, selectedFile, fileUploader, addCustomer, updateCustomer, getCustomerByPhone, updateCaseCustomer, caseWorkOrderNumber, addToast, t, customer, onSuccess, isCreate, socialDrafts, addSocial, primaryDraftKey, setPrimaryContact, reconcileToPreference]);
+    }, [formData, selectedFile, fileUploader, addCustomer, updateCustomer, getCustomerByPhone, updateCaseCustomer, caseWorkOrderNumber, addToast, t, customer, onSuccess, isCreate, socialDrafts, addSocial, primaryDraftKey, setPrimaryContact, reconcileToPreference, canViewField, isExistingCustomer]);
 
     const titleOptions = useMemo(() => [
         { value: "Mr", label: "Mr." },
@@ -867,7 +890,7 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
                                         upload affordance goes with it — replacing a photo you
                                         are not allowed to see is not a meaningful action. */}
                                     <div className="relative w-40 h-40 mx-auto mb-4 group">
-                                        {canSeePiiFields && (imagePreview || formData.photo) ? (
+                                        {canEditPii("photo") && (imagePreview || formData.photo) ? (
                                             <img
                                                 src={imagePreview || formData.photo}
                                                 alt="Profile Preview"
@@ -878,7 +901,7 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
                                                 <UserCircleIcon className="w-24 h-24 text-gray-300 dark:text-gray-600" />
                                             </div>
                                         )}
-                                        {canSeePiiFields && (
+                                        {canEditPii("photo") && (
                                             <label
                                                 htmlFor="photo-upload"
                                                 className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
@@ -890,7 +913,7 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
                                             </label>
                                         )}
                                     </div>
-                                    <input id="photo-upload" type="file" accept="image/*" onChange={handleFileChange} className="hidden" disabled={!canSeePiiFields} />
+                                    <input id="photo-upload" type="file" accept="image/*" onChange={handleFileChange} className="hidden" disabled={!canEditPii("photo")} />
                                     <p className="text-xs text-gray-500 mt-2">{t("userform.allowedTypes")}</p>
                                 </>
                             )}
@@ -923,7 +946,7 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
                                                 <div className="flex space-x-1">
                                                     <label className={labelClasses}>{t("userform.email")}</label> {REQUIRED_ELEMENT}
                                                 </div>
-                                                <Input name="email" type="email" value={formData.email} onChange={handleInputChange} required {...lockPiiField("email")} />
+                                                {canEditPii("email") ? <Input name="email" type="email" value={formData.email} onChange={handleInputChange} required/> : <MaskedField path="email" value={formData.email} className={PII_TEXT_CLASSES} />}
                                                 {fieldErrors["email"] && (
                                                     <span className="text-red-500 text-xs mt-1 block cursor-default">
                                                         {fieldErrors["email"]}
@@ -936,7 +959,7 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
                                                 <div className="flex space-x-1">
                                                     <label className={labelClasses}>{t("forms.phone")}</label> {REQUIRED_ELEMENT}
                                                 </div>
-                                                <Input name="mobileNo" value={formData.mobileNo || (customerNumber && minimal ? customerNumber : "")} onChange={handleInputChange} required {...lockPiiField("mobileNo")} />
+                                                {canEditPii("mobileNo") ? <Input name="mobileNo" value={formData.mobileNo || (customerNumber && minimal ? customerNumber : "")} onChange={handleInputChange} required/> : <MaskedField path="mobileNo" value={formData.mobileNo || (customerNumber && minimal ? customerNumber : "")} className={PII_TEXT_CLASSES} />}
                                                 {fieldErrors["mobileNo"] && (
                                                     <span className="text-red-500 text-xs mt-1 block cursor-default">
                                                         {fieldErrors["mobileNo"]}
@@ -947,14 +970,21 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
                                         {(formConfig?.citizenId !== false) && !minimal && (
                                             <div >
                                                 <label className={labelClasses}>{t("userform.citizenId")}</label>
-                                                <Input
-                                                    name="citizenId"
-                                                    value={formatCitizenId(formData.citizenId || "")}
-                                                    onChange={handleInputChange}
-                                                    maxLength={17}
-                                                    placeholder="X-XXXX-XXXXX-XX-X"
-                                                    {...lockPiiField("citizenId")}
-                                                />
+                                                {/* The text branch shows the raw value, not
+                                                    `formatCitizenId(...)`: a redacted id has no
+                                                    digits left in the positions the dashes go
+                                                    between, so formatting it only garbles it. */}
+                                                {canEditPii("citizenId") ? (
+                                                    <Input
+                                                        name="citizenId"
+                                                        value={formatCitizenId(formData.citizenId || "")}
+                                                        onChange={handleInputChange}
+                                                        maxLength={17}
+                                                        placeholder="X-XXXX-XXXXX-XX-X"
+                                                    />
+                                                ) : (
+                                                    <MaskedField path="citizenId" value={formData.citizenId} className={PII_TEXT_CLASSES} />
+                                                )}
                                             </div>
                                         )}
                                         {(formConfig?.title !== false) && !minimal && (
@@ -1005,7 +1035,7 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
                                                 <div className="flex space-x-1">
                                                     <label className={labelClasses}>{t("forms.landline")}</label>
                                                 </div>
-                                                <Input name="landline" value={formData.landline} onChange={handleInputChange} required {...lockPiiField("landline")} />
+                                                {canEditPii("landline") ? <Input name="landline" value={formData.landline} onChange={handleInputChange} required/> : <MaskedField path="landline" value={formData.landline} className={PII_TEXT_CLASSES} />}
                                             </div>
                                         )}
                                         {(formConfig?.blood !== false) && !minimal && (
@@ -1038,24 +1068,28 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
                                                 <div className=" flex space-x-1">
                                                     <label className={labelClasses}>{t("userform.dob")}</label>
                                                 </div>
-                                                {/* `selected` is cleared rather than masked:
-                                                    this takes a Date, and the mask is a
-                                                    string. `formData.dob` keeps the real
-                                                    value for submission either way. */}
-                                                <DatePickerLocal
-                                                    selected={canSeePiiFields ? selectedDob : null}
-                                                    onChange={handleDateChange}
-                                                    disabled={!canSeePiiFields}
-                                                    language={language}
-                                                    dateFormat="dd/MM/yyyy"
-                                                    maxDate={getTodayDate()}
-                                                    popperClassName="z-50"
-                                                    wrapperClassName="w-full"
-                                                    className={`p-2.5 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:bg-gray-900!`}
-                                                    placeholderText={canSeePiiFields ? t("case.display.schedule_placeholder") : PII_FULL_MASK}
-                                                    locale={language === 'th' ? 'th' : 'en'}
-                                                    required
-                                                />
+                                                {/* Text rather than a cleared date picker: the
+                                                    picker takes a `Date`, and a redacted date
+                                                    is a string (`••/••/1990`) that cannot be
+                                                    parsed back into one. `formData.dob` is
+                                                    stripped from the payload either way. */}
+                                                {canEditPii("dob") ? (
+                                                    <DatePickerLocal
+                                                        selected={selectedDob}
+                                                        onChange={handleDateChange}
+                                                        language={language}
+                                                        dateFormat="dd/MM/yyyy"
+                                                        maxDate={getTodayDate()}
+                                                        popperClassName="z-50"
+                                                        wrapperClassName="w-full"
+                                                        className={`p-2.5 w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:bg-gray-900!`}
+                                                        placeholderText={t("case.display.schedule_placeholder")}
+                                                        locale={language === 'th' ? 'th' : 'en'}
+                                                        required
+                                                    />
+                                                ) : (
+                                                    <MaskedField path="dob" value={formData.dob} className={PII_TEXT_CLASSES} />
+                                                )}
                                             </div>
                                         )}
                                     </div>
@@ -1090,32 +1124,32 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
                                                 {(formConfig?.address?.no !== false) && (
                                                     <div>
                                                         <label className={labelClasses}>{t("address.no") || "No."}</label>
-                                                        <Input name="no" value={formData.address.no} onChange={handleAddressChange} {...lockPiiField("address.no")} />
+                                                        {canEditPii("address.no") ? <Input name="no" value={formData.address.no} onChange={handleAddressChange}/> : <MaskedField path="address.no" value={formData.address.no} className={PII_TEXT_CLASSES} />}
                                                     </div>
                                                 )}
                                                 {(formConfig?.address?.room !== false) && (
                                                     <div>
                                                         <label className={labelClasses}>{t("address.room") || "Room"}</label>
-                                                        <Input name="room" value={formData.address.room} onChange={handleAddressChange} {...lockPiiField("address.room")} />
+                                                        {canEditPii("address.room") ? <Input name="room" value={formData.address.room} onChange={handleAddressChange}/> : <MaskedField path="address.room" value={formData.address.room} className={PII_TEXT_CLASSES} />}
                                                     </div>
                                                 )}
                                                 {(formConfig?.address?.floor !== false) && (
                                                     <div>
                                                         <label className={labelClasses}>{t("address.floor") || "Floor"}</label>
-                                                        <Input name="floor" value={formData.address.floor} onChange={handleAddressChange} {...lockPiiField("address.floor")} />
+                                                        {canEditPii("address.floor") ? <Input name="floor" value={formData.address.floor} onChange={handleAddressChange}/> : <MaskedField path="address.floor" value={formData.address.floor} className={PII_TEXT_CLASSES} />}
                                                     </div>
                                                 )}
 
                                                 {(formConfig?.address?.building !== false) && (
                                                     <div className="md:col-span-2">
                                                         <label className={labelClasses}>{t("address.building") || "Building"}</label>
-                                                        <Input name="building" value={formData.address.building} onChange={handleAddressChange} {...lockPiiField("address.building")} />
+                                                        {canEditPii("address.building") ? <Input name="building" value={formData.address.building} onChange={handleAddressChange}/> : <MaskedField path="address.building" value={formData.address.building} className={PII_TEXT_CLASSES} />}
                                                     </div>
                                                 )}
                                                 {(formConfig?.address?.street !== false) && (
                                                     <div>
                                                         <label className={labelClasses}>{t("address.street") || "Street"}</label>
-                                                        <Input name="street" value={formData.address.street} onChange={handleAddressChange} {...lockPiiField("address.street")} />
+                                                        {canEditPii("address.street") ? <Input name="street" value={formData.address.street} onChange={handleAddressChange}/> : <MaskedField path="address.street" value={formData.address.street} className={PII_TEXT_CLASSES} />}
                                                     </div>
                                                 )}
 
@@ -1219,32 +1253,32 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
                                                         {(formConfig?.currentAddress?.no !== false) && (
                                                             <div>
                                                                 <label className={labelClasses}>{t("address.no") || "No."}</label>
-                                                                <Input name="no" value={formData.currentAddress.no} onChange={handleCurrentAddressChange} {...lockPiiField("currentAddress.no")} />
+                                                                {canEditPii("currentAddress.no") ? <Input name="no" value={formData.currentAddress.no} onChange={handleCurrentAddressChange}/> : <MaskedField path="currentAddress.no" value={formData.currentAddress.no} className={PII_TEXT_CLASSES} />}
                                                             </div>
                                                         )}
                                                         {(formConfig?.currentAddress?.room !== false) && (
                                                             <div>
                                                                 <label className={labelClasses}>{t("address.room") || "Room"}</label>
-                                                                <Input name="room" value={formData.currentAddress.room} onChange={handleCurrentAddressChange} {...lockPiiField("currentAddress.room")} />
+                                                                {canEditPii("currentAddress.room") ? <Input name="room" value={formData.currentAddress.room} onChange={handleCurrentAddressChange}/> : <MaskedField path="currentAddress.room" value={formData.currentAddress.room} className={PII_TEXT_CLASSES} />}
                                                             </div>
                                                         )}
                                                         {(formConfig?.currentAddress?.floor !== false) && (
                                                             <div>
                                                                 <label className={labelClasses}>{t("address.floor") || "Floor"}</label>
-                                                                <Input name="floor" value={formData.currentAddress.floor} onChange={handleCurrentAddressChange} {...lockPiiField("currentAddress.floor")} />
+                                                                {canEditPii("currentAddress.floor") ? <Input name="floor" value={formData.currentAddress.floor} onChange={handleCurrentAddressChange}/> : <MaskedField path="currentAddress.floor" value={formData.currentAddress.floor} className={PII_TEXT_CLASSES} />}
                                                             </div>
                                                         )}
 
                                                         {(formConfig?.currentAddress?.building !== false) && (
                                                             <div className="md:col-span-2">
                                                                 <label className={labelClasses}>{t("address.building") || "Building"}</label>
-                                                                <Input name="building" value={formData.currentAddress.building} onChange={handleCurrentAddressChange} {...lockPiiField("currentAddress.building")} />
+                                                                {canEditPii("currentAddress.building") ? <Input name="building" value={formData.currentAddress.building} onChange={handleCurrentAddressChange}/> : <MaskedField path="currentAddress.building" value={formData.currentAddress.building} className={PII_TEXT_CLASSES} />}
                                                             </div>
                                                         )}
                                                         {(formConfig?.currentAddress?.street !== false) && (
                                                             <div>
                                                                 <label className={labelClasses}>{t("address.street") || "Street"}</label>
-                                                                <Input name="street" value={formData.currentAddress.street} onChange={handleCurrentAddressChange} {...lockPiiField("currentAddress.street")} />
+                                                                {canEditPii("currentAddress.street") ? <Input name="street" value={formData.currentAddress.street} onChange={handleCurrentAddressChange}/> : <MaskedField path="currentAddress.street" value={formData.currentAddress.street} className={PII_TEXT_CLASSES} />}
                                                             </div>
                                                         )}
 
@@ -1481,7 +1515,9 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
                                             enableSelfBg={false}
                                             onFormChange={handleDynamicFormChange}
                                             maskPii
-                                            canViewPii={canSeePiiFields}
+                                            // On create, unlock everything — there is no stored value to
+                                            // withhold. On edit, undefined lets each field resolve its own class.
+                                            canViewPii={isExistingCustomer ? undefined : true}
                                         // onFormChange={handleGetTypeFormData}
                                         />
                                     )}

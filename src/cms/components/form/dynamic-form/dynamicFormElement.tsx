@@ -12,7 +12,8 @@ import { CSS } from '@dnd-kit/utilities';
 import { getColSpanPercentage, getResponsiveColSpanClass, getResponsiveGridClass, updateFieldRecursively } from "./function";
 import Input from "@/core/components/form/input/InputField";
 import RenderFormField from "./renderFormField";
-import { PII_STRATEGY_PRESETS, isPiiEligibleFieldType, presetsForFieldType, presetKeyForRule } from "./piiPresets";
+import { DEFAULT_PII_CLASS, PII_CLASS_KEYS, buildPiiRule, classKeyForRule, isPiiEligibleFieldType, presetsForFieldType, presetKeyForRule } from "./piiPresets";
+import type { PiiClassKey, PiiPresetKey } from "./piiPresets";
 import type { PiiRule } from "@/core/security/piiFields";
 
 interface FieldEditItemProps {
@@ -255,25 +256,43 @@ export const SortableFieldEditItem: React.FC<FieldEditItemProps> = React.memo(({
                                             return;
                                         }
                                         const defaultKey = presetsForFieldType(field.type)[0];
-                                        handleUpdatePii(field.id, PII_STRATEGY_PRESETS[defaultKey]);
+                                        handleUpdatePii(field.id, buildPiiRule(defaultKey, DEFAULT_PII_CLASS));
                                     }}
                                     className="form-checkbox h-4 w-4 text-blue-600 rounded"
                                     disabled={!editFormData}
                                 />
                                 <label htmlFor={`pii-toggle-${field.id}`} className="ml-2 text-gray-700 text-sm dark:text-gray-400">{t("formElement.containsPersonalData")}</label>
                             </div>
+                            {/* Both dropdowns rebuild the whole rule, since a marker is only
+                                meaningful as a strategy and a class together. `classKeyForRule`
+                                falls back to the default, so a marker saved before classes
+                                existed keeps working rather than writing `undefined` here. */}
                             {field.pii && (
-                                <select
-                                    id={`pii-strategy-${field.id}`}
-                                    value={presetKeyForRule(field.pii)}
-                                    onChange={(e) => handleUpdatePii(field.id, PII_STRATEGY_PRESETS[e.target.value as keyof typeof PII_STRATEGY_PRESETS])}
-                                    className="py-1 px-2 border rounded-md text-gray-700 dark:bg-gray-800 dark:text-gray-400 text-sm"
-                                    disabled={!editFormData}
-                                >
-                                    {presetsForFieldType(field.type).map((key) => (
-                                        <option key={key} value={key}>{t(`formElement.piiStrategy.${key}`)}</option>
-                                    ))}
-                                </select>
+                                <div className="flex flex-wrap gap-2">
+                                    <select
+                                        id={`pii-strategy-${field.id}`}
+                                        value={presetKeyForRule(field.pii)}
+                                        onChange={(e) => handleUpdatePii(field.id, buildPiiRule(e.target.value as PiiPresetKey, classKeyForRule(field.pii)))}
+                                        className="py-1 px-2 border rounded-md text-gray-700 dark:bg-gray-800 dark:text-gray-400 text-sm"
+                                        disabled={!editFormData}
+                                    >
+                                        {presetsForFieldType(field.type).map((key) => (
+                                            <option key={key} value={key}>{t(`formElement.piiStrategy.${key}`)}</option>
+                                        ))}
+                                    </select>
+                                    <select
+                                        id={`pii-class-${field.id}`}
+                                        value={classKeyForRule(field.pii)}
+                                        onChange={(e) => handleUpdatePii(field.id, buildPiiRule(presetKeyForRule(field.pii) || presetsForFieldType(field.type)[0], e.target.value as PiiClassKey))}
+                                        className="py-1 px-2 border rounded-md text-gray-700 dark:bg-gray-800 dark:text-gray-400 text-sm"
+                                        disabled={!editFormData}
+                                        title={t("formElement.piiClass.label")}
+                                    >
+                                        {PII_CLASS_KEYS.map((key) => (
+                                            <option key={key} value={key}>{t(`formElement.piiClass.${key}`)}</option>
+                                        ))}
+                                    </select>
+                                </div>
                             )}
                         </div>
                     )}

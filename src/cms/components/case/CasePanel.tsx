@@ -501,7 +501,7 @@ const CustomerInfoTab: React.FC<{
     isCreate
 }) => {
     const { language, t } = useTranslation();
-    const { canViewPii, maskValue } = usePiiMasker();
+    const { canViewField, maskValue } = usePiiMasker();
     const [openCustomerModal, setOpenCustomerModal] = useState<boolean>(false);
     const [openLinkCustomerModal, setOpenLinkCustomerModal] = useState<boolean>(false);
     const [openCustomerFormModal, setOpenCustomerFormModal] = useState<boolean>(false);
@@ -572,7 +572,7 @@ const CustomerInfoTab: React.FC<{
                 <div className="flex flex-wrap gap-3 items-center">
                     <Avatar
                         src={
-                            canViewPii && customer?.photo
+                            canViewField("photo") && customer?.photo
                                 ? customer.photo
                                 : "/images/user/unknow user.png"
                         }
@@ -605,7 +605,7 @@ const CustomerInfoTab: React.FC<{
                                 produces "Invalid Date". */}
                             {!customer?.dob
                                 ? "-"
-                                : canViewPii
+                                : canViewField("dob")
                                     ? formatDate(customer.dob, { includeTime: false, })
                                     : maskValue("dob", customer.dob)}
                         </div>

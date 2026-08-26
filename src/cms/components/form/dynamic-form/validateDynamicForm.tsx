@@ -93,12 +93,27 @@ export const validateFieldValue = (field: IndividualFormFieldWithChildren): stri
 };
 
 
-export const validateDynamicFormInput = (form: FormField): boolean => {
+/**
+ * `shouldSkipField` exempts a field from validation entirely.
+ *
+ * It exists for PII: a field the viewer may not see arrives redacted and renders as text, so
+ * holding it to its own `required`/format rules would block the user from saving edits to
+ * *other* fields over data they were never shown. Opt-in, so the case and SOP call sites -
+ * which never mask - are unaffected.
+ */
+export const validateDynamicFormInput = (
+  form: FormField,
+  shouldSkipField?: (field: IndividualFormField) => boolean
+): boolean => {
   const validateFields = (fields: IndividualFormField[]): boolean => {
     if (!fields) {
       return true
     }
     for (const field of fields) {
+      if (shouldSkipField?.(field)) {
+        continue;
+      }
+
       const fieldWithChildren = field as IndividualFormFieldWithChildren;
 
       if (validateFieldValue(fieldWithChildren).length > 0) {

@@ -26,7 +26,6 @@ import { useToast } from "@/core/hooks/useToast";
 import { createDynamicFormField, getResponsiveColSpanClass, getResponsiveGridClass } from "./function.ts";
 import { FormEdit } from "./dynamicFormEditMode.tsx";
 import RenderFormField from "./renderFormField.tsx";
-import { usePiiMasker } from "@/core/hooks/useMaskedValue";
 import { ImportDynamicFormModal } from "./importDynamicFormModal.tsx";
 import AddFormSelector from "./addFormSelector.tsx";
 import { useTranslation } from "@/core/hooks/useTranslation.ts";
@@ -58,7 +57,7 @@ interface DynamicFormProps {
   enableShowVersion?:boolean,
   /** Opt-in only - see `RenderFormField`. Case/SOP forms must stay unmasked. */
   maskPii?: boolean;
-  /** Overrides the live `pii.view` check - see `RenderFormField` for why this exists. */
+  /** Overrides the live per-field permission check - see `RenderFormField` for why this exists. */
   canViewPii?: boolean;
 }
 
@@ -101,13 +100,11 @@ function DynamicForm({
   const [hide, setHide] = useState<boolean>(false);
   const { t } = useTranslation();
   const [formMeta, setFormMeta] = useState<formMetaData | undefined>(undefined);
-  // Called unconditionally (Rules of Hooks) even when `maskPii` is false - cheap, since
-  // `useIsSystemAdmin` only reads `localStorage`, no network round trip. Only used as a
-  // fallback: callers that already know create-vs-edit (e.g. `CustomerCreate`) pass
-  // `canViewPii` explicitly so a brand-new record's PII fields aren't locked before anything
-  // exists to protect - the same trap the static customer form hit.
-  const { canViewPii: livePiiAccess } = usePiiMasker();
-  const effectiveCanViewPii = canViewPii ?? livePiiAccess;
+  // `canViewPii` is passed straight through rather than resolved here: each field carries its
+  // own PII class now, so only `RenderFormField` - which has the field in hand - can answer the
+  // question. Left undefined it does exactly that. Callers that already know create-vs-edit
+  // (e.g. `CustomerCreate`) still pass `true` so a brand-new record's PII fields aren't locked
+  // before anything exists to protect - the same trap the static customer form hit.
 
   useEffect(() => {
     if (initialForm && "versions" in initialForm) {
@@ -596,12 +593,12 @@ function DynamicForm({
         </div> : currentForm.formFieldJson.length === 0 ? (<p className="text-center text-gray-500 italic mb-4">{t("dynamicForm.preview.noFields")}</p>
         ) : (
           <div className={`grid grid-cols-1 ${getResponsiveGridClass(currentForm.formColSpan)} gap-4`}>
-            {currentForm.formFieldJson.map((field) => (<div key={field.id} className={`mb-2 px-4 relative ${getResponsiveColSpanClass(field.colSpan)}`}><RenderFormField setCurrentForm={setCurrentForm} field={field} showValidationErrors={showValidationErrors} editFormData={editFormData} maskPii={maskPii} canViewPii={effectiveCanViewPii} /></div>))}
+            {currentForm.formFieldJson.map((field) => (<div key={field.id} className={`mb-2 px-4 relative ${getResponsiveColSpanClass(field.colSpan)}`}><RenderFormField setCurrentForm={setCurrentForm} field={field} showValidationErrors={showValidationErrors} editFormData={editFormData} maskPii={maskPii} canViewPii={canViewPii} /></div>))}
           </div>
         )}
       </div>
     );
-  }, [currentForm, enableFormTitle, formMeta, edit, t, isLoadingForm, showValidationErrors, editFormData, maskPii, effectiveCanViewPii]); // Added dependencies
+  }, [currentForm, enableFormTitle, formMeta, edit, t, isLoadingForm, showValidationErrors, editFormData, maskPii, canViewPii]); // Added dependencies
 
   return edit ? (
     <div

@@ -7,8 +7,15 @@
  * in `cms`, and `CLAUDE.md` treats `core` -> `cms` imports as an existing tangle to work
  * around rather than extend. Keeping it pure also makes every rule here directly testable.
  *
- * It is a **display-layer** control. The server still returns whole records; masking here
- * only decides what reaches the screen. The BFF remains the real security boundary.
+ * It is a **display-layer** control, and a secondary one: the BFF is the real security boundary
+ * and now returns records with PII already redacted for callers who lack the permission. The
+ * masking here is what runs when `PII_MASKING_ENABLED` (`./piiConfig.ts`) is on, and is switched
+ * off where the backend has taken over so the two do not stack.
+ *
+ * Two things in this module are *not* display-layer and stay live either way, because they
+ * protect the write path rather than the screen: the `permission` on each rule, which decides
+ * whether a field is editable at all, and `omitUnviewableCustomerPii`, which keeps a redacted
+ * value out of an update payload.
  *
  * Scope is customer data only. User/admin PII (`src/core/types/user.ts`) is deliberately
  * out of scope.
@@ -32,15 +39,25 @@ export interface PiiRule {
 }
 
 /**
- * One blanket permission for now.
+ * The permissions the backend grants, one per class of personal data.
  *
- * Every rule below still carries its own `permission` key rather than relying on this
- * constant implicitly, so splitting into finer-grained permissions later (`pii.view.contact`,
- * `pii.view.identity`, ...) is a one-line change per entry instead of a refactor of every
- * call site. `PermissionManager` groups by `permId.split(".")[0]`, so the `pii` namespace
- * slots in with no change to that class.
+ * These replace the single `pii.view` this module used to carry. A rule left pointing at a
+ * permission no role can be granted would mask its field permanently, so the old constant was
+ * repointed rather than kept alongside these.
+ *
+ * `PermissionManager.hasPermission` is an exact match over a flattened list, so the extra path
+ * segments cost nothing; `groupPermissionsByModule` still buckets all five under `pii`.
  */
-export const PII_VIEW_PERMISSION = "pii.view";
+export const PII_CASE_PHONE_PERMISSION = "pii.case.phoneNo";
+export const PII_CUSTOMER_GENERAL_PERMISSION = "pii.customer.general.personal";
+export const PII_CUSTOMER_SENSITIVE_PERMISSION = "pii.customer.sensitive.personal";
+
+/**
+ * Declared for completeness of the backend's taxonomy. Nothing reads them yet — user/admin PII
+ * (`src/core/types/user.ts`) has no masking anywhere in the app, and wiring it is separate work.
+ */
+export const PII_USER_GENERAL_PERMISSION = "pii.user.general.personal";
+export const PII_USER_SENSITIVE_PERMISSION = "pii.user.sensitive.personal";
 
 const MASK_CHAR = "•";
 
@@ -81,23 +98,33 @@ const addressRules = (prefix: string): Record<string, PiiRule> =>
   Object.fromEntries(
     PRECISE_ADDRESS_PARTS.map(part => [
       `${prefix}.${part}`,
-      { strategy: "full", permission: PII_VIEW_PERMISSION } as PiiRule,
+      { strategy: "full", permission: PII_CUSTOMER_SENSITIVE_PERMISSION } as PiiRule,
     ])
   );
 
 /**
  * Keyed by dotted path so nested address fields resolve without a separate lookup shape.
  *
- * Note `mobileNo` — the customer's phone field. `phoneNo` belongs to Case/dispatch and is
- * intentionally not listed: it is case-owned data, not customer-owned.
+ * The general/sensitive split matches what the backend masks on. It has to: the same rule
+ * decides both what is hidden and what is stripped from an update payload, so a field the
+ * frontend classes as `general` while the backend masks it as `sensitive` would be sent back
+ * with the redaction in it.
+ *
+ * Note `mobileNo` — the customer's phone field. `phoneNo` belongs to Case/dispatch and is still
+ * not listed: it is case-owned data, and while `PII_CASE_PHONE_PERMISSION` now exists for it,
+ * no case surface reads it yet.
  */
 export const CUSTOMER_PII_FIELDS: Record<string, PiiRule> = {
-  citizenId: { strategy: "lastN", keep: 4, permission: PII_VIEW_PERMISSION },
-  mobileNo: { strategy: "lastN", keep: 4, permission: PII_VIEW_PERMISSION },
-  landline: { strategy: "lastN", keep: 4, permission: PII_VIEW_PERMISSION },
-  email: { strategy: "email", permission: PII_VIEW_PERMISSION },
-  dob: { strategy: "yearOnly", permission: PII_VIEW_PERMISSION },
-  photo: { strategy: "full", permission: PII_VIEW_PERMISSION },
+  // General — contact details the customer hands out to be reached on.
+  mobileNo: { strategy: "lastN", keep: 4, permission: PII_CUSTOMER_GENERAL_PERMISSION },
+  landline: { strategy: "lastN", keep: 4, permission: PII_CUSTOMER_GENERAL_PERMISSION },
+  email: { strategy: "email", permission: PII_CUSTOMER_GENERAL_PERMISSION },
+
+  // Sensitive — identity documents, date of birth, a face, and any address precise enough to
+  // locate a household.
+  citizenId: { strategy: "lastN", keep: 4, permission: PII_CUSTOMER_SENSITIVE_PERMISSION },
+  dob: { strategy: "yearOnly", permission: PII_CUSTOMER_SENSITIVE_PERMISSION },
+  photo: { strategy: "full", permission: PII_CUSTOMER_SENSITIVE_PERMISSION },
   ...addressRules("address"),
   ...addressRules("currentAddress"),
 };
@@ -223,15 +250,27 @@ export const maskCustomerField = (
  *
  * Returns a new object — the input is never mutated.
  *
+ * `shouldMaskPart` lets the caller apply the viewer's permissions per part; it defaults to
+ * masking every precise part, which is the behaviour every existing call site had. All eight
+ * parts are sensitive today, so the predicate is uniform in practice — it exists so a later
+ * reclassification of one part does not need a new function.
+ *
  * Generic over the address shape so the result stays assignable to whatever type the caller
  * had, without this module importing it. `T extends object` rather than
  * `T extends Record<string, unknown>` because an `interface` with optional properties has no
  * index signature and would not satisfy the latter.
  */
-export const maskAddressParts = <T extends object>(address: T): T => {
+export const maskAddressParts = <T extends object>(
+  address: T,
+  shouldMaskPart: (part: string) => boolean = () => true
+): T => {
   const masked: Record<string, unknown> = { ...(address as Record<string, unknown>) };
 
   for (const part of PRECISE_ADDRESS_PARTS) {
+    if (!shouldMaskPart(part)) {
+      continue;
+    }
+
     const value = masked[part];
     // Absent parts stay absent: writing a mask over a missing house number would imply the
     // record holds one.
@@ -272,6 +311,67 @@ export const getDynamicFieldPiiRule = (
   }
 
   return typeof marker === "string"
-    ? { strategy: marker, permission: PII_VIEW_PERMISSION }
+    ? { strategy: marker, permission: PII_CUSTOMER_GENERAL_PERMISSION }
     : marker;
+};
+
+/**
+ * Drops every classified customer field the viewer may not see from an update payload.
+ *
+ * This is the write-path counterpart to masking, and the reason masking's own switch must not
+ * govern it. Once the backend redacts what it sends, an edit form loads `••••1234` into its
+ * state, and `CustomerCreate`'s `handleSubmit` builds its PATCH body from that state rather than
+ * from the DOM — so hiding the input is not protection. Omitting the key is. The customer PATCH
+ * ignores absent keys, which makes this the semantically correct move rather than a workaround.
+ *
+ * `canView` receives the same dotted paths `CUSTOMER_PII_FIELDS` is keyed by, so a caller can
+ * pass `usePiiMasker().canViewField` straight in.
+ *
+ * Returns a new object and shallow-copies any nested address it has to touch. The input, and any
+ * sub-object it shares with React state, is never mutated.
+ *
+ * Constrained to `T extends object`, not `Record<string, unknown>`, for the same reason
+ * `maskAddressParts` is: an `interface` such as `AddCustomer` has no index signature and would
+ * not satisfy the latter.
+ */
+export const omitUnviewableCustomerPii = <T extends object>(
+  payload: T,
+  canView: (path: string) => boolean
+): Partial<T> => {
+  const result: Record<string, unknown> = { ...(payload as Record<string, unknown>) };
+  // Tracks which nested objects have already been copied, so two masked parts of the same
+  // address don't clone it twice — and, more importantly, so the second deletion lands on the
+  // copy rather than on the caller's original.
+  const copiedParents = new Set<string>();
+
+  for (const path of Object.keys(CUSTOMER_PII_FIELDS)) {
+    if (canView(path)) {
+      continue;
+    }
+
+    const separatorIndex = path.indexOf(".");
+
+    if (separatorIndex < 0) {
+      delete result[path];
+      continue;
+    }
+
+    const parentKey = path.slice(0, separatorIndex);
+    const childKey = path.slice(separatorIndex + 1);
+
+    if (!copiedParents.has(parentKey)) {
+      const parent = result[parentKey];
+      // A parent that is absent or not an object has no child to strip. Leave it exactly as it
+      // came in rather than inventing an empty object in the payload.
+      if (typeof parent !== "object" || parent === null) {
+        continue;
+      }
+      result[parentKey] = { ...(parent as Record<string, unknown>) };
+      copiedParents.add(parentKey);
+    }
+
+    delete (result[parentKey] as Record<string, unknown>)[childKey];
+  }
+
+  return result as Partial<T>;
 };

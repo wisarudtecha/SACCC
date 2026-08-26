@@ -1,4 +1,10 @@
 {
+  "0.64.0": {
+    "date": "2026-08-26",
+    "segment": "MINOR",
+    "notes": "feat(core): control access to customers' personal data by category\n- Access to a customer's personal data now follows the categories the system grants - general personal data such as contact details, and sensitive personal data such as the identity number, date of birth, photo and precise address - instead of a single all-or-nothing permission, so staff can be given only what their work actually requires.\n- A personal detail a member of staff is not allowed to see now appears as read-only text on the customer form, instead of an empty box that looks like a field they simply have not filled in yet.\n- Saving a customer no longer sends the hidden details back, so correcting a customer's name or address can no longer overwrite the phone number or identity number that was never shown to the person making the change.\n- Required-field checks now skip the personal details a member of staff cannot see, so an unrelated correction can still be saved.\n- In the form builder, a field marked as containing personal data can now also be filed as general or sensitive personal data, which is what decides who may see it. Fields marked before this change keep working and are treated as general.\n- The system can now be set up to leave the hiding of personal data entirely to the server, so details are not hidden twice. Who may see or change each field is decided by permissions either way and is unaffected by that setting.\n- Available in Thai, English and Chinese.\n- changelog.json / package.json: bump version 0.63.0 -> 0.64.0",
+    "author": "Wisarud Techa"
+  },
   "0.63.0": {
     "date": "2026-08-26",
     "segment": "MINOR",

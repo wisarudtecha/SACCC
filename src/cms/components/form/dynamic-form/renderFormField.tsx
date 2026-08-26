@@ -18,6 +18,8 @@ import { useToast } from '@/core/hooks/useToast.ts';
 import { ToastContainer } from '@/core/components/crud/ToastContainer.tsx';
 import { useTranslation } from '@/core/hooks/useTranslation.ts';
 import { PII_FULL_MASK, getDynamicFieldPiiRule } from '@/core/security/piiFields';
+import { usePiiMasker } from '@/core/hooks/useMaskedValue';
+import { isPiiEligibleFieldType } from './piiPresets';
 
 interface renderRenderFormFieldProps {
     field: IndividualFormFieldWithChildren;
@@ -26,7 +28,11 @@ interface renderRenderFormFieldProps {
     setCurrentForm: React.Dispatch<React.SetStateAction<FormFieldWithChildren>>
     /** Opt-in only - see `DynamicForm`. Most call sites (case/SOP forms) leave this unset. */
     maskPii?: boolean;
-    /** Whether this user may see unmasked PII. Ignored when `maskPii` is false. */
+    /**
+     * Overrides the live per-field permission check. Left unset, each marked field resolves its
+     * own class through `usePiiMasker`. `DynamicForm` passes `true` for a record that does not
+     * exist yet, where there is no stored value to withhold. Ignored when `maskPii` is false.
+     */
     canViewPii?: boolean;
 }
 
@@ -36,14 +42,16 @@ const RenderFormField: React.FC<renderRenderFormFieldProps> = ({
     showValidationErrors,
     setCurrentForm,
     maskPii = false,
-    canViewPii = false,
+    canViewPii,
 }) => {
-    // A marked field with no `pii.view` renders locked: blanked and disabled, never a masked
-    // *string* in `value` - the real value stays in `field.value`/`formFieldJson` untouched,
-    // since a disabled input never fires `onChange`. Same mechanism as `lockPiiInput` on the
-    // static customer form.
+    const { canViewDynamicField, maskDynamicField } = usePiiMasker();
+
+    // A marked field the viewer's permissions don't cover renders locked. The real value stays
+    // in `field.value`/`formFieldJson` untouched either way - what changes is that the locked
+    // branch below renders text rather than an input, so there is nothing to type into and
+    // nothing that could carry a redacted string back into a submission.
     const piiRule = maskPii ? getDynamicFieldPiiRule(field) : undefined;
-    const isLocked = !!piiRule && !canViewPii;
+    const isLocked = !!piiRule && !(canViewPii ?? canViewDynamicField(field));
 
     const commonProps = {
         id: field.id,
@@ -692,6 +700,27 @@ const RenderFormField: React.FC<renderRenderFormFieldProps> = ({
             </>
         );
     };
+
+    // Placed after every hook above, so the early return can't change the hook order.
+    //
+    // Only the PII-eligible types are handled here, and those are exactly the ones the builder
+    // lets an admin mark. A container or image type reaching this branch would mean a
+    // hand-edited `formFieldJson`; it falls through to the normal render, where `commonProps`
+    // still disables it.
+    if (isLocked && isPiiEligibleFieldType(field.type)) {
+        const rawValue = field.value === null || field.value === undefined || field.value === ""
+            ? field.value
+            : String(field.value);
+
+        return (
+            <>
+                {labelComponent}
+                <p className="py-2 text-gray-700 dark:text-gray-300">
+                    {maskDynamicField(field, rawValue) || t("formViewer.emptyValue")}
+                </p>
+            </>
+        );
+    }
 
     return (
         <>

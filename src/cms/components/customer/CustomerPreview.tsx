@@ -16,7 +16,7 @@ export const CustomerPreviewData = ({ customer, className }: { customer: Custome
     const { t } = useTranslation();
     const { data: formConfigRes } = useGetCustomerFormConfigQuery();
     const formConfig = formConfigRes?.data;
-    const { canViewPii, maskAddress, maskValue } = usePiiMasker();
+    const { canViewField, maskAddress, maskValue } = usePiiMasker();
 
     // The preference alone ("CALL") does not tell an agent which number to dial, so the
     // stored primary's actual value is shown beneath it. Both reads share their RTK Query
@@ -35,8 +35,8 @@ export const CustomerPreviewData = ({ customer, className }: { customer: Custome
     // Masked before merging, not after: `mergeAddress` flattens the object into one string,
     // so once it has run there is no seam left to redact the house number without also
     // taking out the province. The coarse parts survive either way.
-    const maskedCurrentAddress = maskAddress(customer?.currentAddress);
-    const maskedRegisAddress = maskAddress(customer?.address);
+    const maskedCurrentAddress = maskAddress(customer?.currentAddress, "currentAddress");
+    const maskedRegisAddress = maskAddress(customer?.address, "address");
 
     const currentAddress = maskedCurrentAddress ? mergeAddress(maskedCurrentAddress, formConfig?.currentAddress) : ""
     const regisAddress = maskedRegisAddress ? mergeAddress(maskedRegisAddress, formConfig?.address) : ""
@@ -48,10 +48,11 @@ export const CustomerPreviewData = ({ customer, className }: { customer: Custome
             {(formConfig?.photo !== false || formConfig?.displayName !== false) && (
                 <div className='justify-items-center text-center my-5 mx-3'>
                     {formConfig?.photo !== false && (
-                        // A face is identifying, so without `pii.view` fall through to the
-                        // initials the component already renders for customers with no photo
-                        // — a mask string in `src` would only produce a broken image.
-                        canViewPii && customer?.photo ? (
+                        // A face is identifying, so without the sensitive-PII permission fall
+                        // through to the initials the component already renders for customers
+                        // with no photo — a mask string in `src` would only produce a broken
+                        // image.
+                        canViewField("photo") && customer?.photo ? (
                             <Avatar className="w-30 h-30 justify-center items-center">
                                 <img src={customer?.photo} alt={customer?.displayName} className="h-full w-full object-cover rounded-full" />
                             </Avatar>

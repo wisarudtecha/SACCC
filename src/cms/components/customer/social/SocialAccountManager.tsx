@@ -9,7 +9,7 @@ import { usePiiMasker } from "@/core/hooks/useMaskedValue";
 import { useCustomerSocials } from "@/cms/hooks/useCustomerSocials";
 import { useCustomerPrimaryContact } from "@/cms/hooks/useCustomerPrimaryContact";
 import { toAddCustomerPayload } from "@/cms/utils/customerPayload";
-import { providerMeta } from "@/cms/utils/customerSocial.policy";
+import { providerMeta, socialPiiPath } from "@/cms/utils/customerSocial.policy";
 import type { PrimaryContactTarget } from "@/cms/utils/customerSocial.policy";
 import { ContactChannelList } from "@/cms/components/customer/social/ContactChannelList";
 import { SocialAccountEditor } from "@/cms/components/customer/social/SocialAccountEditor";
@@ -32,13 +32,6 @@ interface SocialAccountManagerProps {
   preference?: string;
 }
 
-/**
- * Channels whose identifier *is* customer PII — an extra phone number or email address —
- * rather than a platform handle. Kept in step with `ContactChannelList`'s masking.
- */
-const isPiiChannel = (socialType: string): boolean =>
-  socialType === "PHONE" || socialType === "EMAIL";
-
 const toDraft = (social: CustomerSocial): DraftCustomerSocial => ({
   socialType: social.socialType as DraftCustomerSocial["socialType"],
   socialId: social.socialId,
@@ -58,7 +51,7 @@ const toDraft = (social: CustomerSocial): DraftCustomerSocial => ({
 export const SocialAccountManager = ({ customer, preference }: SocialAccountManagerProps) => {
   const { t } = useTranslation();
   const { addToast } = useToastContext();
-  const { canViewPii } = usePiiMasker();
+  const { canViewField } = usePiiMasker();
 
   const customerId = customer?.id;
 
@@ -272,8 +265,12 @@ export const SocialAccountManager = ({ customer, preference }: SocialAccountMana
           <div className="flex space-x-1">
             {/* Editing a PHONE/EMAIL row opens the editor on the raw record, which would put
                 the real number in an input and walk straight past the mask. Unlink stays —
-                removing a channel reveals nothing about it. */}
-            {(canViewPii || !isPiiChannel(social.socialType)) && (
+                removing a channel reveals nothing about it.
+
+                `socialPiiPath` is empty for every other provider, and an empty path is not
+                classified, so a LINE handle stays editable. Sharing that map with
+                `ContactChannelList` is what keeps the two in step. */}
+            {canViewField(socialPiiPath(social.socialType)) && (
               <Button size="xs" variant="ghost" onClick={() => startEdit(social)} title={t("common.edit")}>
                 <Pencil className="w-4 h-4" />
               </Button>
