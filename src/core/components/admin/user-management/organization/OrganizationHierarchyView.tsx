@@ -7,6 +7,7 @@ import type {
   Department,
   Command,
   Station,
+  OrganizationFocusTarget,
   // Organization
 } from "@/core/types/organization";
 import type { HierarchyItem, HierarchyConfig } from "@/core/types/hierarchy";
@@ -18,6 +19,8 @@ interface OrganizationHierarchyViewProps {
   commands: Command[];
   stations: Station[];
   // organizations: Organization[];
+  /** The record a write just created or edited, to be revealed in the tree. */
+  focusTarget?: OrganizationFocusTarget | null;
   showInactive: boolean;
   handleDepartmentDelete: (id: number) => void;
   handleDepartmentReset: () => void;
@@ -51,6 +54,7 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
   commands,
   stations,
   // organizations,
+  focusTarget = null,
   showInactive,
   handleDepartmentDelete,
   handleDepartmentReset,
@@ -474,10 +478,34 @@ const OrganizationHierarchyView: React.FC<OrganizationHierarchyViewProps> = ({
     }
   };
 
+  /**
+   * Turns the write's identity into the tree id HierarchyView reveals.
+   *
+   * An edit carries the row id, which is also the item id here. A create has to
+   * be matched against the reloaded records instead - until they arrive this is
+   * null and the reveal simply waits.
+   */
+  const focusId = useMemo(() => {
+    if (!focusTarget) {
+      return null;
+    }
+    if (focusTarget.id) {
+      return focusTarget.id;
+    }
+    if (focusTarget.level === "department") {
+      return (departments || []).find(dept => dept.en === focusTarget.en)?.deptId ?? null;
+    }
+    if (focusTarget.level === "command") {
+      return (commands || []).find(comm => comm.en === focusTarget.en)?.commId ?? null;
+    }
+    return (stations || []).find(stn => stn.en === focusTarget.en)?.stnId ?? null;
+  }, [focusTarget, departments, commands, stations]);
+
   return (
     <>
       <HierarchyView
         config={hierarchyConfig}
+        focusId={focusId}
         isLoading={isLoading}
         items={hierarchyItems}
         showInactive={showInactive}

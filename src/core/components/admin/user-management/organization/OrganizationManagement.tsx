@@ -36,7 +36,7 @@ import type {
   Department, DepartmentCreateData, DepartmentUpdateData,
   Command, CommandCreateData, CommandUpdateData,
   Station, StationCreateData, StationUpdateData,
-  Organization, OrganizationManagementProps
+  Organization, OrganizationFocusTarget, OrganizationManagementProps
 } from "@/core/types/organization";
 import OrganizationHierarchyView from "@/core/components/admin/user-management/organization/OrganizationHierarchyView";
 import Input from "@/core/components/form/input/InputField";
@@ -78,6 +78,9 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
   const [commandTh, setCommandTh] = useState("");
   const [commandEn, setCommandEn] = useState("");
   const [commValidateErrors, setCommValidateErrors] = useState({ deptId: "", commandTh: "", commandEn: "" });
+  // The row a successful write just touched, revealed in the hierarchy once the
+  // invalidated lists come back. A delete clears it - nothing left to reveal.
+  const [focusTarget, setFocusTarget] = useState<OrganizationFocusTarget | null>(null);
 
   // Station
   const [station, setStation] = useState<Station[]>(stations || []);
@@ -391,9 +394,10 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
       if (response?.status) {
         // addToast("success", `Organization Management - Department: ${response?.desc || response?.msg || "Delete successfully"}`);
         addToast("success", t("crud.organization.action.dept.delete.success"));
-        setTimeout(() => {
-          window.location.replace(`/organization`);
-        }, 1000);
+        // The lists refresh themselves now that the mutations invalidate the
+        // "Organization" tag; reloading the page here was what threw away which
+        // rows the user had expanded.
+        setFocusTarget(null);
       }
       else {
         throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
@@ -450,9 +454,10 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
       if (response?.status) {
         // addToast("success", `Organization Management - Department: ${response?.desc || response?.msg || "Save successfully"}`);
         addToast("success", deptId && t("crud.organization.action.dept.update.success") || t("crud.organization.action.dept.create.success"));
-        setTimeout(() => {
-          window.location.replace(`/organization`);
-        }, 1000);
+        // An edit knows its row id; a create is matched by name once the
+        // invalidated lists come back - see OrganizationFocusTarget.
+        setFocusTarget({ level: "department", id: deptId || undefined, en: deptEn });
+        handleDepartmentReset();
       }
       else {
         throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
@@ -493,9 +498,7 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
       if (response?.status) {
         // addToast("success", `Organization Management - Command: ${response?.desc || response?.msg || "Delete successfully"}`);
         addToast("success", t("crud.organization.action.comm.delete.success"));
-        setTimeout(() => {
-          window.location.replace(`/organization`);
-        }, 1000);
+        setFocusTarget(null);
       }
       else {
         throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
@@ -554,9 +557,8 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
       if (response?.status) {
         // addToast("success", `Organization Management - Command: ${response?.desc || response?.msg || "Save successfully"}`);
         addToast("success", commId && t("crud.organization.action.comm.update.success") || t("crud.organization.action.comm.create.success"));
-        setTimeout(() => {
-          window.location.replace(`/organization`);
-        }, 1000);
+        setFocusTarget({ level: "command", id: commId || undefined, en: commandEn });
+        handleCommandReset();
       }
       else {
         throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
@@ -597,9 +599,7 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
       if (response?.status) {
         // addToast("success", `Organization Management - Station: ${response?.desc || response?.msg || "Delete successfully"}`);
         addToast("success", t("crud.organization.action.stn.delete.success"));
-        setTimeout(() => {
-          window.location.replace(`/organization`);
-        }, 1000);
+        setFocusTarget(null);
       }
       else {
         throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
@@ -660,9 +660,8 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
       if (response?.status) {
         // addToast("success", `Organization Management - Station: ${response?.desc || response?.msg || "Save successfully"}`);
         addToast("success", stnId && t("crud.organization.action.stn.update.success") || t("crud.organization.action.stn.create.success"));
-        setTimeout(() => {
-          window.location.replace(`/organization`);
-        }, 1000);
+        setFocusTarget({ level: "station", id: stnId || undefined, en: stationEn });
+        handleStationReset();
       }
       else {
         throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
@@ -709,6 +708,7 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
       departments={filteredDepartments || department || []}
       commands={filteredCommands || command || []}
       stations={filteredStations || station || []}
+      focusTarget={focusTarget}
       showInactive={showInactive}
       handleDepartmentDelete={handleDepartmentDelete}
       handleDepartmentReset={handleDepartmentReset}

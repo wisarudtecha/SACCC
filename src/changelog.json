@@ -1,4 +1,10 @@
 {
+  "0.61.0": {
+    "date": "2026-08-26",
+    "segment": "MINOR",
+    "notes": "feat(core): update the organization structure in place after saving\n- Adding, editing or deleting a department, command or station under Organization Management no longer reloads the whole screen. The list refreshes on its own and the branches that were already open stay open.\n- The record that was just created or edited is now expanded, scrolled into view and briefly highlighted, so it is immediately clear which row the change applied to.\n- The form is cleared after a successful save, ready for the next entry.\n- changelog.json / package.json: bump version 0.60.1 -> 0.61.0",
+    "author": "Wisarud Techa"
+  },
   "0.60.1": {
     "date": "2026-08-25",
     "segment": "PATCH",

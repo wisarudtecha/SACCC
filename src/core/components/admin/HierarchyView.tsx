@@ -1,7 +1,10 @@
 // /src/components/admin/HierarchyView.tsx
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { HierarchyAnalytics, HierarchyConfig, HierarchyItem } from "@/core/types/hierarchy";
 import HierarchyItemComponent from "@/core/components/admin/HierarchyItem";
+
+/** How long a revealed row stays tinted before it fades back to its level colour. */
+const HIGHLIGHT_DURATION_MS = 3000;
 
 interface HierarchyViewProps {
   analytics?: Record<string, HierarchyAnalytics>;
@@ -10,6 +13,17 @@ interface HierarchyViewProps {
   items: HierarchyItem[];
   isLoading?: boolean;
   showInactive?: boolean;
+  /**
+   * The row to reveal - typically the record a write just created or edited.
+   *
+   * Revealing is one behaviour rather than a set of switches: this component
+   * expands the row's ancestors, scrolls it into view and tints it for
+   * HIGHLIGHT_DURATION_MS. Every hierarchy gets the same effect from this one
+   * input, so the surfaces sharing this component cannot drift apart. An id that
+   * is not in `items` - a row that was just deleted, or a tree that has not
+   * reloaded yet - is a no-op.
+   */
+  focusId?: string | number | null;
   onCreateChild?: (parentId: string, level: number) => void;
   onItemsChange?: (items: HierarchyItem[]) => void;
   onLoadingChange?: (loading: boolean) => void;
@@ -22,6 +36,7 @@ export const HierarchyView: React.FC<HierarchyViewProps> = ({
   items,
   isLoading = false,
   showInactive = false,
+  focusId = null,
   onCreateChild,
   // onItemsChange,
   onLoadingChange,
@@ -34,6 +49,10 @@ export const HierarchyView: React.FC<HierarchyViewProps> = ({
   );
   const [selectedItem, ] = useState<string | null>(null);
   // const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** The focus id already revealed - see the reveal effect below. */
+  const revealedRef = useRef<string | null>(null);
 
   // Calculate levels for items if not provided
   const itemsWithLevels = useMemo(() => {
@@ -108,6 +127,86 @@ export const HierarchyView: React.FC<HierarchyViewProps> = ({
     showInactive
   ]);
 
+  /**
+   * Reveals `focusId`: expands its ancestors, scrolls it into view, tints it.
+   *
+   * Ancestors are only ever added to `expandedItems`, never removed - revealing
+   * one row must not undo whatever the user had expanded elsewhere. The scroll
+   * waits for the next frame because the ancestors expanded just above are not in
+   * the DOM until React has re-rendered them.
+   *
+   * A reveal is attempted once per focus id, tracked in `revealedRef`: `items`
+   * changes on a search, a language switch and every data reload, and scrolling
+   * the page away on an unrelated change like that would be hostile. A focus id
+   * whose row is not present yet is deliberately NOT marked as revealed, so the
+   * reveal still happens when the reloaded tree brings it in. The cost is that
+   * writing the same row twice running does not flash it a second time - it is
+   * already expanded and on screen by then, and the toast confirms the save.
+   */
+  useEffect(() => {
+    if (focusId === null || focusId === undefined) {
+      revealedRef.current = null;
+      return;
+    }
+
+    const targetId = String(focusId);
+    if (revealedRef.current === targetId) {
+      return;
+    }
+
+    const target = itemsWithLevels.find(item => String(item.id) === targetId);
+    if (!target) {
+      // Deleted, filtered out, or not reloaded yet - nothing to reveal.
+      return;
+    }
+    revealedRef.current = targetId;
+
+    // Walk up to the root. `visited` keeps a malformed parent cycle from hanging.
+    const ancestors: string[] = [];
+    const visited = new Set<string>([targetId]);
+    let parentId = target.parentId;
+    while (parentId !== null && parentId !== undefined && !visited.has(String(parentId))) {
+      const ancestorId = String(parentId);
+      visited.add(ancestorId);
+      ancestors.push(ancestorId);
+      parentId = itemsWithLevels.find(item => String(item.id) === ancestorId)?.parentId;
+    }
+
+    if (ancestors.length > 0) {
+      setExpandedItems(previous => {
+        if (ancestors.every(id => previous.has(id))) {
+          return previous;
+        }
+        const next = new Set(previous);
+        ancestors.forEach(id => next.add(id));
+        return next;
+      });
+    }
+
+    setHighlightedId(targetId);
+
+    const frame = requestAnimationFrame(() => {
+      // Matched by dataset rather than an attribute selector: ids are namespaced
+      // ("country:5"), and quoting them into a selector needs escaping this does not.
+      const rows = Array.from(document.querySelectorAll<HTMLElement>("[data-hierarchy-id]"));
+      rows.find(row => row.dataset.hierarchyId === targetId)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+
+    if (highlightTimerRef.current) {
+      clearTimeout(highlightTimerRef.current);
+    }
+    highlightTimerRef.current = setTimeout(() => setHighlightedId(null), HIGHLIGHT_DURATION_MS);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      if (highlightTimerRef.current) {
+        clearTimeout(highlightTimerRef.current);
+        highlightTimerRef.current = null;
+      }
+    };
+  }, [focusId, itemsWithLevels]);
+
   const toggleExpansion = (itemId: string) => {
     const newExpanded = new Set(expandedItems);
     if (newExpanded.has(itemId)) {
@@ -181,6 +280,7 @@ export const HierarchyView: React.FC<HierarchyViewProps> = ({
             config={config}
             indentLevel={indentLevel}
             isExpanded={isExpanded}
+            isHighlighted={highlightedId === String(item.id)}
             isLoading={isLoading}
             isSelected={selectedItem === item.id}
             item={item}

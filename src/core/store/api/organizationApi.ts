@@ -25,7 +25,7 @@ export const organizationApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      // providesTags: ["Organization"],
+      invalidatesTags: ["Organization"],
     }),
 
     // GET api/v1/departments
@@ -39,13 +39,13 @@ export const organizationApi = baseApi.injectEndpoints({
         });
         return `/departments?${searchParams.toString()}`;
       },
-      // providesTags: ["Organization"],
+      providesTags: ["Organization"],
     }),
 
     // GET api/v1/departments/{id}
     getDepartmentsById: builder.query<ApiResponse<Department>, string | number>({
       query: id => `/departments/${id}`,
-      // providesTags: ["Organization"],
+      providesTags: ["Organization"],
     }),
 
     // PATCH api/v1/departments/{id}
@@ -54,7 +54,8 @@ export const organizationApi = baseApi.injectEndpoints({
         url: `/departments/${id}`,
         method: "PATCH",
         body: data
-      })
+      }),
+      invalidatesTags: ["Organization"]
     }),
 
     // DELETE api/v1/departments/{id}
@@ -63,7 +64,7 @@ export const organizationApi = baseApi.injectEndpoints({
         url: `/departments/${id}`,
         method: "DELETE"
       }),
-      // providesTags: ["Organization"],
+      invalidatesTags: ["Organization"],
     }),
 
     // ===================================================================
@@ -77,7 +78,7 @@ export const organizationApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      // providesTags: ["Organization"],
+      invalidatesTags: ["Organization"],
     }),
 
     // GET api/v1/commands
@@ -91,13 +92,13 @@ export const organizationApi = baseApi.injectEndpoints({
         });
         return `/commands?${searchParams.toString()}`;
       },
-      // providesTags: ["Organization"],
+      providesTags: ["Organization"],
     }),
 
     // GET api/v1/commands/{id}
     getCommandsById: builder.query<ApiResponse<Command>, string | number>({
       query: id => `/commands/${id}`,
-      // providesTags: ["Organization"],
+      providesTags: ["Organization"],
     }),
 
     // PATCH api/v1/commands/{id}
@@ -106,7 +107,8 @@ export const organizationApi = baseApi.injectEndpoints({
         url: `/commands/${id}`,
         method: "PATCH",
         body: data
-      })
+      }),
+      invalidatesTags: ["Organization"]
     }),
 
     // DELETE api/v1/commands/{id}
@@ -115,7 +117,7 @@ export const organizationApi = baseApi.injectEndpoints({
         url: `/commands/${id}`,
         method: "DELETE"
       }),
-      // providesTags: ["Organization"],
+      invalidatesTags: ["Organization"],
     }),
 
     // ===================================================================
@@ -129,7 +131,7 @@ export const organizationApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      // providesTags: ["Organization"],
+      invalidatesTags: ["Organization"],
     }),
 
     // GET api/v1/stations
@@ -143,13 +145,13 @@ export const organizationApi = baseApi.injectEndpoints({
         });
         return `/stations?${searchParams.toString()}`;
       },
-      // providesTags: ["Organization"],
+      providesTags: ["Organization"],
     }),
 
     // GET api/v1/stations/{id}
     getStationsById: builder.query<ApiResponse<Station>, string | number>({
       query: id => `/stations/${id}`,
-      // providesTags: ["Organization"],
+      providesTags: ["Organization"],
     }),
 
     // PATCH api/v1/stations/{id}
@@ -158,7 +160,8 @@ export const organizationApi = baseApi.injectEndpoints({
         url: `/stations/${id}`,
         method: "PATCH",
         body: data
-      })
+      }),
+      invalidatesTags: ["Organization"]
     }),
 
     // DELETE api/v1/stations/{id}
@@ -167,7 +170,7 @@ export const organizationApi = baseApi.injectEndpoints({
         url: `/stations/${id}`,
         method: "DELETE"
       }),
-      // providesTags: ["Organization"],
+      invalidatesTags: ["Organization"],
     }),
 
     // ===================================================================
@@ -177,7 +180,7 @@ export const organizationApi = baseApi.injectEndpoints({
     // GET api/v1/department_command_stations
     getOrganizations: builder.query<ApiResponse<Organization[]>, null>({
       query: () => "/department_command_stations",
-      // providesTags: ["Organization"],
+      providesTags: ["Organization"],
     }),
   }),
 });

@@ -27,6 +27,10 @@ import { createHybridBaseQuery } from "@/core/store/api/hybridBaseQuery";
 const commonTagTypes = [
   "User",
   "UserGroup",
+  // organizationApi's departments/commands/stations. Registered here because a
+  // tag that is not in this list is silently ignored - see the "Store" note on
+  // baseApiCrm below for the same mistake.
+  "Organization",
   "Ticket",
   "Workflow",
   "Form and Workflow",

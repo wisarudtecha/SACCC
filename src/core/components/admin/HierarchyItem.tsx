@@ -12,6 +12,12 @@ interface HierarchyItemProps {
   config: HierarchyConfig;
   indentLevel?: number;
   isExpanded?: boolean;
+  /**
+   * This row was just revealed by HierarchyView - see its `focusId` prop.
+   * Deliberately separate from `isSelected`: selection is a user's pick, a
+   * highlight is a transient "here is the row you just wrote".
+   */
+  isHighlighted?: boolean;
   isLoading?: boolean;
   // isParent: boolean;
   isSelected?: boolean;
@@ -34,6 +40,7 @@ export const HierarchyItemComponent: React.FC<HierarchyItemProps> = ({
   config,
   // indentLevel = 0,
   isExpanded = false,
+  isHighlighted = false,
   isLoading = false,
   // isParent,
   isSelected = false,
@@ -169,9 +176,18 @@ export const HierarchyItemComponent: React.FC<HierarchyItemProps> = ({
     return levelBackgrounds[item.level || 0] || levelBackgrounds[levelBackgrounds.length - 1];
   };
 
+  // The highlight has to win over the level background, so it is applied after
+  // getBackgroundColor() rather than inside it - a later Tailwind class in the
+  // same string does not win on its own, but the ring and tint use properties
+  // the level colours never set.
+  const highlightClasses = isHighlighted
+    ? "ring-2 ring-inset ring-brand-500 dark:ring-brand-400 bg-brand-50 dark:bg-brand-500/15"
+    : "";
+
   return (
     <div
-      className={`p-4 hover:bg-gray-100 dark:hover:bg-gray-800 xl:flex space-y-2 xl:space-y-0 items-center justify-between border border-gray-200 dark:border-gray-700 ${getBackgroundColor()}`}
+      data-hierarchy-id={String(item.id)}
+      className={`p-4 hover:bg-gray-100 dark:hover:bg-gray-800 xl:flex space-y-2 xl:space-y-0 items-center justify-between border border-gray-200 dark:border-gray-700 transition-colors duration-500 ${getBackgroundColor()} ${highlightClasses}`}
       // className={`p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 xl:flex space-y-2 xl:space-y-0 items-center justify-between border border-gray-200 dark:border-gray-700 ${getBackgroundColor()}`}
       // className={`p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 xl:flex space-y-2 xl:space-y-0 items-center justify-between border border-gray-200 dark:border-gray-700 ${
       //   isSelected ? "bg-blue-100 dark:bg-blue-800" : ""

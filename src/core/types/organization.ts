@@ -1,6 +1,19 @@
 // src/core/types/organization.ts
 import type { BaseEntity } from "@/core/types";
 
+/**
+ * The row an organization write just touched, to be revealed in the hierarchy.
+ *
+ * An edit already knows the row id - that is what the hierarchy hands the form.
+ * A create does not, because the id is assigned server-side, so it names the
+ * record by its English name and is matched once the reloaded lists arrive.
+ */
+export interface OrganizationFocusTarget {
+  level: "department" | "command" | "station";
+  id?: string;
+  en?: string;
+}
+
 export interface Department extends BaseEntity {
   orgId: string;
   deptId: string;
