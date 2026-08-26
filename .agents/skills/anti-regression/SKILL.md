@@ -106,3 +106,83 @@ new lesson and update this file when the lesson is generalizable.
 - **Prevention Rule:** Before proposing a caching or dedupe fix for repeated RTK Query calls,
   confirm the calls share a cache key. If the responses differ, the fan-out is the design and the
   real defect is elsewhere.
+
+### A loading gate that swaps out a subtree throws away its state
+- **Date:** 2026-08-26
+- **Mistake:** The area hierarchy came back fully collapsed after every create, edit and delete.
+  This read as "expansion is not persisted", when nothing was ever asked to persist it.
+- **Root Cause:** `HierarchyView` holds `expandedItems` in local state seeded once at mount, and
+  `AreaManagement` rendered the tree behind `{!isLoading && ...}`. A write calls
+  `refreshAfterWrite` → `reloadTrees`, `useOrgAreaTrees` sets `isLoading`, the gate swapped the
+  tree for a placeholder, and unmounting destroyed the state. The reload was the trigger, but the
+  gate was the cause.
+- **Correct Behavior:** Show the full-page placeholder only when there is nothing to show
+  (`isLoading && !hasRecords`) and keep the rendered subtree mounted through a refresh, saying so
+  with an inline indicator. `useOrgAreaTrees` deliberately keeps the previous data until the
+  refetch settles, so there is always something to keep on screen.
+- **Prevention Rule:** Before adding or trusting a `{!isLoading && <X/>}` gate, ask what state
+  lives inside `X`. Expansion, scroll position, selection, in-progress input and focus all die on
+  unmount. If the component owns any of it and the flag can flip while the user is working, gate
+  on "have data at all", not on "is fetching".
+- **Example:**
+  ```tsx
+  // WRONG - every refetch unmounts the tree and folds it back up
+  {isLoading && <Placeholder />}
+  {!isLoading && hasRecords && <AreaHierarchyView ... />}
+
+  // CORRECT - the placeholder is for the empty first load only
+  {isLoading && !hasRecords && <Placeholder />}
+  {isLoading && hasRecords && <InlineRefreshingNote />}
+  {hasRecords && <AreaHierarchyView ... />}
+  ```
+
+### A page reload is not a cache invalidation
+- **Date:** 2026-08-26
+- **Mistake:** `ServiceManagement` and `OrganizationManagement` ended every successful write with
+  `setTimeout(() => window.location.replace(...), 1000)` — ten call sites navigating the app to
+  itself to show what had just been saved.
+- **Root Cause:** Their mutations carried no `invalidatesTags`, so nothing refetched. In
+  `organizationApi` every tag was commented out, and each commented line said `providesTags` even
+  on mutations, where it would have done nothing had it been uncommented. `"Organization"` was
+  also absent from `commonTagTypes`, and an unregistered tag is silently inert — the same trap
+  already recorded against `"Store"` in `baseApi.ts`.
+- **Correct Behavior:** Mutations `invalidatesTags`, queries `providesTags`, and every tag name
+  is registered in the slice's `tagTypes`. Writes then refresh the lists in place, and the
+  component keeps its state: modal close and form reset become explicit instead of being done by
+  the reload.
+- **Prevention Rule:** Treat `window.location.replace` / `reload` after a mutation as a defect
+  report, not a pattern to copy: it discards every piece of UI state the user built up. Fix the
+  cache wiring instead, and when adding a tag check three things — the mutation invalidates, the
+  query provides, and the name is in `tagTypes`. Removing such a reload also means taking over
+  whatever it used to do implicitly (closing the dialog, clearing the form).
+
+### A hidden input is not write protection
+- **Date:** 2026-08-26
+- **Mistake:** Moving PII masking to the backend, the plan was to render fields the user may not
+  see as plain text instead of inputs, and call the write path handled. It was not: an agent
+  without `pii.customer.*` who fixed a typo in a customer's surname would have written
+  `••••1234` over the real phone number.
+- **Root Cause:** `CustomerCreate`'s `handleSubmit` builds its PATCH body from `formData`, not
+  from the DOM (`{ ...formData, ... }`). Once the server returns pre-masked records, the redacted
+  string *is* the form state. Removing the input changes what the agent can type into; it changes
+  nothing about what gets submitted. The same applies to `disabled`/`readOnly`, which is why the
+  older `lockPiiInput` deliberately blanked the *display* while leaving the real value in state.
+- **Correct Behavior:** Drop the unviewable keys from the payload (`omitUnviewableCustomerPii`),
+  skip their validation so an untouched redacted field can't block an unrelated save, and render
+  text so the affordance matches. Check the indirect paths too — `displayName` fell back to the
+  email address and would have carried the redaction in through the back door.
+- **Prevention Rule:** When a value can arrive already redacted, trace it to the *submit payload*,
+  not to the input. Ask: what does this form actually send, and is this field in it? A feature
+  flag that disables masking must never disable the write protection with it — masking is a
+  display question, "may this user edit this field" is a permission question, and they have to be
+  switched separately.
+- **Example:**
+  ```tsx
+  // WRONG - looks protected, still PATCHes the mask over the record
+  {canView ? <Input value={formData.email} .../> : <p>{formData.email}</p>}
+  await update({ id, data: { ...formData } });
+
+  // CORRECT - the key never leaves the client
+  {canView ? <Input value={formData.email} .../> : <MaskedField path="email" value={formData.email} />}
+  await update({ id, data: omitUnviewableCustomerPii(payload, canViewField) });
+  ```
