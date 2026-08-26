@@ -20,9 +20,7 @@
 import React from "react";
 import { ProtectedRoute } from "@/core/components/auth/ProtectedRoute";
 import { useTranslation } from "@/core/hooks/useTranslation";
-import { useGetCountriesQuery } from "@/cms/store/api/area";
 import { useOrgAreaTrees } from "@/cms/hooks/useOrgAreaTrees";
-import type { Country } from "@/cms/types/area";
 import AreaManagementComponent from "@/cms/components/admin/system-configuration/area/AreaManagement";
 import PageBreadcrumb from "@/core/components/common/PageBreadCrumb";
 import PageMeta from "@/core/components/common/PageMeta";
@@ -33,17 +31,10 @@ const AreaManagementPage: React.FC = () => {
   // ===================================================================
   // API Data
   // ===================================================================
-  // The country list only enumerates which trees to fetch; the hierarchy itself
-  // comes from GetOrgCountryTree, already nested. This replaced a
-  // length:10000 province + length:20000 district fetch that the browser then
-  // re-joined by string-matching provId/countryId.
-  const { data: countriesData, isLoading: isLoadingCountries } = useGetCountriesQuery({ start: 0, length: 1000 });
-  const countries = countriesData?.data as unknown as Country[] || [];
-
-  // `missing` names the countries whose tree could not be read - almost always because nothing
-  // has generated it yet. They are absent from `trees` entirely, so without this the page would
-  // simply not show them and give no hint why.
-  const { trees, missing, isLoading: isLoadingTrees, refetch: reloadTrees } = useOrgAreaTrees(countries);
+  // Read directly from the country/province/district list endpoints and join
+  // client-side - see useOrgAreaTrees. RTK Query's tag invalidation refetches
+  // all three automatically after a write, so there is no manual reload to wire up.
+  const { trees, countries, isLoading } = useOrgAreaTrees();
 
   return (
     <>
@@ -57,10 +48,8 @@ const AreaManagementPage: React.FC = () => {
 
         <AreaManagementComponent
           trees={trees}
-          missingTrees={missing}
           countries={countries}
-          isLoading={isLoadingCountries || isLoadingTrees}
-          onReloadTrees={reloadTrees}
+          isLoading={isLoading}
         />
       </ProtectedRoute>
     </>

@@ -2147,6 +2147,11 @@
         }
       },
       "form": {
+        "group": {
+          "identity": "Identity",
+          "boundary": "Boundary",
+          "status": "Status"
+        },
         "nameSpace": {
           "label": "Namespace",
           "placeholder": "e.g. th",
@@ -2181,11 +2186,13 @@
           },
           "shapeArea": {
             "label": "Shape Area",
-            "placeholder": "e.g. 513120"
+            "placeholder": "e.g. 513120",
+            "hint": "Reported by the source dataset. Not recalculated from the boundary above."
           },
           "shapeLength": {
             "label": "Shape Length",
-            "placeholder": "e.g. 5326"
+            "placeholder": "e.g. 5326",
+            "hint": "Perimeter reported by the source dataset. Not recalculated from the boundary above."
           }
         },
         "province": {
@@ -2247,6 +2254,10 @@
         }
       },
       "confirm": {
+        "warning": {
+          "code_change": "The code has been changed. Areas below this one refer to it by its old code and are not updated automatically, so they drop out of the hierarchy until their code is changed to match.",
+          "parent_change": "The parent has been changed, which moves this record to another branch. The areas below it keep the parent codes they already have and do not follow it."
+        },
         "country": {
           "create": {
             "title": "Create country confirmation",
@@ -2342,7 +2353,8 @@
         "button": {
           "save": "Save",
           "delete": "Delete",
-          "reset": "Reset"
+          "reset": "Reset",
+          "restore": "Restore"
         }
       }
     },

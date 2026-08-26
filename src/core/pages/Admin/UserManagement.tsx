@@ -24,12 +24,10 @@ import { ProtectedRoute } from "@/core/components/auth/ProtectedRoute";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import { useGetCommandsQuery, useGetDepartmentsQuery, useGetStationsQuery } from "@/core/store/api/organizationApi";
 import { useGetSkillQuery } from "@/cms/store/api/skillApi";
-import { useGetCountriesQuery } from "@/cms/store/api/area";
 import { useOrgAreaTrees } from "@/cms/hooks/useOrgAreaTrees";
 import { useGetUsersQuery, useGetUserRolesQuery, useGetUserGroupQuery } from "@/core/store/api/userApi";
 import type { Command, Department, Station } from "@/core/types/organization";
 import type { Skill } from "@/cms/types/skill";
-import type { Country } from "@/cms/types/area";
 import type { Role, UserGroup, UserProfile } from "@/core/types/user";
 import PageBreadcrumb from "@/core/components/common/PageBreadCrumb";
 import PageMeta from "@/core/components/common/PageMeta";
@@ -85,14 +83,10 @@ const UserManagementPage: React.FC = () => {
   const groups = groupsData?.data as unknown as UserGroup[] || [];
 
   // Area assignment reads the org's nested country trees rather than three flat
-  // lists. The country list only enumerates which trees to fetch; it replaces a
-  // length:10000 province + length:20000 district request that the browser then
-  // re-joined by provId - a join that mis-grouped districts whenever two
-  // countries shared a province code.
-  const { data: countriesData } = useGetCountriesQuery({ start: 0, length: 1000 });
-  const countries = countriesData?.data as unknown as Country[] || [];
-
-  const { trees } = useOrgAreaTrees(countries);
+  // lists it re-joins by provId - a join that mis-grouped districts whenever two
+  // countries shared a province code. The hook owns the fetching now, so this
+  // page no longer reads the country list itself.
+  const { trees } = useOrgAreaTrees();
 
   return (users && departments && roles) ? (
     <>

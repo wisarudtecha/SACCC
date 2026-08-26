@@ -5,6 +5,7 @@ import {
   Plus,
 } from "lucide-react";
 import { CloseIcon } from "@/core/icons";
+import { Modal } from "@/core/components/ui/modal";
 import { ToastContainer } from "@/core/components/crud/ToastContainer";
 import { usePermissions } from "@/core/hooks/usePermissions";
 import { useToast } from "@/core/hooks/useToast";
@@ -19,7 +20,6 @@ import {
   useCreateDistrictMutation,
   useUpdateDistrictMutation,
   useDeleteDistrictMutation,
-  useGenerateOrgCountryTreeMutation,
   useLazyGetCountryByIdQuery,
   useLazyGetProvinceByIdQuery,
   useLazyGetDistrictByIdQuery,
@@ -32,40 +32,34 @@ import type {
 } from "@/cms/types/area";
 import { isApiSuccess, resolveApiError, resolveApiMessage } from "@/cms/utils/apiResponse";
 import { formatPolygonRings, parsePolygonRings, toCoordinatesPayload } from "@/cms/utils/areaGeometry";
-import { filterAreaTrees, findCountryIdByCode } from "@/cms/utils/areaTree";
+import { filterAreaTrees } from "@/cms/utils/areaTree";
 import { invalidateOrgBoundaryData } from "@/cms/components/case/createCase/map/boundaries/boundarySource";
-import type { MissingAreaTree } from "@/cms/hooks/useOrgAreaTrees";
 import AreaFormModal, { type AreaFormField } from "@/cms/components/admin/system-configuration/area/AreaFormModal";
-import AreaHierarchyView from "@/cms/components/admin/system-configuration/area/AreaHierarchyView";
+import {
+  buildCountryFields,
+  buildProvinceFields,
+  buildDistrictFields
+} from "@/cms/components/admin/system-configuration/area/areaFormFields";
+import AreaHierarchyView, { type AreaFocusTarget, type AreaLevelPrefix } from "@/cms/components/admin/system-configuration/area/AreaHierarchyView";
 import AreaTemplateSyncModal from "@/cms/components/admin/system-configuration/areaTemplate/AreaTemplateSyncModal";
 import Input from "@/core/components/form/input/InputField";
 import Button from "@/core/components/ui/button/Button";
 
 interface AreaManagementProps {
-  /** The org's country trees, already nested by the BFF. */
+  /** The org's country trees, joined client-side from the list endpoints - see useOrgAreaTrees. */
   trees: AreaCountryTree[];
-  /**
-   * Countries `trees` could not cover. The tree is a server-side cache, so a country nobody has
-   * generated one for is missing from the hierarchy, the selects and the case maps alike, with
-   * nothing on screen to say so - the banner below is the only place it is visible.
-   */
-  missingTrees: MissingAreaTree[];
   /**
    * Country list records. The hierarchy comes from `trees`; this supplies only
    * the fields the tree payload omits - currently `sourceTemplateId`.
    */
   countries: Country[];
   isLoading: boolean;
-  /** Re-runs the tree fetches after data changes underneath them. */
-  onReloadTrees: () => void;
 }
 
 const AreaManagementComponent: React.FC<AreaManagementProps> = ({
   trees,
-  // missingTrees,
   countries,
-  isLoading,
-  onReloadTrees
+  isLoading
 }) => {
   const permissions = usePermissions();
   const { toasts, addToast, removeToast } = useToast();
@@ -80,7 +74,6 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
   const [createDistrict] = useCreateDistrictMutation();
   const [updateDistrict] = useUpdateDistrictMutation();
   const [deleteDistrict] = useDeleteDistrictMutation();
-  const [generateOrgCountryTree] = useGenerateOrgCountryTreeMutation();
 
   // Editing reads the authoritative record rather than the tree: the tree omits
   // nameSpace entirely and is a server-side cache, so a form seeded from it would
@@ -136,9 +129,24 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
   const [districtNameSpace, setDistrictNameSpace] = useState("");
   const [districtActive, setDistrictActive] = useState(true);
 
+  /** A non-empty row id is what "editing" means here - not a filled-in code. */
+  const isEditingCountry = Boolean(countryId);
+  const isEditingProvince = Boolean(provId);
+  const isEditingDistrict = Boolean(distId);
+
   const [loading, setLoading] = useState(false);
   // A record fetch is in flight; the open form is showing placeholder values.
   const [isLoadingRecord, setIsLoadingRecord] = useState(false);
+  // The row a successful write just touched, revealed in the tree once the
+  // regenerated trees arrive. Cleared by a delete - there is nothing to reveal.
+  const [focusTarget, setFocusTarget] = useState<AreaFocusTarget | null>(null);
+
+  // The records the open edit forms were seeded from, kept so Restore can put an
+  // edited form back without a second fetch. The authoritative record is already
+  // in hand at that point - see handleEditRecord.
+  const [loadedCountry, setLoadedCountry] = useState<Country | null>(null);
+  const [loadedProvince, setLoadedProvince] = useState<AreaProvince | null>(null);
+  const [loadedDistrict, setLoadedDistrict] = useState<AreaDistrict | null>(null);
   const [showInactive, setShowInactive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [localValue, setLocalValue] = useState<string>("");
@@ -192,90 +200,17 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
   // ===================================================================
 
   /**
-   * The org tree is a server-side cache: the country/province/district mutations
-   * do not touch it, so invalidating "Area" on its own just refetches the
-   * pre-edit shape. Regenerate the affected country first, then reload.
+   * The hierarchy itself is joined from `getCountries`/`getProvinces`/`getDistricts`, and every
+   * mutation above already carries `invalidatesTags: ["Area"]`, so RTK Query refetches those
+   * three queries on its own - nothing to trigger here for `trees`.
    *
-   * `countryCode` is the business code the form carries; the tree endpoint wants
-   * the row's numeric id, hence the lookup.
+   * The case maps are a separate, still tree-cache-backed consumer of the same org area data
+   * (`boundarySource.ts`) and cache their built boundaries for the session, so without this an
+   * edit made here stays invisible there until something regenerates that cache.
    */
-  const refreshAfterWrite = useCallback(async (countryCode?: string) => {
-    const numericId = countryCode ? findCountryIdByCode(trees || [], countryCode) : undefined;
-    if (numericId !== undefined) {
-      try {
-        await generateOrgCountryTree(numericId).unwrap();
-      }
-      catch {
-        // A failed regenerate is not a failed write - the record did change, the
-        // cached tree is just stale. Reloading below still shows the old shape,
-        // which is better than reporting the write itself as failed.
-      }
-    }
-    // The case maps derive their boundaries from these same trees and cache them for the
-    // session, so without this an edit is invisible there until a full page reload.
+  const refreshAfterWrite = useCallback(async () => {
     invalidateOrgBoundaryData();
-    onReloadTrees();
-  }, [trees, generateOrgCountryTree, onReloadTrees]);
-
-  // ===================================================================
-  // Countries with no generated tree
-  // ===================================================================
-
-  /** Named for the banner - `missingTrees` carries ids, the country list carries names. */
-  // const ungeneratedCountries = useMemo(
-  //   () => missingTrees
-  //     .filter(entry => entry.outcome === "not-generated")
-  //     .map(entry => {
-  //       const record = (countries || []).find(country => country.id === entry.id);
-  //       if (!record) {
-  //         return { id: entry.id, name: String(entry.id) };
-  //       }
-  //       return {
-  //         id: entry.id,
-  //         name: language === "th" && record.th || record.en || record.countryId
-  //       };
-  //     }),
-  //   [missingTrees, countries, language]
-  // );
-
-  /**
-   * Generates the missing trees, then reloads.
-   *
-   * Deliberately a button rather than something the page does on its own: generate_tree is a
-   * permissioned POST, and firing it from a read path would 403 for every user without
-   * area.update and stampede across open tabs.
-   */
-  // const handleGenerateMissingTrees = useCallback(async () => {
-  //   try {
-  //     setLoading(true);
-  //     if (!permissions.hasAnyPermission(["area.create", "area.update"])) {
-  //       throw new Error(t("crud.common.permission_denied"));
-  //     }
-  //     const results = await Promise.all(
-  //       ungeneratedCountries.map(country =>
-  //         generateOrgCountryTree(country.id)
-  //           .unwrap()
-  //           .then(response => isApiSuccess(response))
-  //           .catch(() => false)
-  //       )
-  //     );
-  //     const failed = results.filter(succeeded => !succeeded).length;
-  //     if (failed > 0) {
-  //       addToast("error", t("crud.area.tree.generate.partial").replace("_COUNT_", String(failed)));
-  //     }
-  //     else {
-  //       addToast("success", t("crud.area.tree.generate.success"));
-  //     }
-  //     invalidateOrgBoundaryData();
-  //     onReloadTrees();
-  //   }
-  //   catch (error) {
-  //     addToast("error", resolveApiError(error, t("crud.area.tree.generate.error")));
-  //   }
-  //   finally {
-  //     setLoading(false);
-  //   }
-  // }, [ungeneratedCountries, permissions, generateOrgCountryTree, addToast, onReloadTrees, t]);
+  }, []);
 
   // ===================================================================
   // Validation before saving
@@ -346,7 +281,6 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
     if (!id) {
       return;
     }
-    const affectedCode = (trees || []).find(country => country.id === id)?.countryId;
     try {
       setLoading(true);
       if (!permissions.hasAnyPermission(["area.delete"])) {
@@ -357,7 +291,8 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
         throw new Error(resolveApiError(response, t("errors.unknownApi")));
       }
       addToast("success", resolveApiMessage(response, t("crud.area.action.country.delete.success")));
-      await refreshAfterWrite(affectedCode);
+      setFocusTarget(null);
+      await refreshAfterWrite();
     }
     catch (error) {
       addToast("error", resolveApiError(error, t("crud.area.action.country.delete.error")));
@@ -365,7 +300,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
     finally {
       setLoading(false);
     }
-  }, [trees, permissions, addToast, deleteCountry, refreshAfterWrite, t]);
+  }, [permissions, addToast, deleteCountry, refreshAfterWrite, t]);
 
   const handleCountrySave = useCallback(async () => {
     if (!validateCountry()) {
@@ -406,7 +341,8 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
       // Only a successful save closes the form - a failure keeps the user's input.
       setCountryIsOpen(false);
       handleCountryReset();
-      await refreshAfterWrite(countryCode);
+      setFocusTarget({ level: "country", code: countryCode });
+      await refreshAfterWrite();
     }
     catch (error) {
       addToast("error", resolveApiError(
@@ -445,8 +381,6 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
     if (!id) {
       return;
     }
-    const affectedCode = (trees || [])
-      .find(country => (country.provinces || []).some(province => province.id === id))?.countryId;
     try {
       setLoading(true);
       if (!permissions.hasAnyPermission(["area.delete"])) {
@@ -457,7 +391,8 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
         throw new Error(resolveApiError(response, t("errors.unknownApi")));
       }
       addToast("success", resolveApiMessage(response, t("crud.area.action.province.delete.success")));
-      await refreshAfterWrite(affectedCode);
+      setFocusTarget(null);
+      await refreshAfterWrite();
     }
     catch (error) {
       addToast("error", resolveApiError(error, t("crud.area.action.province.delete.error")));
@@ -465,7 +400,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
     finally {
       setLoading(false);
     }
-  }, [trees, permissions, addToast, deleteProvince, refreshAfterWrite, t]);
+  }, [permissions, addToast, deleteProvince, refreshAfterWrite, t]);
 
   const handleProvinceSave = useCallback(async () => {
     if (!validateProvince()) {
@@ -499,7 +434,8 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
       ));
       setProvinceIsOpen(false);
       handleProvinceReset();
-      await refreshAfterWrite(provCountryId);
+      setFocusTarget({ level: "province", code: provinceCode, countryCode: provCountryId });
+      await refreshAfterWrite();
     }
     catch (error) {
       addToast("error", resolveApiError(
@@ -538,11 +474,6 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
     if (!id) {
       return;
     }
-    const affectedCode = (trees || []).find(country =>
-      (country.provinces || []).some(province =>
-        (province.districts || []).some(district => district.id === id)
-      )
-    )?.countryId;
     try {
       setLoading(true);
       if (!permissions.hasAnyPermission(["area.delete"])) {
@@ -553,7 +484,8 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
         throw new Error(resolveApiError(response, t("errors.unknownApi")));
       }
       addToast("success", resolveApiMessage(response, t("crud.area.action.district.delete.success")));
-      await refreshAfterWrite(affectedCode);
+      setFocusTarget(null);
+      await refreshAfterWrite();
     }
     catch (error) {
       addToast("error", resolveApiError(error, t("crud.area.action.district.delete.error")));
@@ -561,7 +493,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
     finally {
       setLoading(false);
     }
-  }, [trees, permissions, addToast, deleteDistrict, refreshAfterWrite, t]);
+  }, [permissions, addToast, deleteDistrict, refreshAfterWrite, t]);
 
   const handleDistrictSave = useCallback(async () => {
     if (!validateDistrict()) {
@@ -596,7 +528,13 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
       ));
       setDistrictIsOpen(false);
       handleDistrictReset();
-      await refreshAfterWrite(distCountryId);
+      setFocusTarget({
+        level: "district",
+        code: districtCode,
+        countryCode: distCountryId,
+        provinceCode: distProvId
+      });
+      await refreshAfterWrite();
     }
     catch (error) {
       addToast("error", resolveApiError(
@@ -627,7 +565,63 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
     handleCountryReset();
     handleProvinceReset();
     handleDistrictReset();
+    // Restore points belong to the record that was open; keeping them would let
+    // Restore re-seed one form from a different row.
+    setLoadedCountry(null);
+    setLoadedProvince(null);
+    setLoadedDistrict(null);
   }, [handleCountryReset, handleProvinceReset, handleDistrictReset]);
+
+  /**
+   * Seeds the country form from a record.
+   *
+   * Every writable field is applied here and resent on save. That is the whole
+   * point: the form is the only thing that decides what a PATCH carries, so any
+   * field it does not load is a field the next save silently drops. nameSpace is
+   * the concrete example - it is absent from the tree, so a tree-seeded form
+   * blanked it. Shared with Restore so the two can never disagree about which
+   * fields a record owns.
+   */
+  const applyCountryRecord = useCallback((record: Country) => {
+    setCountryCode(record.countryId || "");
+    setCountryTh(record.th || "");
+    setCountryEn(record.en || "");
+    setCountryNameSpace(record.nameSpace || "");
+    setCountryActive(record.active);
+    setCountryCoordinatesText(formatPolygonRings(record.coordinates));
+    setExistingCountryCoordinates(record.coordinates ?? null);
+    setCountryYearOfData(record.yearOfData != null ? String(record.yearOfData) : "");
+    setCountryShapeArea(record.shapeArea != null ? String(record.shapeArea) : "");
+    setCountryShapeLength(record.shapeLength != null ? String(record.shapeLength) : "");
+    setCountryValidateErrors({ countryCode: "", countryTh: "", countryEn: "", coordinates: "" });
+  }, []);
+
+  /** See applyCountryRecord. */
+  const applyProvinceRecord = useCallback((record: AreaProvince) => {
+    setProvinceCode(record.provId || "");
+    setProvCountryId(record.countryId || "");
+    setProvinceTh(record.th || "");
+    setProvinceEn(record.en || "");
+    setProvinceNameSpace(record.nameSpace || "");
+    setProvinceActive(record.active);
+    setProvinceCoordinatesText(formatPolygonRings(record.coordinates));
+    setExistingProvinceCoordinates(record.coordinates ?? null);
+    setProvValidateErrors({ provinceCode: "", countryId: "", provinceTh: "", provinceEn: "", coordinates: "" });
+  }, []);
+
+  /** See applyCountryRecord. */
+  const applyDistrictRecord = useCallback((record: AreaDistrict) => {
+    setDistrictCode(record.distId || "");
+    setDistCountryId(record.countryId || "");
+    setDistProvId(record.provId || "");
+    setDistrictTh(record.th || "");
+    setDistrictEn(record.en || "");
+    setDistrictNameSpace(record.nameSpace || "");
+    setDistrictActive(record.active);
+    setDistrictCoordinatesText(formatPolygonRings(record.coordinates));
+    setExistingDistrictCoordinates(record.coordinates ?? null);
+    setDistValidateErrors({ districtCode: "", countryId: "", provId: "", districtTh: "", districtEn: "", coordinates: "" });
+  }, []);
 
   /**
    * Opens an edit form seeded from the authoritative record.
@@ -664,45 +658,24 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
         if (!record) {
           throw new Error(t("errors.unknownApi"));
         }
-        setCountryCode(record.countryId || "");
-        setCountryTh(record.th || "");
-        setCountryEn(record.en || "");
-        setCountryNameSpace(record.nameSpace || "");
-        setCountryActive(record.active);
-        setCountryCoordinatesText(formatPolygonRings(record.coordinates));
-        setExistingCountryCoordinates(record.coordinates ?? null);
-        setCountryYearOfData(record.yearOfData != null ? String(record.yearOfData) : "");
-        setCountryShapeArea(record.shapeArea != null ? String(record.shapeArea) : "");
-        setCountryShapeLength(record.shapeLength != null ? String(record.shapeLength) : "");
+        applyCountryRecord(record);
+        setLoadedCountry(record);
       }
       else if (level === "province") {
         const record = (await fetchProvinceById(id).unwrap())?.data as AreaProvince | undefined;
         if (!record) {
           throw new Error(t("errors.unknownApi"));
         }
-        setProvinceCode(record.provId || "");
-        setProvCountryId(record.countryId || "");
-        setProvinceTh(record.th || "");
-        setProvinceEn(record.en || "");
-        setProvinceNameSpace(record.nameSpace || "");
-        setProvinceActive(record.active);
-        setProvinceCoordinatesText(formatPolygonRings(record.coordinates));
-        setExistingProvinceCoordinates(record.coordinates ?? null);
+        applyProvinceRecord(record);
+        setLoadedProvince(record);
       }
       else {
         const record = (await fetchDistrictById(id).unwrap())?.data as AreaDistrict | undefined;
         if (!record) {
           throw new Error(t("errors.unknownApi"));
         }
-        setDistrictCode(record.distId || "");
-        setDistCountryId(record.countryId || "");
-        setDistProvId(record.provId || "");
-        setDistrictTh(record.th || "");
-        setDistrictEn(record.en || "");
-        setDistrictNameSpace(record.nameSpace || "");
-        setDistrictActive(record.active);
-        setDistrictCoordinatesText(formatPolygonRings(record.coordinates));
-        setExistingDistrictCoordinates(record.coordinates ?? null);
+        applyDistrictRecord(record);
+        setLoadedDistrict(record);
       }
     }
     catch (error) {
@@ -716,7 +689,176 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
     }
   }, [
     fetchCountryById, fetchProvinceById, fetchDistrictById,
+    applyCountryRecord, applyProvinceRecord, applyDistrictRecord,
     resetAllForms, closeAllForms, addToast, t
+  ]);
+
+  /**
+   * Puts an edited form back to the record it was opened with.
+   *
+   * Re-applies the record already in hand rather than refetching: a second GET
+   * would re-enter the loading state, and a failure there closes the form
+   * outright, which is a harsh outcome for "undo my typing".
+   */
+  const handleCountryRestore = useCallback(() => {
+    if (loadedCountry) {
+      applyCountryRecord(loadedCountry);
+    }
+  }, [loadedCountry, applyCountryRecord]);
+
+  const handleProvinceRestore = useCallback(() => {
+    if (loadedProvince) {
+      applyProvinceRecord(loadedProvince);
+    }
+  }, [loadedProvince, applyProvinceRecord]);
+
+  const handleDistrictRestore = useCallback(() => {
+    if (loadedDistrict) {
+      applyDistrictRecord(loadedDistrict);
+    }
+  }, [loadedDistrict, applyDistrictRecord]);
+
+  // ===================================================================
+  // Save confirmation
+  // ===================================================================
+
+  /** Which form is waiting on a confirmed save; null closes the dialog. */
+  const [confirmLevel, setConfirmLevel] = useState<AreaLevelPrefix | null>(null);
+
+  /**
+   * Validates, then asks.
+   *
+   * The order matters: a dialog the user confirms only to watch the save bounce
+   * off field validation teaches them the dialog means nothing. Validating first
+   * also paints the field errors, so the reason the dialog did not open is on
+   * screen. The save handlers still validate on their own - they are reachable
+   * from the confirm dialog, and a guard that only runs on one path is not one.
+   */
+  const requestSave = useCallback((level: AreaLevelPrefix) => {
+    const isValid = level === "country" && validateCountry()
+      || level === "province" && validateProvince()
+      || level === "district" && validateDistrict();
+    if (!isValid) {
+      return;
+    }
+    setConfirmLevel(level);
+  }, [validateCountry, validateProvince, validateDistrict]);
+
+  const handleConfirmedSave = useCallback(async () => {
+    const level = confirmLevel;
+    if (!level) {
+      return;
+    }
+    // Closed before the save runs so the form's own "saving" state is what the
+    // user watches, rather than a dialog frozen over it.
+    setConfirmLevel(null);
+
+    if (level === "country") {
+      await handleCountrySave();
+    }
+    else if (level === "province") {
+      await handleProvinceSave();
+    }
+    else {
+      await handleDistrictSave();
+    }
+  }, [confirmLevel, handleCountrySave, handleProvinceSave, handleDistrictSave]);
+
+  /**
+   * What this save does to records other than the one being saved.
+   *
+   * Countries, provinces and districts are joined by business code, not row id:
+   * a province carries its country's `countryId` string, a district carries both
+   * `countryId` and `provId`. Nothing rewrites those when a parent's code
+   * changes, so re-keying a record leaves the rows below it pointing at a code
+   * that no longer exists, and they drop out of the regenerated tree. Re-parenting
+   * moves the record to another branch while the rows below it keep the parent
+   * codes they already had, so they do not follow.
+   *
+   * Compared against the record the form was loaded with rather than shown on
+   * every edit: a warning on a save that only renamed something is noise, and
+   * noise is what teaches people to click past warnings that matter.
+   *
+   * Gated on the editing flag as well as the snapshot. The snapshot deliberately
+   * outlives a Reset so Restore still works, which means it is also still around
+   * when the next create form opens - and comparing a new record's code against
+   * the last edited one would warn about a record that has no children at all.
+   */
+  const confirmWarnings = useMemo(() => {
+    const warnings: string[] = [];
+    const codeChanged = (current: string, loaded?: string) => Boolean(loaded) && current !== loaded;
+
+    if (confirmLevel === "country" && isEditingCountry && loadedCountry) {
+      if (codeChanged(countryCode, loadedCountry.countryId)) {
+        warnings.push(t("crud.area.confirm.warning.code_change"));
+      }
+    }
+    else if (confirmLevel === "province" && isEditingProvince && loadedProvince) {
+      if (codeChanged(provinceCode, loadedProvince.provId)) {
+        warnings.push(t("crud.area.confirm.warning.code_change"));
+      }
+      if (codeChanged(provCountryId, loadedProvince.countryId)) {
+        warnings.push(t("crud.area.confirm.warning.parent_change"));
+      }
+    }
+    else if (confirmLevel === "district" && isEditingDistrict && loadedDistrict) {
+      if (codeChanged(districtCode, loadedDistrict.distId)) {
+        warnings.push(t("crud.area.confirm.warning.code_change"));
+      }
+      if (codeChanged(distCountryId, loadedDistrict.countryId)
+        || codeChanged(distProvId, loadedDistrict.provId)) {
+        warnings.push(t("crud.area.confirm.warning.parent_change"));
+      }
+    }
+
+    return warnings;
+  }, [
+    confirmLevel, t,
+    isEditingCountry, loadedCountry, countryCode,
+    isEditingProvince, loadedProvince, provinceCode, provCountryId,
+    isEditingDistrict, loadedDistrict, districtCode, distCountryId, distProvId
+  ]);
+
+  /**
+   * Title and body for the pending save.
+   *
+   * The strings already existed per level and per action and were never wired
+   * up; each carries its own _COUNTRY_ / _PROVINCE_ / _DISTRICT_ placeholder.
+   */
+  const confirmCopy = useMemo(() => {
+    if (!confirmLevel) {
+      return null;
+    }
+
+    const perLevel = {
+      country: {
+        isEdit: isEditingCountry,
+        token: "_COUNTRY_",
+        name: (language === "th" ? countryTh : countryEn) || countryCode
+      },
+      province: {
+        isEdit: isEditingProvince,
+        token: "_PROVINCE_",
+        name: (language === "th" ? provinceTh : provinceEn) || provinceCode
+      },
+      district: {
+        isEdit: isEditingDistrict,
+        token: "_DISTRICT_",
+        name: (language === "th" ? districtTh : districtEn) || districtCode
+      }
+    }[confirmLevel];
+
+    const action = perLevel.isEdit ? "update" : "create";
+
+    return {
+      title: t(`crud.area.confirm.${confirmLevel}.${action}.title`),
+      message: t(`crud.area.confirm.${confirmLevel}.${action}.message`).replace(perLevel.token, perLevel.name)
+    };
+  }, [
+    confirmLevel, language, t,
+    isEditingCountry, countryTh, countryEn, countryCode,
+    isEditingProvince, provinceTh, provinceEn, provinceCode,
+    isEditingDistrict, districtTh, districtEn, districtCode
   ]);
 
   /** Opens a create form for a child, seeded with its parent's codes. */
@@ -742,236 +884,71 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
   // Form field definitions
   // ===================================================================
 
-  const countryFields: AreaFormField[] = [
-    {
-      key: "countryCode",
-      type: "text",
-      label: t("crud.area.form.country.countryCode.label"),
-      placeholder: t("crud.area.form.country.countryCode.placeholder"),
-      value: countryCode,
-      error: countryValidateErrors.countryCode,
-      onChange: setCountryCode
-    },
-    {
-      key: "countryTh",
-      type: "text",
-      label: t("crud.area.form.country.countryTh.label"),
-      placeholder: t("crud.area.form.country.countryTh.placeholder"),
-      value: countryTh,
-      error: countryValidateErrors.countryTh,
-      onChange: setCountryTh
-    },
-    {
-      key: "countryEn",
-      type: "text",
-      label: t("crud.area.form.country.countryEn.label"),
-      placeholder: t("crud.area.form.country.countryEn.placeholder"),
-      value: countryEn,
-      error: countryValidateErrors.countryEn,
-      onChange: setCountryEn
-    },
-    {
-      key: "countryYearOfData",
-      type: "number",
-      label: t("crud.areaTemplate.field.yearOfData.label"),
-      placeholder: t("crud.areaTemplate.field.yearOfData.placeholder"),
-      value: countryYearOfData,
-      onChange: setCountryYearOfData
-    },
-    {
-      key: "countryShapeArea",
-      type: "number",
-      label: t("crud.area.form.country.shapeArea.label"),
-      placeholder: t("crud.area.form.country.shapeArea.placeholder"),
-      value: countryShapeArea,
-      onChange: setCountryShapeArea
-    },
-    {
-      key: "countryShapeLength",
-      type: "number",
-      label: t("crud.area.form.country.shapeLength.label"),
-      placeholder: t("crud.area.form.country.shapeLength.placeholder"),
-      value: countryShapeLength,
-      onChange: setCountryShapeLength
-    },
-    {
-      key: "countryNameSpace",
-      type: "text",
-      label: t("crud.area.form.nameSpace.label"),
-      placeholder: t("crud.area.form.nameSpace.placeholder"),
-      value: countryNameSpace,
-      hint: t("crud.area.form.nameSpace.hint"),
-      onChange: setCountryNameSpace
-    },
-    {
-      key: "countryActive",
-      type: "toggle",
-      label: t("crud.area.form.active.label"),
-      placeholder: t("crud.area.form.active.placeholder"),
-      value: String(countryActive),
-      onChange: value => setCountryActive(value === "true")
-    },
-    {
-      key: "countryCoordinates",
-      type: "textarea",
-      label: t("crud.areaTemplate.field.coordinates.label"),
-      placeholder: t("crud.areaTemplate.field.coordinates.placeholder"),
-      value: countryCoordinatesText,
-      error: countryValidateErrors.coordinates,
-      hint: t("crud.area.form.geometry.hint"),
-      onChange: setCountryCoordinatesText
-    }
-  ];
+  const countryFields: AreaFormField[] = buildCountryFields({
+    t,
+    countryCode,
+    countryTh,
+    countryEn,
+    countryYearOfData,
+    countryShapeArea,
+    countryShapeLength,
+    countryNameSpace,
+    countryActive,
+    countryCoordinatesText,
+    countryValidateErrors,
+    setCountryCode,
+    setCountryTh,
+    setCountryEn,
+    setCountryYearOfData,
+    setCountryShapeArea,
+    setCountryShapeLength,
+    setCountryNameSpace,
+    setCountryActive,
+    setCountryCoordinatesText
+  });
 
-  const provinceFields: AreaFormField[] = [
-    {
-      key: "provinceCountryId",
-      type: "select",
-      label: t("crud.area.form.province.provinceCountryId.label"),
-      placeholder: t("crud.area.form.province.provinceCountryId.placeholder"),
-      value: provCountryId,
-      error: provValidateErrors.countryId,
-      options: countriesOptions,
-      onChange: setProvCountryId
-    },
-    {
-      key: "provinceCode",
-      type: "text",
-      label: t("crud.area.form.province.provinceCode.label"),
-      placeholder: t("crud.area.form.province.provinceCode.placeholder"),
-      value: provinceCode,
-      error: provValidateErrors.provinceCode,
-      onChange: setProvinceCode
-    },
-    {
-      key: "provinceTh",
-      type: "text",
-      label: t("crud.area.form.province.provinceTh.label"),
-      placeholder: t("crud.area.form.province.provinceTh.placeholder"),
-      value: provinceTh,
-      error: provValidateErrors.provinceTh,
-      onChange: setProvinceTh
-    },
-    {
-      key: "provinceEn",
-      type: "text",
-      label: t("crud.area.form.province.provinceEn.label"),
-      placeholder: t("crud.area.form.province.provinceEn.placeholder"),
-      value: provinceEn,
-      error: provValidateErrors.provinceEn,
-      onChange: setProvinceEn
-    },
-    {
-      key: "provinceNameSpace",
-      type: "text",
-      label: t("crud.area.form.nameSpace.label"),
-      placeholder: t("crud.area.form.nameSpace.placeholder"),
-      value: provinceNameSpace,
-      hint: t("crud.area.form.nameSpace.hint"),
-      onChange: setProvinceNameSpace
-    },
-    {
-      key: "provinceActive",
-      type: "toggle",
-      label: t("crud.area.form.active.label"),
-      placeholder: t("crud.area.form.active.placeholder"),
-      value: String(provinceActive),
-      onChange: value => setProvinceActive(value === "true")
-    },
-    {
-      key: "provinceCoordinates",
-      type: "textarea",
-      label: t("crud.areaTemplate.field.coordinates.label"),
-      placeholder: t("crud.areaTemplate.field.coordinates.placeholder"),
-      value: provinceCoordinatesText,
-      error: provValidateErrors.coordinates,
-      hint: t("crud.area.form.geometry.hint"),
-      onChange: setProvinceCoordinatesText
-    }
-  ];
+  const provinceFields: AreaFormField[] = buildProvinceFields({
+    t,
+    countriesOptions,
+    provinceCode,
+    provCountryId,
+    provinceTh,
+    provinceEn,
+    provinceNameSpace,
+    provinceActive,
+    provinceCoordinatesText,
+    provValidateErrors,
+    setProvinceCode,
+    setProvCountryId,
+    setProvinceTh,
+    setProvinceEn,
+    setProvinceNameSpace,
+    setProvinceActive,
+    setProvinceCoordinatesText
+  });
 
-  const districtFields: AreaFormField[] = [
-    {
-      key: "districtCountryId",
-      type: "select",
-      label: t("crud.area.form.district.districtCountryId.label"),
-      placeholder: t("crud.area.form.district.districtCountryId.placeholder"),
-      value: distCountryId,
-      error: distValidateErrors.countryId,
-      options: countriesOptions,
-      onChange: value => {
-        setDistCountryId(value);
-        // The province list is scoped to the country, so a stale selection here
-        // would silently submit a province from a different country.
-        setDistProvId("");
-      }
-    },
-    {
-      key: "districtProvId",
-      type: "select",
-      label: t("crud.area.form.district.districtProvId.label"),
-      placeholder: t("crud.area.form.district.districtProvId.placeholder"),
-      value: distProvId,
-      error: distValidateErrors.provId,
-      options: provincesOptions.filter(option => option.countryId === distCountryId),
-      disabled: !distCountryId,
-      onChange: setDistProvId
-    },
-    {
-      key: "districtCode",
-      type: "text",
-      label: t("crud.area.form.district.districtCode.label"),
-      placeholder: t("crud.area.form.district.districtCode.placeholder"),
-      value: districtCode,
-      error: distValidateErrors.districtCode,
-      onChange: setDistrictCode
-    },
-    {
-      key: "districtTh",
-      type: "text",
-      label: t("crud.area.form.district.districtTh.label"),
-      placeholder: t("crud.area.form.district.districtTh.placeholder"),
-      value: districtTh,
-      error: distValidateErrors.districtTh,
-      onChange: setDistrictTh
-    },
-    {
-      key: "districtEn",
-      type: "text",
-      label: t("crud.area.form.district.districtEn.label"),
-      placeholder: t("crud.area.form.district.districtEn.placeholder"),
-      value: districtEn,
-      error: distValidateErrors.districtEn,
-      onChange: setDistrictEn
-    },
-    {
-      key: "districtNameSpace",
-      type: "text",
-      label: t("crud.area.form.nameSpace.label"),
-      placeholder: t("crud.area.form.nameSpace.placeholder"),
-      value: districtNameSpace,
-      hint: t("crud.area.form.nameSpace.hint"),
-      onChange: setDistrictNameSpace
-    },
-    {
-      key: "districtActive",
-      type: "toggle",
-      label: t("crud.area.form.active.label"),
-      placeholder: t("crud.area.form.active.placeholder"),
-      value: String(districtActive),
-      onChange: value => setDistrictActive(value === "true")
-    },
-    {
-      key: "districtCoordinates",
-      type: "textarea",
-      label: t("crud.areaTemplate.field.coordinates.label"),
-      placeholder: t("crud.areaTemplate.field.coordinates.placeholder"),
-      value: districtCoordinatesText,
-      error: distValidateErrors.coordinates,
-      hint: t("crud.area.form.geometry.hint"),
-      onChange: setDistrictCoordinatesText
-    }
-  ];
+  const districtFields: AreaFormField[] = buildDistrictFields({
+    t,
+    countriesOptions,
+    provincesOptions,
+    districtCode,
+    distCountryId,
+    distProvId,
+    districtTh,
+    districtEn,
+    districtNameSpace,
+    districtActive,
+    districtCoordinatesText,
+    distValidateErrors,
+    setDistrictCode,
+    setDistCountryId,
+    setDistProvId,
+    setDistrictTh,
+    setDistrictEn,
+    setDistrictNameSpace,
+    setDistrictActive,
+    setDistrictCoordinatesText
+  });
 
   // ===================================================================
   // Render
@@ -1055,48 +1032,31 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
                 </div>
               </div>
             </div>
-            {/* Countries whose tree has never been generated. They are absent from the
-                hierarchy, the selects and the case maps alike, so this banner is the only
-                place their absence is visible - and the only way to fix it from the UI. */}
-            {/* {!isLoading && ungeneratedCountries.length > 0 && (
-              <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-500/40 dark:bg-amber-500/10">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-amber-800 dark:text-amber-300 cursor-default">
-                      {t("crud.area.tree.missing.title")}
-                    </p>
-                    <p className="mt-1 text-sm text-amber-700 dark:text-amber-400 cursor-default">
-                      {t("crud.area.tree.missing.description")
-                        .replace("_COUNTRIES_", ungeneratedCountries.map(country => country.name).join(", "))}
-                    </p>
-                  </div>
-                  {canUpdate && (
-                    <Button
-                      onClick={handleGenerateMissingTrees}
-                      size="sm"
-                      variant="outline"
-                      disabled={loading}
-                    >
-                      {t("crud.area.tree.generate.button")}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            )} */}
-            {/* Loading state */}
-            {isLoading && (
+            {/* Loading state - only when there is nothing to show yet. Swapping the
+                hierarchy out for this on every reload is what unmounted HierarchyView
+                and threw away which rows the user had expanded; a write reloads the
+                trees, so the tree came back fully folded after every save. */}
+            {isLoading && !hasRecords && (
               <div className="flex items-center justify-center py-12 text-gray-500 dark:text-gray-400 cursor-default">
                 {t("crud.common.loading_records")}
               </div>
             )}
+            {/* Refreshing an already-rendered tree: say so without unmounting it.
+                useOrgAreaTrees keeps the previous trees until the refetch settles. */}
+            {isLoading && hasRecords && (
+              <div className="mb-3 text-sm text-gray-500 dark:text-gray-400 cursor-default">
+                {t("crud.common.loading_records")}
+              </div>
+            )}
             {/* Content */}
-            {!isLoading && hasRecords && (
+            {hasRecords && (
               <AreaHierarchyView
                 trees={filteredTrees}
                 countries={countries || []}
                 showInactive={showInactive}
                 canUpdate={canUpdate}
                 canDelete={canDelete}
+                focusTarget={focusTarget}
                 handleCountryDelete={handleCountryDelete}
                 handleProvinceDelete={handleProvinceDelete}
                 handleDistrictDelete={handleDistrictDelete}
@@ -1144,7 +1104,8 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
           handleCountryReset();
         }}
         onReset={handleCountryReset}
-        onSave={handleCountrySave}
+        onRestore={isEditingCountry ? handleCountryRestore : undefined}
+        onSave={() => requestSave("country")}
       />
 
       {/* Create / Update Province */}
@@ -1159,7 +1120,8 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
           handleProvinceReset();
         }}
         onReset={handleProvinceReset}
-        onSave={handleProvinceSave}
+        onRestore={isEditingProvince ? handleProvinceRestore : undefined}
+        onSave={() => requestSave("province")}
       />
 
       {/* Create / Update District */}
@@ -1174,8 +1136,48 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
           handleDistrictReset();
         }}
         onReset={handleDistrictReset}
-        onSave={handleDistrictSave}
+        onRestore={isEditingDistrict ? handleDistrictRestore : undefined}
+        onSave={() => requestSave("district")}
       />
+
+      {/* Confirm a create or an edit. Rendered after the form modals on purpose -
+          see the note above requestSave for why it opens only once validation passes. */}
+      <Modal
+        isOpen={Boolean(confirmLevel)}
+        onClose={() => setConfirmLevel(null)}
+        className="max-w-xl p-6 max-h-[80vh] overflow-y-auto"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
+            {confirmCopy?.title}
+          </h3>
+          <Button onClick={() => setConfirmLevel(null)} size="sm" variant="ghost">
+            <CloseIcon className="w-4 h-4" />
+          </Button>
+        </div>
+        <div className="space-y-4 text-gray-800 dark:text-gray-100 cursor-default">
+          {confirmCopy?.message}
+
+          {confirmWarnings.map(warning => (
+            <p
+              key={warning}
+              className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-400"
+            >
+              {warning}
+            </p>
+          ))}
+        </div>
+        <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex gap-3">
+            <Button onClick={() => setConfirmLevel(null)} variant="outline">
+              {t("crud.area.confirm.button.cancel")}
+            </Button>
+            <Button onClick={handleConfirmedSave} variant="success" disabled={loading}>
+              {!loading && t("crud.area.confirm.button.confirm") || t("crud.area.confirm.button.saving")}
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Import / sync from an area template */}
       <AreaTemplateSyncModal
@@ -1183,10 +1185,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
         trees={trees || []}
         countries={countries || []}
         onClose={() => setSyncIsOpen(false)}
-        onSuccess={message => {
-          addToast("success", message);
-          onReloadTrees();
-        }}
+        onSuccess={message => addToast("success", message)}
         onError={message => addToast("error", message)}
       />
     </>

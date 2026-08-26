@@ -1,4 +1,10 @@
 {
+  "0.63.0": {
+    "date": "2026-08-26",
+    "segment": "MINOR",
+    "notes": "feat(cms): rework the area form and keep the area list on screen while it refreshes\n- The area list is now built directly from the country, province and district records, so an area appears as soon as it is saved instead of waiting for a separately generated structure, and a country no longer disappears from the list because no structure has been generated for it.\n- The area list no longer collapses after every save. It stays on screen while refreshing, and the area that was just saved is expanded, scrolled into view and briefly highlighted.\n- The create and edit form for a country, province or district is now grouped into Identity, Boundary and Status sections, with fields laid out side by side instead of in one long column.\n- Saving now asks for confirmation first, and warns when the change would separate the areas underneath - for example changing an area's code, or moving it under a different parent - because those areas keep the old codes and drop out of the hierarchy until they are changed to match.\n- Editing an area now offers 'Restore', which puts the form back to the record as it was opened, alongside 'Reset' which clears it.\n- The shape area and shape length fields now explain that their values come from the source data set and are not recalculated from the boundary entered above.\n- Available in Thai, English and Chinese.\n- changelog.json / package.json: bump version 0.62.0 -> 0.63.0",
+    "author": "Wisarud Techa"
+  },
   "0.62.0": {
     "date": "2026-08-26",
     "segment": "MINOR",

@@ -10,7 +10,14 @@
  */
 import { readEnvelopeMessage, readMutationError } from "@/core/utils/apiResponseStatus";
 import type { EnvelopeLike } from "@/core/utils/apiResponseStatus";
-import type { AreaCountryTree, AreaTreeProvinceNode } from "@/cms/types/area";
+import type {
+  AreaCountryTree,
+  AreaTreeProvinceNode,
+  AreaTreeDistrictNode,
+  Country,
+  AreaProvince,
+  AreaDistrict
+} from "@/cms/types/area";
 
 // ===================================================================
 // Reading a tree response
@@ -134,3 +141,85 @@ export const findCountryIdByCode = (
   countryCode: string
 ): number | undefined =>
   trees.find(country => country.countryId === countryCode)?.id;
+
+// ===================================================================
+// Joining the flat list endpoints into the tree shape
+// ===================================================================
+// GetCountries/GetProvinces/GetDistricts return flat, unnested records - this
+// rebuilds the same AreaCountryTree shape the tree-cache endpoint returns, so
+// every downstream consumer (AreaHierarchyView, filterAreaTrees,
+// findCountryIdByCode) keeps working unchanged regardless of which fetch
+// strategy feeds it.
+//
+// Provinces join to their country by `countryId` (business code). Districts
+// join by the *composite* `countryId:provId`, not `provId` alone - a province
+// code is only unique within its own country, so joining on provId alone
+// would let a district attach to the wrong country whenever two countries
+// happen to share a province code.
+
+const toTreeDistrict = (district: AreaDistrict): AreaTreeDistrictNode => ({
+  id: district.id,
+  distId: district.distId,
+  en: district.en,
+  th: district.th,
+  active: district.active,
+  postcode: district.postcode,
+  coordinates: district.coordinates
+});
+
+const toTreeProvince = (
+  province: AreaProvince,
+  districts: AreaDistrict[]
+): AreaTreeProvinceNode => ({
+  id: province.id,
+  provId: province.provId,
+  en: province.en,
+  th: province.th,
+  active: province.active,
+  coordinates: province.coordinates,
+  districts: districts.map(toTreeDistrict)
+});
+
+export const buildAreaCountryTrees = (
+  countries: Country[],
+  provinces: AreaProvince[],
+  districts: AreaDistrict[]
+): AreaCountryTree[] => {
+  const districtsByProvince = new Map<string, AreaDistrict[]>();
+  districts.forEach(district => {
+    const key = `${district.countryId}:${district.provId}`;
+    const bucket = districtsByProvince.get(key);
+    if (bucket) {
+      bucket.push(district);
+    }
+    else {
+      districtsByProvince.set(key, [district]);
+    }
+  });
+
+  const provincesByCountry = new Map<string, AreaProvince[]>();
+  provinces.forEach(province => {
+    const bucket = provincesByCountry.get(province.countryId);
+    if (bucket) {
+      bucket.push(province);
+    }
+    else {
+      provincesByCountry.set(province.countryId, [province]);
+    }
+  });
+
+  return countries.map(country => ({
+    id: country.id,
+    countryId: country.countryId,
+    en: country.en,
+    th: country.th,
+    active: country.active,
+    coordinates: country.coordinates,
+    yearOfData: country.yearOfData,
+    shapeArea: country.shapeArea,
+    shapeLength: country.shapeLength,
+    provinces: (provincesByCountry.get(country.countryId) || []).map(province =>
+      toTreeProvince(province, districtsByProvince.get(`${province.countryId}:${province.provId}`) || [])
+    )
+  }));
+};

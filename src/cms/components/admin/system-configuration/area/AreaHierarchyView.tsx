@@ -17,9 +17,24 @@ import Button from "@/core/components/ui/button/Button";
 // alone, without checking level, so unprefixed ids would let unrelated
 // same-numbered rows cross-contaminate each other's child counts/rendering.
 // Namespacing every tree id by level keeps the three id-spaces disjoint.
-type AreaLevelPrefix = "country" | "province" | "district";
+export type AreaLevelPrefix = "country" | "province" | "district";
 const compositeId = (prefix: AreaLevelPrefix, id: number) => `${prefix}:${id}`;
 const stripPrefix = (id: string) => id.slice(id.indexOf(":") + 1);
+
+/**
+ * The row a write just touched, named the way the form knows it.
+ *
+ * Business codes, not row ids: a create response is not read for an id, and codes
+ * are what both a create and an edit already carry. Parent codes are part of the
+ * target because a province code is only unique within its country - matching on
+ * the code alone is the same cross-contamination compositeId() exists to prevent.
+ */
+export interface AreaFocusTarget {
+  level: AreaLevelPrefix;
+  code: string;
+  countryCode?: string;
+  provinceCode?: string;
+}
 
 interface AreaHierarchyViewProps {
   // The org's country trees, already nested by the BFF. Replaces the three flat
@@ -45,6 +60,8 @@ interface AreaHierarchyViewProps {
    * hangs off), not record data that needs to survive a round-trip.
    */
   onCreateChild: (level: AreaLevelPrefix, parent: { countryCode?: string; provinceCode?: string }) => void;
+  /** The record a write just created or edited, to be revealed in the tree. */
+  focusTarget?: AreaFocusTarget | null;
   /** Whether the current user may see the edit / delete actions at all. */
   canUpdate: boolean;
   canDelete: boolean;
@@ -59,6 +76,7 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
   handleDistrictDelete,
   onEditRecord,
   onCreateChild,
+  focusTarget = null,
   canUpdate,
   canDelete,
 }) => {
@@ -220,6 +238,42 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
     return labels;
   }, [t]);
 
+  /**
+   * Turns the form's codes into the tree id HierarchyView reveals.
+   *
+   * Resolved against `trees` rather than remembered from the save, because the id
+   * of a newly created row only exists once the regenerated tree arrives. Until
+   * then this is undefined and the reveal simply waits.
+   */
+  const focusId = useMemo(() => {
+    if (!focusTarget) {
+      return null;
+    }
+
+    const country = (trees || []).find(entry => focusTarget.level === "country"
+      ? entry.countryId === focusTarget.code
+      : entry.countryId === focusTarget.countryCode);
+    if (!country) {
+      return null;
+    }
+    if (focusTarget.level === "country") {
+      return compositeId("country", country.id);
+    }
+
+    const province = (country.provinces || []).find(entry => focusTarget.level === "province"
+      ? entry.provId === focusTarget.code
+      : entry.provId === focusTarget.provinceCode);
+    if (!province) {
+      return null;
+    }
+    if (focusTarget.level === "province") {
+      return compositeId("province", province.id);
+    }
+
+    const district = (province.districts || []).find(entry => entry.distId === focusTarget.code);
+    return district ? compositeId("district", district.id) : null;
+  }, [trees, focusTarget]);
+
   // Configuration for the hierarchy view
   const hierarchyConfig: HierarchyConfig = useMemo(() => ({
     maxLevels: 3,
@@ -371,6 +425,7 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
     <>
       <HierarchyView
         config={hierarchyConfig}
+        focusId={focusId}
         isLoading={isLoading}
         items={hierarchyItems}
         showInactive={showInactive}

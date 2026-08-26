@@ -2031,6 +2031,11 @@
         }
       },
       "form": {
+        "group": {
+          "identity": "标识信息",
+          "boundary": "边界",
+          "status": "状态"
+        },
         "nameSpace": {
           "label": "命名空间",
           "placeholder": "例如 th",
@@ -2065,11 +2070,13 @@
           },
           "shapeArea": {
             "label": "图形面积",
-            "placeholder": "例如 513120"
+            "placeholder": "例如 513120",
+            "hint": "来自源数据集的数值，不会根据上方边界重新计算。"
           },
           "shapeLength": {
             "label": "图形周长",
-            "placeholder": "例如 5326"
+            "placeholder": "例如 5326",
+            "hint": "来自源数据集的周长数值，不会根据上方边界重新计算。"
           }
         },
         "province": {
@@ -2131,6 +2138,10 @@
         }
       },
       "confirm": {
+        "warning": {
+          "code_change": "编码已被修改。下级区域仍按原编码引用它且不会自动更新，在同步修改之前将脱离层级。",
+          "parent_change": "上级已被修改，此记录将移至其他分支。其下级区域仍保留原有的上级编码，不会随之移动。"
+        },
         "country": {
           "create": {
             "title": "创建国家确认",
@@ -2226,7 +2237,8 @@
         "button": {
           "save": "保存",
           "delete": "删除",
-          "reset": "重置"
+          "reset": "重置",
+          "restore": "恢复"
         }
       }
     },
