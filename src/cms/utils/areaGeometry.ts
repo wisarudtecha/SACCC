@@ -10,7 +10,9 @@
  */
 import type { PolygonCoordinates } from "@/cms/types/area";
 
-const MIN_RING_POINTS = 4;
+/** Three corners plus the repeated closing point. Exported so the sketch side
+ *  can discard a half-finished ring by the same rule this file validates by. */
+export const MIN_RING_POINTS = 4;
 const LNG_MIN = -180;
 const LNG_MAX = 180;
 const LAT_MIN = -90;
@@ -33,10 +35,48 @@ export type PolygonParseResult =
   | { rings: PolygonCoordinates; error?: never }
   | { rings?: never; error: PolygonParseErrorKey };
 
+/**
+ * Decimal places kept for a vertex placed on the map.
+ *
+ * A raw click carries ~15 significant digits, which is metres of false
+ * precision and multiplies the payload size of a ring by three. Six places is
+ * roughly 11cm at the equator - finer than any administrative boundary is
+ * actually surveyed to.
+ */
+const SKETCH_PRECISION = 6;
+const SKETCH_PRECISION_FACTOR = 10 ** SKETCH_PRECISION;
+
 const isNumber = (value: unknown): value is number =>
   typeof value === "number" && Number.isFinite(value);
 
 const samePoint = (a: number[], b: number[]): boolean => a[0] === b[0] && a[1] === b[1];
+
+const roundCoordinate = (value: number): number =>
+  Math.round(value * SKETCH_PRECISION_FACTOR) / SKETCH_PRECISION_FACTOR;
+
+/** Trims a drawn ring to SKETCH_PRECISION. See the constant for why. */
+export const roundRing = (ring: readonly number[][]): number[][] =>
+  ring.map(point => [roundCoordinate(point[0]), roundCoordinate(point[1])]);
+
+/**
+ * Repeats the first point at the end when it is not already there.
+ *
+ * parsePolygonRings rejects an unclosed ring, and a ring assembled point by
+ * point is unclosed by definition until someone closes it. Rounding first and
+ * closing second matters: closing a ring whose ends were rounded apart would
+ * leave two near-identical points rather than one closed ring.
+ */
+export const closeRing = (ring: readonly number[][]): number[][] => {
+  if (ring.length === 0) {
+    return [];
+  }
+  const first = ring[0];
+  const last = ring[ring.length - 1];
+  if (samePoint(first, last)) {
+    return [...ring];
+  }
+  return [...ring, [first[0], first[1]]];
+};
 
 /**
  * Parses the textarea contents into polygon rings.

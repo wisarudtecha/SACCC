@@ -18,6 +18,7 @@ import { useTranslation } from "@/core/hooks/useTranslation";
 import Button from "@/core/components/ui/button/Button";
 import Input from "@/core/components/form/input/InputField";
 import Select from "@/core/components/form/Select";
+import BoundaryGeometryField from "@/cms/components/admin/system-configuration/geometry/BoundaryGeometryField";
 
 export type AreaFormFieldSpan = "quarter" | "third" | "half" | "full";
 
@@ -42,7 +43,12 @@ export interface AreaFormField {
   key: string;
   label: string;
   placeholder: string;
-  type: "text" | "number" | "select" | "textarea" | "toggle";
+  /**
+   * "geometry" is a textarea of GeoJSON rings WITH a map to draw them on. It
+   * needs no extra descriptor fields because the map is a second view of the
+   * same string, not a second source of it.
+   */
+  type: "text" | "number" | "select" | "textarea" | "toggle" | "geometry";
   /** Toggle fields read "true"/"false"; every other type reads its raw text. */
   value: string;
   error?: string;
@@ -131,6 +137,20 @@ const AreaFormFieldRow: React.FC<{ field: AreaFormField; disabled: boolean }> = 
       />
     )}
 
+    {field.type === "geometry" && (
+      <div className="mt-1">
+        <BoundaryGeometryField
+          id={field.key}
+          value={field.value}
+          onChange={field.onChange}
+          placeholder={field.placeholder}
+          hint={field.hint}
+          error={field.error}
+          disabled={disabled}
+        />
+      </div>
+    )}
+
     {(field.type === "text" || field.type === "number") && (
       <Input
         id={field.key}
@@ -142,9 +162,13 @@ const AreaFormFieldRow: React.FC<{ field: AreaFormField; disabled: boolean }> = 
       />
     )}
 
-    {field.error
-      ? <span className="text-red-500 dark:text-red-400 text-xs">{field.error}</span>
-      : field.hint && <span className="text-gray-500 dark:text-gray-400 text-xs">{field.hint}</span>}
+    {/* A geometry field renders its own messages, below the textarea rather
+        than below the map, so it is not given them twice. */}
+    {field.type !== "geometry" && (
+      field.error
+        ? <span className="text-red-500 dark:text-red-400 text-xs">{field.error}</span>
+        : field.hint && <span className="text-gray-500 dark:text-gray-400 text-xs">{field.hint}</span>
+    )}
   </div>
 );
 

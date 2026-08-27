@@ -6,7 +6,7 @@
 //
 // The modal renders a SECOND map instance. It only exists while open - Modal
 // returns null when closed - so there is no idle second MapView.
-import { memo, useCallback, useRef, useState, type ReactNode } from "react";
+import { memo, useCallback, useMemo, useRef, useState, type ReactNode } from "react";
 import type Polyline from "@arcgis/core/geometry/Polyline.js";
 import type { TrailPoint } from "./staff/useStaffTrails";
 import { Modal } from "@/core/components/ui/modal";
@@ -19,6 +19,7 @@ import ArcgisAddressMap, {
 import { BasemapOptionId, readBasemapPreference, writeBasemapPreference } from "./basemaps";
 import type { StaffMarker, StaffSelection } from "./staff/staffTypes";
 import type { BoundaryLayerConfig } from "./boundaries/boundaryTypes";
+import type { BoundarySketchConfig } from "./sketch/sketchTypes";
 
 /**
  * Which of the two map instances a slot is rendering into. Controls that belong
@@ -78,6 +79,12 @@ interface ArcgisAddressMapFieldProps {
    * expanding does not reset the layers or lose the confirmed selection.
    */
   boundaries?: BoundaryLayerConfig;
+  /**
+   * Editable boundary polygon, forwarded to both map instances - same contract
+   * as `boundaries`, with one difference this component enforces itself: only
+   * ONE of the two views may run a gesture, see `inlineSketch` below.
+   */
+  sketch?: BoundarySketchConfig;
   /** Free-floating controls over the map; the callee positions them. */
   overlaySlot?: MapSlot;
   /** Controls for the map's top-right toolbar row. */
@@ -110,6 +117,7 @@ function ArcgisAddressMapFieldBase({
   trail,
   showTrail = false,
   boundaries,
+  sketch,
   overlaySlot,
   toolbarSlot,
   onExpandedChange,
@@ -156,6 +164,17 @@ function ArcgisAddressMapFieldBase({
   const mapKey = (isSearchShown: boolean) =>
     `${readOnly ? "readonly" : "editable"}-${isSearchShown ? "search" : "nosearch"}`;
 
+  // Both views get the sketch, but only one may act on it. While the modal is
+  // open the inline map is behind it and can never receive a click, so a mode
+  // of "draw" there would arm a create that no one can finish - and closing the
+  // modal would drop the user back onto a map still stuck in draw mode. Pinning
+  // the inline instance to "idle" for the duration is the whole fix; the
+  // geometry keeps rendering either way.
+  const inlineSketch = useMemo(
+    () => (sketch && isExpanded ? { ...sketch, mode: "idle" as const } : sketch),
+    [sketch, isExpanded]
+  );
+
   return (
     <div className={`relative ${className}`}>
       {/* The expand button lives in the map's own toolbar row - only this
@@ -179,6 +198,7 @@ function ArcgisAddressMapFieldBase({
         trail={trail}
         showTrail={showTrail}
         boundaries={boundaries}
+        sketch={inlineSketch}
         // The inline map is 220-320px; a row of labelled controls covers too
         // much of it. The expanded map below keeps its labels.
         compactControls
@@ -215,6 +235,7 @@ function ArcgisAddressMapFieldBase({
             trail={trail}
             showTrail={showTrail}
             boundaries={boundaries}
+            sketch={sketch}
             viewpointRef={expandedViewpointRef}
             address={address}
             showLocationInfo

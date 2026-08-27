@@ -161,7 +161,7 @@ export const buildCountryFields = ({
     },
     {
       key: "countryCoordinates",
-      type: "textarea",
+      type: "geometry",
       group: group.boundary,
       span: "full",
       label: t("crud.areaTemplate.field.coordinates.label"),
@@ -287,7 +287,7 @@ export const buildProvinceFields = ({
     },
     {
       key: "provinceCoordinates",
-      type: "textarea",
+      type: "geometry",
       group: group.boundary,
       span: "full",
       label: t("crud.areaTemplate.field.coordinates.label"),
@@ -436,7 +436,7 @@ export const buildDistrictFields = ({
     },
     {
       key: "districtCoordinates",
-      type: "textarea",
+      type: "geometry",
       group: group.boundary,
       span: "full",
       label: t("crud.areaTemplate.field.coordinates.label"),

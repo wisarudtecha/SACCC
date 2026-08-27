@@ -15,6 +15,7 @@ import { isApiSuccess, resolveApiError, resolveApiMessage } from "@/cms/utils/ap
 import { formatPolygonRings, parsePolygonRings, toCoordinatesPayload } from "@/cms/utils/areaGeometry";
 import { applyLocalTableQuery, INITIAL_LOCAL_QUERY, type LocalTableQuery } from "@/cms/utils/localTableQuery";
 import Form from "@/cms/components/crm/Form";
+import BoundaryGeometryField from "@/cms/components/admin/system-configuration/geometry/BoundaryGeometryField";
 import GeometryCell from "@/cms/components/admin/system-configuration/areaTemplate/GeometryCell";
 import View, { type Action } from "@/cms/components/crm/View";
 
@@ -107,7 +108,20 @@ const AreaTemplateProvinceView: React.FC<AreaTemplateProvinceViewProps> = ({
       name: "coordinates",
       label: t("crud.areaTemplate.field.coordinates.label"),
       placeholder: t("crud.areaTemplate.field.coordinates.placeholder"),
-      type: "textarea"
+      type: "textarea",
+      // Full width - a map squeezed into half of a 672px form is not worth
+      // drawing on.
+      colSpan: 2,
+      // Swaps the plain textarea for the map + textarea pair. Form keeps
+      // rendering the label and its own submit-time error either way, so the
+      // field below renders neither.
+      customRender: (value, onChange) => (
+        <BoundaryGeometryField
+          value={String(value ?? "")}
+          onChange={onChange}
+          placeholder={t("crud.areaTemplate.field.coordinates.placeholder")}
+        />
+      )
     },
     { name: "active", label: t("common.active"), type: "toggle" }
   ], [t]);

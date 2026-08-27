@@ -42,6 +42,8 @@ import { useBreadcrumbGraphicsLayer } from "./staff/useBreadcrumbGraphicsLayer";
 import type { TrailPoint } from "./staff/useStaffTrails";
 import { useAdminBoundaryLayers } from "./boundaries/useAdminBoundaryLayers";
 import type { BoundaryLayerConfig } from "./boundaries/boundaryTypes";
+import { useBoundarySketchLayer } from "./sketch/useBoundarySketchLayer";
+import type { BoundarySketchConfig } from "./sketch/sketchTypes";
 
 export interface ArcgisLatLon {
   latitude: number;
@@ -128,6 +130,17 @@ interface ArcgisAddressMapProps {
    * state must be owned ABOVE ArcgisAddressMapField - see useBoundarySelection.
    */
   boundaries?: BoundaryLayerConfig;
+  /**
+   * Optional editable boundary polygon: the one the user is drawing or
+   * reshaping. Same contract as `boundaries` - this component draws what it is
+   * handed and knows nothing about what the polygon means. The state must be
+   * owned ABOVE ArcgisAddressMapField, since expanding renders a second view;
+   * see BoundaryGeometryField.
+   *
+   * Only ever set on the area-boundary editor. Every case map leaves it
+   * undefined, and the layer hook is inert without it.
+   */
+  sketch?: BoundarySketchConfig;
   /**
    * Controls rendered inside the map container, on top of the map. The caller
    * positions them (e.g. `absolute bottom-2 left-2`), as the expand button does.
@@ -251,6 +264,7 @@ function ArcgisAddressMapBase({
   trail,
   showTrail = false,
   boundaries,
+  sketch,
   overlaySlot,
   toolbarSlot,
   onExpand,
@@ -348,6 +362,17 @@ function ArcgisAddressMapBase({
     isReady,
     points: trail ?? null,
     visible: showTrail,
+    isDarkTheme
+  });
+
+  // The boundary being drawn. Called LAST of the layer hooks on purpose: it is
+  // the only interactive overlay, and its layer has to sit above every other
+  // one for a vertex handle to be grabbable - which appending gives it for free.
+  useBoundarySketchLayer({
+    mapRef,
+    viewRef,
+    isReady,
+    sketch,
     isDarkTheme
   });
 

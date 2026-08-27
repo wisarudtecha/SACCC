@@ -2044,6 +2044,20 @@
       "geometry": {
         "none": "No boundary",
         "summary": "Boundary · _POINTS_ points",
+        "vertices": "_COUNT_ points",
+        "action": {
+          "title": "Boundary",
+          "draw": "Draw",
+          "redraw": "Redraw",
+          "edit": "Edit",
+          "finish": "Finish",
+          "cancel": "Cancel",
+          "clear": "Clear"
+        },
+        "hint": {
+          "drawing": "Click the map to add points, then Finish.",
+          "editing": "Drag a point to move it, then Finish."
+        },
         "error": {
           "invalid_json": "Boundary must be valid JSON.",
           "not_rings": "Boundary must be an array of rings.",

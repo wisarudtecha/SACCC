@@ -1928,6 +1928,20 @@
       "geometry": {
         "none": "无边界",
         "summary": "边界 · _POINTS_ 个点",
+        "vertices": "_COUNT_ 个点",
+        "action": {
+          "title": "边界",
+          "draw": "绘制",
+          "redraw": "重新绘制",
+          "edit": "编辑",
+          "finish": "完成",
+          "cancel": "取消",
+          "clear": "清除"
+        },
+        "hint": {
+          "drawing": "点击地图添加顶点，然后点击完成。",
+          "editing": "拖动顶点即可移动，然后点击完成。"
+        },
         "error": {
           "invalid_json": "边界必须是有效的 JSON。",
           "not_rings": "边界必须是环（ring）的数组。",

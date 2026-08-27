@@ -1,4 +1,10 @@
 {
+  "0.66.0": {
+    "date": "2026-08-27",
+    "segment": "MINOR",
+    "notes": "feat(cms): draw an area's boundary on a map instead of typing its coordinates\n- A country, province or district boundary can now be drawn directly on a map. Clicking around the area places its corners and Finish saves the shape, so a boundary no longer has to be obtained as coordinates from elsewhere and pasted in.\n- An existing boundary can be reshaped by dragging any of its corners, redrawn from scratch, or cleared.\n- The map can be expanded to full size for the drawing itself, and a place can be found by name first so the right part of the map is on screen before drawing starts.\n- The coordinates are still shown as text beside the map and can still be pasted or edited by hand. The two stay in step: drawing updates the text, and editing the text updates the map.\n- A mistake in pasted coordinates now explains what is wrong while the boundary stays on screen, instead of the map going blank.\n- Available on the area templates for countries, provinces and districts, and on the organisation's own area form.\n- Available in Thai, English and Chinese.\n- changelog.json / package.json: bump version 0.65.0 -> 0.66.0",
+    "author": "Wisarud Techa"
+  },
   "0.65.0": {
     "date": "2026-08-27",
     "segment": "MINOR",
