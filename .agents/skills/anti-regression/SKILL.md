@@ -186,3 +186,119 @@ new lesson and update this file when the lesson is generalizable.
   {canView ? <Input value={formData.email} .../> : <MaskedField path="email" value={formData.email} />}
   await update({ id, data: omitUnviewableCustomerPii(payload, canViewField) });
   ```
+
+
+### A component declared inside a render is a new component every render
+- **Date:** 2026-08-27
+- **Mistake:** Adding the editable Properties tab to the unit preview, `PropertyTab` was declared
+  as a `const` inside `UnitManagementComponent` — copying the shape of the `SkillTab` already
+  there. Every click on a property toggle made the whole matrix visibly blink out and back.
+- **Root Cause:** A component declared in a render body is a brand-new function object each time
+  the parent renders. React compares `element.type` by reference, so a new identity means unmount
+  the old subtree and mount a fresh one — every descendant loses its state and its DOM. Toggling
+  set `propertyIds` in the parent, which re-rendered it, which remounted the matrix.
+  `PropertyMatrixContent` seeds `maxHeight` to `0` and only fills it in from a post-mount effect,
+  so the remount painted one frame at `max-height: 0` — the visible half of the flicker. The
+  identical defect sat in `SkillTab` unnoticed for as long as that tab stayed read-only: nothing
+  in it set parent state, so nothing ever triggered the remount.
+- **Correct Behavior:** Hoist tab bodies to module scope and pass what they need as props
+  (`UnitSkillTab`, `UnitPropertyTab`). Identity is then stable, React reconciles instead of
+  remounting, and child state survives. Separately, seed layout state lazily
+  (`useState(calcMatrixMaxHeight)`) so even a genuine first mount never paints at zero.
+- **Prevention Rule:** Never declare a component inside another component's body — not even a
+  small one, not even "just for this tab". If it takes hooks or props, it belongs at module
+  scope; if it is pure markup, inline the JSX instead of wrapping it in a component. The symptom
+  only appears once something in the subtree triggers a parent state change, so the absence of a
+  flicker today is not evidence the code is correct. Same consequence as
+  "A loading gate that swaps out a subtree throws away its state" — different trigger, and worth
+  checking both when a UI resets itself for no obvious reason.
+- **Example:**
+  ```tsx
+  // WRONG - new PropertyTab identity per render, so every parent state change remounts it
+  const Parent = () => {
+    const [ids, setIds] = useState<string[]>([]);
+    const PropertyTab = ({ item }) => <Matrix ids={ids} onToggle={setIds} item={item} />;
+    return <Preview tabs={[{ render: item => <PropertyTab item={item} /> }]} />;
+  };
+
+  // CORRECT - stable module-level identity, state passed in
+  const PropertyTab = ({ item, ids, onToggle }) => <Matrix ids={ids} onToggle={onToggle} item={item} />;
+  const Parent = () => {
+    const [ids, setIds] = useState<string[]>([]);
+    return <Preview tabs={[{ render: item => <PropertyTab item={item} ids={ids} onToggle={setIds} /> }]} />;
+  };
+  ```
+
+### RTK Query's `data` is not scoped to the arg you asked for
+- **Date:** 2026-08-27
+- **Mistake:** The unit preview's Assigned Properties showed the PREVIOUS unit's properties
+  whenever the newly previewed unit had none. A hand-rolled "is the shared query pointed at this
+  record yet" guard was already in place and did not catch it.
+- **Root Cause:** `const { data } = useGetUnitPropertiesQuery({ id: selectedUnitId })`. RTK Query
+  defines `data` as *the latest returned result regardless of hook arg* — on an arg change it
+  keeps serving the previous arg's payload until the new arg yields a **successful** result. When
+  the BFF answers an empty set with a failure envelope (`hybridBaseQuery` turns that into a real
+  RTK error), the new arg never yields one, so `data` stayed on the old unit indefinitely. The
+  guard could not see this: it compared ids and `isFetching`, both of which had already settled
+  into the "ready" state while `data` was still stale. A second hole compounded it — `assigned`
+  was gated on `!isLoading`, and `isLoading` was itself gated on `hasUnitId`, so a record with a
+  blank `unitId` bypassed the guard entirely.
+- **Correct Behavior:** Destructure `currentData`, which is scoped to the current hook arg and is
+  `undefined` until that arg itself resolves. Gate derived view state on the positive condition
+  (`isReady && !isFetching`), never on the negation of a flag that has its own preconditions.
+- **Prevention Rule:** Whenever a query arg is driven by which record the user is looking at —
+  preview modals, master/detail, tabs over a selected row — read `currentData`, not `data`. Treat
+  `data` as "last success this hook ever saw", because that is what it is. And remember this
+  codebase's envelope rule: an empty result can arrive as a *failure*, so "no rows" and "request
+  errored" are the same event to RTK — which is exactly the case where the stale-`data` fallback
+  is visible and permanent.
+- **Example:**
+  ```tsx
+  // WRONG - on unit change, keeps rendering the previous unit until the new one SUCCEEDS
+  const { data, isFetching } = useGetUnitPropertiesQuery({ id: selectedUnitId });
+  const rows = (data?.data as UnitProperty[]) || [];
+  <Assigned rows={isLoading ? [] : rows} />
+
+  // CORRECT - arg-scoped read, and the view gates on the positive condition
+  const { currentData, isFetching } = useGetUnitPropertiesQuery({ id: selectedUnitId });
+  const rows = (currentData?.data as UnitProperty[]) || [];
+  const visible = (isReady && !isFetching) ? rows : [];
+  <Assigned rows={visible} />
+  ```
+
+### Reading a guard through a ref removes the effect's reason to re-run
+- **Date:** 2026-08-27
+- **Mistake:** The boundary sketch layer's "stored rings -> what is on the map" effect skipped
+  itself while a gesture was running, by reading `modeRef.current !== "idle"`. Cancelling a draw
+  then left the map blank: the polygon that had been on it was gone, and the boundary was still
+  in the field's value with nobody left to redraw it.
+- **Root Cause:** Starting a draw clears the layer, and cancelling one restores nothing - the
+  stored rings never changed, so their identity never changed either. The effect's only other
+  dependency was `isReady`. Returning to idle WAS the event that should have redrawn, and reading
+  the mode through a ref is precisely what hid that event from React. The ref made the guard
+  correct and the trigger absent.
+- **Correct Behavior:** Depend on `mode` and guard on the dependency (`if (mode !== "idle") return`).
+  The effect then re-runs on the transition, and an idempotence check - here a signature compare
+  against what is already drawn - keeps the extra runs free.
+- **Prevention Rule:** A ref belongs in an effect for values it must READ WITHOUT re-running for
+  (callbacks, the theme in a build-once effect). The moment a value decides *whether the effect
+  should do its work*, it is a dependency, because every transition of it is a reason to re-run.
+  When the worry is "this will now run too often", the answer is an idempotence check inside the
+  effect, not a ref outside its dependency list.
+- **Example:**
+  ```ts
+  // WRONG - returning to idle is invisible, so nothing ever restores the polygon
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
+  useEffect(() => {
+    if (!isReady || modeRef.current !== "idle") return;
+    redraw(rings);
+  }, [isReady, rings]);
+
+  // CORRECT - the transition re-runs it; the signature check makes repeats free
+  useEffect(() => {
+    if (!isReady || mode !== "idle") return;
+    if (ringsSignature(rings) === renderedSignatureRef.current) return;
+    redraw(rings);
+  }, [isReady, rings, mode]);
+  ```
