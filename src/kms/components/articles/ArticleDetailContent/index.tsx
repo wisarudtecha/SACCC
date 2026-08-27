@@ -82,6 +82,26 @@ const ArticleDetailContent: React.FC<Props> = ({
   const [submitting, setSubmitting] = React.useState(false);
   const [ratingLoaded, setRatingLoaded] = React.useState(false);
 
+
+
+ 
+
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  
+
+  const html = apiContent ?? "";
+
+    React.useEffect(() => {
+    const element = contentRef.current;
+
+    if (!element) return;
+
+    // อัปเดต HTML เฉพาะตอน html เปลี่ยน
+    if (element.innerHTML !== html) {
+      element.innerHTML = html;
+    }
+  }, [html]);
+
   React.useEffect(() => {
     if (!artId) return;
     getArticleRating(artId)
@@ -147,7 +167,7 @@ const ArticleDetailContent: React.FC<Props> = ({
   //   ev.stopPropagation();
   //   openLightboxFor(t);
   // }, []);
- 
+
   // attach native click ติดตัว div เนื้อหา (เรียกเมื่อ div mount ทันที ไม่พึ่ง useEffect timing)
   // const contentRef = React.useCallback(
   //   (node: HTMLDivElement | null) => {
@@ -237,22 +257,22 @@ const ArticleDetailContent: React.FC<Props> = ({
     );
   }
 
-  if (!apiContent && !apiAttachments) return null;
+   if (!apiContent && !apiAttachments) return null;
 
-  const contentRef = React.useRef<HTMLDivElement>(null);
+  // const contentRef = React.useRef<HTMLDivElement>(null);
 
-  const html = apiContent ?? "";
+  // const html = apiContent ?? "";
 
-  React.useEffect(() => {
-    const element = contentRef.current;
+  // React.useEffect(() => {
+  //   const element = contentRef.current;
 
-    if (!element) return;
+  //   if (!element) return;
 
-    // อัปเดต HTML เฉพาะตอน html เปลี่ยน
-    if (element.innerHTML !== html) {
-      element.innerHTML = html;
-    }
-  }, [html]);
+  //   // อัปเดต HTML เฉพาะตอน html เปลี่ยน
+  //   if (element.innerHTML !== html) {
+  //     element.innerHTML = html;
+  //   }
+  // }, [html]);
 
   const attachments = apiAttachments ?? [];
   return (
@@ -266,7 +286,7 @@ const ArticleDetailContent: React.FC<Props> = ({
           {html ? (
             <div
               ref={contentRef}
-                            className="
+              className="
                               prose 
         prose-sm 
         max-w-none 

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import { Link } from "react-router-dom";
 import {
   FiStar
 } from "react-icons/fi";
@@ -199,11 +200,12 @@ const CategorysArticlePanel: React.FC<CategorysArticlePanelProps> = ({
                   {/* Article List */}
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {articles.map((article) => (
-                      <a
+                      <Link
                         key={article.artId}
                         className="group m-2 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md"
-                        href={article.url}
+                        to={article.url}
                         target="_blank"
+                        state={{ hideBack: true }}
                         data-discover="true"
                       >
                         <div className="aspect-[4/3] overflow-hidden bg-gray-100">
@@ -279,7 +281,7 @@ const CategorysArticlePanel: React.FC<CategorysArticlePanelProps> = ({
                             <div className="flex-1" />
                           </div>
                         </div>
-                      </a>
+                      </Link>
                     ))}
                   </div>
 

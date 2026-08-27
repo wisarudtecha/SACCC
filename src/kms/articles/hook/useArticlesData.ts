@@ -1,4 +1,6 @@
-import { useQuery  } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { QueryClient } from '@tanstack/react-query';
 import { ArticleFilter } from "@/kms/articles//dtos/articles.dto";
 import {
@@ -20,12 +22,30 @@ import {
   putArticleCountView
 } from "@/kms/articles/service/articles.service";
 
-export const useArticleListData = (filter?: ArticleFilter) =>
-  useQuery({
+// export const useArticleListData = (filter?: ArticleFilter) =>
+//   useQuery({
+//     queryKey: ["kb-articles-list", filter],
+//     queryFn: () => getArticleBlock("list", filter),
+//     staleTime: 30_000,
+//     refetchOnMount: "always",
+//   });
+
+export const useArticleListData = (filter?: ArticleFilter) => {
+  const location = useLocation();
+
+  const query = useQuery({
     queryKey: ["kb-articles-list", filter],
     queryFn: () => getArticleBlock("list", filter),
     staleTime: 30_000,
+    refetchOnMount: "always",
   });
+
+  useEffect(() => {
+    query.refetch();
+  }, [location.key]);
+
+  return query;
+};
 
 // export const useArticleDetailData = (id: string) =>
 //   useQuery({
@@ -103,7 +123,7 @@ export const useArticleDetailContent = (artId: number, enabled = true) =>
     queryKey: ["kb-article-detail-content", artId],
     queryFn: () => getArticleDetailContent(artId),
     staleTime: 30_000,
-      enabled: !!artId && enabled,
+    enabled: !!artId && enabled,
   });
 
 export const useArticleDetailInfo = (artId: number, enabled = true) =>
@@ -111,7 +131,7 @@ export const useArticleDetailInfo = (artId: number, enabled = true) =>
     queryKey: ["kb-article-detail-info", artId],
     queryFn: () => getArticleDetailInfo(artId),
     staleTime: 30_000,
-     enabled: !!artId && enabled,
+    enabled: !!artId && enabled,
   });
 
 export const useArticleRelations = () =>
@@ -135,9 +155,9 @@ export const useArticleViewGroup = () =>
     staleTime: 60_000,
   });
 
-  export const useArticleCountView = (id:number) =>
+export const useArticleCountView = (id: number) =>
   useQuery({
-    queryKey: ["kb-article-count-view",id],
+    queryKey: ["kb-article-count-view", id],
     queryFn: () => putArticleCountView(id),
     enabled: !!id,
     staleTime: 60_000,
@@ -164,3 +184,5 @@ export const refreshArticleDetail = async (
     }),
   ]);
 };
+
+ 

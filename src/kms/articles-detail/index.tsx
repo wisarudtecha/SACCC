@@ -23,9 +23,7 @@ const ArticleDetailPage = () => {
   const isComment = permissions.hasPermission(KbPermission.KB_ARTICLE_COMMENT);
   let isModeView = true;
   const maxRate: number[] = [];
-  if (!isView) {
-    return <NotFound />;
-  }
+
   const { id = "" } = useParams<{ id: string }>();
   const { t, language } = useTranslation();
   const i18n = {
@@ -39,7 +37,7 @@ const ArticleDetailPage = () => {
   const { data: apiContent, isLoading: isContentLoading } = useArticleDetailContent(artId, isCountViewSuccess);
   const { data: info, isLoading: isInfoLoading } = useArticleDetailInfo(artId, isCountViewSuccess);
   if (isHeaderSuccess) {
-    
+
     isModeView = !(header?.status == ArticleStatus.PUBLISH)
     for (let i = 1; i <= (header?.ratingMax ?? 0); i++) {
       maxRate.push(i);
@@ -50,6 +48,10 @@ const ArticleDetailPage = () => {
     ? (isTh ? header.source.name_th : header.source.name_en)
     : undefined;
   const headerVersionStr = header?.version != null ? String(header.version) : undefined;
+
+  if (!isView) {
+    return <NotFound />;
+  }
 
   if (isHeaderLoading) {
     return (
@@ -63,6 +65,9 @@ const ArticleDetailPage = () => {
   if (!header && isHeaderSuccess) {
     return <NotFound />;
   }
+
+
+
   return (
     <>
       <PageMeta
@@ -72,7 +77,7 @@ const ArticleDetailPage = () => {
       <div className="space-y-5 pb-8">
         {/* Header — loads independently */}
         <ArticleCoverImage
-          mode="review"
+          mode="view"
           coverImage={header?.coverImgUrl}
           title={header?.title ?? ''}
           description={header?.description ?? ''}

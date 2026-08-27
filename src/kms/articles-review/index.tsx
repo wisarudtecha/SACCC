@@ -60,18 +60,11 @@ const ArticleReviewPage = () => {
 
   const permissions = usePermissions();
   const isView = permissions.hasPermission(KbPermission.KB_ARTICLE_MGMT_VIEW);
-  if (!isView) {
-    return <NotFound />;
-  }
-
-  const isDelete = permissions.hasPermission(KbPermission.KB_ARTICLE_MGMT_DELETE)
   const isCopy = permissions.hasPermission(KbPermission.KB_ARTICLE_MGMT_COPY)
   const isVersion = permissions.hasPermission(KbPermission.KB_ARTICLE_MGMT_NEW_VERSION)
-
   const isChangeStatus = permissions.hasPermission(KbPermission.KB_ARTICLE_MGMT_CHANGE_STATUS)
   const isComment = permissions.hasPermission(KbPermission.KB_ARTICLE_COMMENT)
   const queryClient = useQueryClient();
-
   const { id = "" } = useParams<{ id: string }>();
   const { t, language, } = useTranslation();
   const i18n = {
@@ -79,27 +72,30 @@ const ArticleReviewPage = () => {
   };
   const artId = Number(id.replace(/\D+/g, "")) || 0;
   const isTh = i18n.language.startsWith("th");
-  const { data: header, isLoading: isHeaderLoading, isSuccess: isHeaderSuccess } = useArticleDetailHeader(artId);
+  const { data: header, isLoading: isHeaderLoading, isSuccess: isHeaderSuccess, isError: isHeaderError } = useArticleDetailHeader(artId);
   const { data: apiContent, isLoading: isContentLoading } = useArticleDetailContent(artId);
   const { data: info, isLoading: isInfoLoading } = useArticleDetailInfo(artId);
-  //const { data: article,    isLoading: isMockLoading, isError } = useArticleDetailData(id);
   const { data: article, isLoading: isMockLoading, isError } = useArticleDetailStatusActivityData(artId);
-
+  const [coverImage, setCoverImage] = useState<string | undefined>(undefined);
+  const [pendingImagePath, setPendingImagePath] = useState<string | undefined>(undefined);
+  const [savingImage, setSavingImage] = useState(false);
+  const isDelete = article?.status_value == ArticleStatus.DRAFT && permissions.hasPermission(KbPermission.KB_ARTICLE_MGMT_DELETE);
   const isUpdate = permissions.hasPermission(KbPermission.KB_ARTICLE_MGMT_UPDATE) && ArticleStatus.DRAFT == article?.status_value;
   const maxRate: number[] = [];
+
   if (isHeaderSuccess) {
     for (let i = 1; i <= (header?.ratingMax ?? 0); i++) {
       maxRate.push(i);
     }
   }
-
   const headerSourceName = header?.source
     ? (isTh ? header.source.name_th : header.source.name_en)
     : undefined;
   const headerVersionStr = header?.version != null ? String(header.version) : undefined;
-  const [coverImage, setCoverImage] = useState<string | undefined>(undefined);
-  const [pendingImagePath, setPendingImagePath] = useState<string | undefined>(undefined);
-  const [savingImage, setSavingImage] = useState(false);
+  if (!isView) {
+    return <NotFound />;
+  }
+
   if (isHeaderLoading) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-24 text-sm text-slate-400 dark:text-slate-500">
@@ -109,7 +105,10 @@ const ArticleReviewPage = () => {
     );
   }
 
-  if (!header) {
+
+
+
+  if (isHeaderError || !header) {
     return <NotFound />;
   }
 
@@ -153,7 +152,7 @@ const ArticleReviewPage = () => {
         description={header?.description ?? article?.description ?? ""}
       />
       <div className="space-y-5 pb-8">
- 
+
         {/* Cover card — loads independently */}
         <ArticleCoverImage
           mode="review"

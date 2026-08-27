@@ -34,9 +34,17 @@ const ChevronRight = () => (
   </svg>
 );
 
-const ArticleBannerCarousel: React.FC = () => {
-    const { language } = useTranslation();
-  const { data: banners = [], isLoading } = useBannerList(language,'view');
+
+interface ArticleBannerCarouselProps {
+  openTaget?: string;
+}
+
+
+const ArticleBannerCarousel: React.FC<ArticleBannerCarouselProps> = ({
+  openTaget = '_self'
+}) => {
+  const { language } = useTranslation();
+  const { data: banners = [], isLoading } = useBannerList(language, 'view');
   const [current, setCurrent] = useState(0);
 
   const total = banners.length;
@@ -46,7 +54,7 @@ const ArticleBannerCarousel: React.FC = () => {
   const next = () => setCurrent((c) => (c < maxIndex ? c + 1 : 0));
 
   const visible = banners.slice(current, current + ITEMS_PER_VIEW);
- 
+
 
   if (isLoading) {
     return (
@@ -85,7 +93,9 @@ const ArticleBannerCarousel: React.FC = () => {
       <div className="grid grid-cols-3 gap-5">
         {visible.map((banner) => (
           <Link
+            target={openTaget === "" ? "_self" : openTaget}
             key={banner.id}
+            state={{ hideBack: openTaget !== "" }}
             to={`/kms/articles/${banner.articleId}`}
             className="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md"
           >
@@ -132,11 +142,10 @@ const ArticleBannerCarousel: React.FC = () => {
             key={i}
             onClick={() => setCurrent(Math.min(i, maxIndex))}
             aria-label={`Go to slide ${i + 1}`}
-            className={`h-2 rounded-full transition-all duration-200 ${
-              i === current
+            className={`h-2 rounded-full transition-all duration-200 ${i === current
                 ? "w-5 bg-blue-500"
                 : "w-2 bg-gray-300 hover:bg-gray-400"
-            }`}
+              }`}
           />
         ))}
       </div>

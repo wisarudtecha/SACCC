@@ -4,6 +4,7 @@ import { FiArrowLeft, FiEdit2, FiImage } from "react-icons/fi";
 import { getFileCopyUrl } from "@/kms/files/service/files.service";
 import MinioFilePicker from "@/kms/components/articles/ArticleCreateForm/MinioFilePicker";
 import { GraphQL } from "@/kms/constant";
+import { useLocation } from "react-router-dom";
 
 interface Props {
   coverImage?: string;
@@ -21,12 +22,12 @@ interface Props {
   reviewLabel?: string;
   /** show Edit button — default false */
   showEdit?: boolean;
-  changeLabel?:string,
-  changeTitle?:string,
-  notFoundimg?:string,
+  changeLabel?: string,
+  changeTitle?: string,
+  notFoundimg?: string,
   /** called when cover image is changed — previewUrl = resolved http URL, minioPath = raw MinIO path for saving */
   onChangeCoverImage?: (previewUrl: string, minioPath: string) => void;
-  isUpdate?:boolean;
+  isUpdate?: boolean;
 }
 
 const ArticleCoverImage: React.FC<Props> = ({
@@ -44,9 +45,9 @@ const ArticleCoverImage: React.FC<Props> = ({
   editLabel = "Edit",
   reviewLabel = "พิจารณาบทความ",
   showEdit = false,
-  changeLabel="Change",
+  changeLabel = "Change",
   changeTitle = "Change cover image",
-  notFoundimg="Image not found",
+  notFoundimg = "Image not found",
   onChangeCoverImage,
   isUpdate = true
 }) => {
@@ -94,6 +95,11 @@ const ArticleCoverImage: React.FC<Props> = ({
     );
   }
 
+
+  const location = useLocation();
+  const hideBack = location.state?.hideBack === true;
+  
+
   return (
     <>
       <div className="relative flex min-h-[200px] overflow-hidden rounded-[24px] border border-white/[0.08] bg-slate-800 shadow-[0_8px_32px_-12px_rgba(15,23,42,0.5)] dark:bg-slate-900">
@@ -138,25 +144,38 @@ const ArticleCoverImage: React.FC<Props> = ({
         <div className="relative flex flex-1 flex-col px-6 py-5">
           {/* Nav row */}
           <div className="mb-4 flex items-center justify-between gap-3">
-            <button
+
+
+            {hideBack && (
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/[0.07] px-3 py-1.5 text-xs font-medium text-white/70 transition hover:bg-white/[0.14] hover:text-white"
+              >
+                <FiArrowLeft size={13} />
+                {backLabel}
+              </button>
+            )}
+
+            {/* <button
               type="button"
-              onClick={() => navigate(-1)}
+              onClick={() => { navigate(-1); }}
               className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/[0.07] px-3 py-1.5 text-xs font-medium text-white/70 transition hover:bg-white/[0.14] hover:text-white"
             >
               <FiArrowLeft size={13} /> {backLabel}
-            </button>
+            </button> */}
 
             <div className="flex items-center gap-2">
               {/* Change Cover Image button */}
               {(onChangeCoverImage && isUpdate) && (
-            
+
                 <button
                   type="button"
                   onClick={() => setShowMinioModal(true)}
                   className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/[0.07] px-3 py-1.5 text-xs font-medium text-white/70 transition hover:bg-white/[0.14] hover:text-white"
                   title={changeLabel}
                 >
-              
+
                   <FiImage size={12} /> {changeLabel}
                 </button>
               )}

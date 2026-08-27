@@ -653,7 +653,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
 
     // ── อัปเดต "เส้น indicator" ว่ากำลังจะแทรก (ใน flow) ที่ตำแหน่งไหน ──
     const updateDropIndicator = (cx: number, cy: number) => {
-      cx = cx;
+        cx = cx;
       const editor = editorRef.current;
       const bar = dropBarRef.current;
       if (!editor || !bar) return;

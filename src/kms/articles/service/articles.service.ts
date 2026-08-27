@@ -260,9 +260,6 @@ const adminArticleFromGraphQL = async (
     m.updatedAt = formatISODateTime(m.updatedAt)
     m.createdAt = formatISODateTime(m.createdAt)
   })
-  console.log(result.data)
-
-
   return {
     items: result?.data ? result.data as unknown as ArticleItem[] : [],
     total: result?.total ?? 0,

@@ -310,7 +310,7 @@ const ArticleCreateForm: React.FC<ArticleCreateFormProps> = ({ editId, onSuccess
     );
   }
 
-  if (editId && !detailData) {
+  if (editId && isLoadingDetail) {
     return <NotFound />;
   }
 

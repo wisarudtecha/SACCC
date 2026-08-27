@@ -104,7 +104,9 @@ const ArticleCard: React.FC<{ article: ArticleItem }> = ({ article }) => {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         {/* Title */}
         <span className="line-clamp-2 cursor-pointer flex-1 text-sm font-semibold leading-snug text-amber-600 group-hover:text-amber-700 group-hover:underline dark:text-amber-400 dark:group-hover:text-amber-300"
-          onClick={() => navigate(`/kms/articles/${article.articleId}`)}
+          onClick={() => navigate(`/kms/articles/${article.articleId}`, {
+            state: { hideBack: true },
+          })}
         >
           {article.title}
         </span>
@@ -139,10 +141,10 @@ const ArticleCard: React.FC<{ article: ArticleItem }> = ({ article }) => {
             label={t(`knowledge.articles.statusBadge.${article.status_value}`)}
           />
           {(permissions.hasAnyPermission([KbPermission.KB_ARTICLE_MGMT_UPDATE,
-            KbPermission.KB_ARTICLE_MGMT_CHANGE_STATUS])) && (
+          KbPermission.KB_ARTICLE_MGMT_CHANGE_STATUS])) && (
               <ActionMenu
                 showApproveButton={permissions.hasPermission(KbPermission.KB_ARTICLE_MGMT_CHANGE_STATUS)}
-                showEditButton={permissions.hasPermission(KbPermission.KB_ARTICLE_MGMT_UPDATE) && ArticleStatus.DRAFT == article.status_value }
+                showEditButton={permissions.hasPermission(KbPermission.KB_ARTICLE_MGMT_UPDATE) && ArticleStatus.DRAFT == article.status_value}
                 onEdit={() => {
                   navigate(`/kms/articles/edit/${article.articleId}`)
                 }}
@@ -179,7 +181,7 @@ const ArticleCard: React.FC<{ article: ArticleItem }> = ({ article }) => {
             </svg>
             {t("knowledge.articles.meta.version")}: {article.version}
           </span>
-            <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1">
             <svg
               className="h-3.5 w-3.5"
               fill="none"
@@ -269,9 +271,9 @@ const ArticleListBlock: React.FC<ArticleListBlockProps> = ({
 
   const { t } = useTranslation();
   const activeFilter = { pageSize: PAGE_SIZE, ...filter };
+
   const { data, isLoading, isError, isFetching, refetch } = useArticleListData(activeFilter);
   const articles = data?.data?.items ?? [];
- 
   const total = data?.data?.total ?? 0;
   const page = activeFilter.page ?? 1;
   const pageSize = activeFilter.pageSize;
