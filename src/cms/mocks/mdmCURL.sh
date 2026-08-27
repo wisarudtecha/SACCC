@@ -4,7 +4,7 @@
 ### REST API Endpoint: GET /api/v1/mdm/units
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "query ($input: ListDataInput!) { MdmUnit { GetListMdmUnit(input: $input) { status msg data desc } } }",
   "variables": {
@@ -19,7 +19,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: GET /api/v1/mdm/units/{id}
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "query ($input: GetIdInput!) { MdmUnit { GetMdmUnitById(input: $input) { status msg data desc } } }",
   "variables": {
@@ -33,7 +33,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: GET /api/v1/mdm/units/properties/{unitId}
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "query ($input: ListDataInput!) { MdmUnit { GetMdmUnitPropById(input: $input) { status msg data desc } } }",
   "variables": {
@@ -44,12 +44,35 @@ curl --location 'http://localhost:3000/graphql' \
     }
   }
 }'
+--response-body '{
+  "status": "0",
+  "msg": "Success",
+  "data": [
+    {
+      "id": "1",
+      "orgId": "434c0f16-b7ea-4a7b-a74b-e2e0f859f549",
+      "unitId": "UNIT-001",
+      "propId": "97c1575a-75be-4122-9c52-d8f3b866fe88",
+      "active": true,
+      "createdAt": "2025-08-06T10:41:26.395624Z",
+      "updatedAt": "2025-08-06T10:41:26.395624Z",
+      "createdBy": "apiwat_r",
+      "updatedBy": "apiwat_r",
+      "propMetaData": {
+        "en": "Not Spectify",
+        "th": "ไม่ระบุ",
+        "active": true
+      }
+    }
+  ],
+  "desc": ""
+}'
 
 ## GetListMdmType
 ### REST API Endpoint: GET /api/v1/mdm/types
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "query ($input: ListDataInput!) { MdmType { GetListMdmType(input: $input) { status msg data desc } } }",
   "variables": {
@@ -64,7 +87,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: GET /api/v1/mdm/types/{id}
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "query ($input: GetIdInput!) { MdmType { GetMdmTypeById(input: $input) { status msg data desc } } }",
   "variables": {
@@ -78,7 +101,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: GET /api/v1/mdm/status
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "query ($input: ListDataInput!) { MdmStatus { GetListMdmStatus(input: $input) { status msg data desc } } }",
   "variables": {
@@ -93,7 +116,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: GET /api/v1/mdm/status/{id}
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "query ($input: GetIdInput!) { MdmStatus { GetMdmStatusById(input: $input) { status msg data desc } } }",
   "variables": {
@@ -107,7 +130,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: GET /api/v1/mdm/sources
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "query ($input: ListDataInput!) { MdmSource { GetListMdmSource(input: $input) { status msg data desc } } }",
   "variables": {
@@ -122,7 +145,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: GET /api/v1/mdm/sources/{id}
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "query ($input: GetIdInput!) { MdmSource { GetMdmSourceById(input: $input) { status msg data desc } } }",
   "variables": {
@@ -136,7 +159,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: GET /api/v1/mdm/properties
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "query ($input: ListDataInput!) { MdmProperty { GetListMdmProperty(input: $input) { status msg data desc } } }",
   "variables": {
@@ -151,7 +174,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: GET /api/v1/mdm/properties/{id}
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "query ($input: GetIdInput!) { MdmProperty { GetMdmPropertyById(input: $input) { status msg data desc } } }",
   "variables": {
@@ -165,7 +188,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: GET /api/v1/mdm/companies
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "query ($input: ListDataInput!) { MdmCompany { GetListMdmCompany(input: $input) { status msg data desc } } }",
   "variables": {
@@ -180,7 +203,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: GET /api/v1/mdm/companies/{id}
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "query ($input: GetIdInput!) { MdmCompany { GetMdmCompanyById(input: $input) { status msg data desc } } }",
   "variables": {
@@ -196,7 +219,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: POST /api/v1/mdm/units/add
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "mutation ($input: MmdUnitInput!) { MdmUnit { CreateMdmUnit(input: $input) { status msg data desc } } }",
   "variables": {
@@ -239,7 +262,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: PATCH /api/v1/mdm/units/{id}
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "mutation ($input: MmdUnitInput!) { MdmUnit { UpdateMdmUnit(input: $input) { status msg data desc } } }",
   "variables": {
@@ -283,7 +306,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: DELETE /api/v1/mdm/units/{id}
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "mutation ($input: GetIdInput!) { MdmUnit { DeleteMdmUnit(input: $input) { status msg data desc } } }",
   "variables": {
@@ -293,11 +316,29 @@ curl --location 'http://localhost:3000/graphql' \
   }
 }'
 
+## BulkAssignUnitProperties
+### REST API Endpoint: POST /api/v1/mdm/units/properties/{unitId}/bulk
+curl --location 'http://localhost:3000/graphql' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
+--data '{
+  "query": "mutation ($input: BulkUnitPropertiesInput!) { MdmUnit { BulkAssignUnitProperties(input: $input) { status msg data desc } } }",
+  "variables": {
+    "input": {
+      "id": "112",
+      "propIds": [
+        "ec414832-f4b2-4a2a-8fe7-824705b9bcaf",
+        "d6027394-f83f-4266-b859-5dd7fb78f20e"
+      ]
+    }
+  }
+}'
+
 ## CreateMdmType 
 ### REST API Endpoint: POST /api/v1/mdm/types/add
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "mutation ($input: MdmTypeInput!) { MdmType { CreateMdmType(input: $input) { status msg data desc } } }",
   "variables": {
@@ -313,7 +354,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: PATCH /api/v1/mdm/types/{id}
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "mutation ($input: MdmTypeInput!) { MdmType { UpdateMdmType(input: $input) { status msg data desc } } }",
   "variables": {
@@ -330,7 +371,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: DELETE /api/v1/mdm/types/{id}
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "mutation ($input: GetIdInput!) { MdmType { DeleteMdmType(input: $input) { status msg data desc } } }",
   "variables": {
@@ -344,7 +385,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: POST /api/v1/mdm/status/add
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "mutation ($input: MdmStatusInput!) { MdmStatus { CreateMdmStatus(input: $input) { status msg data desc } } }",
   "variables": {
@@ -359,7 +400,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: PATCH /api/v1/mdm/status/{id}
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "mutation ($input: MdmStatusInput!) { MdmStatus { UpdateMdmStatus(input: $input) { status msg data desc } } }",
   "variables": {
@@ -375,7 +416,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: DELETE /api/v1/mdm/status/{id}
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "mutation ($input: GetIdInput!) { MdmStatus { DeleteMdmStatus(input: $input) { status msg data desc } } }",
   "variables": {
@@ -389,7 +430,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: POST /api/v1/mdm/sources/add
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "mutation ($input: MdmSourceInput!) { MdmSource { CreateMdmSource(input: $input) { status msg data desc } } }",
   "variables": {
@@ -405,7 +446,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: PATCH /api/v1/mdm/sources/{id}
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "mutation ($input: MdmSourceInput!) { MdmSource { UpdateMdmSource(input: $input) { status msg data desc } } }",
   "variables": {
@@ -422,7 +463,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: DELETE /api/v1/mdm/sources/{id}
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "mutation ($input: GetIdInput!) { MdmSource { DeleteMdmSource(input: $input) { status msg data desc } } }",
   "variables": {
@@ -436,7 +477,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: POST /api/v1/mdm/properties/add
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "mutation ($input: MdmPropertyInput!) { MdmProperty { CreateMdmProperty(input: $input) { status msg data desc } } }",
   "variables": {
@@ -452,7 +493,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: PATCH /api/v1/mdm/properties/{id}
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "mutation ($input: MdmPropertyInput!) { MdmProperty { UpdateMdmProperty(input: $input) { status msg data desc } } }",
   "variables": {
@@ -469,7 +510,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: DELETE /api/v1/mdm/properties/{id}
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "mutation ($input: GetIdInput!) { MdmProperty { DeleteMdmProperty(input: $input) { status msg data desc } } }",
   "variables": {
@@ -483,7 +524,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: POST /api/v1/mdm/companies/add
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data-raw '{
   "query": "mutation ($input: MmdCompaniesInput!) { MdmCompany { CreateMdmCompany(input: $input) { status msg data desc } } }",
   "variables": {
@@ -515,7 +556,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: PATCH /api/v1/mdm/companies/{id}
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data-raw '{
   "query": "mutation ($input: MmdCompaniesInput!) { MdmCompany { UpdateMdmCompany(input: $input) { status msg data desc } } }",
   "variables": {
@@ -548,7 +589,7 @@ curl --location 'http://localhost:3000/graphql' \
 ### REST API Endpoint: DELETE /api/v1/mdm/companies/{id}
 curl --location 'http://localhost:3000/graphql' \
 --header 'Content-Type: application/json' \
---header 'Authorization;' \
+--header 'Authorization: Bearer {{bearer_token_graphql}}' \
 --data '{
   "query": "mutation ($input: GetIdInput!) { MdmCompany { DeleteMdmCompany(input: $input) { status msg data desc } } }",
   "variables": {

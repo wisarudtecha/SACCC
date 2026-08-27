@@ -95,6 +95,14 @@ const DELETE_MDM_UNIT_MUTATION = {
   mutation: true
 };
 
+const BULK_ASSIGN_UNIT_PROPERTIES_MUTATION = {
+  operationName: "BulkAssignUnitProperties",
+  root: "MdmUnit",
+  inputType: "BulkUnitPropertiesInput!",
+  fields: `status msg data desc`,
+  mutation: true
+};
+
 // ─── Property Mutations ─────────────────────────────────────────────────────
 
 const CREATE_MDM_PROPERTY_MUTATION = {
@@ -140,12 +148,13 @@ export const GQL_MDM = {
   // No collision with "/mdm/units/:id": that pattern's ([^/]+) cannot cross the extra
   // "/properties/" path segment.
   "/mdm/units/properties/:id": GET_MDM_UNIT_PROP_BY_ID_QUERY,
+  "/mdm/units/properties/:id/bulk": BULK_ASSIGN_UNIT_PROPERTIES_MUTATION,
   "/mdm/units/:id": {
     GET: GET_MDM_UNIT_BY_ID_QUERY,
     PATCH: UPDATE_MDM_UNIT_MUTATION,
     DELETE: DELETE_MDM_UNIT_MUTATION,
   },
-
+  
   "/mdm/companies": GET_LIST_MDM_COMPANY_QUERY,
   "/mdm/sources": GET_LIST_MDM_SOURCE_QUERY,
   "/mdm/types": GET_LIST_MDM_TYPE_QUERY,

@@ -10,7 +10,7 @@ import type {
   UnitStatus, UnitStatusQueryParams,
   UnitType, UnitTypeQueryParams,
   Company, CompanyQueryParams,
-  Property, UnitPropertyQueryParams,
+  UnitProperty, UnitPropertyQueryParams, UnitPropertyBulkAssignData,
   Source, SourceQueryParams,
 } from "@/cms/types/unit";
 
@@ -61,16 +61,31 @@ export const unitApi = baseApi.injectEndpoints({
     }),
 
     // GET /mdm/units/properties/{unitId}
-    // Read-only: the backend exposes no create/update/delete for the unit-property
-    // relationship, and MmdUnitInput carries no property field - so assignments can be
-    // displayed but not edited from the client. The path param is the unitId business
-    // code (e.g. "UNIT-001"), not the numeric/UUID id.
-    getUnitProperties: builder.query<ApiResponse<Property[]>, UnitPropertyQueryParams>({
+    // Returns UnitProperty JOIN rows, NOT Property records - the display name is nested
+    // under propMetaData, so reading item.en/item.th here yields undefined. The path param
+    // is the unitId business code (e.g. "UNIT-001"), not the numeric id, and so is the one
+    // bulkAssignUnitProperties writes with. The tag is namespaced "properties-" so that
+    // shared code space cannot collide with getUnitsById's numeric { type: "Unit", id } tag.
+    getUnitProperties: builder.query<ApiResponse<UnitProperty[]>, UnitPropertyQueryParams>({
       query: ({ id, start = 0, length = 100 }) => {
         const searchParams = new URLSearchParams({ start: String(start), length: String(length) });
         return `/mdm/units/properties/${id}?${searchParams.toString()}`;
       },
-      providesTags: (_result, _error, { id }) => [{ type: "Unit", id }],
+      providesTags: (_result, _error, { id }) => [{ type: "Unit", id: `properties-${id}` }],
+    }),
+
+    // POST /mdm/units/properties/{unitId}/bulk
+    // Replaces a unit's whole property set in one request (an empty propIds clears it).
+    // Keyed on the unitId business code, same as getUnitProperties above - so the tag it
+    // invalidates is exactly the one that query provides. (The GraphQL sample in
+    // src/cms/mocks/mdmCURL.sh shows a numeric "112" here; that sample value is stale.)
+    bulkAssignUnitProperties: builder.mutation<ApiResponse<void>, UnitPropertyBulkAssignData>({
+      query: ({ id, propIds }) => ({
+        url: `/mdm/units/properties/${id}/bulk`,
+        method: "POST",
+        body: { propIds },
+      }),
+      invalidatesTags: (_result, _error, { id }) => [{ type: "Unit", id: `properties-${id}` }],
     }),
 
     getCompanies: builder.query<ApiResponse<Company[]>, CompanyQueryParams>({
@@ -126,6 +141,7 @@ export const {
   useUpdateUnitsMutation,
   useDeleteUnitsMutation,
   useGetUnitPropertiesQuery,
+  useBulkAssignUnitPropertiesMutation,
   useGetCompaniesQuery,
   useGetSourcesQuery,
   useGetUnitStatusesQuery,

@@ -252,6 +252,41 @@ export interface Property {
   updatedBy: string;
 }
 
+// Nested display names carried by a unit-property join row (GetMdmUnitPropById).
+export interface PropertyMetaData {
+  en: string;
+  th: string;
+  active: boolean;
+}
+
+// Row returned by GET /mdm/units/properties/{unitId} (GraphQL GetMdmUnitPropById).
+// This is the unit-property JOIN record, not a Property: it has no top-level en/th -
+// the display name lives in propMetaData. Typing it as Property is what made the
+// Properties tab fall back to rendering the raw propId UUID. propMetaData is optional
+// because the server can omit it; callers must fall back rather than assume it exists.
+export interface UnitProperty {
+  id: string;
+  orgId: string;
+  unitId: string;
+  propId: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+  propMetaData?: PropertyMetaData;
+}
+
+// Payload for POST /mdm/units/properties/{unitId}/bulk (BulkAssignUnitProperties).
+// `id` is the unitId business code (e.g. "UNIT-001"), matching both the REST path segment
+// and GetMdmUnitPropById - the two unit-property endpoints share one id space. Note the
+// GraphQL sample in src/cms/mocks/mdmCURL.sh passes a numeric-looking "112" here; that is a
+// stale sample value, not a second id space.
+export interface UnitPropertyBulkAssignData {
+  id: string;
+  propIds: string[];
+}
+
 export interface PropertyQueryParams {
   start?: number | 0;
   length?: number | 10;

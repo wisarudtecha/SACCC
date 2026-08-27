@@ -1,5 +1,5 @@
 // src/cms/components/admin/system-configuration/unit/UnitManagement.tsx
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { EnhancedCrudContainer } from "@/core/components/crud/EnhancedCrudContainer";
 import {
@@ -10,15 +10,18 @@ import {
 } from "lucide-react";
 import { ToastContainer } from "@/core/components/crud/ToastContainer";
 import { usePermissions } from "@/core/hooks/usePermissions";
+import { useSyncPreviewedIdentity } from "@/core/hooks/useSyncPreviewedIdentity";
 import { useToast } from "@/core/hooks/useToast";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import { useGetUserSkillsByUsernameQuery } from "@/core/store/api/userApi";
-import { useGetUnitPropertiesQuery } from "@/cms/store/api/unitApi";
+import { useBulkAssignUnitPropertiesMutation, useGetUnitPropertiesQuery } from "@/cms/store/api/unitApi";
+import { isApiSuccess, resolveApiError, resolveApiMessage } from "@/cms/utils/apiResponse";
 import { AuthService } from "@/core/utils/authService";
 import { formatDate } from "@/core/utils/crud";
 import type { PreviewConfig } from "@/core/types/enhanced-crud";
-import type { Property, Unit } from "@/cms/types/unit";
+import type { Property, Unit, UnitProperty } from "@/cms/types/unit";
 import type { UserSkill } from "@/core/types/user";
+import PropertyMatrixContent from "@/cms/components/admin/system-configuration/unit/PropertyMatrixView";
 import UnitCardContent from "@/cms/components/admin/system-configuration/unit/UnitCard";
 import Badge from "@/core/components/ui/badge/Badge";
 
@@ -56,28 +59,191 @@ const UnitStatus: React.FC<{ status: "active" | "inactive" | "online" | "offline
   );
 }
 
-const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
+// Both preview tabs MUST stay at module scope. Declared inside UnitManagementComponent they
+// would be a new function object on every render, and React compares element.type by
+// reference - so each parent state change (e.g. toggling a property) would unmount and
+// remount the whole tab instead of updating it, visibly flickering and discarding the
+// child's state. Everything they need is passed in explicitly.
+
+// Read-only: skills belong to the USER assigned to the unit and are edited in User
+// Management. The shared query is repointed through useSyncPreviewedIdentity rather than a
+// bare effect, so a remount with an unchanged user stays a no-op.
+const UnitSkillTab: React.FC<{
+  isFetching: boolean;
+  skills: UserSkill[];
+  trackedUsername: string;
+  unitItem: Unit;
+  onUsernameChange: (username: string) => void;
+}> = ({
+  isFetching,
+  skills,
+  trackedUsername,
+  unitItem,
+  onUsernameChange
+}) => {
+  const { language, t } = useTranslation();
+
+  useSyncPreviewedIdentity(unitItem.username, trackedUsername, onUsernameChange);
+
+  // Until the shared query has actually been pointed at this unit user, skills still holds
+  // the previously previewed unit skills - treat that as "still loading". A unit with no
+  // user at all simply has none.
+  const hasUser = Boolean(unitItem.username);
+  const isReady = hasUser && unitItem.username === trackedUsername;
+  const isLoading = hasUser && (!isReady || isFetching);
+  const visibleSkills = (isReady && !isFetching) ? skills : [];
+
+  return (
+    <div className="grid grid-cols-1 gap-4">
+      <div className="flex items-start justify-start gap-2">
+        <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
+          {t("crud.unit.list.preview.tab.current_user")}:
+        </label>
+        <div className="font-mono text-gray-900 dark:text-white text-sm">
+          {unitItem.username}
+        </div>
+      </div>
+      <div className="text-sm">
+        {isLoading && (
+          <span className="text-gray-500 dark:text-gray-400">
+            {t("crud.common.loading_records")}
+          </span>
+        )}
+        {!isLoading && visibleSkills.length === 0 && (
+          <span className="text-gray-500 dark:text-gray-400">
+            {t("crud.common.empty_table")}
+          </span>
+        )}
+        {!isLoading && visibleSkills.map(item => (
+          <Badge key={item.skillId} className="mr-2">
+            {language === "th" && item.th || item.en || item.skillId}
+          </Badge>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// The unit-property relationship IS editable: BulkAssignUnitProperties replaces the whole
+// set. Both the read and the write key on the unitId business code (e.g. "UNIT-001").
+const UnitPropertyTab: React.FC<{
+  canEdit: boolean;
+  isFetching: boolean;
+  loading: boolean;
+  properties: Property[];
+  propertyList: string[];
+  trackedUnitId: string;
+  unitItem: Unit;
+  unitProperties: UnitProperty[];
+  onSave: () => void;
+  onToggle: (propId: string) => void;
+  onUnitChange: (unitId: string) => void;
+}> = ({
+  canEdit,
+  isFetching,
+  loading,
+  properties,
+  propertyList,
+  trackedUnitId,
+  unitItem,
+  unitProperties,
+  onSave,
+  onToggle,
+  onUnitChange
+}) => {
+  const { t } = useTranslation();
+
+  // Same staleness guard as the Skills tab: unitProperties belongs to whichever unit the
+  // shared query is currently pointed at, which lags one render behind on navigation.
+  const hasUnitId = Boolean(unitItem.unitId);
+  const isReady = hasUnitId && unitItem.unitId === trackedUnitId;
+  const isLoading = hasUnitId && (!isReady || isFetching);
+  // Gated on isReady, not on !isLoading: a unit with a blank unitId is never "loading"
+  // (nothing will ever be fetched for it), and must show nothing rather than whatever the
+  // shared query happens to hold for another unit.
+  const visibleProperties = (isReady && !isFetching) ? unitProperties : [];
+
+  return (
+    <div className="grid grid-cols-1 gap-4">
+      <div className="flex items-start justify-start gap-2">
+        <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
+          {t("crud.unit.list.preview.tab.current_user")}:
+        </label>
+        <div className="font-mono text-gray-900 dark:text-white text-sm">
+          {unitItem.username}
+        </div>
+      </div>
+      <PropertyMatrixContent
+        assigned={visibleProperties}
+        canEdit={canEdit}
+        isFetching={isLoading}
+        loading={loading}
+        properties={properties}
+        propertyList={propertyList}
+        trackedUnitId={trackedUnitId}
+        unitId={unitItem.unitId}
+        handleUnitPropertiesSave={onSave}
+        onUnitChange={onUnitChange}
+        onUnitPropertiesToggle={onToggle}
+      />
+    </div>
+  );
+};
+
+const UnitManagementComponent: React.FC<{
+  unit: Unit[];
+  properties: Property[];
+}> = ({ unit, properties }) => {
   const isSystemAdmin = AuthService.isSystemAdmin();
   
-  const { language, t } = useTranslation();
+  // language now lives with the hoisted tabs, which call useTranslation themselves.
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const permissions = usePermissions();
   const { toasts, addToast, removeToast } = useToast();
 
-  const [selectedUsername, setSelectedUsername] = useState<string | null>(null);
-  const [unitsSkills, setUnitsSkills] = useState<UserSkill[] | null>(null);
-  const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
+  // Identity of the record the preview modal is currently showing. PreviewDialog unmounts a
+  // tab body on every tab switch, so this baseline has to live here rather than in the tab
+  // (see useSyncPreviewedIdentity) - local state there could not tell a genuine record change
+  // from a same-record remount.
+  const [selectedUsername, setSelectedUsername] = useState<string>("");
+  const [selectedUnitId, setSelectedUnitId] = useState<string>("");
+  const [propertyIds, setPropertyIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // ===================================================================
   // Real Functionality Data
   // ===================================================================
 
-  const { data: usersSkills } = useGetUserSkillsByUsernameQuery(selectedUsername ?? "", { skip: !selectedUsername });
-
-  const { data: unitPropertiesData, isFetching: isFetchingUnitProperties } = useGetUnitPropertiesQuery(
-    { id: selectedUnitId ?? "" }, { skip: !selectedUnitId }
+  // Both of these read `currentData`, NOT `data`. RTK Query defines `data` as the latest
+  // result *regardless of hook arg*: when the previewed record changes, `data` keeps serving
+  // the PREVIOUS record's payload until the new arg yields a successful one - and if it never
+  // does (the BFF answers an empty set with a failure envelope, which hybridBaseQuery turns
+  // into an RTK error) it keeps serving it forever. That is how a unit with no properties
+  // ended up showing the previously viewed unit's. `currentData` is scoped to the current
+  // arg and is undefined until that arg itself resolves, which is the semantics wanted here.
+  const { currentData: usersSkills, isFetching: isFetchingUnitSkills } = useGetUserSkillsByUsernameQuery(
+    selectedUsername, { skip: !selectedUsername }
   );
-  const unitProperties = unitPropertiesData?.data as unknown as Property[] | undefined;
+  const unitSkills = useMemo(
+    () => (usersSkills?.data as unknown as UserSkill[]) || [],
+    [usersSkills?.data]
+  );
+
+  const { currentData: unitPropertiesData, isFetching: isFetchingUnitProperties } = useGetUnitPropertiesQuery(
+    { id: selectedUnitId }, { skip: !selectedUnitId }
+  );
+  const unitProperties = useMemo(
+    () => (unitPropertiesData?.data as unknown as UnitProperty[]) || [],
+    [unitPropertiesData?.data]
+  );
+
+  const [bulkAssignUnitProperties] = useBulkAssignUnitPropertiesMutation();
+
+  // Seed the editable selection from whatever the server currently has assigned.
+  useEffect(() => {
+    setPropertyIds(unitProperties.map(item => item.propId));
+  }, [unitProperties]);
 
   const data: (Unit & { id: string })[] = unit.map(u => ({
     ...u,
@@ -94,6 +260,52 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ===================================================================
+  // Unit Property Assignment
+  // ===================================================================
+
+  const canAssignProperties = (permissions.hasPermission("unit.update") || isSystemAdmin) as boolean;
+
+  // Fires once when the previewed unit genuinely changes: repoint the unit-scoped query and
+  // drop the previous selection until the seed effect above catches up.
+  const handleUnitPropertiesUnitChange = useCallback((unitId: string) => {
+    setSelectedUnitId(unitId);
+    setPropertyIds([]);
+  }, []);
+
+  const handleUnitPropertiesToggle = useCallback((propId: string) => {
+    setPropertyIds(prev =>
+      prev.includes(propId)
+        ? prev.filter(id => id !== propId)
+        : [...prev, propId]
+    );
+  }, []);
+
+  const handleUnitPropertiesSave = async () => {
+    try {
+      if (!canAssignProperties) {
+        throw new Error(t("crud.common.permission_denied"));
+      }
+      setLoading(true);
+      // BulkAssignUnitProperties replaces the whole set, keyed on the same unitId business
+      // code the read uses - so it invalidates exactly the tag that query provides.
+      const response = await bulkAssignUnitProperties({
+        id: selectedUnitId,
+        propIds: propertyIds
+      }).unwrap();
+      if (!isApiSuccess(response)) {
+        throw new Error(resolveApiError(response, t("errors.unknownApi")));
+      }
+      addToast("success", resolveApiMessage(response, t("crud.unit.list.property.update.success")));
+    }
+    catch (error) {
+      addToast("error", resolveApiError(error, t("crud.unit.list.property.update.error")));
+    }
+    finally {
+      setLoading(false);
+    }
+  };
 
   // ===================================================================
   // CRUD Configuration
@@ -189,78 +401,6 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
   // Preview Configuration
   // ===================================================================
 
-  const SkillTab: React.FC<{ unitItem: Unit }> = ({ unitItem }) => {
-    useEffect(() => {
-      setSelectedUsername(unitItem.username);
-    }, [unitItem.username]);
-
-    useEffect(() => {
-      setUnitsSkills(usersSkills?.data as unknown as UserSkill[]);
-    });
-
-    return (
-      <>
-        <div className="grid grid-cols-1 gap-4">
-          <div className="flex items-start justify-start gap-2">
-            <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              {t("crud.unit.list.preview.tab.current_user")}:
-            </label>
-            <div className="font-mono text-gray-900 dark:text-white text-sm">
-              {unitItem.username}
-            </div>
-          </div>
-          <div className="text-sm">
-            {unitsSkills?.length && unitsSkills.map(item => {
-              return (
-                <Badge key={item.skillId} className="mr-2">{language === "th" && item.th || item.en || item.skillId}</Badge>
-              )
-            })}
-          </div>
-        </div>
-      </>
-    );
-  };
-
-  // Read-only view of the unit's assigned properties. The backend has no write endpoint
-  // for the unit-property relationship, so there is deliberately no edit affordance here.
-  const PropertyTab: React.FC<{ unitItem: Unit }> = ({ unitItem }) => {
-    useEffect(() => {
-      // GetMdmUnitPropById keys on the unitId business code (e.g. "UNIT-001"),
-      // not the numeric/UUID id.
-      setSelectedUnitId(unitItem.unitId);
-    }, [unitItem.unitId]);
-
-    return (
-      <div className="grid grid-cols-1 gap-4">
-        <div className="flex items-start justify-start gap-2">
-          <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
-            {t("crud.unit.list.preview.tab.current_user")}:
-          </label>
-          <div className="font-mono text-gray-900 dark:text-white text-sm">
-            {unitItem.username}
-          </div>
-        </div>
-        <div className="text-sm">
-          {isFetchingUnitProperties && (
-            <span className="text-gray-500 dark:text-gray-400">
-              {t("crud.common.loading_records")}
-            </span>
-          )}
-          {!isFetchingUnitProperties && !unitProperties?.length && (
-            <span className="text-gray-500 dark:text-gray-400">
-              {t("crud.common.empty_table")}
-            </span>
-          )}
-          {!isFetchingUnitProperties && unitProperties?.map(item => (
-            <Badge key={item.propId} className="mr-2">
-              {language === "th" && item.th || item.en || item.propId}
-            </Badge>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
   const previewConfig: PreviewConfig<Unit> = {
     title: () => t("crud.unit.list.preview.header"),
     size: "xl",
@@ -312,16 +452,34 @@ const UnitManagementComponent: React.FC<{ unit: Unit[] }> = ({ unit }) => {
         key: "skill",
         label: t("crud.unit.list.preview.tab.header.skill"),
         // icon: InfoIcon,
-        render: (unitItem: Unit) => {
-          return (<SkillTab unitItem={unitItem} />)
-        }
+        render: (unitItem: Unit) => (
+          <UnitSkillTab
+            isFetching={isFetchingUnitSkills}
+            skills={unitSkills}
+            trackedUsername={selectedUsername}
+            unitItem={unitItem}
+            onUsernameChange={setSelectedUsername}
+          />
+        )
       },
       {
         key: "property",
         label: t("crud.unit.list.preview.tab.header.property"),
-        render: (unitItem: Unit) => {
-          return (<PropertyTab unitItem={unitItem} />)
-        }
+        render: (unitItem: Unit) => (
+          <UnitPropertyTab
+            canEdit={canAssignProperties}
+            isFetching={isFetchingUnitProperties}
+            loading={loading}
+            properties={properties}
+            propertyList={propertyIds}
+            trackedUnitId={selectedUnitId}
+            unitItem={unitItem}
+            unitProperties={unitProperties}
+            onSave={handleUnitPropertiesSave}
+            onToggle={handleUnitPropertiesToggle}
+            onUnitChange={handleUnitPropertiesUnitChange}
+          />
+        )
       },
       {
         key: "location",

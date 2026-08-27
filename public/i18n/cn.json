@@ -2465,6 +2465,18 @@
           "status": "状态",
           "location": "位置"
         },
+        "property": {
+          "update": {
+            "title": "属性更新",
+            "assigned": "已分配属性",
+            "success": "单位属性更新成功",
+            "error": "无法更新单位属性",
+            "button": {
+              "save": "保存",
+              "saving": "正在保存..."
+            }
+          }
+        },
         "preview": {
           "header": "单元信息",
           "tab": {

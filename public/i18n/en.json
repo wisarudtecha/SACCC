@@ -2581,6 +2581,18 @@
           "status": "Status",
           "location": "Location"
         },
+        "property": {
+          "update": {
+            "title": "Properties update",
+            "assigned": "Assigned Properties",
+            "success": "Unit properties updated successfully",
+            "error": "Failed to update unit properties",
+            "button": {
+              "save": "Save",
+              "saving": "Saving..."
+            }
+          }
+        },
         "preview": {
           "header": "Unit Information",
           "tab": {

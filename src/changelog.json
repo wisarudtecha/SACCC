@@ -1,4 +1,10 @@
 {
+  "0.65.0": {
+    "date": "2026-08-27",
+    "segment": "MINOR",
+    "notes": "feat(cms): let administrators assign properties to a unit\n- A unit's properties can now be changed from the unit's information window. Until now the assigned list could only be looked at, and any correction had to be requested elsewhere.\n- The Properties tab now lists every property available to the organisation with the ones already assigned ticked, so it is clear what a unit could have and not only what it already has. Several can be ticked or unticked and saved together in one step.\n- Property names now appear in the reader's language instead of an internal reference code.\n- Opening a unit that has no properties assigned no longer shows the properties of the unit that was looked at just before it.\n- The Properties and Skills tabs no longer flicker and reset while they are being used.\n- Staff without permission to change a unit still see the tab, in read-only form.\n- Available in Thai, English and Chinese.\n- changelog.json / package.json: bump version 0.64.0 -> 0.65.0",
+    "author": "Wisarud Techa"
+  },
   "0.64.0": {
     "date": "2026-08-26",
     "segment": "MINOR",

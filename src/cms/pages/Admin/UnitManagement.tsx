@@ -21,8 +21,9 @@
 import React from "react";
 import { ProtectedRoute } from "@/core/components/auth/ProtectedRoute";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import { useGetPropertiesQuery } from "@/cms/store/api/propertyApi";
 import { useGetUnitsQuery } from "@/cms/store/api/unitApi";
-import type { Unit } from "@/cms/types/unit";
+import type { Property, Unit } from "@/cms/types/unit";
 import UnitManagementComponent from "@/cms/components/admin/system-configuration/unit/UnitManagement";
 import PageBreadcrumb from "@/core/components/common/PageBreadCrumb";
 import PageMeta from "@/core/components/common/PageMeta";
@@ -35,6 +36,11 @@ const UnitManagementPage: React.FC = () => {
   const { data: unitsData } = useGetUnitsQuery({ start: 0, length: 100 });
   const units = unitsData?.data as unknown as Unit[] || [];
 
+  // Master property list, needed by the preview's Properties tab to render the full
+  // assignment matrix (the unit-scoped read only returns what is already assigned).
+  const { data: propertiesData } = useGetPropertiesQuery({ start: 0, length: 100 });
+  const properties = propertiesData?.data as unknown as Property[] || [];
+
   return (
     <>
       <PageMeta
@@ -45,7 +51,7 @@ const UnitManagementPage: React.FC = () => {
       <ProtectedRoute requiredPermissions={["unit.view"]}>
         <PageBreadcrumb pageTitle={t("navigation.sidebar.main.system_configuration.nested.unit_management.header")} />
 
-        <UnitManagementComponent unit={units} />
+        <UnitManagementComponent unit={units} properties={properties} />
       </ProtectedRoute>
     </>
   );
