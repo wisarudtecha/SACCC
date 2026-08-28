@@ -302,3 +302,125 @@ new lesson and update this file when the lesson is generalizable.
     redraw(rings);
   }, [isReady, rings, mode]);
   ```
+
+### An RTK Query endpoint edit does not reach the browser on hot reload
+- **Date:** 2026-08-28
+- **Mistake:** `updateAppointmentType`'s body was fixed to stop leaking `appointmentTypeId` into
+  the GraphQL input, `tsc -b` passed, and the change was reported as done — but the app kept
+  sending the OLD payload. The mapping was blamed next; the mapping was never the problem.
+- **Root Cause:** Vite invalidates the edited `src/cms/store/api/*.ts` module, and every importer
+  is a `.tsx` module with a default component export — a React Fast Refresh boundary — so the
+  update is hot-applied instead of triggering a full page reload. The module re-executes,
+  `injectEndpoints` runs a second time against the same api slice, and RTK Query 2.x skips any
+  endpoint name it has already registered unless `overrideExisting: true` is passed
+  (it `console.error`s and `continue`s). The original `query` closure keeps serving requests.
+- **Correct Behavior:** Every `injectEndpoints` call in `src/**/store/api/` now passes
+  `overrideExisting: import.meta.env.DEV`, so dev re-injection replaces definitions while the
+  production guard is untouched. Keep passing it on any new api slice file.
+- **Prevention Rule:** When a verified code change appears to have no effect at runtime, suspect
+  the runtime before re-editing the code: a registry that is populated once per module evaluation
+  (RTK endpoints, event listeners, singleton caches) survives HMR with its FIRST values. Confirm
+  with a hard reload / dev-server restart before forming a second theory — and treat
+  "`tsc -b` passes" as evidence the code compiles, never as evidence the browser is running it.
+- **Example:**
+  ```ts
+  // WRONG - after an HMR update, the previously registered `query` is what still runs
+  export const appointmentTypeApi = baseWelcomeCrmApi.injectEndpoints({
+    endpoints: builder => ({ /* ... */ }),
+  });
+
+  // CORRECT - dev re-injection replaces the definitions; production keeps the guard
+  export const appointmentTypeApi = baseWelcomeCrmApi.injectEndpoints({
+    endpoints: builder => ({ /* ... */ }),
+    overrideExisting: import.meta.env.DEV,
+  });
+  ```
+
+### Close the dialog that is on screen, not the one you opened from
+- **Date:** 2026-08-28
+- **Mistake:** In `ServiceManagement.tsx` the Type and Sub-Type confirmation modals stayed on
+  screen after Confirm. The save itself worked — the toast fired and the list refreshed behind a
+  dialog the user had to dismiss by hand.
+- **Root Cause:** A two-step flow with two independent flags: Save does
+  `setTypeConfirmIsOpen(true); setTypeIsOpen(false)`, so by the time `handleTypeSave` runs, the
+  form modal is already closed and the confirm modal is the visible one. The handler's `finally`
+  closed `typeIsOpen` — a no-op — and never touched `typeConfirmIsOpen`. A second path was worse:
+  the `if (errors.length > 0) return;` guard sits BEFORE the `try`, so `finally` never runs at all,
+  and the messages `validateType()` sets render inside the form modal, hidden behind the confirm
+  dialog — Confirm appeared to do nothing, with no exit but Cancel.
+- **Correct Behavior:** The `finally` closes every flag the flow may have opened
+  (`setTypeConfirmIsOpen(false); setTypeIsOpen(false)`), and the validation guard hands control
+  back to the step that can display its errors (`setTypeConfirmIsOpen(false); setTypeIsOpen(true)`).
+  `AppointmentTypeManagement.tsx` is the reference: its `finally` closes both flags.
+- **Prevention Rule:** In a multi-step modal flow, the handler runs in a LATER step than the one
+  that called it — close by asking "which flags can be true right now?", never "which modal did
+  this button live in?". And any `return` placed before the `try` opts out of the `finally`
+  cleanup: either move the guard inside the `try`, or repeat the teardown on that branch.
+
+### An ArcGIS SDK error is not an `instanceof Error`
+- **Date:** 2026-08-28
+- **Mistake:** `isAbortError` in `ArcgisAddressMap.tsx` was written as
+  `error instanceof Error && error.name === "AbortError"`. It never returned true, so both of its
+  guards were dead: every React StrictMode remount logged "Failed to load basemap from the ArcGIS
+  styles service; using fallback" and ran the fallback branch, and a view destroyed mid-load would
+  have surfaced a user-visible "Failed to initialise map" through `onError`.
+- **Root Cause:** `@arcgis/core/core/Error` is a standalone class that does NOT extend the native
+  `Error` — it just sets `type`, `name`, `message`, `details` on itself. The give-away in the
+  console is the `type: 'error'` field and a minified constructor name (`_r`), not `Error`.
+- **Correct Behavior:** Delegate to the SDK's own duck-typed helper,
+  `promiseUtils.isAbortError(error)` from `@arcgis/core/core/promiseUtils.js` (typed
+  `(error: unknown) => boolean`). It matches on `error.name` alone, with no prototype test.
+- **Prevention Rule:** Never narrow a third-party SDK's rejection with `instanceof Error`. Check
+  the library's error class in `node_modules` first, and prefer the library's own type guard when
+  it ships one. A guard that silently never matches is worse than no guard: it converts expected
+  noise into a false failure report and drowns the real failure it was written to catch.
+
+### An empty GeoJSON FeatureCollection loads as a table, not as an empty layer
+- **Date:** 2026-08-28
+- **Mistake:** The `boundary-country` `GeoJSONLayer` failed with
+  `featurelayerview:table-not-supported`, and nothing in the app noticed: the Country toggle in
+  the boundary picker was silently inert and `setIsError` never fired.
+- **Root Cause:** No country has a drawn polygon, so `buildLevelData` emits
+  `{"type":"FeatureCollection","features":[]}`. GeoJSONLayer infers `geometryType` from the parsed
+  features, so it stays `null`; `get isTable(){ return this.loaded && null == this.geometryType }`
+  is then true, and `FeatureLikeLayerView2D` refuses to create a view for a table. `layer.load()`
+  RESOLVES — a table is a valid loaded layer — so the `.catch` on it can never report this.
+- **Correct Behavior:** Declare `geometryType: "polygon"` on the layer. The parser takes the
+  declared value as its seed and only infers when it is null, and the layer's post-load
+  `revertToOrigin` covers `objectIdField`/`fields`/`timeInfo` only, so a declared value survives.
+- **Prevention Rule:** Data-driven layers must be correct at zero rows, not just at the row count
+  the current tenant happens to have — a fresh org would have hit this at all three levels. And
+  when a resource can fail AFTER its `load()` promise resolves (layer views, workers, render
+  pipelines), a `load().catch()` is not error handling: find the stage that actually reports, or
+  accept that the failure is console-only and say so in a comment.
+
+
+### A phantom dependency can load a second copy of a context-based library
+- **Date:** 2026-08-28
+- **Mistake:** `/kms/articles` threw `useNavigate() may be used only in the context of a <Router>
+  component.` at `src/kms/articles/index.tsx:21`, even though `main.tsx` mounts `<BrowserRouter>`
+  above the whole tree. The stack pointed at a component nested many levels inside the Router, so
+  the message was actively misleading — nothing was rendered outside the provider.
+- **Root Cause:** `node_modules/react-router` was a real directory at 7.6.2 (an orphan left by the
+  stale `package-lock.json` npm install), while pnpm linked `react-router-dom` 7.13.0 to its own
+  `react-router` 7.13.0 in `.pnpm`. 16 files import from bare "react-router" — a package that was
+  never declared in `package.json` — so they resolved to the orphan. Two physical copies means two
+  `createContext()` calls: the provider published on one `NavigationContext`, the hook read the
+  other, got `undefined`, and threw the "outside a Router" invariant.
+- **Correct Behavior:** Declare the package explicitly (`"react-router": "7.13.0"`, exact, matching
+  what `react-router-dom` pins), add `resolve.dedupe` in `vite.config.ts`, then
+  `rm -rf node_modules/react-router node_modules/.vite && pnpm install`. Vite's optimizer keys its
+  cache on `browserHash`, so a stale `node_modules/.vite` keeps serving the old copy after the fix.
+- **Prevention Rule:** "Used outside its provider" from a context-based library (React Router,
+  Redux, React Query, any `createContext` package) means *check for duplicate copies before
+  checking the component tree*. Two fast, conclusive checks: `require.resolve` the package from the
+  repo root and from the consuming package's directory — they must return the same path; and grep
+  the `// node_modules/...` provenance comments in `node_modules/.vite/deps/<pkg>.js`, which name
+  the exact tree each prebundle came from. Root causes that are not symlinks under pnpm are
+  orphans, not dependencies. Also: importing a package absent from `package.json` works only by
+  accident of hoisting — grep for bare specifiers that no manifest declares.
+- **Example:** `node_modules/.vite/deps/react-router.js` carried
+  `// node_modules/react-router/dist/development/chunk-…` while `react-router-dom.js` carried
+  `// node_modules/.pnpm/react-router@7.13.0_…/…`. After the fix, both entries import
+  `NavigationContext` from one shared `chunk-SQN6XHDY.js` and shrank from 385 KB / 457 KB to
+  6 KB / 14 KB.
