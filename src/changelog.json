@@ -1,4 +1,10 @@
 {
+  "0.66.5": {
+    "date": "2026-08-28",
+    "segment": "PATCH",
+    "notes": "fix(kms): open the knowledge base article screens again\n- The knowledge base article screens now open. They failed to load and showed an error page instead, which made the articles unreachable from the menu.\n- The cause was two copies of the same navigation library being loaded at once, so the screens are also expected to load slightly faster now that only one is downloaded.\n- changelog.json / package.json: bump version 0.66.4 -> 0.66.5",
+    "author": "Wisarud Techa"
+  },
   "0.66.4": {
     "date": "2026-08-28",
     "segment": "PATCH",

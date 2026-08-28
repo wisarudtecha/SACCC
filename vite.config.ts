@@ -18,6 +18,11 @@ export default defineConfig({
   ],
 
   resolve: {
+    // Keep a single React Router instance in the graph: the app mounts <BrowserRouter>
+    // from "react-router-dom" while 16 files import hooks from bare "react-router", and two
+    // physical copies mean two NavigationContexts and "useNavigate() may be used only in the
+    // context of a <Router> component".
+    dedupe: ["react-router", "react-router-dom"],
     alias: {
       // Use "@" as an alias for the "src" directory
       // "@": "/src",
