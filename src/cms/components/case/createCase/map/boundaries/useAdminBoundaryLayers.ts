@@ -130,6 +130,17 @@ export function useAdminBoundaryLayers({
           id: `boundary-${config.level}`,
           url: urls[index],
           objectIdField: "OBJECTID",
+          // Every feature buildLevelData emits is a Polygon. Declared rather
+          // than inferred so a level with nothing drawn yet (country today, and
+          // all three for a brand-new org) stays a valid EMPTY polygon layer:
+          // GeoJSONLayer infers `null` from an empty FeatureCollection, and
+          // `isTable` (loaded && geometryType == null) makes the layer view
+          // refuse to create with `featurelayerview:table-not-supported` - which
+          // `layer.load()` below cannot catch, since a table loads just fine.
+          // This also makes the SDK read ONLY Polygon features, so it has to
+          // change alongside the MultiPolygon note in boundarySource.ts if the
+          // backend starts returning multi-part geometry.
+          geometryType: "polygon",
           outFields: outFieldsFor(config),
           // REQUIRED. A popup would swallow map clicks, breaking the
           // reverse-geocode in create mode and the staff hit-test in detail mode.

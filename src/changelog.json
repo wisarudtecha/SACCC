@@ -1,4 +1,10 @@
 {
+  "0.66.3": {
+    "date": "2026-08-28",
+    "segment": "PATCH",
+    "notes": "fix(cms): show boundary levels on the case map that have nothing drawn yet\n- The Country layer on the case map now works. Switching it on did nothing at all when no country had a boundary drawn, and there was no message to explain why - the layer simply never appeared, and the toggle looked broken.\n- The same applied to any boundary level with nothing drawn yet, which for a newly set-up organisation is all of them. Each level now switches on as an empty layer and fills in as boundaries are drawn, instead of staying permanently inert.\n- changelog.json / package.json: bump version 0.66.2 -> 0.66.3",
+    "author": "Wisarud Techa"
+  },
   "0.66.2": {
     "date": "2026-08-28",
     "segment": "PATCH",
