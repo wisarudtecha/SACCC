@@ -9,6 +9,7 @@ import { Modal } from "@/core/components/ui/modal";
 import { CustomerPreviewData } from "../customer/CustomerPreview";
 import { useInsertAppointmentMutationMutation, useUpdateAppointmentMutation } from "@/cms/store/api/appointment";
 import { useGetAppointmentTypeQuery } from "@/cms/store/api/appointmentType";
+import { AppointmentType } from "@/cms/types/appointmentType";
 import { useGetCustomerQuery, Customer, useGetCustommersQuery } from "@/cms/store/api/custommerApi";
 import { useGetServiceTypeQuery } from "@/cms/store/api/serviceType";
 import { Appointment, AppointmentInsert } from "@/cms/types/appointment";
@@ -134,6 +135,7 @@ export const AppointmentForm: React.FC<{
         }} apiQuery={useGetAppointmentTypeQuery}
             labelKey={language == "th" ? "th" : "en"}
             valueKey={"appointmentTypeId"}
+            filterOption={(appointmentType: AppointmentType) => Boolean(appointmentType.active)}
             placeholder={t("case.panel.serviceType_search")}
             disabled={ !appointment.customerId || !!editData} />
         <div >

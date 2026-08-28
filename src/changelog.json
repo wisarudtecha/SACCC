@@ -1,4 +1,10 @@
 {
+  "0.66.2": {
+    "date": "2026-08-28",
+    "segment": "PATCH",
+    "notes": "fix(cms): offer only appointment types that are still in use\n- The appointment type list on the appointment form now offers only the types that are switched on. Types that had been retired were still being listed and could be picked for a new appointment.\n- When only one usable type exists it is still filled in automatically, and it is now the right one - previously a single retired type could be selected on the user's behalf.\n- An appointment already booked against a type that has since been retired continues to show that type's name, so existing records stay readable.\n- changelog.json / package.json: bump version 0.66.1 -> 0.66.2",
+    "author": "Wisarud Techa"
+  },
   "0.66.1": {
     "date": "2026-08-28",
     "segment": "PATCH",

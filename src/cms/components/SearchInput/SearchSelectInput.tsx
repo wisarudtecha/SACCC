@@ -202,6 +202,10 @@ interface SearchableSelectApiProps<T extends ApiOption> {
     // options page - avoids falling back to the raw id (e.g. right after creating/importing
     // a new option whose list hasn't been refetched/paginated in yet).
     selectedLabelFallback?: string
+    // Narrows the options the dropdown OFFERS (e.g. active records only). The selected value's
+    // label still resolves against the unfiltered set, so a selection that no longer passes the
+    // filter keeps rendering its name instead of a raw id.
+    filterOption?: (option: T) => boolean
 }
 
 
@@ -224,7 +228,8 @@ export const SearchableSelectApi = <T extends ApiOption>({
     enableApiSearch = false,
     searchPlaceholder = "Search...",
     enablePaginate = false,
-    selectedLabelFallback
+    selectedLabelFallback,
+    filterOption
 }: SearchableSelectApiProps<T>) => {
     const [isOpen, setIsOpen] = useState(false);
     const [localSearch, setLocalSearch] = useState("");
@@ -276,13 +281,16 @@ export const SearchableSelectApi = <T extends ApiOption>({
 
 
     const filteredOptions = useMemo(() => {
-        if (enableApiSearch || !localSearch) return combinedOptions;
+        // filterOption decides what may be offered at all; the local search narrows that further.
+        const allowedOptions = filterOption ? combinedOptions.filter(filterOption) : combinedOptions;
 
-        return combinedOptions.filter(opt => {
+        if (enableApiSearch || !localSearch) return allowedOptions;
+
+        return allowedOptions.filter(opt => {
             const searchString = getLabel(opt).toLowerCase();
             return searchString.includes(localSearch.toLowerCase());
         });
-    }, [combinedOptions, localSearch, enableApiSearch, labelKey, labelSparator]);
+    }, [combinedOptions, localSearch, enableApiSearch, labelKey, labelSparator, filterOption]);
 
     const handleSelect = (option: T) => {
         onChange && onChange(String(option[valueKey]));
@@ -296,8 +304,9 @@ export const SearchableSelectApi = <T extends ApiOption>({
         if (apiResponse?.data) {
             setCombinedOptions(prev => page === 0 ? apiResponse.data : [...prev, ...apiResponse.data]);
 
-            if (autoEnterValue && apiResponse.data.length === 1) {
-                const firstOption = apiResponse.data[0];
+            const selectableOptions = filterOption ? apiResponse.data.filter(filterOption) : apiResponse.data;
+            if (autoEnterValue && selectableOptions.length === 1) {
+                const firstOption = selectableOptions[0];
                 onChange && onChange(String(firstOption[valueKey]));
                 if (onChangeObject) onChangeObject(firstOption);
             }
@@ -306,7 +315,7 @@ export const SearchableSelectApi = <T extends ApiOption>({
                 setCombinedOptions([]);
             }
         }
-    }, [apiResponse, page, autoEnterValue, onChange, onChangeObject, valueKey]);
+    }, [apiResponse, page, autoEnterValue, onChange, onChangeObject, valueKey, filterOption]);
 
     useEffect(() => {
         setPage(0);
