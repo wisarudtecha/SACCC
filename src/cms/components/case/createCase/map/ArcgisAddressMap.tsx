@@ -21,6 +21,7 @@ import Zoom from "@arcgis/core/widgets/Zoom.js";
 import Compass from "@arcgis/core/widgets/Compass.js";
 import * as reactiveUtils from "@arcgis/core/core/reactiveUtils.js";
 import * as locator from "@arcgis/core/rest/locator.js";
+import * as promiseUtils from "@arcgis/core/core/promiseUtils.js";
 import "@arcgis/core/assets/esri/themes/light/main.css";
 import { API_CONFIG } from "@/core/config/api";
 import { useTheme } from "@/core/context/ThemeContext";
@@ -238,9 +239,13 @@ function makePoint({ latitude, longitude }: ArcgisLatLon): Point {
  * mount -> unmount -> remount, which aborts the first mount's in-flight loads.
  * The second mount's loads complete normally, so these are expected noise, not
  * failures worth reporting.
+ *
+ * Delegates to the SDK helper rather than testing `instanceof Error`: an
+ * @arcgis/core/core/Error is a standalone class that does NOT extend the native
+ * Error, so that test never matched and every abort was reported as a failure.
  */
 function isAbortError(error: unknown): boolean {
-  return error instanceof Error && error.name === "AbortError";
+  return promiseUtils.isAbortError(error);
 }
 
 function ArcgisAddressMapBase({
