@@ -1,4 +1,10 @@
 {
+  "0.66.1": {
+    "date": "2026-08-28",
+    "segment": "PATCH",
+    "notes": "fix(cms): save changes to an appointment type correctly\n- Editing an appointment type now saves. Until now the change was sent under the wrong reference for the record being edited, so the update was rejected and the appointment type stayed as it was.\n- changelog.json / package.json: bump version 0.66.0 -> 0.66.1",
+    "author": "Wisarud Techa"
+  },
   "0.66.0": {
     "date": "2026-08-27",
     "segment": "MINOR",

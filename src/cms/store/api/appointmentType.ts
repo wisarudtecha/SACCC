@@ -29,10 +29,13 @@ export const appointmentTypeApi = baseWelcomeCrmApi.injectEndpoints({
         }),
 
         updateAppointmentType: builder.mutation<ApiResponse<null>, AppointmentTypeUpdate>({
-            query: (params) => ({
-                url: "/appointment_types/" + params.appointmentTypeId,
+            // The BFF mutation takes AppointmentTypeInput { id, active, en, th } - the record is
+            // identified by "id", not "appointmentTypeId", so the caller-side field name is
+            // translated here rather than leaked into the request body.
+            query: ({ appointmentTypeId, active, en, th }) => ({
+                url: "/appointment_types/" + appointmentTypeId,
                 method: "PUT",
-                body: params
+                body: { id: appointmentTypeId, active, en, th }
             }),
             invalidatesTags: ["AppointmentType"],
         }),
