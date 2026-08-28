@@ -181,6 +181,10 @@ export const workflowApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { workflowId }) => [{ type: "Workflow", id: workflowId }],
     }),
   }),
+  // Vite HMR re-runs this module without a full page reload, which calls injectEndpoints a
+  // second time. Without this, RTK Query keeps the definitions registered by the previous
+  // run and an edit to a `query` silently has no effect until the page is reloaded.
+  overrideExisting: import.meta.env.DEV,
 });
 
 export const {
