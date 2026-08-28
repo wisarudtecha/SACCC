@@ -1,4 +1,10 @@
 {
+  "0.66.4": {
+    "date": "2026-08-28",
+    "segment": "PATCH",
+    "notes": "fix(cms): keep a service SLA of zero and close the confirmation dialog after saving\n- A service sub-type with an SLA of zero now keeps that value. It was previously treated as if nothing had been entered - the field came back empty when the record was reopened, and the value was dropped on the way to the server.\n- Picking a workflow whose steps carry no time target now sets the SLA to zero as it should, instead of leaving the previously selected workflow's figure in the field.\n- Opening a service type or sub-type for editing no longer has its SLA overwritten while the screen is still loading.\n- The confirmation dialog now closes after a service type or sub-type is saved. It stayed on screen even though the save had succeeded, and had to be dismissed by hand.\n- If a required field is missing, the form reopens with the problem shown against the field. Previously the confirmation dialog stayed up with the messages hidden behind it, so confirming appeared to do nothing at all.\n- The confirm button on the sub-type dialog is now disabled while a save is in progress, so the same record cannot be submitted twice.\n- changelog.json / package.json: bump version 0.66.3 -> 0.66.4",
+    "author": "Wisarud Techa"
+  },
   "0.66.3": {
     "date": "2026-08-28",
     "segment": "PATCH",

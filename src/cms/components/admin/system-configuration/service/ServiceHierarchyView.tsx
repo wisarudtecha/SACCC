@@ -334,7 +334,9 @@ const ServiceHierarchyView: React.FC<ServiceHierarchyViewProps> = ({
 
     handleSTypeReset();
     handleTypeReset();
-    setCaseSla(item.metadata?.caseSla as string || "");
+    // The BFF returns caseSla inside a JSON scalar, so a stored 0 arrives as the NUMBER 0 -
+    // "|| """ collapsed it to an empty string and lost the value on the way back out.
+    setCaseSla(item.metadata?.caseSla == null ? "" : String(item.metadata.caseSla));
     setMDeviceType(item.metadata?.mDeviceType as string || "");
     setMDeviceTypeName(item.metadata?.mDeviceTypeName as string || "");
     setMWorkOrderType(item.metadata?.mWorkOrderType as string || "");

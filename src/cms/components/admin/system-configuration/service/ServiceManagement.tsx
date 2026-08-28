@@ -127,10 +127,16 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
   const [selectedWorkflow, setSelectedWorkflow] = useState<string | null>(null);
   const { data: workflowsData } = useGetWorkflowQuery(selectedWorkflow ?? "", { skip: !selectedWorkflow });
   useEffect(() => {
-    const workflows = workflowsData?.data as unknown as WorkflowData || [];
-    if (workflows?.metadata?.totalSla) {
-      setCaseSla(String(workflows?.metadata?.totalSla));
+    // The query is skipped until a workflow is picked; without this guard the effect would wipe
+    // the SLA just loaded from the record being edited.
+    if (!workflowsData) {
+      return;
     }
+    const workflow = workflowsData?.data as unknown as WorkflowData;
+    const totalSla = workflow?.metadata?.totalSla;
+    // A workflow with no SLA nodes reports totalSla: 0 - a real value, not "unset". Testing
+    // truthiness kept 0 out of the form and left the previously selected workflow's SLA in place.
+    setCaseSla(totalSla == null ? "" : String(totalSla));
   }, [workflowsData]);
 
   // Case Type
@@ -410,6 +416,11 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
     const errors = validateType();
     setValidationErrors(errors);
     if (errors.length > 0) {
+      // validateType() writes its messages into typeValidateErrors, which render inside the FORM
+      // modal - and this early return skips the finally block below. Without reopening the form,
+      // the confirm modal just sits there with the errors invisible behind it.
+      setTypeConfirmIsOpen(false);
+      setTypeIsOpen(true);
       return; // Don"t save if there are validation errors
     }
     const typeData: CaseTypesCreateData | CaseTypesUpdateData = {
@@ -456,6 +467,9 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
         || (typeId && t("crud.service.action.type.update.success")) || t("crud.service.action.type.create.success")}: ${error}`);
     }
     finally {
+      // Save closes the form modal and opens the confirm modal, so the confirm flag is the one
+      // still showing by the time Confirm lands here - close both.
+      setTypeConfirmIsOpen(false);
       setTypeIsOpen(false);
       setLoading(false);
     }
@@ -540,11 +554,17 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
     const errors = validateSubType();
     setValidationErrors(errors);
     if (errors.length > 0) {
+      // Same as handleTypeSave: the field errors live in the form modal, and this return skips
+      // the finally block, so the confirm modal has to be closed here.
+      setSTypeConfirmIsOpen(false);
+      setSTypeIsOpen(true);
       return; // Don"t save if there are validation errors
     }
     const sTypeData: CaseSubTypesCreateData | CaseSubTypesUpdateData = {
       active: true,
-      caseSla: caseSla,
+      // Never send an empty string: gqlMapper drops "" from the GraphQL input, which is how an
+      // SLA of 0 reached the BFF as a missing field. The form already displays "0" for a blank.
+      caseSla: caseSla.trim() || "0",
       en: sTypeEn,
       priority: priority,
       sTypeCode: sTypeCode,
@@ -593,6 +613,8 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
         || (sTypeId && t("crud.service.action.sub_type.update.success")) || t("crud.service.action.sub_type.create.success")}: ${error}`);
     }
     finally {
+      // See handleTypeSave - the confirm modal is the one on screen here.
+      setSTypeConfirmIsOpen(false);
       setSTypeIsOpen(false);
       setLoading(false);
     }
@@ -1110,7 +1132,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
             >
               {t("crud.service.confirm.button.cancel")}
             </Button>
-            <Button onClick={handleSTypeSave} variant="success">
+            <Button onClick={handleSTypeSave} variant="success" disabled={isLoading} className={`${isLoading && "cursor-not-allowed disabled"}`}>
               {!isLoading && t("crud.service.confirm.button.confirm") || t("crud.service.confirm.button.saving")}
             </Button>
           </div>
