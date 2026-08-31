@@ -1,7 +1,7 @@
 {
   "name": "cloud-contact-center",
   "private": true,
-  "version": "0.66.5",
+  "version": "0.66.6",
   "description": "Cloud Contact Center",
   "type": "module",
   "scripts": {

@@ -1,4 +1,10 @@
 {
+  "0.66.6": {
+    "date": "2026-08-31",
+    "segment": "PATCH",
+    "notes": "fix(kms): show current knowledge base information when returning to a screen\n- Knowledge base screens now show current information when they are opened again. Article lists and details, banners, broadcasts, files and sources kept the copy held from the previous visit for up to a minute, so a change made moments earlier could look as though it had not been saved.\n- The summary figure on the knowledge base dashboard's trend chart now totals the whole period shown. It previously showed only the most recent month while being presented as the figure for the period.\n- Every month on that chart is now labelled and shows its own figure. Only three of the points were labelled before, and the month names underneath did not line up with the points above them.\n- A long category name on a knowledge base card no longer runs past the edge of the card. It is shortened to fit, with the full name shown when the pointer rests on it.\n- changelog.json / package.json: bump version 0.66.5 -> 0.66.6",
+    "author": "Wisarud Techa"
+  },
   "0.66.5": {
     "date": "2026-08-28",
     "segment": "PATCH",
