@@ -31,6 +31,7 @@ const KbCategoriesBlock = () => {
     );
   }
 
+ 
   const donutBackground = buildCategoryDonut(data.data);
  
 

@@ -55,7 +55,8 @@ const KbTabCardItem = ({ article, onOpen }: KbTabCardProps) => {
     <div className="relative rounded-2xl border border-slate-200/80 bg-white px-4 py-3.5 shadow-sm transition hover:border-sky-200 hover:shadow-md dark:border-white/10 dark:bg-slate-900 dark:hover:border-sky-500/30">
       {/* Category badge */}
       <span
-        className={`absolute right-4 top-3.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${getCategoryStyle(article.category)}`}
+        className={`absolute right-4 top-3.5 rounded-full px-2.5 py-0.5 text-xs font-semibold max-w-[100px] truncate ${getCategoryStyle(article.category)}`}
+        title= {article.category}
       >
         {article.category}
       </span>

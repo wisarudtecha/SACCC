@@ -92,17 +92,22 @@ const KbTrendBlock = () => {
   const mobileMonthLabels = data.data.filter((_, index) => index % 2 === 0);
   const trendMax = Math.max(...data.data.map((point) => point.value), 1);
   const trendMin = Math.min(...data.data.map((point) => point.value), trendMax);
-  const lastValue = data.data[data.data.length - 1]?.value ?? 0;
+
+  //  const lastValue = data.data[data.data.length - 1]?.value ?? 0;
+  const lastValue = data.data.reduce(
+    (sum, item) => sum + (item.value ?? 0),
+    0
+  );
   const chartUpperBound = Math.ceil((trendMax * 1.08) / 1000) * 1000;
   const chartLowerBound = Math.max(
     0,
     Math.floor((trendMin * 0.8) / 1000) * 1000,
   );
-  const labelIndexes = new Set([
-    0,
-    Math.floor((rawLabels.length - 1) / 2),
-    rawLabels.length - 1,
-  ]);
+  // const labelIndexes = new Set([
+  //   0,
+  //   Math.floor((rawLabels.length - 1) / 2),
+  //   rawLabels.length - 1,
+  // ]);
   const chartOptions: ApexOptions = {
     chart: {
       type: "area",
@@ -165,10 +170,13 @@ const KbTrendBlock = () => {
         fontWeight: 600,
         colors: [theme === "dark" ? "#E2E8F0" : "#334155"],
       },
-      formatter: (value, opts) => {
-        return labelIndexes.has(opts.dataPointIndex)
-          ? metricValueFormatter.format(Number(value))
-          : "";
+      // formatter: (value, opts) => {
+      //   return labelIndexes.has(opts.dataPointIndex)
+      //     ? metricValueFormatter.format(Number(value))
+      //     : "";
+      // },
+      formatter: (value) => {
+        return metricValueFormatter.format(Number(value));
       },
     },
     grid: {
@@ -288,24 +296,94 @@ const KbTrendBlock = () => {
       isFetching={isFetching}
       aside={
         <div className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 dark:bg-white/[0.05] dark:text-slate-300">
-          {metricValueFormatter.format(lastValue)} {t("knowledge.dashboard.labels.views")} 
+          {metricValueFormatter.format(lastValue)} {t("knowledge.dashboard.labels.views")}
         </div>
       }
     >
       <div className="space-y-4">
         <div className="overflow-hidden rounded-[24px] border border-slate-200/70 bg-slate-50/80 p-2 sm:p-3 dark:border-white/10 dark:bg-white/[0.03]">
-          <Chart
+
+
+
+          <div className="relative">
+            <Chart
+              options={chartOptions}
+              series={series}
+              type="area"
+              height={360}
+            />
+
+            <div className="mt-2  hidden grid-cols-6 gap-0 px-[10px] pb-2 text-[14px] font-medium text-slate-400 dark:text-slate-500 sm:grid">
+              {rawLabels.map((label) => {
+                const { month, year } = formatTrendLabel(
+                  label,
+                  i18n.language,
+                );
+
+                // const left =
+                //   rawLabels.length === 1
+                //     ? 50
+                //     : (index / (rawLabels.length - 1)) * 100;
+
+                 return (
+                <div
+                  key={label}
+                  className="text-center leading-4"
+                >
+                  <span className="block truncate">
+                    {month}
+                  </span>
+
+                  <span className="block text-[9px] text-slate-300 dark:text-slate-600">
+                    {year}
+                  </span>
+                </div>
+              );
+              })}
+            </div>
+          </div>
+
+
+          {/* <Chart
             options={chartOptions}
             series={series}
             type="area"
             height={360}
           />
-          <div className="mt-2 hidden grid-cols-12 gap-2 px-4 pb-2 text-[10px] font-medium text-slate-400 dark:text-slate-500 sm:grid">
+          <div className="mt-2 hidden grid-cols-6 gap-0 px-[10px] pb-2 text-[14px] font-medium text-slate-400 dark:text-slate-500 sm:grid">
+            {rawLabels.map((label) => {
+              const { month, year } = formatTrendLabel(
+                label,
+                i18n.language,
+              );
+
+              return (
+                <div
+                  key={label}
+                  className="text-center leading-4"
+                >
+                  <span className="block truncate">
+                    {month}
+                  </span>
+
+                  <span className="block text-[9px] text-slate-300 dark:text-slate-600">
+                    {year}
+                  </span>
+                </div>
+              );
+            })}
+          </div> */}
+
+
+
+
+          {/* <div className="mt-2 hidden grid-cols-6 gap-2 px-4 pb-2 text-[14px] font-medium text-slate-400 dark:text-slate-500 sm:grid">
             {rawLabels.map((label) => {
               const { month, year } = formatTrendLabel(label, i18n.language);
 
               return (
                 <div key={label} className="text-center leading-4">
+          
                   <span className="block truncate">{month}</span>
                   <span className="block text-[9px] text-slate-300 dark:text-slate-600">
                     {year}
@@ -313,8 +391,10 @@ const KbTrendBlock = () => {
                 </div>
               );
             })}
-          </div>
+          </div> */}
           <div className="mt-2 grid grid-cols-6 gap-2 px-2 pb-2 text-[10px] font-medium text-slate-400 dark:text-slate-500 sm:hidden">
+
+
             {mobileMonthLabels.map((point) => {
               const { month, year } = formatTrendLabel(
                 point.label,
@@ -323,6 +403,7 @@ const KbTrendBlock = () => {
 
               return (
                 <div key={point.label} className="text-center leading-4">
+
                   <span className="block truncate">{month}</span>
                   <span className="block text-[9px] text-slate-300 dark:text-slate-600">
                     {year}
@@ -334,6 +415,7 @@ const KbTrendBlock = () => {
         </div>
 
         <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(128px,1fr))] sm:[grid-template-columns:repeat(auto-fit,minmax(140px,1fr))]">
+
           {recentMonthlyCards.map((point) => {
             const { month } = formatTrendLabel(point.label, i18n.language);
 
@@ -347,14 +429,17 @@ const KbTrendBlock = () => {
                     {month}
                   </span>
                   <span className="text-sm font-semibold text-slate-950 dark:text-white sm:text-base">
+
                     {metricValueFormatter.format(point.value)}
                   </span>
                 </div>
                 <div className="mt-3 h-1.5 rounded-full bg-slate-200/80 dark:bg-white/10">
+
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-sky-500 to-violet-500"
                     style={{ width: `${lastValue > 0 ? (point.value / lastValue) * 100 : 0}%` }}
                   />
+
                 </div>
               </div>
             );

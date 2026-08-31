@@ -1,4 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import {
   getBanners,
   addBanner,
@@ -6,27 +8,35 @@ import {
   reorderBanners,
   getBannerArticleList
 } from "@/kms/banner/service/banner.service";
-import type { BannerMutationInput,ArticleFilter } from "@/kms/banner/dtos/banner.dto";
- 
+import type { BannerMutationInput, ArticleFilter } from "@/kms/banner/dtos/banner.dto";
+
 
 export const BANNER_QUERY_KEY = ["kb-banners"];
 
-export const useBannerList = (lang?:string,mode?:string) =>
-  useQuery({
+export const useBannerList = (lang?: string, mode?: string) => {
+  const location = useLocation();
+  const query = useQuery({
     // queryKey: BANNER_QUERY_KEY,
     queryKey: ['kb-banners', lang, mode],
-     queryFn: async () => await getBanners(lang, mode),
+    queryFn: async () => await getBanners(lang, mode),
     staleTime: 30_000,
+    refetchOnMount: "always",
   });
+  useEffect(() => {
+    query.refetch();
+  }, [location.key]);
 
-  // export const useBannerList = (lang?:string,mode?:string) =>
-  // useQuery({
-  //     queryKey: BANNER_QUERY_KEY,
-  //   queryFn: getBanners(lang,mode),
-  //   staleTime: 30_000,
-  // });
+  return query;
+}
 
- 
+// export const useBannerList = (lang?:string,mode?:string) =>
+// useQuery({
+//     queryKey: BANNER_QUERY_KEY,
+//   queryFn: getBanners(lang,mode),
+//   staleTime: 30_000,
+// });
+
+
 export const useAddBanner = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -50,7 +60,7 @@ export const useRemoveBanner = () => {
 export const useReorderBanners = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (bannerOrder: {articleId: number,id:number,order:number}[]) => reorderBanners(bannerOrder),
+    mutationFn: (bannerOrder: { articleId: number, id: number, order: number }[]) => reorderBanners(bannerOrder),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: BANNER_QUERY_KEY });
     },
@@ -78,7 +88,6 @@ export const useArticleListData = (filter?: ArticleFilter) => {
 
 
 
- 
 
 
- 
+

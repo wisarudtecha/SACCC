@@ -149,7 +149,9 @@ const ArticleCard: React.FC<{ article: ArticleItem }> = ({ article }) => {
                   navigate(`/kms/articles/edit/${article.articleId}`)
                 }}
                 onApprove={() => {
-                  navigate(`/kms/articles/review/${article.articleId}`)
+                  navigate(`/kms/articles/review/${article.articleId}`, {
+                    state: { hideBack: true },
+                  })
                 }}
               />
             )

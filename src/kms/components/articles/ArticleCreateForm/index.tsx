@@ -234,16 +234,19 @@ const ArticleCreateForm: React.FC<ArticleCreateFormProps> = ({ editId, onSuccess
 
   const isEditMode = !!editId;
   const artId = editId ? Number(editId.replace(/\D+/g, "")) || 0 : 0;
-  const { data: detailData, isLoading: isLoadingDetail } = useArticleFormDetail(editId);
+  const { data: detailData, isLoading: isLoadingDetail,isError:isErrorDetail } = useArticleFormDetail(editId);
+ 
+
 
   useEffect(() => {
-    if (!detailData) return;
-    const { id: _id, step, createdAt: _c, updatedAt: _u, relatedArticleOptions: initOpts, viewGroupArticleOptions: initviewGroupOpts, ...input } = detailData;
-    console.log('input',input)
-    setForm(input);
-    setCurrentStep(step);
-    if (initOpts?.length) setInitRelatedOptions(initOpts);
-    if (initviewGroupOpts?.length) setInitVewiGroupOptions(initviewGroupOpts)
+    if (detailData) {
+      const { id: _id, step, createdAt: _c, updatedAt: _u, relatedArticleOptions: initOpts, viewGroupArticleOptions: initviewGroupOpts, ...input } = detailData;
+      console.log('input', input)
+      setForm(input);
+      setCurrentStep(step);
+      if (initOpts?.length) setInitRelatedOptions(initOpts);
+      if (initviewGroupOpts?.length) setInitVewiGroupOptions(initviewGroupOpts)
+    }
   }, [detailData]);
 
   const { mutate, isPending, isError, error } = useSaveArticleForm();
@@ -301,6 +304,14 @@ const ArticleCreateForm: React.FC<ArticleCreateFormProps> = ({ editId, onSuccess
 
   const activeTheme = isDark ? formThemeDark : formThemeLight;
 
+  if (editId && isErrorDetail) {
+    return <NotFound />;
+  }
+
+  if (editId && isLoadingDetail) {
+    return <NotFound />;
+  }
+
   if (isLoadingDetail) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-24 text-sm text-gray-400 dark:text-gray-500">
@@ -336,7 +347,6 @@ const ArticleCreateForm: React.FC<ArticleCreateFormProps> = ({ editId, onSuccess
                   {isEditMode ? t("knowledge.articles.form.editSub") : t("knowledge.articles.form.createSub")}
                 </p>
               </div>
-
               {(editId && isUpdate) && (
                 <button
                   type="button"

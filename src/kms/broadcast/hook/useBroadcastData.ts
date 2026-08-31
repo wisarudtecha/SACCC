@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-
+import {  useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import {
   BroadcastBlockDataMap,
   BroadcastBlockKey,
@@ -10,11 +11,13 @@ import { getBroadcastBlock } from "@/kms/broadcast/service/broadcast.service";
 export const useBroadcastBlockData = <K extends BroadcastBlockKey>(
   block: K,
   options?: { status?: BroadcastStatus },
-) =>
-  useQuery({
+) =>{
+   const location = useLocation();
+   const query =  useQuery({
     queryKey: ["kb-broadcast-block", block, options?.status ?? "all"],
     queryFn: () => getBroadcastBlock(block, options),
     staleTime: 1000 * 60 * 5,
+    refetchOnMount: "always"
   }) as {
     data?: {
       data: BroadcastBlockDataMap[K];
@@ -24,4 +27,10 @@ export const useBroadcastBlockData = <K extends BroadcastBlockKey>(
     isFetching: boolean;
     isError: boolean;
     refetch: () => Promise<unknown>;
-  };
+  }
+    useEffect(() => {
+    query.refetch();
+  }, [location.key]);
+
+  return query;
+};

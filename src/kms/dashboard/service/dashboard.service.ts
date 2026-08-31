@@ -567,7 +567,7 @@ const fetchCategoriesFromGraphQL = async (): Promise<DashboardCategory[]> => {
   const res = await graphqlRequest<KBDashboardGraphQLData>({
     query: GET_TOP5_CATEGORY_QUERY,
   });
-
+debugger;
   const { labels, series, percent } =
     res.data.KBDashboard.GetTop5Category.data;
 

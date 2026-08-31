@@ -55,13 +55,21 @@ export const useArticleListData = (filter?: ArticleFilter) => {
 //     enabled: !!id,
 //   });
 
-export const useArticleDetailStatusActivityData = (artid: number) =>
-  useQuery({
+export const useArticleDetailStatusActivityData = (artid: number) =>{
+  const location = useLocation();
+   const query =  useQuery({
     queryKey: ["kb-article-detail-status-activity-log", artid],
     queryFn: () => getArticleDetailStatusActivity(artid),
     staleTime: 30_000,
     enabled: !!artid,
+     refetchOnMount: "always",
   });
+    useEffect(() => {
+    query.refetch();
+  }, [location.key]);
+
+  return query;
+}
 
 export const useArticleStatusData = () =>
   useQuery({
@@ -110,29 +118,53 @@ export const useArticleMasterData = (
     staleTime: 30_000,
   });
 
-export const useArticleDetailHeader = (artId: number, enabled = true) =>
-  useQuery({
+export const useArticleDetailHeader = (artId: number, enabled = true) => {
+  const location = useLocation();
+  const query = useQuery({
     queryKey: ["kb-article-detail-header", artId],
     queryFn: () => getArticleDetailHeader(artId),
     staleTime: 30_000,
     enabled: !!artId && enabled,
+    refetchOnMount: "always",
   });
+  useEffect(() => {
+    query.refetch();
+  }, [location.key]);
 
-export const useArticleDetailContent = (artId: number, enabled = true) =>
-  useQuery({
+  return query;
+}
+
+export const useArticleDetailContent = (artId: number, enabled = true) => {
+  const location = useLocation();
+  const query = useQuery({
     queryKey: ["kb-article-detail-content", artId],
     queryFn: () => getArticleDetailContent(artId),
     staleTime: 30_000,
     enabled: !!artId && enabled,
+    refetchOnMount: "always",
   });
+  useEffect(() => {
+    query.refetch();
+  }, [location.key]);
 
-export const useArticleDetailInfo = (artId: number, enabled = true) =>
-  useQuery({
+  return query;
+}
+
+export const useArticleDetailInfo = (artId: number, enabled = true) => {
+  const location = useLocation();
+  const query = useQuery({
     queryKey: ["kb-article-detail-info", artId],
     queryFn: () => getArticleDetailInfo(artId),
     staleTime: 30_000,
     enabled: !!artId && enabled,
+    refetchOnMount: "always",
   });
+  useEffect(() => {
+    query.refetch();
+  }, [location.key]);
+
+  return query;
+}
 
 export const useArticleRelations = () =>
   useQuery({
@@ -155,13 +187,21 @@ export const useArticleViewGroup = () =>
     staleTime: 60_000,
   });
 
-export const useArticleCountView = (id: number) =>
-  useQuery({
+export const useArticleCountView = (id: number) => {
+  const location = useLocation();
+  const query = useQuery({
     queryKey: ["kb-article-count-view", id],
     queryFn: () => putArticleCountView(id),
     enabled: !!id,
     staleTime: 60_000,
+    refetchOnMount: "always",
   });
+  useEffect(() => {
+    query.refetch();
+  }, [location.key]);
+
+  return query;
+}
 
 
 
@@ -185,4 +225,4 @@ export const refreshArticleDetail = async (
   ]);
 };
 
- 
+

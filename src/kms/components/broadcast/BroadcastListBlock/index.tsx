@@ -25,8 +25,7 @@ interface BroadcastListBlockProps {
 }
 
 const statusClassMap: Record<Exclude<BroadcastStatus, "all">, string> = {
-  scheduled:
-    "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-200",
+  scheduled: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-200',
   published:
     "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-200",
   expired: "bg-pink-100 text-pink-700 dark:bg-pink-500/15 dark:text-pink-200",
@@ -119,7 +118,7 @@ const BroadcastListBlock = ({
 
                 <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
                   <span
-                    className={`rounded-full px-2 py-1 font-medium ${statusClassMap[item.status]}`}
+                     className={`rounded-full px-2 py-1 font-medium ${statusClassMap[item.status]}`}
                   >
                     {t(`knowledge.broadcast.status.${item.status}`)}
                   </span>

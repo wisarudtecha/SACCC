@@ -44,11 +44,11 @@ interface KBUpdateArticleStatusGraphQLData {
     };
   };
 }
- 
+
 import {
- /* type*/ /*LooseRecord,
-  isRecord,
-  pickFirst,*/
+  /* type*/ /*LooseRecord,
+   isRecord,
+   pickFirst,*/
   //toStringValue,
   /*toStringArray,
   toNumberArray,
@@ -69,8 +69,8 @@ import {
 //   return "create";
 // };
 
- 
-  
+
+
 
 const GET_EDIT_ARTICLE_QUERY = `
   query GetEditArticle($id: Int!) {
@@ -92,15 +92,15 @@ const mapGraphQLDetail = (d: KBGetEditArticleData, rawId: string): ArticleFormDe
   description: d.description ?? "",
   priority: d.priorityId ?? null,
   source: d.sourceId ?? null,
-  reserveDate:formatddMMyyyy(d.receiveDate) ,//  toFormDate(d.receiveDate),
+  reserveDate: formatddMMyyyy(d.receiveDate),//  toFormDate(d.receiveDate),
   ownership: d.ownerId ?? null,
   relatedArticles: (d.relatedArticles ?? []).map((a) => a.id),
   relatedArticleOptions: (d.relatedArticles ?? []).map((a) => ({ id: a.id, title: a.title ?? String(a.id) })),
   categoryKey: d.categories?.[0]?.categoryId != null ? String(d.categories[0].categoryId) : "",
   attachments: (d.attachments ?? []).map((a) => ({ id: a.id, name: a.name, path: a.path, sizeLabel: formatBytes(a.sizeLabel) })),
   content: d.content ?? "",
-  startDate:formatddMMyyyy(d.startDate) , // toFormDate(d.startDate),
-  endDate: formatddMMyyyy(d.expirationDate) ,// toFormDate(d.expirationDate),
+  startDate: formatddMMyyyy(d.startDate), // toFormDate(d.startDate),
+  endDate: formatddMMyyyy(d.expirationDate),// toFormDate(d.expirationDate),
   viewableGroups: (d.viewableGroups ?? []).map((a) => a.id),
   viewGroupArticleOptions: (d.viewableGroups ?? []).map((a) => ({ id: a.id, title: a.title ?? String(a.id) })),
   keywords: (d.keywords ?? []).reduce<{ id?: number; title: string }[]>((acc, k) => {
@@ -119,10 +119,10 @@ const getApiDetail = async (id: string): Promise<ArticleFormDetail> => {
     variables: { id: artId },
   });
   const result = res.data?.KBArticles?.GetEditArticle;
-
-  console.log('result.data',result.data)
-  if (!result?.data) throw new Error(result?.message ?? "Article not found");
-  return mapGraphQLDetail(result.data, id);
+  if (result?.data) {
+    return mapGraphQLDetail(result.data, id);
+  } 
+    throw new Error("Article detail not found");
 };
 
 const UPDATE_ARTICLE_QUERY = `
@@ -178,7 +178,7 @@ const createApi = async (
   const result = res.data?.KBArticles?.CreateArticle;
   if (!result?.success) throw new Error(result?.message ?? "Unable to update article");
   return { id: String(result.data?.artId), title: input.title, step: "create", createdAt: "" };
- 
+
 };
 
 const updateApi = async (
@@ -231,7 +231,7 @@ const updateArticleStatus = async (
   input: ArticleStatusInput
 ): Promise<ArticleStatusResult> => {
 
- 
+
   const res = await graphqlRequest<KBUpdateArticleStatusGraphQLData>({
     query: UPDATE_ARTICLE__STATUS_QUERY,
     variables: {
@@ -266,8 +266,8 @@ export const saveArticleForm = async (
     : General.ARTICLE_CREATE_ENDPOINT;
 
   const data = editId
-        ? await updateApi(editId, input)
-        : await createApi(input)
+    ? await updateApi(editId, input)
+    : await createApi(input)
   return { data, meta: { endpoint, source } };
 };
 
