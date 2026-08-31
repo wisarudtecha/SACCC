@@ -424,3 +424,45 @@ new lesson and update this file when the lesson is generalizable.
   `// node_modules/.pnpm/react-router@7.13.0_…/…`. After the fix, both entries import
   `NavigationContext` from one shared `chunk-SQN6XHDY.js` and shrank from 385 KB / 457 KB to
   6 KB / 14 KB.
+
+### `t` from useTranslation is a new function every render
+- **Date:** 2026-08-31
+- **Mistake:** `LongdoSearchBox`'s debounce effect listed `t` in its dependency array and opened with
+  an unconditional `setCandidates([]); setIsSearching(false)` for terms shorter than the search
+  floor. Opening the case creation form produced an endless
+  "Maximum update depth exceeded" loop before a single character was typed.
+- **Root Cause:** Two independent faults that only loop together. `useTranslation`
+  (`src/core/hooks/useTranslation.ts`) returns `t: translate`, where `translate` is declared inside
+  the hook body — so it is a **new function identity on every render** and can never satisfy a
+  dependency comparison. And `setCandidates([])` hands React a fresh array every call, so the state
+  never compares equal and React's bail-out never engages. Effect runs → sets state → re-render →
+  new `t` → effect runs again.
+- **Correct Behavior:** Keep `t` out of dependency arrays. Read it through a ref
+  (`translateRef.current = t`) the same way this folder already holds `onError`/`onSelect`, and make
+  any state write in an effect idempotent: `setCandidates(previous => previous.length === 0 ? previous : [])`.
+- **Prevention Rule:** In this codebase, `t` from `useTranslation` is **never** a valid dependency —
+  neither is any other value rebuilt inside a hook body. Before adding a dependency to a `useEffect`
+  that writes state, ask whether that value is referentially stable across renders; if it is a
+  function or an object literal, hold it in a ref instead. Separately, never write a fresh `[]` or
+  `{}` into state unconditionally from an effect — pass the updater form and return `previous`
+  unchanged when there is nothing to clear, so a stray re-run cannot become a loop.
+  (`useMemo` with `t` is merely wasted work, not a loop — the rule is about effects that set state.)
+- **Example:**
+  ```ts
+  // WRONG - new `t` each render re-runs this, and [] is always a new identity
+  useEffect(() => {
+    if (term.length < MIN) { setCandidates([]); return; }
+    // …
+  }, [term, t]);
+
+  // CORRECT - src/cms/components/case/createCase/map/longdo/LongdoSearchBox.tsx
+  const translateRef = useRef(t);
+  translateRef.current = t;
+  useEffect(() => {
+    if (term.length < MIN) {
+      setCandidates(previous => (previous.length === 0 ? previous : []));
+      return;
+    }
+    // …
+  }, [term, language]);
+  ```
