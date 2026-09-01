@@ -2965,6 +2965,11 @@
           "label": "Priority",
           "placeholder": "Enter priority e.g., 1",
           "required": "Priority is required"
+        },
+        "price": {
+          "label": "Price",
+          "placeholder": "Enter price",
+          "required": "Price is required"
         }
       }
     },

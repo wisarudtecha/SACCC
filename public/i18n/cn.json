@@ -2849,6 +2849,11 @@
           "label": "优先级",
           "placeholder": "输入优先级 例如 1",
           "required": "必须填写优先级"
+        },
+        "price": {
+          "label": "价格",
+          "placeholder": "输入价格",
+          "required": "必须填写价格"
         }
       }
     },

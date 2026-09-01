@@ -8,12 +8,15 @@ import { useTranslation } from "@/core/hooks/useTranslation";
 import { useDeleteServiceTypeMutation, useGetServiceTypeQuery, useInsertServiceTypeMutation, useUpdateServiceTypeMutation } from "@/cms/store/api/serviceType";
 import type { PaginationParams } from "@/cms/types/dispatch";
 import type { Column, FieldConfig, ViewFilterConfig } from "@/cms/types/product";
-import type { ServiceInsert, ServiceType, ServiceUpdate } from "@/cms/types/serviceType";
+import type { ServiceInsert, ServiceType } from "@/cms/types/serviceType";
+import Badge from "@/core/components/ui/badge/Badge";
+import ConfirmModal from "@/cms/components/crm/ConfirmModal";
 import Form from "@/cms/components/crm/Form";
 import ImagePreviewModal from "@/cms/components/crm/ImagePreviewModal";
 import ItemCard from "@/cms/components/crm/ItemCard";
 import ItemList from "@/cms/components/crm/ItemList";
 import View from "@/cms/components/crm/View";
+import { formatNumberWithComma } from "@/cms/utils/productHelper";
 
 interface ServiceQueryParams extends PaginationParams {
   orderBy: string;
@@ -28,6 +31,8 @@ const ServiceView = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingService, setEditingService] = useState<ServiceType | null>(null);
   const [imagePreview, setImagePreview] = useState<{ url: string; alt: string } | null>(null);
+  // Holds the form payload between "Submit" and the create/update confirmation.
+  const [pendingSubmit, setPendingSubmit] = useState<Record<string, unknown> | null>(null);
 
   // API hooks
   const initialQuery: ServiceQueryParams = {
@@ -60,13 +65,13 @@ const ServiceView = () => {
 
   // Field configuration for the form
   const formFields: FieldConfig[] = useMemo(() => [
-    // {
-    //   name: "attachment",
-    //   label: t("crud.product_service.form.attachment.label"),
-    //   type: "file",
-    //   colSpan: 1,
-    //   accept: "image/*"
-    // },
+    {
+      name: "attachment",
+      label: t("crud.product_service.form.attachment.label"),
+      type: "file",
+      colSpan: 1,
+      accept: "image/*"
+    },
     {
       name: "th",
       label: t("crud.product_service.form.th.label"),
@@ -91,8 +96,27 @@ const ServiceView = () => {
       type: "number",
       required: true,
       placeholder: t("crud.product_service.form.priority.placeholder"),
-      colSpan: 2,
+      colSpan: 1,
       errorMessage: `${t("common.required_field")} ${t("crud.product_service.form.priority.label")}`
+    },
+    {
+      name: "price",
+      label: t("crud.product_service.form.price.label"),
+      type: "number",
+      required: true,
+      placeholder: t("crud.product_service.form.price.placeholder"),
+      colSpan: 1,
+      errorMessage: `${t("common.required_field")} ${t("crud.product_service.form.price.label")}`
+    },
+    {
+      name: "active",
+      label: t("common.status"),
+      type: "toggle",
+      colSpan: 2,
+      options: [
+        { value: "false", label: t("common.inactive") },
+        { value: "true", label: t("common.active") }
+      ]
     }
   ], [t]);
 
@@ -118,7 +142,10 @@ const ServiceView = () => {
       sortable: true,
       width: "w-32",
       align: "right",
-      colSpan: 1
+      colSpan: 1,
+      render: service => (
+        <span className="font-semibold">{formatNumberWithComma(service.price ?? 0)}</span>
+      )
     },
     {
       key: "priority",
@@ -127,62 +154,92 @@ const ServiceView = () => {
       width: "w-32",
       align: "right",
       colSpan: 1
+    },
+    {
+      key: "active",
+      label: t("common.status"),
+      sortable: false,
+      width: "w-32",
+      align: "right",
+      colSpan: 1,
+      render: service => (
+        <Badge color={service.active ? "success" : "error"} className="text-xs">
+          {service.active ? t("common.active") : t("common.inactive")}
+        </Badge>
+      )
     }
   ], [language, t]);
 
   const filters: ViewFilterConfig[] = [];
 
-  // Handle form submission (Create or Update)
-  const handleSubmit = async (formData: Record<string, unknown>) => {
-    try {
-      const data = {
-        active: typeof formData.active === "boolean" ? formData.active : true,
-        en: String(formData.en),
-        price: Number(formData.price),
-        th: String(formData.th)
-      }
-      
-      // Append file if exists
-      if (formData.file && formData.file instanceof File && formData.file.size > 0) {
-        // data.append("file", formData.file);
-      }
+  // Envelope `status` is documented as boolean but the BFF sends "0"/"-1" strings; treat a
+  // string "-1" as failure and anything else truthy as success.
+  const isSuccessStatus = (status: unknown): boolean =>
+    typeof status === "string" ? status !== "-1" : Boolean(status);
 
+  // Normalize raw form values into the API payload (create and update share this shape).
+  const buildPayload = (formData: Record<string, unknown>) => ({
+    active: typeof formData.active === "boolean" ? formData.active : true,
+    en: String(formData.en),
+    th: String(formData.th),
+    priority: String(formData.priority),
+    price: Number(formData.price),
+    image: formData.image ? String(formData.image) : ""
+  });
+
+  // Form submit only stages the payload; the mutation fires after the confirm dialog.
+  const handleSubmit = (formData: Record<string, unknown>) => {
+    setPendingSubmit(formData);
+  };
+
+  // Handle the confirmed form submission (Create or Update)
+  const runSubmit = async (formData: Record<string, unknown>) => {
+    try {
+      const data = buildPayload(formData);
       let response;
-      
+
       if (editingService) {
         // Update existing service
-        response = await updateService({ 
-          ...(formData as unknown as ServiceUpdate),
-          serviceId: editingService.serviceId, 
+        response = await updateService({
+          ...data,
+          serviceId: editingService.serviceId
         }).unwrap();
-        
-        if (response?.status) {
-          addToast("success", response?.message || t("crud.common.form.action.update.success").replace("_ENTITY_", t("crud.product_service.name")));
+
+        if (isSuccessStatus(response?.status)) {
+          addToast("success", response?.message || response?.desc || response?.msg || t("crud.common.form.action.update.success").replace("_ENTITY_", t("crud.product_service.name")));
           setShowForm(false);
           setEditingService(null);
+          setPendingSubmit(null);
           refetchServices();
         }
         else {
-          addToast("error", response?.message || t("crud.common.form.action.update.error").replace("_ENTITY_", t("crud.product_service.name")));
+          addToast("error", response?.message || response?.desc || response?.msg || t("crud.common.form.action.update.error").replace("_ENTITY_", t("crud.product_service.name")));
+          setPendingSubmit(null);
         }
       }
       else {
         // Create new service
         response = await createService(data as unknown as ServiceInsert).unwrap();
-        
-        if (response?.status) {
-          addToast("success", response?.message || t("crud.common.form.action.create.success").replace("_ENTITY_", t("crud.product_service.name")));
+
+        if (isSuccessStatus(response?.status)) {
+          addToast("success", response?.message || response?.desc || response?.msg || t("crud.common.form.action.create.success").replace("_ENTITY_", t("crud.product_service.name")));
           setShowForm(false);
+          setPendingSubmit(null);
           refetchServices();
         }
         else {
-          addToast("error", response?.message || t("crud.common.form.action.create.error").replace("_ENTITY_", t("crud.product_service.name")));
+          addToast("error", response?.message || response?.desc || response?.msg || t("crud.common.form.action.create.error").replace("_ENTITY_", t("crud.product_service.name")));
+          setPendingSubmit(null);
         }
       }
     }
     catch (error: unknown) {
       console.error("Submit error:", error);
-      addToast("error", (error as { data?: { message?: string } })?.data?.message || `Operation failed: ${error instanceof Error ? error.message : String(error)}`);
+      addToast("error", (error as { data?: { message?: string } })?.data?.message
+        || (error as { data?: { desc?: string } })?.data?.desc
+        || (error as { data?: { msg?: string } })?.data?.msg
+        || `Operation failed: ${error instanceof Error ? error.message : String(error)}`);
+      setPendingSubmit(null);
     }
   };
 
@@ -190,13 +247,13 @@ const ServiceView = () => {
   const handleDelete = async (service: ServiceType) => {
     try {
       const response = await deleteService({ serviceId: service.serviceId }).unwrap();
-      
-      if (response?.status) {
-        addToast("success", response?.message || t("crud.common.form.action.delete.success").replace("_ENTITY_", t("crud.product_service.name")));
+
+      if (isSuccessStatus(response?.status)) {
+        addToast("success", response?.message || response?.desc || response?.msg || t("crud.common.form.action.delete.success").replace("_ENTITY_", t("crud.product_service.name")));
         refetchServices();
       }
       else {
-        addToast("error", response?.message || t("crud.common.form.action.delete.error").replace("_ENTITY_", t("crud.product_service.name")));
+        addToast("error", response?.message || response?.desc || response?.msg || t("crud.common.form.action.delete.error").replace("_ENTITY_", t("crud.product_service.name")));
       }
     }
     catch (error: unknown) {
@@ -207,14 +264,10 @@ const ServiceView = () => {
 
   // Handle edit action
   const handleEdit = (service: ServiceType) => {
-    // Format the service data for the form
-    const formattedService = {
-      ...service,
-      file: new File([], "") // Empty file for edit mode
-    };
-    
+    // Pass the plain record: Form seeds the file field itself, and `attachment.attUrl`
+    // drives the edit-mode image preview. Injecting a synthetic empty File here used to
+    // push every edit down hybridBaseQuery's multipart path.
     setEditingService(service);
-    setEditingService(formattedService as unknown as ServiceType);
     setShowForm(true);
   };
 
@@ -281,8 +334,10 @@ const ServiceView = () => {
             active: true,
             en: "",
             price: 0,
+            priority: "",
             th: ""
           }}
+          uploadPath="service"
           onSubmit={handleSubmit}
           onCancel={() => {
             setShowForm(false);
@@ -297,6 +352,29 @@ const ServiceView = () => {
           open={showForm}
         />
       )}
+
+      {/* Create / Update confirmation */}
+      <ConfirmModal
+        open={!!pendingSubmit}
+        title={(editingService
+          ? t("crud.common.form.action.confirmDialog.titleUpdate")
+          : t("crud.common.form.action.confirmDialog.titleCreate")
+        ).replace("_ENTITY_", t("navigation.super_app.topbar.more.menu.package_service.sub_menu.service"))}
+        message={(editingService
+          ? t("crud.common.form.action.confirmDialog.descriptionUpdate")
+          : t("crud.common.form.action.confirmDialog.descriptionCreate")
+        ).replace("_ENTITY_", t("navigation.super_app.topbar.more.menu.package_service.sub_menu.service"))}
+        confirmLabel={t("crud.common.form.action.confirmDialog.confirm")}
+        cancelLabel={t("crud.common.form.action.confirmDialog.cancel")}
+        confirmVariant="primary"
+        loading={loading}
+        onConfirm={() => {
+          if (pendingSubmit) {
+            runSubmit(pendingSubmit);
+          }
+        }}
+        onCancel={() => setPendingSubmit(null)}
+      />
 
       {/* Standalone Image Preview Modal for grid cards */}
       <ImagePreviewModal

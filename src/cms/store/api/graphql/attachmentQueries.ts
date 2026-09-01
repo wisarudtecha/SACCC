@@ -13,14 +13,16 @@ const UPLOAD_FILE_MUTATION = {
     fileField: "file"
   },
   // CMS-domain upload paths route to UploadFileCMS; everything else (e.g. "customer",
-  // "sparepart", "product") falls back to the default UploadFileCRM operation above.
+  // "sparepart", "product", "service") falls back to the default UploadFileCRM operation above.
+  // CRM paths are listed explicitly only to suppress the DEV "no mapping" warning in gqlMapper.
   operationNameByPathParam: {
     param: "path",
     map: {
       case: "UploadFileCMS",
       close: "UploadFileCMS",
       profile: "UploadFileCMS",
-      dynamicForm: "UploadFileCMS"
+      dynamicForm: "UploadFileCMS",
+      service: "UploadFileCRM"
     }
   }
 };

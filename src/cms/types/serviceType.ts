@@ -19,11 +19,13 @@ export interface ServiceType {
 }
 
 export interface ServiceInsert {
-  serviceId: string;
+  serviceId?: string;
   en: string | null;
   th: string | null;
   priority:string
   active: boolean;
+  price: number;
+  image?: string;
 }
 
 export interface ServiceUpdate {
@@ -32,4 +34,6 @@ export interface ServiceUpdate {
   th: string | null;
   priority:string
   active: boolean;
+  price: number;
+  image?: string;
 }

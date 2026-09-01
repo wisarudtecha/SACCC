@@ -24,21 +24,24 @@ export const serviceTypeApi = baseApiCrm.injectEndpoints({
         url: "/service_type",
         params
       }),
-      providesTags: ["AppointmentType"]
+      providesTags: ["ServiceType"]
     }),
 
     updateServiceType: builder.mutation<ApiResponse<null>, ServiceUpdate>({
-      query: (params) => ({
-        url: `/service_type/${params.serviceId}`,
+      // The BFF ServiceTypeInput identifies the record by `id`, whose VALUE is the
+      // service-type UUID (`serviceId`); `ServiceType.id` is the integer PK and is not
+      // what the API wants. Same shape as appointmentType.ts / commit a7c4182.
+      query: ({ serviceId, active, en, th, priority, price, image }) => ({
+        url: "/service_type/" + serviceId,
         method: "PUT",
-        body: params
+        body: { id: serviceId, active, en, th, priority, price, image }
       }),
       invalidatesTags: ["ServiceType"]
     }),
 
-    deleteServiceType: builder.mutation<ApiResponse<null>, {serviceId:string}>({
-      query: (params) => ({
-        url: "/service_type/"+params.serviceId,
+    deleteServiceType: builder.mutation<ApiResponse<null>, { serviceId: string }>({
+      query: ({ serviceId }) => ({
+        url: "/service_type/" + serviceId,
         method: "DELETE"
       }),
       invalidatesTags: ["ServiceType"]
