@@ -1,4 +1,10 @@
 {
+  "0.67.0": {
+    "date": "2026-09-01",
+    "segment": "MINOR",
+    "notes": "feat(cms): record a price for each service type and tidy up the service type screen\n- A service type now has a price. It can be entered when a service type is created or edited, and it is shown in the service type list.\n- The service type list now shows whether each service type is active or inactive, and the status can be changed from the same form.\n- A picture can again be attached to a service type.\n- Creating or updating a service type now asks for confirmation first, and the message returned by the server is shown whether it succeeds or fails.\n- Editing a service type now saves. The change had been sent under the wrong reference for the record and was rejected, so the service type was left unchanged.\n- The appointment form no longer asks for a service type, as one is no longer needed to book an appointment.\n- changelog.json / package.json: bump version 0.66.6 -> 0.67.0",
+    "author": "Wisarud Techa"
+  },
   "0.66.6": {
     "date": "2026-08-31",
     "segment": "PATCH",
