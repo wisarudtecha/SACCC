@@ -1,49 +1,41 @@
-// Inline ArcGIS map + "expand to large modal" control.
+// Inline map + "expand to large modal" control.
 //
-// This is the component feature code should use (rather than ArcgisAddressMap
+// This is the component feature code should use (rather than a provider's map
 // directly), so the expand behaviour is written once and shared by the editable
 // case form and the read-only case detail / preview views.
 //
+// Provider-agnostic on purpose: everything it owns - the modal, the shared
+// basemap choice, the restored viewpoint - is the same whichever SDK draws the
+// tiles, and it only ever speaks AddressMapProps (see mapTypes.ts). Which SDK
+// actually draws is decided one level down, in AddressMap.
+//
 // The modal renders a SECOND map instance. It only exists while open - Modal
-// returns null when closed - so there is no idle second MapView.
-import { memo, useCallback, useMemo, useRef, useState, type ReactNode } from "react";
-import type Polyline from "@arcgis/core/geometry/Polyline.js";
+// returns null when closed - so there is no idle second map.
+import { memo, useCallback, useMemo, useRef, useState } from "react";
 import type { TrailPoint } from "./staff/useStaffTrails";
 import { Modal } from "@/core/components/ui/modal";
 import { useTranslation } from "@/core/hooks/useTranslation";
-import ArcgisAddressMap, {
-  ArcgisAddressResult,
-  ArcgisLatLon,
-  type ArcgisMapViewpoint
-} from "./ArcgisAddressMap";
+import AddressMap from "./AddressMap";
 import { BasemapOptionId, readBasemapPreference, writeBasemapPreference } from "./basemaps";
+import type {
+  AddressResult,
+  MapLatLon,
+  MapSearchMode,
+  MapSlot,
+  MapViewpoint,
+  RouteOverlay
+} from "./mapTypes";
 import type { StaffMarker, StaffSelection } from "./staff/staffTypes";
 import type { BoundaryLayerConfig } from "./boundaries/boundaryTypes";
 import type { BoundarySketchConfig } from "./sketch/sketchTypes";
 
-/**
- * Which of the two map instances a slot is rendering into. Controls that belong
- * to the large map only (the staff layer) return null for the inline one.
- */
-export interface MapSlotContext {
-  isExpanded: boolean;
-}
-
-type MapSlot = (context: MapSlotContext) => ReactNode;
-
-/**
- * Where the search box appears. "expanded-only" is for maps whose inline size
- * has no room to spare - the search box is nearly as wide as a 320px map.
- */
-export type MapSearchMode = "always" | "expanded-only" | "never";
-
-interface ArcgisAddressMapFieldProps {
-  value?: ArcgisLatLon | null;
-  onSelect: (result: ArcgisAddressResult) => void;
+interface AddressMapFieldProps {
+  value?: MapLatLon | null;
+  onSelect: (result: AddressResult) => void;
   onError?: (message: string) => void;
   /**
    * Free-text location description, shown together with `value`'s coordinates
-   * on the expanded map only - see ArcgisAddressMap's `showLocationInfo`.
+   * on the expanded map only - see AddressMapProps' `showLocationInfo`.
    */
   address?: string;
   /** View-only: clicks don't change the location. */
@@ -65,7 +57,7 @@ interface ArcgisAddressMapFieldProps {
    * Route overlay, forwarded verbatim to both map instances - same contract as
    * `staff`.
    */
-  route?: Polyline | null;
+  route?: RouteOverlay | null;
   showRoute?: boolean;
   /**
    * Breadcrumb overlay, forwarded verbatim to both map instances - same contract
@@ -100,7 +92,7 @@ interface ArcgisAddressMapFieldProps {
 // Sized to sit inside the 85vh modal shell with room for its close button.
 const MODAL_MAP_HEIGHT = "calc(85vh - 5rem)";
 
-function ArcgisAddressMapFieldBase({
+function AddressMapFieldBase({
   value,
   onSelect,
   onError,
@@ -122,10 +114,10 @@ function ArcgisAddressMapFieldBase({
   toolbarSlot,
   onExpandedChange,
   className = ""
-}: ArcgisAddressMapFieldProps) {
+}: AddressMapFieldProps) {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
-  // The basemap choice lives here rather than in ArcgisAddressMap because the
+  // The basemap choice lives here rather than in the map component because the
   // modal renders a SECOND map: were it owned per-map, expanding would drop the
   // user back to the default basemap. Seeded from (and saved to) the stored
   // preference so it also survives navigation and reload.
@@ -133,8 +125,8 @@ function ArcgisAddressMapFieldBase({
   // The expanded map alone: the Modal unmounts it on close, so its MapView
   // starts fresh every reopen and would otherwise always recentre on the case
   // at the default zoom. This ref lives here - same as `basemapId` - because
-  // ArcgisAddressMapField itself does not unmount across that close/reopen.
-  const expandedViewpointRef = useRef<ArcgisMapViewpoint | null>(null);
+  // AddressMapField itself does not unmount across that close/reopen.
+  const expandedViewpointRef = useRef<MapViewpoint | null>(null);
 
   const openExpanded = useCallback(() => {
     setIsExpanded(true);
@@ -179,7 +171,7 @@ function ArcgisAddressMapFieldBase({
     <div className={`relative ${className}`}>
       {/* The expand button lives in the map's own toolbar row - only this
           instance gets `onExpand`, so the expanded map doesn't offer it. */}
-      <ArcgisAddressMap
+      <AddressMap
         key={mapKey(showSearchInline)}
         value={value}
         onSelect={onSelect}
@@ -216,7 +208,7 @@ function ArcgisAddressMapFieldBase({
           <span className="absolute top-6 left-4 text-lg font-semibold text-gray-900 dark:text-gray-100">
             {t("case.display.map_expand")}
           </span>
-          <ArcgisAddressMap
+          <AddressMap
             key={`${mapKey(showSearchExpanded)}-expanded`}
             value={value}
             onSelect={onSelect}
@@ -248,7 +240,7 @@ function ArcgisAddressMapFieldBase({
   );
 }
 
-export const ArcgisAddressMapField = memo(ArcgisAddressMapFieldBase);
-ArcgisAddressMapField.displayName = "ArcgisAddressMapField";
+export const AddressMapField = memo(AddressMapFieldBase);
+AddressMapField.displayName = "AddressMapField";
 
-export default ArcgisAddressMapField;
+export default AddressMapField;

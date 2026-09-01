@@ -29,3 +29,18 @@ export function createBreadcrumbSymbol(isDarkTheme: boolean) {
     join: "round" as const
   };
 }
+
+/**
+ * The same values, as a second provider needs them.
+ *
+ * Longdo geometry takes CSS colour strings and a dash array rather than an Esri
+ * symbol object, so its renderer needs the numbers, not the object. Shared for
+ * the same reason STAFF_SYMBOL_TOKENS is: two copies of "what a trail looks
+ * like" would drift.
+ */
+export const BREADCRUMB_TOKENS = {
+  lightRgb: TRAIL_LIGHT_RGB,
+  darkRgb: TRAIL_DARK_RGB,
+  alpha: TRAIL_LINE_ALPHA,
+  width: TRAIL_LINE_WIDTH
+} as const;

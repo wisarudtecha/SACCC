@@ -5,7 +5,7 @@
 // hosts; only the map below it is lazy. Anything here that touched the SDK
 // would put ~1MB into their chunk whether or not anyone opened a map.
 //
-// This must be called ABOVE the map field. ArcgisAddressMapField renders a
+// This must be called ABOVE the map field. AddressMapField renders a
 // SECOND MapView when expanded, so state owned any lower would be thrown away
 // the moment the user expanded the map - the same reason useBoundarySelection
 // sits where it does.

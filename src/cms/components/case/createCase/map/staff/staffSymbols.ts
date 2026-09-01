@@ -74,7 +74,7 @@ const GROUP_FILL_ALPHA = 0.92;
 /** How far a selection halo extends past the group circle it sits under. */
 const GROUP_HALO_MARGIN = 12;
 
-function getGroupSize(count: number): number {
+export function getGroupSize(count: number): number {
   return Math.min(GROUP_MAX_SIZE, GROUP_BASE_SIZE + count * GROUP_SIZE_PER_MEMBER);
 }
 
@@ -100,7 +100,7 @@ export function getStaffAvailability(statusId: string, isLogin: boolean): StaffA
   return statusId === STATUS_READY ? "ready" : "engaged";
 }
 
-function getAvailabilityRgb(availability: StaffAvailability): [number, number, number] {
+export function getAvailabilityRgb(availability: StaffAvailability): [number, number, number] {
   switch (availability) {
     case "ready":
       return READY_RGB;
@@ -301,3 +301,33 @@ export function getStaffStatusDotClass(statusId: string, isLogin: boolean): stri
       return "bg-gray-500";
   }
 }
+
+/**
+ * The measurements and path data behind the symbols above.
+ *
+ * Exported because a second map provider draws the SAME symbols in a different
+ * medium: Longdo markers take an SVG icon rather than an Esri symbol object, so
+ * its renderer needs the geometry, not the autocast objects. Sharing the numbers
+ * is the point - two copies of the silhouette and the three operational colours
+ * would drift, and a dispatcher would end up with officers that look different
+ * depending on which SDK the environment happens to run.
+ *
+ * See longdo/staff/longdoStaffMarkers.ts for the SVG renderer.
+ */
+export const STAFF_SYMBOL_TOKENS = {
+  /** Both paths are authored on a 24x24 box. */
+  viewBox: 24,
+  markerPath: STAFF_MARKER_PATH,
+  chevronPath: HEADING_CHEVRON_PATH,
+  size: DEFAULT_SIZE,
+  selectedSize: SELECTED_SIZE,
+  activeAlpha: ACTIVE_ALPHA,
+  mutedAlpha: MUTED_ALPHA,
+  haloSize: HALO_SIZE,
+  haloFillAlpha: HALO_FILL_ALPHA,
+  haloOutlineAlpha: HALO_OUTLINE_ALPHA,
+  headingSize: HEADING_SIZE,
+  headingOrbitPx: HEADING_ORBIT_PX,
+  groupFillAlpha: GROUP_FILL_ALPHA,
+  groupHaloMargin: GROUP_HALO_MARGIN
+} as const;

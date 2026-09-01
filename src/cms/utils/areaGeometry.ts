@@ -197,3 +197,17 @@ export const describeGeometry = (rings?: PolygonCoordinates | null): GeometrySum
     pointCount: rings.reduce((total, ring) => total + (ring?.length || 0), 0)
   };
 };
+
+/**
+ * Stable string for a set of rings, for "did this actually change?" tests.
+ *
+ * The map and the textarea are two views of one string, so without this the
+ * commit that follows a drag would re-render the polygon that produced it, on
+ * every drag, forever.
+ *
+ * Lives HERE rather than beside the sketch conversions, which import a map SDK:
+ * both providers' sketch layers need this test, and importing it from an
+ * ArcGIS-bound module pulled ~185KB of Esri geometry into the Longdo bundle.
+ */
+export const ringsSignature = (rings: PolygonCoordinates | null | undefined): string =>
+  rings && rings.length > 0 ? JSON.stringify(rings) : "";

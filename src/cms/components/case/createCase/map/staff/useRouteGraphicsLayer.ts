@@ -12,12 +12,13 @@
 //   3. Non-interactive by construction: no popup, no hitTest registration. The
 //      brief forbids touching ArcgisAddressMap's click handler, and this layer
 //      never needs to - it simply never registers for a hit.
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import Graphic from "@arcgis/core/Graphic.js";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer.js";
-import type Polyline from "@arcgis/core/geometry/Polyline.js";
+import Polyline from "@arcgis/core/geometry/Polyline.js";
 import type esriMap from "@arcgis/core/Map.js";
 import type MapView from "@arcgis/core/views/MapView.js";
+import type { RoutePath } from "../mapTypes";
 import { createRouteSymbol } from "./routeSymbols";
 
 /**
@@ -36,7 +37,11 @@ interface UseRouteGraphicsLayerOptions {
   viewRef: React.MutableRefObject<MapView | null>;
   /** True once the MapView has resolved; refs are only safe to use after this. */
   isReady: boolean;
-  geometry: Polyline | null;
+  /**
+   * The solved route, provider-neutral. Built into an ArcGIS Polyline here so
+   * the solver never has to know which SDK draws the result - see routeService.
+   */
+  path: RoutePath | null;
   visible: boolean;
   isDarkTheme: boolean;
 }
@@ -45,15 +50,29 @@ export function useRouteGraphicsLayer({
   mapRef,
   viewRef,
   isReady,
-  geometry,
+  path,
   visible,
   isDarkTheme
 }: UseRouteGraphicsLayerOptions): void {
   const layerRef = useRef<GraphicsLayer | null>(null);
   const graphicRef = useRef<Graphic | null>(null);
-  // The geometry instance last framed with goTo, so a re-render with the same
-  // result does not re-animate the camera.
-  const framedGeometryRef = useRef<Polyline | null>(null);
+  // The path last framed with goTo, so a re-render with the same result does not
+  // re-animate the camera. Keyed on the PATH rather than the geometry built from
+  // it: the path is the object the solver cached and passes through unchanged.
+  const framedPathRef = useRef<RoutePath | null>(null);
+
+  // `paths` are raw coordinate arrays, so they get neither an axis order nor a
+  // spatial reference for free. Longitude first, and WGS84 stated outright -
+  // same as useBreadcrumbGraphicsLayer builds its trail.
+  const geometry = useMemo(() => {
+    if (!path?.paths.length) {
+      return null;
+    }
+    return new Polyline({
+      paths: path.paths.map((ring) => ring.map((point) => [point[0], point[1]])),
+      spatialReference: { wkid: 4326 }
+    });
+  }, [path]);
 
   // Create the layer once the view exists, and tear it down with the map.
   useEffect(() => {
@@ -73,7 +92,7 @@ export function useRouteGraphicsLayer({
       layer.destroy();
       layerRef.current = null;
       graphicRef.current = null;
-      framedGeometryRef.current = null;
+      framedPathRef.current = null;
     };
   }, [isReady, mapRef]);
 
@@ -111,13 +130,13 @@ export function useRouteGraphicsLayer({
   // is already in flight, same as every other goTo call on this map.
   useEffect(() => {
     const view = viewRef.current;
-    if (!isReady || !view || !visible || !geometry) {
+    if (!isReady || !view || !visible || !geometry || !path) {
       return;
     }
-    if (framedGeometryRef.current === geometry) {
+    if (framedPathRef.current === path) {
       return;
     }
-    framedGeometryRef.current = geometry;
+    framedPathRef.current = path;
     const extent = geometry.extent?.expand(ROUTE_FRAME_PADDING_FACTOR);
     if (!extent) {
       return;
@@ -125,5 +144,5 @@ export function useRouteGraphicsLayer({
     view.goTo(extent).catch(() => {
       /* goTo rejects when interrupted by a newer navigation - safe to ignore */
     });
-  }, [isReady, geometry, visible, viewRef]);
+  }, [isReady, geometry, path, visible, viewRef]);
 }

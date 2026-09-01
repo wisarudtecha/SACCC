@@ -1,6 +1,6 @@
 // Types for the officer -> case driving route (Smart Routing Engine / ETA-TTL
 // sections). See useCaseRoute.ts for the state machine that produces these.
-import type Polyline from "@arcgis/core/geometry/Polyline.js";
+import type { RoutePath } from "../mapTypes";
 
 export type RouteErrorReason =
   | "no-case-location"
@@ -9,7 +9,12 @@ export type RouteErrorReason =
   | "no-metrics";
 
 export interface RouteResult {
-  geometry: Polyline;
+  /**
+   * The solved line, or null when the provider's router returns metrics only
+   * (Longdo). The map draws such a route from its endpoints instead - see
+   * RouteOverlay in mapTypes.ts.
+   */
+  geometry: RoutePath | null;
   distanceKm: number;
   travelMinutes: number;
   /** When the solve completed - both ETA and TTL are derived from this, not "now". */

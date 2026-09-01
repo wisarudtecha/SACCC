@@ -10,7 +10,7 @@
 // Level VISIBILITY is deliberately not part of that: toggling a level is
 // instant, so it writes straight through to the applied config.
 //
-// This must be called ABOVE ArcgisAddressMapField. That component renders a
+// This must be called ABOVE AddressMapField. That component renders a
 // second MapView when expanded, so state owned any lower would reset the moment
 // the user expanded the map - the same reason CaseStaffMapField owns the staff
 // state rather than letting the map own it.
@@ -47,7 +47,7 @@ type OptionsByLevel = Readonly<Record<AdminLevel, readonly BoundaryOption[]>>;
 const EMPTY_OPTIONS: OptionsByLevel = EMPTY_BOUNDARY_INDEX;
 
 export interface UseBoundarySelectionResult {
-  /** Hand straight to ArcgisAddressMapField's `boundaries` prop. */
+  /** Hand straight to AddressMapField's `boundaries` prop. */
   boundaries: BoundaryLayerConfig;
   visibility: BoundaryVisibility;
   toggleLevel: (level: AdminLevel) => void;

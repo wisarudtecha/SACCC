@@ -8,191 +8,34 @@
 // result and hands it to `onSelect`. It owns no form logic and can be dropped
 // anywhere. The heavy `@arcgis/core` modules are imported here, so consumers
 // should lazy-load this file to keep the SDK out of the initial bundle.
-import { memo, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Maximize2 } from "lucide-react";
 import esriMap from "@arcgis/core/Map.js";
 import MapView from "@arcgis/core/views/MapView.js";
 import Graphic from "@arcgis/core/Graphic.js";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer.js";
 import Point from "@arcgis/core/geometry/Point.js";
-import type Polyline from "@arcgis/core/geometry/Polyline.js";
 import Search from "@arcgis/core/widgets/Search.js";
 import Zoom from "@arcgis/core/widgets/Zoom.js";
 import Compass from "@arcgis/core/widgets/Compass.js";
 import * as reactiveUtils from "@arcgis/core/core/reactiveUtils.js";
-import * as locator from "@arcgis/core/rest/locator.js";
 import * as promiseUtils from "@arcgis/core/core/promiseUtils.js";
 import "@arcgis/core/assets/esri/themes/light/main.css";
-import { API_CONFIG } from "@/core/config/api";
 import { useTheme } from "@/core/context/ThemeContext";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import { initArcgis } from "./arcgisSetup";
+import { arcgisGeocodeService } from "./services/arcgisGeocode";
 import BasemapSwitcher from "./BasemapSwitcher";
 import { MAP_CONTROL_REVEAL_ON_GROUP } from "./mapControlStyles";
-import {
-  BasemapOptionId,
-  DEFAULT_BASEMAP_ID,
-  createBasemap,
-  createFallbackBasemap,
-  toEsriLanguage
-} from "./basemaps";
+import { BasemapOptionId, DEFAULT_BASEMAP_ID } from "./basemaps";
+import { createBasemap, createFallbackBasemap, toEsriLanguage } from "./arcgisBasemaps";
 import { useStaffGraphicsLayer } from "./staff/useStaffGraphicsLayer";
-import type { StaffMarker, StaffSelection } from "./staff/staffTypes";
+import type { StaffMarker } from "./staff/staffTypes";
 import { useRouteGraphicsLayer } from "./staff/useRouteGraphicsLayer";
 import { useBreadcrumbGraphicsLayer } from "./staff/useBreadcrumbGraphicsLayer";
-import type { TrailPoint } from "./staff/useStaffTrails";
 import { useAdminBoundaryLayers } from "./boundaries/useAdminBoundaryLayers";
-import type { BoundaryLayerConfig } from "./boundaries/boundaryTypes";
 import { useBoundarySketchLayer } from "./sketch/useBoundarySketchLayer";
-import type { BoundarySketchConfig } from "./sketch/sketchTypes";
-
-export interface ArcgisLatLon {
-  latitude: number;
-  longitude: number;
-}
-
-/** Camera position captured/restored via `viewpointRef` - see its doc below. */
-export interface ArcgisMapViewpoint {
-  center: [number, number];
-  zoom: number;
-}
-
-export interface ArcgisAddressResult extends ArcgisLatLon {
-  address: string;
-}
-
-interface ArcgisAddressMapProps {
-  /** Existing coordinates to centre on / mark (e.g. when editing a saved case). */
-  value?: ArcgisLatLon | null;
-  /** Called whenever the user resolves a new location via search or map click. */
-  onSelect: (result: ArcgisAddressResult) => void;
-  /** Optional error reporter (e.g. show a toast). Falls back to console.error. */
-  onError?: (message: string) => void;
-  /** [longitude, latitude]. Defaults to Bangkok. */
-  initialCenter?: [number, number];
-  initialZoom?: number;
-  /** Map height in px or any CSS length. */
-  height?: number | string;
-  /**
-   * View-only mode: map clicks no longer move the pin, so the location can't be
-   * changed. Pan/zoom and the marker stay fully usable.
-   *
-   * This does NOT decide whether the search box exists - see `showSearch`. The
-   * two were one flag until dispatchers needed to search in view-only mode.
-   */
-  readOnly?: boolean;
-  /**
-   * Show the Search widget. Defaults to "whenever the map is editable".
-   *
-   * Turning it on together with `readOnly` gives navigate-only search: picking a
-   * result moves the view there and nothing else - no pin, no `onSelect` - so a
-   * dispatcher can look around without appearing to move the case.
-   */
-  showSearch?: boolean;
-  /**
-   * Active basemap. Controlled when supplied together with `onBasemapChange`
-   * (which is how ArcgisAddressMapField keeps the inline and expanded maps in
-   * sync); otherwise the component tracks the selection itself.
-   */
-  basemapId?: BasemapOptionId;
-  onBasemapChange?: (id: BasemapOptionId) => void;
-  /**
-   * Show the basemap ("layers") control. On by default even in `readOnly` mode:
-   * the basemap is a view preference, not a change to the case location.
-   */
-  showBasemapSwitcher?: boolean;
-  /**
-   * Optional staff overlay. The component stays generic: it draws whatever
-   * markers it is handed and reports clicks on them. Where the list comes from
-   * (and what a click means) is the caller's business - see CaseStaffMapField.
-   */
-  staff?: readonly StaffMarker[];
-  showStaff?: boolean;
-  selectedStaffId?: string | null;
-  onStaffSelect?: (selection: StaffSelection | null) => void;
-  /**
-   * Optional route overlay: the solved officer -> case driving route. Same
-   * contract as `staff` - this component draws whatever polyline it is handed
-   * and is entirely non-interactive, so it can never intercept a map click.
-   */
-  route?: Polyline | null;
-  showRoute?: boolean;
-  /**
-   * Optional breadcrumb overlay: where ONE officer has been, newest point last.
-   * Same contract again - this component draws the points it is handed and knows
-   * nothing about how they were collected (see useStaffTrails).
-   */
-  trail?: readonly TrailPoint[] | null;
-  showTrail?: boolean;
-  /**
-   * Optional administrative boundary overlay (province / district /
-   * sub-district polygons). Same contract as `staff`: this component draws
-   * whatever it is handed and knows nothing about what an area means. The
-   * state must be owned ABOVE ArcgisAddressMapField - see useBoundarySelection.
-   */
-  boundaries?: BoundaryLayerConfig;
-  /**
-   * Optional editable boundary polygon: the one the user is drawing or
-   * reshaping. Same contract as `boundaries` - this component draws what it is
-   * handed and knows nothing about what the polygon means. The state must be
-   * owned ABOVE ArcgisAddressMapField, since expanding renders a second view;
-   * see BoundaryGeometryField.
-   *
-   * Only ever set on the area-boundary editor. Every case map leaves it
-   * undefined, and the layer hook is inert without it.
-   */
-  sketch?: BoundarySketchConfig;
-  /**
-   * Controls rendered inside the map container, on top of the map. The caller
-   * positions them (e.g. `absolute bottom-2 left-2`), as the expand button does.
-   */
-  overlaySlot?: ReactNode;
-  /**
-   * Controls rendered in the map's top-right toolbar row, to the LEFT of the
-   * basemap switcher. Reading right to left the row is: expand, map style, then
-   * whatever the caller puts here.
-   */
-  toolbarSlot?: ReactNode;
-  /**
-   * Adds an "expand" button at the right end of the toolbar row. Omitted by the
-   * map that is already expanded, which has nothing left to expand into.
-   */
-  onExpand?: () => void;
-  /**
-   * Render every toolbar control icon-only, revealing its label on hover or
-   * focus. Set on the small inline maps (220-320px), where a row of labelled
-   * buttons covers a meaningful fraction of the map it is controlling.
-   *
-   * Passed explicitly rather than inferred from `onExpand` being present: the
-   * two happen to coincide today, but "is there something to expand into" and
-   * "is this map short of space" are different questions.
-   */
-  compactControls?: boolean;
-  /**
-   * Ref this component reads its INITIAL camera from (when present, in place of
-   * `value`/`initialCenter`/`initialZoom`) and writes its CURRENT camera into
-   * whenever the view settles. Exists because the modal that hosts the expanded
-   * map unmounts it on close (see ArcgisAddressMapField), so every reopen is a
-   * brand new MapView that would otherwise always re-centre on the case at the
-   * default zoom. The ref itself must be owned above ArcgisAddressMapField to
-   * survive that unmount - same reasoning as the staff/boundary state.
-   */
-  viewpointRef?: React.MutableRefObject<ArcgisMapViewpoint | null>;
-  /**
-   * Free-text location description to show alongside the coordinates in the
-   * on-map readout (see `showLocationInfo`). Owned by the caller - this
-   * component only knows `{ latitude, longitude }` via `value`, never an
-   * address string.
-   */
-  address?: string;
-  /**
-   * Show a persistent address + coordinates card, bottom-left. Off by default:
-   * ArcgisAddressMapField turns it on for the expanded map only, which has the
-   * room for it - the inline map does not.
-   */
-  showLocationInfo?: boolean;
-  className?: string;
-}
+import type { AddressMapProps, MapLatLon } from "./mapTypes";
 
 const DEFAULT_CENTER: [number, number] = [100.5018, 13.7563]; // Bangkok
 const DEFAULT_ZOOM = 12;
@@ -229,7 +72,7 @@ const MARKER_SYMBOL = {
   outline: { color: [255, 255, 255], width: 2 }
 };
 
-function makePoint({ latitude, longitude }: ArcgisLatLon): Point {
+function makePoint({ latitude, longitude }: MapLatLon): Point {
   return new Point({ latitude, longitude });
 }
 
@@ -278,7 +121,7 @@ function ArcgisAddressMapBase({
   address,
   showLocationInfo = false,
   className = ""
-}: ArcgisAddressMapProps) {
+}: AddressMapProps) {
   const { t, language } = useTranslation();
   const { theme } = useTheme();
   const isDarkTheme = theme === "dark";
@@ -354,7 +197,7 @@ function ArcgisAddressMapBase({
     mapRef,
     viewRef,
     isReady,
-    geometry: route ?? null,
+    path: route?.path ?? null,
     visible: showRoute,
     isDarkTheme
   });
@@ -561,22 +404,16 @@ function ArcgisAddressMapBase({
       }
       setMarker(mapPoint);
       setIsGeocoding(true);
+      // `latitude`/`longitude` convert out of the view's Web Mercator for a
+      // single point on read, which is why the geocode can take them directly.
+      const latitude = mapPoint.latitude ?? 0;
+      const longitude = mapPoint.longitude ?? 0;
       try {
-        const candidate = await locator.locationToAddress(API_CONFIG.ARCGIS_GEOCODE_URL, {
-          location: mapPoint
-        });
-        onSelectRef.current({
-          address: candidate?.address ?? "",
-          latitude: mapPoint.latitude ?? 0,
-          longitude: mapPoint.longitude ?? 0
-        });
+        const address = await arcgisGeocodeService.reverseGeocode({ latitude, longitude });
+        onSelectRef.current({ address, latitude, longitude });
       } catch (error: unknown) {
         // Still surface the coordinates even if the address lookup fails.
-        onSelectRef.current({
-          address: "",
-          latitude: mapPoint.latitude ?? 0,
-          longitude: mapPoint.longitude ?? 0
-        });
+        onSelectRef.current({ address: "", latitude, longitude });
         reportError("Failed to look up address for the selected point", error);
       } finally {
         setIsGeocoding(false);
@@ -712,8 +549,18 @@ function ArcgisAddressMapBase({
           enabled) on top, then one status line below it. Geocoding wins over
           the boundary error: it is transient and tied to something the user
           just did, whereas a failed boundary load persists and will still be
-          there once the lookup finishes. */}
-      <div className="absolute bottom-2 left-2 z-10 flex flex-col gap-1">
+          there once the lookup finishes.
+
+          Lifted to `bottom-8` on the large map only (`showLocationInfo` is
+          passed by the expanded instance alone): down at `bottom-2` the
+          coordinates card overlaps the Esri attribution / provider URL strip
+          the SDK draws along the bottom edge. The inline map keeps `bottom-2`
+          so its transient toasts sit where they always have. */}
+      <div
+        className={`absolute left-2 z-10 flex flex-col gap-1 ${
+          showLocationInfo ? "bottom-8" : "bottom-2"
+        }`}
+      >
         {showLocationInfo && value && (
           <div className="max-w-xs rounded-md bg-white/90 px-2 py-1 text-xs text-gray-700 shadow-sm dark:bg-gray-800/90 dark:text-gray-200">
             {address && <div className="truncate font-medium">{address}</div>}

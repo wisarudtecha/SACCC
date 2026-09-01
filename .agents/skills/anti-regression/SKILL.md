@@ -466,3 +466,30 @@ new lesson and update this file when the lesson is generalizable.
     // …
   }, [term, language]);
   ```
+
+### A pure helper in an SDK-bound module drags the whole SDK with it
+- **Date:** 2026-09-01
+- **Mistake:** The Longdo sketch hook imported `ringsSignature` - a one-line `JSON.stringify` - from
+  `map/sketch/sketchGeometry.ts`. That file also imports `@arcgis/core`'s `Polygon`,
+  `SpatialReference` and `webMercatorUtils`, so the Longdo-only chunk went from 25 KB to **210 KB**
+  and shipped Esri geometry into a build configured to use a different map SDK entirely.
+- **Root Cause:** Bundlers resolve imports per MODULE, not per binding. Importing one tree-shakeable
+  function from a module still evaluates that module's import graph, and a side-effectful vendor SDK
+  is not tree-shaken away. Nothing in the type system or the linter says a word about it.
+- **Correct Behavior:** Provider-neutral helpers live in provider-neutral modules. `ringsSignature`
+  moved to `@/cms/utils/areaGeometry`, which imports nothing but types, and both sketch layers import
+  it from there. The chunk went back to 31 KB.
+- **Prevention Rule:** Before importing anything into a provider-specific module (`map/longdo/**`),
+  check what the SOURCE module imports, not just what you are naming. If a shared helper is pure,
+  it belongs beside the other pure helpers (`@/cms/utils/*`, `*Types.ts`), never in a file that
+  imports a rendering SDK. The check that catches this is a build, not a type-check: compare the
+  provider chunk's size before and after, and treat an unexplained jump as a leak rather than as
+  the feature being big.
+- **Example:**
+  ```ts
+  // WRONG - pulls @arcgis/core into a Longdo-only chunk for one JSON.stringify
+  import { ringsSignature } from "../../sketch/sketchGeometry";
+
+  // CORRECT - src/cms/utils/areaGeometry.ts imports only types
+  import { MIN_RING_POINTS, closeRing, ringsSignature, roundRing } from "@/cms/utils/areaGeometry";
+  ```

@@ -38,7 +38,7 @@ export interface BoundarySketchControls {
  * BoundaryLayerConfig, so the generic map component never learns what an area
  * boundary is.
  *
- * The state behind it must be owned ABOVE ArcgisAddressMapField: that component
+ * The state behind it must be owned ABOVE AddressMapField: that component
  * renders a second MapView when expanded, so state owned any lower would be
  * thrown away the moment the user expanded the map.
  */

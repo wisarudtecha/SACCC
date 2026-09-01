@@ -53,6 +53,13 @@ const getWelcomeApiBaseUrl = (): string => {
   return isDevelopment && "/api/v1" || envApi;
 };
 
+/**
+ * Which map SDK the app renders with. Declared here rather than in the map
+ * folder so that `core` does not have to reach into `@/cms` for the type of one
+ * of its own config values.
+ */
+export type MapProviderId = "arcgis" | "longdo";
+
 export interface SSOCookie {
   accessToken: string | null;
   disabled_audio: string | null;
@@ -144,6 +151,18 @@ export const API_CONFIG = {
   ARCGIS_ROUTE_URL:
     import.meta.env.VITE_ARCGIS_ROUTE_URL ||
     "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World",
+  // Which map SDK draws every map in the app.
+  //   "arcgis" (default) the ArcGIS Maps SDK
+  //   "longdo"           the Longdo Map v3 SDK
+  // Anything other than the literal "longdo" resolves to "arcgis", so an unset
+  // or mistyped value falls back to the provider known to work rather than to a
+  // blank map - the same failure direction as BOUNDARY_SOURCE below.
+  MAP_PROVIDER: (import.meta.env.VITE_MAP_PROVIDER === "longdo"
+    ? "longdo"
+    : "arcgis") as MapProviderId,
+  // Longdo Map key, covering the tiles and the search / address / route JSON
+  // APIs. Supplied per-environment via VITE_LONGDO_API_KEY.
+  LONGDO_API_KEY: import.meta.env.VITE_LONGDO_API_KEY || "",
   // Which administrative boundary polygons the case maps draw.
   //   "org"   (default) the organization's own area data from the BFF,
   //           levelled country -> province -> district

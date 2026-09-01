@@ -69,14 +69,3 @@ export function polygonToRings(polygon: Polygon | null | undefined): PolygonCoor
     .map(ring => closeRing(roundRing(ring)))
     .filter(ring => ring.length >= MIN_RING_POINTS);
 }
-
-/**
- * Stable string for a set of rings, for "did this actually change?" tests.
- *
- * The map and the textarea are two views of one string, so without this the
- * commit that follows a drag would re-render the polygon that produced it, on
- * every drag, forever.
- */
-export function ringsSignature(rings: PolygonCoordinates | null | undefined): string {
-  return rings && rings.length > 0 ? JSON.stringify(rings) : "";
-}

@@ -3,7 +3,7 @@ import { COMMON_INPUT_CSS as commonInputCss } from "@/cms/components/case/consta
 import Loading from "@/core/components/common/Loading";
 import { useToastContext } from "@/core/components/crud/ToastGlobal";
 import { useTranslation } from "@/core/hooks/useTranslation";
-import type { ArcgisAddressResult } from "@/cms/components/case/createCase/map/ArcgisAddressMap";
+import type { AddressResult } from "@/cms/components/case/createCase/map/mapTypes";
 import { CaseFieldSectionProps } from "./types";
 
 // Heavy @arcgis/core SDK - lazy-loaded so it stays out of the initial bundle
@@ -29,7 +29,7 @@ export const CaseLocationSection = ({
 
     // Address chosen on the ArcGIS map (search or click) fills the location text
     // plus the lat/lon that the case payload previously always sent empty.
-    const handleMapSelect = useCallback((result: ArcgisAddressResult) => {
+    const handleMapSelect = useCallback((result: AddressResult) => {
         onCaseChange({
             location: result.address || caseState?.location || "",
             caseLat: String(result.latitude),

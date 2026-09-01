@@ -1,125 +1,69 @@
-// Basemap catalogue for the case map's layers control.
+// Which basemaps the layers control offers, per provider.
 //
-// Basemaps come from the ArcGIS Basemap Styles service (v2), addressed by style
-// id (`{provider}/{style}`). v2 is used rather than the legacy well-known ids
-// ("streets-navigation-vector", "hybrid", ...) because it accepts a `language`
-// preference, so basemap labels can follow the app language.
+// Deliberately free of any map SDK import: BasemapSwitcher renders this list,
+// and it must not drag a mapping SDK into its chunk - least of all the wrong
+// one. Everything ArcGIS-specific (style ids, the Basemap objects themselves,
+// the language mapping) lives in arcgisBasemaps.ts, on the far side of the
+// provider boundary.
 //
-// Note "arcgis/imagery" is the LABELLED imagery style - it draws street names
-// and boundaries over the satellite tiles. "arcgis/imagery/standard" is the
-// imagery-only variant and is deliberately not offered: an operator locating an
-// incident needs the street names.
-import Basemap from "@arcgis/core/Basemap.js";
-import type { Language } from "@/core/config/i18n";
+// The ID is abstract on purpose. "street" is a style of map, not a vendor's
+// layer name, so the stored preference survives a provider switch and the
+// switcher's labels stay the same in all three catalogues.
+import { API_CONFIG, type MapProviderId } from "@/core/config/api";
 
 export type BasemapOptionId = "street" | "satellite";
 
 export interface BasemapOption {
   id: BasemapOptionId;
-  /** Basemap Styles service (v2) style id. */
-  styleId: string;
-  /**
-   * Style id used while the app is in dark mode. Omitted where the basemap is
-   * already dark enough to sit under a dark UI - satellite imagery is imagery
-   * either way, and there is no "night" version of a photograph.
-   */
-  darkStyleId?: string;
-  /** Legacy well-known id used if the styles service is unavailable. */
-  fallbackId: string;
-  /** Legacy well-known id for the dark variant. */
-  darkFallbackId?: string;
   /** i18n key for the option's label. */
   labelKey: string;
 }
 
-export const BASEMAP_OPTIONS: readonly BasemapOption[] = [
-  {
-    id: "street",
-    styleId: "arcgis/navigation",
-    darkStyleId: "arcgis/navigation-night",
-    fallbackId: "streets-navigation-vector",
-    darkFallbackId: "streets-night-vector",
-    labelKey: "case.display.map_basemap_street"
-  },
-  {
-    id: "satellite",
-    styleId: "arcgis/imagery",
-    fallbackId: "hybrid",
-    labelKey: "case.display.map_basemap_satellite"
-  }
-];
-
-export const DEFAULT_BASEMAP_ID: BasemapOptionId = "street";
-
-const BASEMAP_PREFERENCE_KEY = "cms.map.basemap";
-
-// App language -> ArcGIS Basemap Styles service language code. Anything absent
-// from this map yields `undefined`, which omits the `language` preference
-// entirely and lets the service fall back to its own default. Degrading to
-// default-language labels is always preferable to failing to load a basemap.
-const ESRI_LANGUAGE_BY_APP_LANGUAGE: Partial<Record<Language, string>> = {
-  th: "th",
-  en: "en",
-  cn: "zh-CN"
+const STREET_OPTION: BasemapOption = {
+  id: "street",
+  labelKey: "case.display.map_basemap_street"
 };
 
-export function toEsriLanguage(language: Language | undefined): string | undefined {
-  if (!language) {
-    return undefined;
-  }
-  return ESRI_LANGUAGE_BY_APP_LANGUAGE[language];
-}
-
-export function getBasemapOption(id: BasemapOptionId): BasemapOption {
-  return BASEMAP_OPTIONS.find((option) => option.id === id) ?? BASEMAP_OPTIONS[0];
-}
-
-function isBasemapOptionId(value: unknown): value is BasemapOptionId {
-  return BASEMAP_OPTIONS.some((option) => option.id === value);
-}
+const SATELLITE_OPTION: BasemapOption = {
+  id: "satellite",
+  labelKey: "case.display.map_basemap_satellite"
+};
 
 /**
- * Build a Basemap for the given option.
+ * What each provider can actually draw.
  *
- * Always returns a NEW instance. Instances are deliberately not cached and
- * shared: while the expand modal is open two MapViews are alive at once, and
- * handing the same Basemap object to both risks one view's teardown disposing
- * layers the other is still drawing. Tile reuse is handled by the browser's
- * HTTP cache, so a fresh instance costs nothing meaningful.
+ * Both offer both today. The table is per-provider anyway because the sets are
+ * not guaranteed to stay identical - and an option a provider cannot draw must
+ * be omitted here rather than silently falling back to another: a control that
+ * does nothing when clicked is worse than a control that isn't there.
  */
-export function createBasemap(
-  id: BasemapOptionId,
-  esriLanguage?: string,
-  isDarkTheme = false
-): Basemap {
-  const option = getBasemapOption(id);
-  return new Basemap({
-    style: {
-      id: (isDarkTheme && option.darkStyleId) || option.styleId,
-      ...(esriLanguage ? { language: esriLanguage } : {})
-    }
-  });
-}
+const BASEMAP_OPTIONS_BY_PROVIDER: Record<MapProviderId, readonly BasemapOption[]> = {
+  arcgis: [STREET_OPTION, SATELLITE_OPTION],
+  longdo: [STREET_OPTION, SATELLITE_OPTION]
+};
+
+/** The options the active provider can draw. */
+export const BASEMAP_OPTIONS: readonly BasemapOption[] =
+  BASEMAP_OPTIONS_BY_PROVIDER[API_CONFIG.MAP_PROVIDER];
+
+/** Valid under every provider, which is what makes it a safe default. */
+export const DEFAULT_BASEMAP_ID: BasemapOptionId = "street";
 
 /**
- * Legacy well-known basemap for `id`, used when the styles service rejects the
- * request (e.g. the API key lacks the Basemaps privilege). Returns null if the
- * SDK doesn't recognise the id, in which case the caller should leave the
- * current basemap alone rather than blank the map.
+ * Namespaced per provider: the two do not offer the same set, so a preference
+ * of "satellite" saved under ArcGIS must not come back as a dead choice after
+ * an environment switches to Longdo.
  */
-export function createFallbackBasemap(
-  id: BasemapOptionId,
-  isDarkTheme = false
-): Basemap | null {
-  const option = getBasemapOption(id);
-  const fallbackId = (isDarkTheme && option.darkFallbackId) || option.fallbackId;
-  return Basemap.fromId(fallbackId) ?? null;
+const BASEMAP_PREFERENCE_KEY = `cms.map.basemap.${API_CONFIG.MAP_PROVIDER}`;
+
+function isSupportedBasemapId(value: unknown): value is BasemapOptionId {
+  return BASEMAP_OPTIONS.some((option) => option.id === value);
 }
 
 export function readBasemapPreference(): BasemapOptionId {
   try {
     const stored = window.localStorage.getItem(BASEMAP_PREFERENCE_KEY);
-    return isBasemapOptionId(stored) ? stored : DEFAULT_BASEMAP_ID;
+    return isSupportedBasemapId(stored) ? stored : DEFAULT_BASEMAP_ID;
   } catch {
     // localStorage throws in private mode / when storage is disabled.
     return DEFAULT_BASEMAP_ID;

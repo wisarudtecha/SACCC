@@ -1,4 +1,4 @@
-// ArcgisAddressMapField with the administrative boundary controls attached.
+// AddressMapField with the administrative boundary controls attached.
 //
 // This is the component feature code should use. Three surfaces need boundaries
 // now - the case creation form, the case command/detail map, and the small map
@@ -14,28 +14,25 @@
 // selected: the toggles alone are enough to control what is drawn, and refining
 // WHICH areas is a large-map job.
 //
-// State lives here rather than inside ArcgisAddressMapField because that
+// State lives here rather than inside AddressMapField because that
 // component renders a SECOND MapView when expanded - exactly the reason
 // CaseStaffMapField owns the staff state instead of letting the map own it.
-import { memo, useCallback, type ReactNode } from "react";
-import type Polyline from "@arcgis/core/geometry/Polyline.js";
+import { memo, useCallback } from "react";
 import type { TrailPoint } from "./staff/useStaffTrails";
 import { useTheme } from "@/core/context/ThemeContext";
-import ArcgisAddressMapField, { type MapSlotContext } from "./ArcgisAddressMapField";
-import type { ArcgisAddressResult, ArcgisLatLon } from "./ArcgisAddressMap";
+import AddressMapField from "./AddressMapField";
+import type { AddressResult, MapLatLon, MapSlot, MapSlotContext, RouteOverlay } from "./mapTypes";
 import MapPlaceButton from "./MapPlaceButton";
 import BoundaryPickerPanel from "./boundaries/BoundaryPickerPanel";
 import BoundaryToolbar from "./boundaries/BoundaryToolbar";
 import { useBoundarySelection } from "./boundaries/useBoundarySelection";
 import type { StaffMarker, StaffSelection } from "./staff/staffTypes";
 
-type MapSlot = (context: MapSlotContext) => ReactNode;
-
 interface BoundaryMapFieldProps {
-  value?: ArcgisLatLon | null;
-  onSelect: (result: ArcgisAddressResult) => void;
+  value?: MapLatLon | null;
+  onSelect: (result: AddressResult) => void;
   onError?: (message: string) => void;
-  /** Free-text location description, forwarded to ArcgisAddressMapField. */
+  /** Free-text location description, forwarded to AddressMapField. */
   address?: string;
   readOnly?: boolean;
   searchMode?: "always" | "expanded-only" | "never";
@@ -49,7 +46,7 @@ interface BoundaryMapFieldProps {
   selectedStaffId?: string | null;
   onStaffSelect?: (selection: StaffSelection | null) => void;
   /** Route overlay, forwarded untouched for CaseStaffMapField. */
-  route?: Polyline | null;
+  route?: RouteOverlay | null;
   showRoute?: boolean;
   /** Breadcrumb overlay, forwarded untouched for CaseStaffMapField. */
   trail?: readonly TrailPoint[] | null;
@@ -164,7 +161,7 @@ function BoundaryMapFieldBase({
   );
 
   return (
-    <ArcgisAddressMapField
+    <AddressMapField
       value={value}
       onSelect={onSelect}
       onError={onError}

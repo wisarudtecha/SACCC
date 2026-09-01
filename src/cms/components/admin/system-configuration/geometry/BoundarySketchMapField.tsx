@@ -2,7 +2,7 @@
 // @arcgis/core, so BoundaryGeometryField must never import it directly.
 //
 // Almost all of this is configuration rather than code, because
-// ArcgisAddressMapField already supports the exact mode a boundary editor
+// AddressMapField already supports the exact mode a boundary editor
 // needs:
 //
 //   readOnly + search   "navigate-only search" (see ArcgisAddressMap) - typing
@@ -13,13 +13,12 @@
 //   expand modal        the full-size drawing surface, for free.
 //
 // `readOnly` is fixed at true rather than following the field's own read-only
-// state: it is part of ArcgisAddressMapField's map key, so flipping it rebuilds
+// state: it is part of AddressMapField's map key, so flipping it rebuilds
 // the MapView and would destroy the sketch mid-gesture. Whether the user may
 // EDIT is carried by the sketch config and by withholding the toolbar.
 import { memo, useCallback } from "react";
-import ArcgisAddressMapField, {
-  type MapSlotContext
-} from "@/cms/components/case/createCase/map/ArcgisAddressMapField";
+import AddressMapField from "@/cms/components/case/createCase/map/AddressMapField";
+import type { MapSlotContext } from "@/cms/components/case/createCase/map/mapTypes";
 import type { BoundarySketchConfig, BoundarySketchMode } from "@/cms/components/case/createCase/map/sketch/sketchTypes";
 import BoundaryDrawToolbar from "./BoundaryDrawToolbar";
 
@@ -84,7 +83,7 @@ function BoundarySketchMapFieldBase({
   );
 
   return (
-    <ArcgisAddressMapField
+    <AddressMapField
       value={null}
       onSelect={noopSelect}
       readOnly

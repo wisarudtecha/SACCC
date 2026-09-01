@@ -12,14 +12,8 @@
 // what guarantees a stale polyline can never survive a selection change -
 // there is no leftover state to forget to clear.
 import { useCallback, useEffect, useRef, useState } from "react";
-import * as route from "@arcgis/core/rest/route.js";
-import RouteParameters from "@arcgis/core/rest/support/RouteParameters.js";
-import Stop from "@arcgis/core/rest/support/Stop.js";
-import Collection from "@arcgis/core/core/Collection.js";
-import Point from "@arcgis/core/geometry/Point.js";
-import type Polyline from "@arcgis/core/geometry/Polyline.js";
-import { API_CONFIG } from "@/core/config/api";
-import type { ArcgisLatLon } from "../ArcgisAddressMap";
+import type { MapLatLon } from "../mapTypes";
+import { routeService } from "../services/routeService";
 import { buildRouteKey, type RouteResult, type RouteState } from "./routeTypes";
 import { isMappableCoordinate, isStaleLocation, type StaffMarker } from "./staffTypes";
 import { STAFF_REFRESH_COOLDOWN_MS } from "./useStaffPositions";
@@ -34,7 +28,7 @@ interface UseCaseRouteOptions {
   /** The officer the panel is currently showing, or null when nothing is selected. */
   marker: StaffMarker | null;
   /** The open case's location. */
-  caseLocation: ArcgisLatLon | null;
+  caseLocation: MapLatLon | null;
 }
 
 export interface UseCaseRouteResult {
@@ -44,11 +38,6 @@ export interface UseCaseRouteResult {
   /** Seconds left before another solve is allowed; 0 when not cooling down. */
   cooldownSeconds: number;
   solve: () => void;
-}
-
-function toFiniteNumber(value: unknown): number | null {
-  const parsed = typeof value === "number" ? value : Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function cacheRoute(cache: Map<string, RouteResult>, key: string, result: RouteResult): void {
@@ -138,35 +127,10 @@ export function useCaseRoute({ marker, caseLocation }: UseCaseRouteOptions): Use
     setTransient({ key, state: { status: "solving" } });
     setCooldownUntil(Date.now() + ROUTE_SOLVE_COOLDOWN_MS);
 
-    const stops = new Collection([
-      new Stop({
-        geometry: new Point({ latitude: staffPosition.latitude, longitude: staffPosition.longitude })
-      }),
-      new Stop({
-        geometry: new Point({ latitude: caseMappable.latitude, longitude: caseMappable.longitude })
-      })
-    ]);
-
-    const params = new RouteParameters({
-      stops,
-      returnDirections: false,
-      returnRoutes: true,
-      // Traffic-adjusted travel time needs a start time - solving without one
-      // understates Bangkok drive times by 40-45% (see the Phase 0 spike).
-      startTime: new Date(),
-      startTimeIsUTC: true
-    });
-
-    route
-      .solve(API_CONFIG.ARCGIS_ROUTE_URL, params)
-      .then((solveResult) => {
-        const routeGraphic = solveResult.routeResults?.[0]?.route;
-        const geometry = routeGraphic?.geometry as Polyline | undefined;
-        const attributes = (routeGraphic?.attributes ?? {}) as Record<string, unknown>;
-        const distanceKm = toFiniteNumber(attributes.Total_Kilometers);
-        const travelMinutes = toFiniteNumber(attributes.Total_TravelTime);
-
-        if (!geometry || distanceKm === null || travelMinutes === null) {
+    routeService
+      .solve(staffPosition, caseMappable)
+      .then((solution) => {
+        if (!solution) {
           setTransient((previous) =>
             previous?.key === key ? { key, state: { status: "error", reason: "no-metrics" } } : previous
           );
@@ -174,9 +138,9 @@ export function useCaseRoute({ marker, caseLocation }: UseCaseRouteOptions): Use
         }
 
         const result: RouteResult = {
-          geometry,
-          distanceKm,
-          travelMinutes,
+          geometry: solution.path,
+          distanceKm: solution.distanceKm,
+          travelMinutes: solution.travelMinutes,
           solvedAtMs: Date.now(),
           isFromStalePosition
         };

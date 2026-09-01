@@ -118,6 +118,22 @@ export function boundaryRgba(
   return [r, g, b, alpha];
 }
 
+/**
+ * CSS colour for a slot at a given alpha.
+ *
+ * The Longdo counterpart of boundaryRgba: its geometry options take CSS colour
+ * STRINGS where the ArcGIS symbols take component arrays. Same palette, same
+ * alphas from the level styles - only the notation differs.
+ */
+export function boundaryRgbaCss(
+  colorIndex: number,
+  isDarkTheme: boolean,
+  alpha: number
+): string {
+  const [r, g, b] = boundaryHue(colorIndex, isDarkTheme);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 /** CSS colour for the picker's swatches, so the list matches the map. */
 export function boundarySwatchCss(colorIndex: number, isDarkTheme: boolean): string {
   const [r, g, b] = boundaryHue(colorIndex, isDarkTheme);

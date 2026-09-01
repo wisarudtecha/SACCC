@@ -25,7 +25,8 @@ import type Polygon from "@arcgis/core/geometry/Polygon.js";
 import type esriMap from "@arcgis/core/Map.js";
 import type MapView from "@arcgis/core/views/MapView.js";
 import { createSketchPolygonSymbol } from "./sketchSymbols";
-import { polygonToRings, ringsSignature, ringsToPolygon } from "./sketchGeometry";
+import { polygonToRings, ringsToPolygon } from "./sketchGeometry";
+import { ringsSignature } from "@/cms/utils/areaGeometry";
 import type { BoundarySketchConfig, BoundarySketchControls } from "./sketchTypes";
 
 /** Padding applied to the polygon's extent before framing it. Pure breathing room. */

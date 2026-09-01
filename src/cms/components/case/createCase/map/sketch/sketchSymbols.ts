@@ -47,3 +47,19 @@ export function createSketchPolygonSymbol(isDarkTheme: boolean) {
     }
   };
 }
+
+/**
+ * The same values, as a second provider needs them.
+ *
+ * Longdo geometry takes CSS colour strings rather than an Esri symbol object,
+ * so its renderer needs the numbers, not the object. Shared for the same reason
+ * STAFF_SYMBOL_TOKENS and BREADCRUMB_TOKENS are: two copies of "what the
+ * in-progress boundary looks like" would drift.
+ */
+export const SKETCH_TOKENS = {
+  lightRgb: SKETCH_LIGHT_RGB,
+  darkRgb: SKETCH_DARK_RGB,
+  fillAlpha: FILL_ALPHA,
+  outlineAlpha: OUTLINE_ALPHA,
+  outlineWidth: OUTLINE_WIDTH
+} as const;

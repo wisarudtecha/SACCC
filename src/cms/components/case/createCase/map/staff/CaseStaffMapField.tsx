@@ -1,10 +1,10 @@
 // The case map with the staff overlay attached.
 //
 // This is the only file that knows both about dispatch data and about the map.
-// ArcgisAddressMapField / ArcgisAddressMap stay generic: they receive markers,
+// AddressMapField / the map itself stay generic: they receive markers,
 // a selection, and a slot of controls to render over the map.
 //
-// State lives here, ABOVE ArcgisAddressMapField, because that component renders
+// State lives here, ABOVE AddressMapField, because that component renders
 // a second MapView when expanded. Owning `isStaffVisible` / `selectedStaffId`
 // any lower would reset the layer between renders of the large map and fetch the
 // unit list twice. It now SURVIVES the large map closing - only what the layer
@@ -18,8 +18,7 @@ import { memo, useCallback, useMemo, useState } from "react";
 import { PermissionGate } from "@/core/components/auth/PermissionGate";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import BoundaryMapField from "../BoundaryMapField";
-import type { MapSlotContext } from "../ArcgisAddressMapField";
-import type { ArcgisAddressResult, ArcgisLatLon } from "../ArcgisAddressMap";
+import type { AddressResult, MapLatLon, MapSlotContext, RouteOverlay } from "../mapTypes";
 import StaffDetailPanel from "./StaffDetailPanel";
 import StaffGroupPanel from "./StaffGroupPanel";
 import StaffMapControls from "./StaffMapControls";
@@ -58,8 +57,8 @@ export interface StaffAssignmentOverlay {
 interface CaseStaffMapFieldProps {
   /** Case whose dispatch units are shown. Required - the endpoint is per-case. */
   caseId: string;
-  value?: ArcgisLatLon | null;
-  onSelect: (result: ArcgisAddressResult) => void;
+  value?: MapLatLon | null;
+  onSelect: (result: AddressResult) => void;
   onError?: (message: string) => void;
   /** Free-text location description, forwarded to BoundaryMapField. */
   address?: string;
@@ -94,11 +93,11 @@ function CaseStaffMapFieldBase({
   // Whether the breadcrumb trail is drawn. Owned here, not in the tracking
   // section that offers the control, because that section unmounts every time
   // its row is collapsed - and for the same reason the rest of this state lives
-  // here rather than below ArcgisAddressMapField.
+  // here rather than below AddressMapField.
   const [isTrailVisible, setIsTrailVisible] = useState(false);
 
   // What the layer actually draws. `isStaffVisible` alone is not enough: it is
-  // forwarded to BOTH map instances (see ArcgisAddressMapField), and the inline
+  // forwarded to BOTH map instances (see AddressMapField), and the inline
   // 320px map has no controls to turn markers back off. Gating on `isExpanded`
   // here - rather than resetting `isStaffVisible` when the modal closes - is
   // what lets the layer's on/off state and the selected officer/group survive a
@@ -202,6 +201,25 @@ function CaseStaffMapFieldBase({
     marker: selectedMarker,
     caseLocation: value ?? null
   });
+
+  // What the map draws for that route.
+  //
+  // Carries the ENDPOINTS as well as the solved line, because the two providers
+  // get their geometry from opposite directions: ArcGIS solves through a service
+  // and returns a polyline, while Longdo's router returns metrics only and its
+  // map re-solves from the endpoints to draw (see RouteOverlay in mapTypes.ts).
+  // Memoised so a Longdo map can tell "the same route re-rendered" from "a new
+  // route to solve" by identity.
+  const routeOverlay = useMemo<RouteOverlay | null>(() => {
+    if (routeState.status !== "ready" || !selectedMarker || !value) {
+      return null;
+    }
+    return {
+      from: { latitude: selectedMarker.latitude, longitude: selectedMarker.longitude },
+      to: { latitude: value.latitude, longitude: value.longitude },
+      path: routeState.result.geometry
+    };
+  }, [routeState, selectedMarker, value]);
 
   // Every cluster member's distance/ETA, solved automatically the moment a
   // group panel opens - no button, no drawn polyline (see useClusterRouteSummaries.ts).
@@ -374,8 +392,8 @@ function CaseStaffMapFieldBase({
       onStaffSelect={handleStaffSelect}
       // Same gating as the staff layer: large-map only, and only while a
       // result actually exists to draw - a selection change or a failed solve
-      // already collapses `routeState` back to something with no geometry.
-      route={routeState.status === "ready" ? routeState.result.geometry : null}
+      // already collapses `routeState` back to something with no result.
+      route={routeOverlay}
       showRoute={effectiveShowStaff && routeState.status === "ready"}
       // Same gating again, plus the operator's own toggle: a trail belongs to one
       // selected officer, so there is nothing to draw without a selection.

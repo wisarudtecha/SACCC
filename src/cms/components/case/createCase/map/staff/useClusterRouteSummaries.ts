@@ -14,14 +14,8 @@
 // ClosestFacility service. Each member is solved with the same World Route
 // service useCaseRoute.ts already uses.
 import { useEffect, useMemo, useRef, useState } from "react";
-import * as route from "@arcgis/core/rest/route.js";
-import RouteParameters from "@arcgis/core/rest/support/RouteParameters.js";
-import Stop from "@arcgis/core/rest/support/Stop.js";
-import Collection from "@arcgis/core/core/Collection.js";
-import Point from "@arcgis/core/geometry/Point.js";
-import type Polyline from "@arcgis/core/geometry/Polyline.js";
-import { API_CONFIG } from "@/core/config/api";
-import type { ArcgisLatLon } from "../ArcgisAddressMap";
+import type { MapLatLon } from "../mapTypes";
+import { routeService } from "../services/routeService";
 import { buildRouteKey, type RouteResult, type RouteState } from "./routeTypes";
 import { isMappableCoordinate, isStaleLocation, type StaffMarker } from "./staffTypes";
 
@@ -40,7 +34,7 @@ interface CacheEntry {
 interface UseClusterRouteSummariesOptions {
   /** The officers in the open cluster, or null while no cluster panel is open. */
   members: readonly StaffMarker[] | null;
-  caseLocation: ArcgisLatLon | null;
+  caseLocation: MapLatLon | null;
 }
 
 export interface ClusterMemberRoute {
@@ -51,11 +45,6 @@ export interface ClusterMemberRoute {
 export interface UseClusterRouteSummariesResult {
   /** One entry per member, in `members` order. */
   routes: readonly ClusterMemberRoute[];
-}
-
-function toFiniteNumber(value: unknown): number | null {
-  const parsed = typeof value === "number" ? value : Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function cacheRoute(cache: Map<string, CacheEntry>, key: string, entry: CacheEntry): void {
@@ -155,32 +144,14 @@ export function useClusterRouteSummaries({
       const isFromStalePosition = isStaleLocation(marker);
       setResultsByUnitId((previous) => ({ ...previous, [unitId]: { status: "solving" } }));
 
-      const stops = new Collection([
-        new Stop({ geometry: new Point({ latitude: marker.latitude, longitude: marker.longitude }) }),
-        new Stop({ geometry: new Point({ latitude: caseLat, longitude: caseLon }) })
-      ]);
-
-      const params = new RouteParameters({
-        stops,
-        returnDirections: false,
-        returnRoutes: true,
-        startTime: new Date(),
-        startTimeIsUTC: true
-      });
-
-      route
-        .solve(API_CONFIG.ARCGIS_ROUTE_URL, params)
-        .then((solveResult) => {
+      routeService
+        .solve(marker, { latitude: caseLat, longitude: caseLon })
+        .then((solution) => {
           if (generationRef.current !== myGeneration) {
             return;
           }
-          const routeGraphic = solveResult.routeResults?.[0]?.route;
-          const geometry = routeGraphic?.geometry as Polyline | undefined;
-          const attributes = (routeGraphic?.attributes ?? {}) as Record<string, unknown>;
-          const distanceKm = toFiniteNumber(attributes.Total_Kilometers);
-          const travelMinutes = toFiniteNumber(attributes.Total_TravelTime);
 
-          if (!geometry || distanceKm === null || travelMinutes === null) {
+          if (!solution) {
             setResultsByUnitId((previous) => ({
               ...previous,
               [unitId]: { status: "error", reason: "no-metrics" }
@@ -189,9 +160,9 @@ export function useClusterRouteSummaries({
           }
 
           const result: RouteResult = {
-            geometry,
-            distanceKm,
-            travelMinutes,
+            geometry: solution.path,
+            distanceKm: solution.distanceKm,
+            travelMinutes: solution.travelMinutes,
             solvedAtMs: Date.now(),
             isFromStalePosition
           };
