@@ -11,7 +11,7 @@ import { useInsertAppointmentMutationMutation, useUpdateAppointmentMutation } fr
 import { useGetAppointmentTypeQuery } from "@/cms/store/api/appointmentType";
 import { AppointmentType } from "@/cms/types/appointmentType";
 import { useGetCustomerQuery, Customer, useGetCustommersQuery } from "@/cms/store/api/custommerApi";
-import { useGetServiceTypeQuery } from "@/cms/store/api/serviceType";
+// import { useGetServiceTypeQuery } from "@/cms/store/api/serviceType";
 import { Appointment, AppointmentInsert } from "@/cms/types/appointment";
 import { useToastContext } from "@/core/components/crud/ToastGlobal";
 import { useTranslation } from "@/core/hooks/useTranslation";
@@ -61,7 +61,12 @@ export const AppointmentForm: React.FC<{
 
     const handleSubmit = async () => {
         try {
-            if (!appointment.appointmentTypeId || !appointment.serviceId || !appointment.customerId || !appointment.appointmentDate) {
+            if (
+                !appointment.appointmentTypeId
+                // || !appointment.serviceId
+                || !appointment.customerId
+                || !appointment.appointmentDate
+            ) {
                 addToast("error", t("common.error"))
                 return
             }
@@ -138,7 +143,7 @@ export const AppointmentForm: React.FC<{
             filterOption={(appointmentType: AppointmentType) => Boolean(appointmentType.active)}
             placeholder={t("case.panel.serviceType_search")}
             disabled={ !appointment.customerId || !!editData} />
-        <div >
+        {/* <div >
             {t("common.serviceType")} <span className="text-red-500">*</span>
         </div>
         <SearchableSelectApi value={appointment.serviceId || ""} onChange={(data) => {
@@ -150,7 +155,7 @@ export const AppointmentForm: React.FC<{
             apiQuery={useGetServiceTypeQuery}
             labelKey={language == "th" ? "th" : "en"} valueKey={"serviceId"}
             placeholder={t("case.panel.appointmentType_search")}
-            disabled={ !!editData || !appointment.customerId} />
+            disabled={ !!editData || !appointment.customerId} /> */}
         <div >
             {t("common.appointDate")} <span className="text-red-500">*</span>
         </div>
