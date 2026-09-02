@@ -25,3 +25,18 @@ export function createRouteSymbol(isDarkTheme: boolean) {
     join: "round" as const
   };
 }
+
+/**
+ * The same values, as a second provider needs them.
+ *
+ * MapLibre `paint` properties take CSS colour strings and plain widths rather
+ * than an Esri symbol object, so its route overlay needs the numbers, not the
+ * object. Shared for the same reason BREADCRUMB_TOKENS and SKETCH_TOKENS are:
+ * two copies of "what the solved route looks like" would drift.
+ */
+export const ROUTE_TOKENS = {
+  lightRgb: ROUTE_LIGHT_RGB,
+  darkRgb: ROUTE_DARK_RGB,
+  alpha: ROUTE_LINE_ALPHA,
+  width: ROUTE_LINE_WIDTH
+} as const;

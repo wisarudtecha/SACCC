@@ -16,7 +16,9 @@ import type { AddressMapProps } from "./mapTypes";
 const ProviderMap =
   API_CONFIG.MAP_PROVIDER === "longdo"
     ? lazy(() => import("./longdo/LongdoAddressMap"))
-    : lazy(() => import("./ArcgisAddressMap"));
+    : API_CONFIG.MAP_PROVIDER === "maptiler"
+      ? lazy(() => import("./maptiler/MapTilerAddressMap"))
+      : lazy(() => import("./ArcgisAddressMap"));
 
 /**
  * Placeholder while the implementation chunk loads.

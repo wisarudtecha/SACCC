@@ -11,7 +11,12 @@
 import type { Language } from "@/core/config/i18n";
 import { API_CONFIG } from "@/core/config/api";
 import type { MapLatLon } from "../mapTypes";
-import type { GeocodeService } from "./geocodeService";
+import type { GeocodeService, PlaceCandidate } from "./geocodeService";
+
+// Re-exported so existing importers (LongdoSearchBox, LongdoAddressMap) keep
+// pulling `PlaceCandidate` from here; the canonical definition is in
+// geocodeService.ts now that MapTiler needs the same shape.
+export type { PlaceCandidate };
 
 const ADDRESS_URL = "https://api.longdo.com/map/services/address";
 const SEARCH_URL = "https://search.longdo.com/mapsearch/json/search";
@@ -42,15 +47,6 @@ interface LongdoSearchEntry {
 
 interface LongdoSearchResponse {
   data?: LongdoSearchEntry[];
-}
-
-export interface PlaceCandidate {
-  /** What the search box lists. */
-  name: string;
-  /** Longer description, shown under the name when the API supplies one. */
-  address: string;
-  latitude: number;
-  longitude: number;
 }
 
 /**

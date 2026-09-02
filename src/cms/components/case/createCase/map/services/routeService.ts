@@ -51,7 +51,9 @@ function loadRouteService(): Promise<RouteService> {
     servicePromise =
       API_CONFIG.MAP_PROVIDER === "longdo"
         ? import("./longdoRoute").then((module) => module.longdoRouteService)
-        : import("./arcgisRoute").then((module) => module.arcgisRouteService);
+        : API_CONFIG.MAP_PROVIDER === "maptiler"
+          ? import("./maptilerRoute").then((module) => module.maptilerRouteService)
+          : import("./arcgisRoute").then((module) => module.arcgisRouteService);
   }
   return servicePromise;
 }

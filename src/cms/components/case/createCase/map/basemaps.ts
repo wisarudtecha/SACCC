@@ -39,7 +39,11 @@ const SATELLITE_OPTION: BasemapOption = {
  */
 const BASEMAP_OPTIONS_BY_PROVIDER: Record<MapProviderId, readonly BasemapOption[]> = {
   arcgis: [STREET_OPTION, SATELLITE_OPTION],
-  longdo: [STREET_OPTION, SATELLITE_OPTION]
+  longdo: [STREET_OPTION, SATELLITE_OPTION],
+  // MapTiler serves both a street style and a labelled satellite ("hybrid")
+  // style, so it offers the same pair as ArcGIS - unlike Longdo, whose free set
+  // has no satellite.
+  maptiler: [STREET_OPTION, SATELLITE_OPTION]
 };
 
 /** The options the active provider can draw. */

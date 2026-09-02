@@ -55,7 +55,17 @@ export default defineConfig({
       "@arcgis/core/rest/locator.js",
       "@arcgis/core/views/MapView.js",
       "@arcgis/core/widgets/Search.js"
-    ]
+    ],
+    // maplibre-gl (the MapTiler map, behind React.lazy) must NOT be pre-bundled.
+    // Its tile Web Worker is resolved internally as
+    // `new URL("./maplibre-gl-worker.mjs", import.meta.url)`; pre-bundling moves
+    // `import.meta.url` into .vite/deps/, where that sibling was never emitted,
+    // so the worker request hangs and no tiles render. Served raw from
+    // node_modules, its dist/ siblings (maplibre-gl-worker.mjs,
+    // maplibre-gl-shared.mjs) all exist. Excluding it also closes the
+    // late-discovery re-optimize window entirely (an excluded dep is never
+    // optimized), so nothing is lost by not `include`-ing it. Dev-only.
+    exclude: ["maplibre-gl"]
   },
 
   // CORS Solution: Proxy API requests to backend
@@ -207,7 +217,17 @@ export default defineConfig({
           // referencing group. Splitting it across arcgis/vendor makes vendor
           // import arcgis, and since vendor is eager that drags the whole ~12MB
           // SDK into the initial bundle (and warns "Circular chunk").
+          //
+          // maplibre-gl (the MapTiler provider) gets the same treatment: it and
+          // its runtime deps are only reachable behind React.lazy, so leaving
+          // them unassigned keeps them in the MapTiler async chunk instead of
+          // the eager vendor chunk. Missing a transitive dep here silently
+          // re-eagers part of the SDK - keep this list in sync with
+          // maplibre-gl's dependencies in package.json.
           if (/node_modules\/(@arcgis|@esri|@amcharts|@vaadin|@zip\.js|luxon|marked)\//.test(id)) {
+            return;
+          }
+          if (/node_modules\/(maplibre-gl|@maplibre|@mapbox|earcut|gl-matrix|kdbush|murmurhash-js|pbf|potpack|quickselect|tinyqueue)\//.test(id)) {
             return;
           }
           return "vendor";

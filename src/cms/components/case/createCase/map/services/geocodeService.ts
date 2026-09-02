@@ -29,3 +29,20 @@ export interface GeocodeService {
    */
   reverseGeocode(point: MapLatLon, language?: Language): Promise<string>;
 }
+
+/**
+ * One place the app-built search box can offer.
+ *
+ * Lives here, next to the geocode interface, because more than one provider
+ * needs it: any provider without a first-party search widget (Longdo, MapTiler)
+ * builds its own search box and its own `searchPlaces` that returns these. The
+ * ArcGIS map uses its SDK's Search widget and never constructs one.
+ */
+export interface PlaceCandidate {
+  /** What the search box lists. */
+  name: string;
+  /** Longer description, shown under the name when the API supplies one. */
+  address: string;
+  latitude: number;
+  longitude: number;
+}
