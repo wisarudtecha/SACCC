@@ -1,4 +1,10 @@
 {
+  "0.67.1": {
+    "date": "2026-09-03",
+    "segment": "PATCH",
+    "notes": "fix(cms): keep the searchable select dropdown above nearby content\n- A search-and-pick list (used across the case, customer, appointment and inventory forms) now opens on top of the fields around it. In some layouts the opened list was appearing behind the next field or panel, so the lower options could not be read or clicked.\n- changelog.json / package.json: bump version 0.67.0 -> 0.67.1",
+    "author": "Wisarud Techa"
+  },
   "0.67.0": {
     "date": "2026-09-01",
     "segment": "MINOR",

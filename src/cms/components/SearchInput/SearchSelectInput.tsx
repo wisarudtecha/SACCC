@@ -134,7 +134,7 @@ export const SearchableSelect: React.FC<{
                     </div>
                 </button>
                 {isOpen && (
-                    <div className="absolute z-10 w-full bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700 top-full mt-1">
+                    <div className="absolute z-50 w-full bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700 top-full mt-1">
                         <div className="p-2">
                             <Input
                                 type="text"
@@ -393,7 +393,7 @@ export const SearchableSelectApi = <T extends ApiOption>({
                 </button>
 
                 {isOpen && (
-                    <div className="absolute z-10 w-full bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700 top-full mt-1">
+                    <div className="absolute z-50 w-full bg-white dark:bg-gray-900 rounded-md shadow-lg border dark:border-gray-700 top-full mt-1">
                         <div className="p-2">
                             <Input
                                 id={id}
