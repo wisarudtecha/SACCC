@@ -90,6 +90,16 @@ export interface LongdoMapOptions {
   lastView?: boolean;
 }
 
+/**
+ * One of the map's built-in on-map controls (zoom bar, layer selector,
+ * fullscreen button, ...). Reached as `map.Ui.<Name>` and toggled with
+ * `.visible(false)`. UNVERIFIED beyond `LayerSelector` / `Fullscreen`, which is
+ * all `hideRedundantLongdoUi` touches.
+ */
+export interface LongdoUiControl {
+  visible(visible?: boolean): boolean;
+}
+
 export interface LongdoMap {
   /** Getter with no argument; setter with one. `animate` pans instead of jumping. */
   location(location?: LongdoLocation, animate?: boolean): LongdoLocation;
@@ -142,7 +152,26 @@ export interface LongdoMap {
     line(line?: unknown): unknown;
     label(label?: unknown): unknown;
   };
-  Ui: Record<string, unknown>;
+  /**
+   * The map's built-in UI controls, as named in Longdo's `longdomap-type`
+   * package. Every entry is optional because the active UI preset (see the
+   * constructor `ui` option) may not include all of them.
+   */
+  Ui: Partial<
+    Record<
+      | "DPad"
+      | "Zoombar"
+      | "Geolocation"
+      | "Terrain"
+      | "LayerSelector"
+      | "Crosshair"
+      | "Scale"
+      | "ContextMenu"
+      | "Fullscreen"
+      | "Toolbar",
+      LongdoUiControl
+    >
+  >;
 }
 
 export interface LongdoGlobal {

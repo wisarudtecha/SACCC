@@ -36,6 +36,7 @@ import type { LongdoGlobal, LongdoLocation, LongdoMap, LongdoOverlay } from "./l
 import { locationFromScreen, readEventLocation } from "./longdoGeometry";
 import { createCaseMarkerOptions } from "./longdoSymbols";
 import { loadLongdo } from "./longdoSetup";
+import { hideRedundantLongdoUi } from "./longdoUi";
 import LongdoSearchBox from "./LongdoSearchBox";
 import { useLongdoBoundaryOverlays } from "./boundaries/useLongdoBoundaryOverlays";
 import {
@@ -335,6 +336,11 @@ function LongdoAddressMapBase({
         });
         mapRef.current = map;
 
+        // Drop the native controls the app replaces (map-style selector,
+        // fullscreen button). Registers a `ready` handler - v3 wires map.Ui
+        // only then; see longdoUi.ts for why each control has to go.
+        hideRedundantLongdoUi(map);
+
         applyLongdoBasemap(longdo, map, basemapId, isDarkTheme);
         appliedBasemapRef.current = `${basemapId}:${isDarkTheme ? "dark" : "light"}`;
 
@@ -520,11 +526,11 @@ function LongdoAddressMapBase({
           map lays it out: reading inward from the right it is expand, map style,
           then the caller's own controls.
 
-          `top-14`, not `top-2` as on the ArcGIS map: Longdo puts its own
-          Map-style and Full-Screen buttons in the top-right corner, so the
-          custom row has to start below them or it covers both. */}
+          `top-2`, same as the ArcGIS map: Longdo's own Map-style and Full-Screen
+          buttons would sit here too, but hideRedundantLongdoUi removes both, so
+          this corner is clear. */}
       {(showBasemapSwitcher || toolbarSlot || onExpand) && (
-        <div className="absolute right-2 top-14 z-10 flex items-start gap-2">
+        <div className="absolute right-2 top-2 z-10 flex items-start gap-2">
           {toolbarSlot}
           {showBasemapSwitcher && (
             <BasemapSwitcher
