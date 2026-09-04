@@ -16,6 +16,21 @@ import { AvatarFallback } from "@/core/components/ui/avatar/Avatarv2"
 import { useTranslation } from "@/core/hooks/useTranslation"
 import { ChevronDown, ChevronUp, Search, X } from "lucide-react"
 import { useState, useMemo, useEffect, useRef } from "react"
+import type { MapLatLon } from "@/cms/components/case/createCase/map/mapTypes"
+import { useUnitWorkloads } from "@/cms/components/assignOfficer/workload/useUnitWorkloads"
+import { useOfficerRouteSolves } from "@/cms/components/assignOfficer/workload/useOfficerRouteSolves"
+import { OfficerWorkloadCell } from "@/cms/components/assignOfficer/workload/OfficerWorkloadCell"
+import { OfficerAssignedCasesCell } from "@/cms/components/assignOfficer/workload/OfficerAssignedCasesCell"
+import { OfficerEtaTtlCell } from "@/cms/components/assignOfficer/workload/OfficerEtaTtlCell"
+
+// One class for the 7-column officer grid so the header and every row stay in
+// lockstep. Name gets the most room; ETA/TTL needs room for three lines + button.
+const OFFICER_GRID_COLS = "grid grid-cols-[15%_11%_13%_15%_12%_14%_20%] gap-3"
+
+// "All Officer" is the default view: today's unfiltered roster. "Recommend"
+// re-ranks by workload then currently-assigned-case count (Decision #9 — ETA/TTL
+// is deliberately NOT part of this).
+type OfficerViewMode = "all" | "recommend"
 
 
 const SkillsDisplay = ({
@@ -163,6 +178,7 @@ export default function AssignOfficerModal({
   const [sortDirection] = useState<"asc" | "desc">("asc")
   const [disableAssign, setDisableAssign] = useState(false)
   const [showOfficerData, setShowOFFicerData] = useState<Unit | null>(null)
+  const [viewMode, setViewMode] = useState<OfficerViewMode>("all")
   
   const unitStatus = useMemo(() => {
     return JSON.parse(localStorage.getItem("unit_status") ?? "[]") as UnitStatus[];
@@ -213,16 +229,41 @@ export default function AssignOfficerModal({
     } else {
       setSelectedOfficerIds([])
       setSearchTerm("")
+      setViewMode("all")
     }
     setDisableAssign(false)
   }, [open, assignedOfficers])
 
-  // const workLoadsMock = [
-  //   { skillId: "D2509011730090507940", en: "D2509011730090507940", th: "D2509011730090507940" },
-  //   { skillId: "D2509011629210596712", en: "D2509011629210596712", th: "D2509011629210596712" }
-  // ]
-
   const { t, language } = useTranslation();
+
+  // --- Per-officer signals (workload, assigned cases, ETA/TTL) ---------------
+  // Each of the three is fetched/computed independently and fails on its own:
+  // none of them gate the base roster below, each other, or the Assign action.
+
+  const officerIds = useMemo(
+    () => availableOfficers.map((officer) => officer.unitId),
+    [availableOfficers]
+  )
+
+  // One bulk call for the whole visible roster — never one call per officer.
+  const {
+    byUnitId: workloadByUnitId,
+    isLoading: isWorkloadLoading,
+    isError: isWorkloadError,
+    refetch: refetchWorkloads,
+  } = useUnitWorkloads({ unitIds: officerIds, enabled: open })
+
+  // The open case's location, for the on-demand per-row route solves. Strings on
+  // CaseSop; NaN here just means "no case location" and the cell says so.
+  const caseLocation = useMemo<MapLatLon | null>(() => {
+    const latitude = Number(caseData?.caseLat)
+    const longitude = Number(caseData?.caseLon)
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null
+    if (latitude === 0 && longitude === 0) return null
+    return { latitude, longitude }
+  }, [caseData?.caseLat, caseData?.caseLon])
+
+  const officerRoutes = useOfficerRouteSolves({ officers: availableOfficers, caseLocation })
 
   const filteredOfficers = useMemo(() => {
     if (!searchTerm.trim()) return availableOfficers
@@ -255,6 +296,30 @@ export default function AssignOfficerModal({
     }),
     [filteredOfficers, sortColumn, sortDirection]
   )
+
+  // "Recommend": least-loaded first — workload ascending, then currently-assigned
+  // -case count ascending. Ties keep their prior order (Array.sort is stable), so
+  // an equal-load pair still respects status/area/skills sorting from above.
+  // ETA/TTL is intentionally not a factor (Decision #9) — this reads only data
+  // already in hand, so toggling the view triggers no routing-provider calls.
+  // Officers with no workload data yet (endpoint still loading, or it returned
+  // nothing for that unit) sort last rather than jumping to the top on a 0.
+  const displayedOfficers = useMemo(() => {
+    if (viewMode !== "recommend") return sortedOfficers
+
+    const rank = (unitId: string) => {
+      const entry = workloadByUnitId[unitId]
+      if (!entry) return { load: Number.POSITIVE_INFINITY, cases: Number.POSITIVE_INFINITY }
+      return { load: entry.activeCaseCount, cases: entry.cases.length }
+    }
+
+    return [...sortedOfficers].sort((a, b) => {
+      const rankA = rank(a.unitId)
+      const rankB = rank(b.unitId)
+      if (rankA.load !== rankB.load) return rankA.load - rankB.load
+      return rankA.cases - rankB.cases
+    })
+  }, [viewMode, sortedOfficers, workloadByUnitId])
 
   const handleSelectOfficer = (officerId: string) => {
     setSelectedOfficerIds(prev =>
@@ -360,14 +425,22 @@ export default function AssignOfficerModal({
             <Button
               variant="ghost"
               size="sm"
-              className="bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
+              onClick={() => setViewMode("recommend")}
+              aria-pressed={viewMode === "recommend"}
+              className={viewMode === "recommend"
+                ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
+                : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"}
             >
               {t("case.assign_officer_modal.recommend_button")}
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+              onClick={() => setViewMode("all")}
+              aria-pressed={viewMode === "all"}
+              className={viewMode === "all"
+                ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
+                : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"}
             >
               {t("case.assign_officer_modal.allofficer_button")}
             </Button>
@@ -377,7 +450,7 @@ export default function AssignOfficerModal({
         {/* Officers Table */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden flex flex-col flex-1 min-h-0">
           <div className="flex-1 min-h-0 overflow-x-auto custom-scrollbar">
-            <div className="min-w-3xl">
+            <div className="min-w-[1180px]">
               {/* Table Header */}
               <div className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300">
                 <div className="flex items-center">
@@ -388,12 +461,14 @@ export default function AssignOfficerModal({
                       onChange={handleSelectAll}
                     />
                   </div>
-                  <div className="grid grid-cols-4 flex-1 gap-3 pr-10">
+                  <div className={`${OFFICER_GRID_COLS} flex-1 pr-10`}>
                     <div className="flex items-center justify-center">{t("case.assign_officer_modal.name")}</div>
                     <div className="flex items-center justify-center">{t("case.assign_officer_modal.status")}</div>
                     <div className="flex items-center justify-center">{t("case.assign_officer_modal.area")}</div>
                     <div className="flex items-center justify-center">{t("case.assign_officer_modal.skills")}</div>
-                    {/* <div className="flex items-center justify-center">{t("case.assign_officer_modal.workloads")}</div> */}
+                    <div className="flex items-center justify-center">{t("case.assign_officer_modal.workloads")}</div>
+                    <div className="flex items-center justify-center">{t("case.assign_officer_modal.assigned_cases")}</div>
+                    <div className="flex items-center justify-center">{t("case.assign_officer_modal.eta_ttl")}</div>
                   </div>
                 </div>
               </div>
@@ -402,12 +477,12 @@ export default function AssignOfficerModal({
               <div>
                 <ScrollArea className="h-full">
                   <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {sortedOfficers.length === 0 ? (
+                    {displayedOfficers.length === 0 ? (
                       <div className="flex justify-center items-center text-center text-gray-500 dark:text-gray-400 py-4">
                         {availableOfficers.length === 0 ? t("case.assign_officer_modal.no_officer") : t("case.assign_officer_modal.not_match_officer")}
                       </div>
                     ) : (
-                      sortedOfficers.map((officer) => {
+                      displayedOfficers.map((officer) => {
                         const isSelected = selectedOfficerIds.includes(officer.unitId)
                         return (
                           <div
@@ -427,7 +502,7 @@ export default function AssignOfficerModal({
                               />
                             </div>
                             <div
-                              className="grid grid-cols-[25%_25%_25%_25%] flex-1 gap-4 py-3 pr-10 cursor-pointer"
+                              className={`${OFFICER_GRID_COLS} flex-1 py-3 pr-10 cursor-pointer`}
                               onClick={() => {
                                 setShowOFFicerData(officer)
                               }}
@@ -478,9 +553,34 @@ export default function AssignOfficerModal({
                               <div className="flex items-center justify-center">
                                 <SkillsDisplay skills={officer.skillLists || []} language={language} />
                               </div>
-                              {/* <div className="flex items-center justify-center">
-                                <SkillsDisplay skills={workLoadsMock || []} language={language} />
-                              </div> */}
+                              {/* Workload — plain count of active/open assigned cases. */}
+                              <div className="flex items-center justify-center">
+                                <OfficerWorkloadCell
+                                  count={workloadByUnitId[officer.unitId]?.activeCaseCount}
+                                  isLoading={isWorkloadLoading}
+                                  isError={isWorkloadError}
+                                  onRetry={refetchWorkloads}
+                                />
+                              </div>
+                              {/* Currently assigned cases — count, click to expand the list. */}
+                              <div className="flex items-center justify-center">
+                                <OfficerAssignedCasesCell
+                                  cases={workloadByUnitId[officer.unitId]?.cases}
+                                  count={workloadByUnitId[officer.unitId]?.activeCaseCount}
+                                  isLoading={isWorkloadLoading}
+                                  isError={isWorkloadError}
+                                  onRetry={refetchWorkloads}
+                                />
+                              </div>
+                              {/* ETA / TTL — solved on demand, per row only. */}
+                              <div className="flex items-center justify-center">
+                                <OfficerEtaTtlCell
+                                  state={officerRoutes.routeStateFor(officer.unitId)}
+                                  canSolve={officerRoutes.canSolve(officer.unitId)}
+                                  cooldownSeconds={officerRoutes.cooldownSeconds(officer.unitId)}
+                                  onSolve={() => officerRoutes.solve(officer.unitId)}
+                                />
+                              </div>
                             </div>
                           </div>
                         )
