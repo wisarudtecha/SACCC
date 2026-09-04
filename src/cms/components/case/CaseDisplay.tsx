@@ -13,6 +13,8 @@ import { lazy, Suspense, useMemo } from "react";
 import Loading from "@/core/components/common/Loading";
 // Type-only import - it carries no runtime code, so the staff map stays lazy.
 import type { StaffAssignmentOverlay } from "./createCase/map/staff/CaseStaffMapField";
+import { useServiceCenterMatch } from "./formFields";
+import { readCachedAreas } from "./caseFormOptions";
 
 // Heavy @arcgis/core SDK - lazy-loaded so it stays out of the initial bundle.
 // BoundaryMapField rather than the bare map: this is the small map in the Case
@@ -64,6 +66,18 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
         }
         return null;
     }, [caseData?.caseLat, caseData?.caseLon]);
+
+    // Read-only Service Center match, purely to draw the no-match fallback circle
+    // on this post-creation view (decision Q6). The matched area is deliberately
+    // NOT applied here - this view has no editable Service Center field and the
+    // edit-mode lock is left untouched. When the saved incident sits inside
+    // exactly one district the match succeeds and no circle is drawn.
+    const areaList = useMemo(() => readCachedAreas(), []);
+    const serviceCenterMatch = useServiceCenterMatch({
+        incident: mapValue,
+        areaList,
+        enabled: showMap && !!mapValue,
+    });
 
 
     return (
@@ -190,6 +204,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                                         address={caseData?.location}
                                         readOnly
                                         height={320}
+                                        incidentRadius={serviceCenterMatch.incidentRadius}
                                         assignment={staffOverlay.assignment}
                                     />
                                 ) : (
@@ -200,6 +215,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                                         readOnly
                                         height={220}
                                         showPlaceButton
+                                        incidentRadius={serviceCenterMatch.incidentRadius}
                                     />
                                 )}
                             </Suspense>

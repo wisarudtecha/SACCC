@@ -100,6 +100,33 @@ export interface Organization {
   deptActive: boolean;
 }
 
+/**
+ * Org-scoped case settings, read from the org record.
+ *
+ * Currently carries one field: the fallback radius for the no-match incident
+ * circle on the case map (see useOrgIncidentRadiusMeters). It is a FE contract
+ * ahead of the backend - `GET /organizations/{orgId}` and the
+ * `incidentRadiusMeters` column do not exist server-side yet, so the field is
+ * optional and every reader falls back to DEFAULT_INCIDENT_RADIUS_METERS.
+ *
+ * GraphQL environments (VITE_USE_GRAPHQL="true") additionally need a
+ * GQL_ORG_SETTINGS entry keyed by the exact REST url registered in
+ * src/core/utils/gqlMapper.ts, since there is no REST fallback once GraphQL is on.
+ */
+export interface OrgSettings {
+  orgId: string;
+  /** Fallback radius in metres. Absent until the backend adds the column. */
+  incidentRadiusMeters?: number | null;
+}
+
+export function isOrgSettings(value: unknown): value is OrgSettings {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    typeof (value as { orgId?: unknown }).orgId === "string"
+  );
+}
+
 export interface OrganizationManagementProps {
   departments?: Department[];
   commands?: Command[];

@@ -21,7 +21,14 @@ import { memo, useCallback } from "react";
 import type { TrailPoint } from "./staff/useStaffTrails";
 import { useTheme } from "@/core/context/ThemeContext";
 import AddressMapField from "./AddressMapField";
-import type { AddressResult, MapLatLon, MapSlot, MapSlotContext, RouteOverlay } from "./mapTypes";
+import type {
+  AddressResult,
+  IncidentRadiusOverlay,
+  MapLatLon,
+  MapSlot,
+  MapSlotContext,
+  RouteOverlay
+} from "./mapTypes";
 import MapPlaceButton from "./MapPlaceButton";
 import BoundaryPickerPanel from "./boundaries/BoundaryPickerPanel";
 import BoundaryToolbar from "./boundaries/BoundaryToolbar";
@@ -51,6 +58,12 @@ interface BoundaryMapFieldProps {
   /** Breadcrumb overlay, forwarded untouched for CaseStaffMapField. */
   trail?: readonly TrailPoint[] | null;
   showTrail?: boolean;
+  /**
+   * No-match fallback circle around the incident pin, forwarded untouched. Set
+   * by CaseLocationSection only when the incident coordinate matched no single
+   * Service Center polygon.
+   */
+  incidentRadius?: IncidentRadiusOverlay | null;
   /** Caller's own controls, rendered to the right of the boundary group. */
   extraToolbarSlot?: MapSlot;
   /** Caller's own overlay cards. The picker owns the top-right corner. */
@@ -76,6 +89,7 @@ function BoundaryMapFieldBase({
   showRoute = false,
   trail,
   showTrail = false,
+  incidentRadius,
   extraToolbarSlot,
   extraOverlaySlot,
   onExpandedChange
@@ -178,6 +192,7 @@ function BoundaryMapFieldBase({
       showRoute={showRoute}
       trail={trail}
       showTrail={showTrail}
+      incidentRadius={incidentRadius}
       boundaries={boundary.boundaries}
       toolbarSlot={renderToolbarSlot}
       overlaySlot={renderOverlaySlot}

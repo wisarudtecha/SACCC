@@ -18,7 +18,13 @@ import { memo, useCallback, useMemo, useState } from "react";
 import { PermissionGate } from "@/core/components/auth/PermissionGate";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import BoundaryMapField from "../BoundaryMapField";
-import type { AddressResult, MapLatLon, MapSlotContext, RouteOverlay } from "../mapTypes";
+import type {
+  AddressResult,
+  IncidentRadiusOverlay,
+  MapLatLon,
+  MapSlotContext,
+  RouteOverlay
+} from "../mapTypes";
 import StaffDetailPanel from "./StaffDetailPanel";
 import StaffGroupPanel from "./StaffGroupPanel";
 import StaffMapControls from "./StaffMapControls";
@@ -65,6 +71,12 @@ interface CaseStaffMapFieldProps {
   readOnly?: boolean;
   height?: number | string;
   className?: string;
+  /**
+   * No-match fallback circle around the incident pin, forwarded untouched to
+   * BoundaryMapField. Set by CaseDisplay when the saved incident coordinate
+   * matched no single Service Center polygon; null otherwise.
+   */
+  incidentRadius?: IncidentRadiusOverlay | null;
   /** Required: every panel section renders against this context. */
   assignment: StaffAssignmentOverlay;
 }
@@ -81,6 +93,7 @@ function CaseStaffMapFieldBase({
   readOnly = false,
   height = 320,
   className = "",
+  incidentRadius = null,
   assignment
 }: CaseStaffMapFieldProps) {
   const { t } = useTranslation();
@@ -386,6 +399,7 @@ function CaseStaffMapFieldBase({
       height={height}
       className={className}
       showPlaceButton
+      incidentRadius={incidentRadius}
       staff={staff}
       showStaff={effectiveShowStaff}
       selectedStaffId={selectedStaffId}

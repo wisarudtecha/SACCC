@@ -69,6 +69,21 @@ export interface RouteOverlay {
 }
 
 /**
+ * The no-match fallback circle: an incident pin, and how far around it to draw a
+ * flat-distance radius ring.
+ *
+ * Same "state owned above, component draws what it is handed" contract as
+ * `boundaries` / `sketch` / `staff`. It is ONLY ever set when polygon matching
+ * against the Service Center boundaries found no unambiguous match - it is a
+ * visual decision aid, never an input to matching, and nothing about it is
+ * persisted with the case. Null (or omitted) means "draw no circle".
+ */
+export interface IncidentRadiusOverlay {
+  center: MapLatLon;
+  radiusMeters: number;
+}
+
+/**
  * Which of the two map instances a slot is rendering into. Controls that belong
  * to the large map only (the staff layer) return null for the inline one.
  */
@@ -173,6 +188,15 @@ export interface AddressMapProps {
    * undefined, and the layer hook is inert without it.
    */
   sketch?: BoundarySketchConfig;
+  /**
+   * Optional no-match fallback circle around the incident pin. Set only when the
+   * incident coordinate matched no single Service Center polygon; a successful
+   * match leaves it null and nothing is drawn. Same contract as `boundaries` -
+   * the component draws what it is handed, the state is owned above
+   * AddressMapField, and the overlay is entirely non-interactive so it can never
+   * intercept a map click. Purely a visual aid; never persisted.
+   */
+  incidentRadius?: IncidentRadiusOverlay | null;
   /**
    * Controls rendered inside the map container, on top of the map. The caller
    * positions them (e.g. `absolute bottom-2 left-2`), as the expand button does.

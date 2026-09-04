@@ -3197,6 +3197,7 @@
       "attach_file": "附加文件",
       "service_center": "服务中心",
       "select_service_center": "选择服务中心",
+      "service_center_auto": "已根据地图上的事件位置自动选择",
       "area": "活动区域",
       "area_placeholder": "输入地点",
       "location_coordinates": "坐标",

@@ -19,6 +19,7 @@ import {
     CaseWorkOrderRefInput,
     capabilitiesForMode,
     useCaseTypeForm,
+    useServiceCenterMatch,
 } from "./formFields";
 import type { CaseFormCapabilities } from "./formFields";
 
@@ -67,10 +68,42 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
     const {
         lockCaseType,
         lockArea,
+        autoLockedArea,
         showAttachments,
         autoFetchTypeForm,
         defaultIotDate,
     } = { ...capabilitiesForMode(isCreate), ...capabilities };
+
+    // The incident coordinate the map has resolved, if any. Same parse the map
+    // field does - kept here too so the Service Center match can react to it.
+    const incidentCoord = useMemo(() => {
+        const lat = parseFloat(caseState?.caseLat ?? "");
+        const lon = parseFloat(caseState?.caseLon ?? "");
+        return Number.isFinite(lat) && Number.isFinite(lon)
+            ? { latitude: lat, longitude: lon }
+            : null;
+    }, [caseState?.caseLat, caseState?.caseLon]);
+
+    // Test the incident point against the org's Service Center (district)
+    // polygons. Only runs where the field is create-time editable: an
+    // edit-after-create screen already locks it (lockArea) and is left alone.
+    const serviceCenterMatch = useServiceCenterMatch({
+        incident: incidentCoord,
+        areaList,
+        enabled: !lockArea,
+    });
+
+    // On a single unambiguous match, adopt that Service Center and lock the
+    // field for the rest of the create flow. Zero or multiple matches leave the
+    // field manually selectable and hand the map a radius circle instead.
+    const isAreaAutoLocked = autoLockedArea || serviceCenterMatch.status === "matched";
+
+    useEffect(() => {
+        const matched = serviceCenterMatch.matchedArea;
+        if (matched && caseState?.area?.id !== matched.id) {
+            onCaseChange({ area: matched });
+        }
+    }, [serviceCenterMatch.matchedArea, caseState?.area?.id, onCaseChange]);
 
     const {
         selectedCaseTypeForm,
@@ -130,14 +163,19 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
                     caseState={caseState}
                     onCaseChange={onCaseChange}
                     areaList={areaList}
-                    disabled={lockArea}
+                    disabled={lockArea || isAreaAutoLocked}
+                    autoLocked={isAreaAutoLocked && !lockArea}
                 />
                 <CaseCustomerSection
                     caseState={caseState}
                     onCaseChange={onCaseChange}
                     listCustomerData={customerList}
                 />
-                <CaseLocationSection caseState={caseState} onCaseChange={onCaseChange} />
+                <CaseLocationSection
+                    caseState={caseState}
+                    onCaseChange={onCaseChange}
+                    incidentRadius={serviceCenterMatch.incidentRadius}
+                />
             </div>
 
             {/* File Upload for new cases */}

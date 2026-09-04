@@ -9,7 +9,8 @@ import type {
   Department, DepartmentCreateData, DepartmentUpdateData,
   Command, CommandCreateData, CommandUpdateData,
   Station, StationCreateData, StationUpdateData,
-  Organization, OrganizationQueryParams
+  Organization, OrganizationQueryParams,
+  OrgSettings
 } from "@/core/types/organization";
 
 export const organizationApi = baseApi.injectEndpoints({
@@ -182,6 +183,22 @@ export const organizationApi = baseApi.injectEndpoints({
       query: () => "/department_command_stations",
       providesTags: ["Organization"],
     }),
+
+    // ===================================================================
+    // Org settings (org record)
+    // ===================================================================
+    // GET api/v1/organizations/{orgId}
+    //
+    // FE contract ahead of the backend: neither this route nor the
+    // `incidentRadiusMeters` field exists server-side yet. A 404 is expected
+    // until it ships - useOrgIncidentRadiusMeters isolates the failure and falls
+    // back to DEFAULT_INCIDENT_RADIUS_METERS, so nothing breaks in the meantime.
+    // GraphQL environments must first register a GQL_ORG_SETTINGS entry keyed by
+    // this url in src/core/utils/gqlMapper.ts (no REST fallback when GraphQL is on).
+    getOrgSettings: builder.query<ApiResponse<OrgSettings>, string>({
+      query: orgId => ({ url: `/organizations/${orgId}` }),
+      providesTags: ["Organization"],
+    }),
   }),
   // Vite HMR re-runs this module without a full page reload, which calls injectEndpoints a
   // second time. Without this, RTK Query keeps the definitions registered by the previous
@@ -209,5 +226,6 @@ export const {
   useUpdateStationsMutation,
   useDeleteStationsMutation,
   // organization
-  useGetOrganizationsQuery
+  useGetOrganizationsQuery,
+  useGetOrgSettingsQuery
 } = organizationApi;

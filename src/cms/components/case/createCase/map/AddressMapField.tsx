@@ -19,6 +19,7 @@ import AddressMap from "./AddressMap";
 import { BasemapOptionId, readBasemapPreference, writeBasemapPreference } from "./basemaps";
 import type {
   AddressResult,
+  IncidentRadiusOverlay,
   MapLatLon,
   MapSearchMode,
   MapSlot,
@@ -77,6 +78,12 @@ interface AddressMapFieldProps {
    * ONE of the two views may run a gesture, see `inlineSketch` below.
    */
   sketch?: BoundarySketchConfig;
+  /**
+   * No-match fallback circle, forwarded verbatim to both map instances - same
+   * contract as `boundaries`. Set only when the incident point matched no single
+   * Service Center polygon; null otherwise.
+   */
+  incidentRadius?: IncidentRadiusOverlay | null;
   /** Free-floating controls over the map; the callee positions them. */
   overlaySlot?: MapSlot;
   /** Controls for the map's top-right toolbar row. */
@@ -110,6 +117,7 @@ function AddressMapFieldBase({
   showTrail = false,
   boundaries,
   sketch,
+  incidentRadius,
   overlaySlot,
   toolbarSlot,
   onExpandedChange,
@@ -191,6 +199,7 @@ function AddressMapFieldBase({
         showTrail={showTrail}
         boundaries={boundaries}
         sketch={inlineSketch}
+        incidentRadius={incidentRadius}
         // The inline map is 220-320px; a row of labelled controls covers too
         // much of it. The expanded map below keeps its labels.
         compactControls
@@ -228,6 +237,7 @@ function AddressMapFieldBase({
             showTrail={showTrail}
             boundaries={boundaries}
             sketch={sketch}
+            incidentRadius={incidentRadius}
             viewpointRef={expandedViewpointRef}
             address={address}
             showLocationInfo

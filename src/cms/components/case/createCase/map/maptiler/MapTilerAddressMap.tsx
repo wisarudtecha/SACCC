@@ -38,6 +38,7 @@ import { useMapTilerStaffOverlays } from "./staff/useMapTilerStaffOverlays";
 import { useMapTilerRouteOverlay } from "./staff/useMapTilerRouteOverlay";
 import { useMapTilerBreadcrumbOverlay } from "./staff/useMapTilerBreadcrumbOverlay";
 import { useMapTilerSketchOverlay } from "./sketch/useMapTilerSketchOverlay";
+import { useMapTilerIncidentRadiusOverlay } from "./incidentRadius/useMapTilerIncidentRadiusOverlay";
 
 const DEFAULT_CENTER: [number, number] = [100.5018, 13.7563]; // Bangkok
 const DEFAULT_ZOOM = 12;
@@ -68,6 +69,7 @@ function MapTilerAddressMapBase({
   showTrail = false,
   boundaries,
   sketch,
+  incidentRadius,
   overlaySlot,
   toolbarSlot,
   onExpand,
@@ -178,6 +180,17 @@ function MapTilerAddressMapBase({
     sketch,
     isDarkTheme,
     activeRef: isSketchActiveRef
+  });
+
+  // The no-match fallback radius circle. Source + fill/line layers, re-added on
+  // every style swap. Only ever renders when `incidentRadius` is set - i.e. the
+  // incident matched no single Service Center polygon.
+  useMapTilerIncidentRadiusOverlay({
+    mapRef,
+    isReady,
+    styleEpoch,
+    incidentRadius,
+    isDarkTheme
   });
 
   /** Draw (or move) the single selection marker. */

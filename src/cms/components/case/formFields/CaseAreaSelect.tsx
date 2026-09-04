@@ -7,6 +7,12 @@ import { CaseFieldSectionProps } from "./types";
 interface CaseAreaSelectProps extends CaseFieldSectionProps {
     areaList: Area[];
     disabled?: boolean;
+    /**
+     * The field is disabled because the incident location resolved to exactly
+     * one Service Center polygon (create-time auto-lock), not because the case
+     * already exists. Only changes the helper text shown to the dispatcher.
+     */
+    autoLocked?: boolean;
     /** Show the red required marker next to the label. */
     required?: boolean;
     className?: string;
@@ -18,6 +24,7 @@ export const CaseAreaSelect = ({
     onCaseChange,
     areaList,
     disabled = false,
+    autoLocked = false,
     required = true,
     className = "2xsm:my-4 2xsm:mx-3",
 }: CaseAreaSelectProps) => {
@@ -41,6 +48,11 @@ export const CaseAreaSelect = ({
                 placeholder={t("case.display.select_service_center")}
                 className={className}
             />
+            {autoLocked && (
+                <p className="mx-3 mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    {t("case.display.service_center_auto")}
+                </p>
+            )}
         </div>
     );
 };

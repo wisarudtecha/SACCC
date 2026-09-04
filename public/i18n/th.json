@@ -3304,6 +3304,7 @@
       "attach_file": "ไฟล์",
       "service_center": "พื้นที่รับผิดชอบ",
       "select_service_center": "เลือกพื้นที่รับผิดชอบ",
+      "service_center_auto": "ระบบเลือกให้อัตโนมัติจากตำแหน่งเหตุการณ์บนแผนที่",
       "area": "พื้นที่เกิดเหตุ",
       "area_placeholder": "ใส่พื้นที่เกิดเหตุ",
       "location_coordinates": "พิกัด",

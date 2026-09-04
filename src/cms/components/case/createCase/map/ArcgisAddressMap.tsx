@@ -35,6 +35,7 @@ import { useRouteGraphicsLayer } from "./staff/useRouteGraphicsLayer";
 import { useBreadcrumbGraphicsLayer } from "./staff/useBreadcrumbGraphicsLayer";
 import { useAdminBoundaryLayers } from "./boundaries/useAdminBoundaryLayers";
 import { useBoundarySketchLayer } from "./sketch/useBoundarySketchLayer";
+import { useArcgisIncidentRadiusLayer } from "./incidentRadius/useArcgisIncidentRadiusLayer";
 import type { AddressMapProps, MapLatLon } from "./mapTypes";
 
 const DEFAULT_CENTER: [number, number] = [100.5018, 13.7563]; // Bangkok
@@ -113,6 +114,7 @@ function ArcgisAddressMapBase({
   showTrail = false,
   boundaries,
   sketch,
+  incidentRadius,
   overlaySlot,
   toolbarSlot,
   onExpand,
@@ -210,6 +212,16 @@ function ArcgisAddressMapBase({
     isReady,
     points: trail ?? null,
     visible: showTrail,
+    isDarkTheme
+  });
+
+  // The no-match fallback radius circle. Non-interactive, drawn just above the
+  // boundary layers - see useArcgisIncidentRadiusLayer. Only ever renders when
+  // `incidentRadius` is set, i.e. the incident matched no single Service Center.
+  useArcgisIncidentRadiusLayer({
+    mapRef,
+    isReady,
+    incidentRadius,
     isDarkTheme
   });
 

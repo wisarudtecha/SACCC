@@ -46,6 +46,7 @@ import {
 import { useLongdoBreadcrumbOverlay } from "./staff/useLongdoBreadcrumbOverlay";
 import { useLongdoRouteOverlay } from "./staff/useLongdoRouteOverlay";
 import { useLongdoSketchOverlay } from "./sketch/useLongdoSketchOverlay";
+import { useLongdoIncidentRadiusOverlay } from "./incidentRadius/useLongdoIncidentRadiusOverlay";
 
 const DEFAULT_CENTER: [number, number] = [100.5018, 13.7563]; // Bangkok
 const DEFAULT_ZOOM = 12;
@@ -85,6 +86,7 @@ function LongdoAddressMapBase({
   showTrail = false,
   boundaries,
   sketch,
+  incidentRadius,
   overlaySlot,
   toolbarSlot,
   onExpand,
@@ -219,6 +221,17 @@ function LongdoAddressMapBase({
     isDarkTheme,
     zoom: settledZoom,
     activeRef: isSketchActiveRef
+  });
+
+  // The no-match fallback radius circle. Non-interactive, drawn under the case
+  // marker (which claims OverlayWeight.Top). Only ever renders when
+  // `incidentRadius` is set - i.e. the incident matched no single Service Center.
+  useLongdoIncidentRadiusOverlay({
+    longdoRef,
+    mapRef,
+    isReady,
+    incidentRadius,
+    isDarkTheme
   });
 
   /** Draw (or move) the single selection marker. */

@@ -2,6 +2,8 @@ export type { CaseFieldSectionProps } from "./types";
 export type { CaseFormCapabilities } from "./capabilities";
 export { capabilitiesForMode } from "./capabilities";
 export { useCaseTypeForm } from "./useCaseTypeForm";
+export { useServiceCenterMatch } from "./useServiceCenterMatch";
+export type { ServiceCenterMatchResult, ServiceCenterMatchStatus } from "./useServiceCenterMatch";
 export { CasePriorityBadge } from "./CasePriorityBadge";
 export { CaseDynamicForm } from "./CaseDynamicForm";
 export { CaseTypeSelect } from "./CaseTypeSelect";

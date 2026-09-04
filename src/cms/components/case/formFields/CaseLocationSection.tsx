@@ -3,7 +3,7 @@ import { COMMON_INPUT_CSS as commonInputCss } from "@/cms/components/case/consta
 import Loading from "@/core/components/common/Loading";
 import { useToastContext } from "@/core/components/crud/ToastGlobal";
 import { useTranslation } from "@/core/hooks/useTranslation";
-import type { AddressResult } from "@/cms/components/case/createCase/map/mapTypes";
+import type { AddressResult, IncidentRadiusOverlay } from "@/cms/components/case/createCase/map/mapTypes";
 import { CaseFieldSectionProps } from "./types";
 
 // Heavy @arcgis/core SDK - lazy-loaded so it stays out of the initial bundle
@@ -14,6 +14,13 @@ const BoundaryMapField = lazy(() => import("@/cms/components/case/createCase/map
 interface CaseLocationSectionProps extends CaseFieldSectionProps {
     /** Show the ArcGIS address picker above the free-text address. */
     showMap?: boolean;
+    /**
+     * No-match fallback circle around the incident pin. Passed by CaseFormFields
+     * only when the incident coordinate matched no single Service Center polygon;
+     * null otherwise (and always null when `showMap` is false). Purely a visual
+     * decision aid - nothing about it is persisted with the case.
+     */
+    incidentRadius?: IncidentRadiusOverlay | null;
     className?: string;
 }
 
@@ -22,6 +29,7 @@ export const CaseLocationSection = ({
     caseState,
     onCaseChange,
     showMap = true,
+    incidentRadius = null,
     className = "pr-0 col-span-2",
 }: CaseLocationSectionProps) => {
     const { t } = useTranslation();
@@ -65,6 +73,7 @@ export const CaseLocationSection = ({
                             readOnly={false}
                             height={320}
                             showPlaceButton
+                            incidentRadius={incidentRadius}
                         />
                     </Suspense>
                 </div>
