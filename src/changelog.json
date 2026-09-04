@@ -1,4 +1,10 @@
 {
+  "0.68.0": {
+    "date": "2026-09-04",
+    "segment": "MINOR",
+    "notes": "feat(cms): pick the service center automatically from the incident location\n- When creating a case, placing the incident pin on the map now checks which service center area covers that location.\n- If the location falls inside exactly one service center area, that service center is filled in and locked automatically, with a short note explaining the automatic choice. The dispatcher no longer has to select it by hand for the common case.\n- If the location is not inside any service center area, or sits on a boundary between more than one, the service center stays open for manual selection and a distance circle is drawn around the pin to help the dispatcher judge coverage. The same circle is shown on the saved case view.\n- changelog.json / package.json: bump version 0.67.1 -> 0.68.0",
+    "author": "Wisarud Techa"
+  },
   "0.67.1": {
     "date": "2026-09-03",
     "segment": "PATCH",
