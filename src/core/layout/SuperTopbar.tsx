@@ -351,7 +351,7 @@ const SuperTopbar = (
       icon: <Settings />,
       name: t("navigation.super_app.topbar.more.menu.system_config.title"),
       permission: permissions.hasAnyPermission([
-        "service.view", "unit.view", "settings.view"
+        "service.view", "unit.view", "settings.view", "organization_settings.manage"
       ]),
       subItems: [
         {
@@ -383,6 +383,12 @@ const SuperTopbar = (
           name: t("navigation.super_app.topbar.more.menu.system_config.sub_menu.area"),
           path: "/cms/area",
           permission: permissions.hasPermission("settings.view")
+        },
+        {
+          icon: <Settings />,
+          name: t("navigation.super_app.topbar.more.menu.system_config.sub_menu.organization_settings"),
+          path: "/cms/settings/organization",
+          permission: permissions.hasPermission("organization_settings.manage")
         }
       ]
     },

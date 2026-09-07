@@ -1,4 +1,194 @@
 {
+  "settings": {
+    "title": "Organization Settings",
+    "section": {
+      "map": "Map Settings",
+      "assignment_rules": "Assignment Rules"
+    },
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "saving": "Saving..."
+    },
+    "map": {
+      "advanced": "Advanced",
+      "advanced_has_errors": "Open Advanced to fix an invalid auto interval.",
+      "group": {
+        "general": "General",
+        "layers": "Layers",
+        "incident": "Incident",
+        "staff": "Staff",
+        "assignment": "Assignment"
+      },
+      "field": {
+        "mode_manual": "Manual",
+        "mode_auto": "Auto",
+        "map_provider": {
+          "label": "Map provider",
+          "help": "Override the deployment default map provider for this organization.",
+          "inherit": "Inherit deployment default"
+        },
+        "default_basemap": {
+          "label": "Default map style",
+          "help": "The basemap the map opens with.",
+          "provider_default": "Provider default"
+        },
+        "allow_map_style_change": {
+          "label": "Change map style",
+          "help": "Show the basemap switcher so users can change the map style."
+        },
+        "show_place": {
+          "label": "Show place",
+          "help": "Show named place and point-of-interest markers on the map."
+        },
+        "show_boundaries": {
+          "label": "Show boundaries and polygon",
+          "help": "Show administrative boundary polygons on the map."
+        },
+        "show_search": {
+          "label": "Search for locations",
+          "help": "Show the location search box on the map."
+        },
+        "show_address_coordinates": {
+          "label": "Show address and coordinates",
+          "help": "Show the address and coordinates card on the map."
+        },
+        "allow_place_incident_pin": {
+          "label": "Place incident location pin on the map",
+          "help": "Allow placing the incident pin by clicking or dragging on the map."
+        },
+        "radius_meters": {
+          "label": "Fallback radius (metres)",
+          "help": "Radius of the fallback circle drawn when no service center polygon matches."
+        },
+        "show_radius": {
+          "label": "Show radius",
+          "help": "Draw the fallback circle on the no-match path."
+        },
+        "auto_lock_service_center": {
+          "label": "Auto-lock service center on match",
+          "help": "Auto-select and lock the Service Center field when exactly one polygon matches."
+        },
+        "show_staff": {
+          "label": "Show staff",
+          "help": "Show the staff overlay on the map."
+        },
+        "show_trail": {
+          "label": "Show trail",
+          "help": "Show the staff breadcrumb trail on the map."
+        },
+        "staff_routing": {
+          "label": "Staff routing",
+          "interval": "Routing auto interval (seconds)"
+        },
+        "staff_eta_ttl": {
+          "label": "Staff ETA / TTL",
+          "interval": "ETA / TTL auto interval (seconds)"
+        },
+        "staff_tracking": {
+          "label": "Staff tracking",
+          "interval": "Tracking auto interval (seconds)"
+        },
+        "eta_ttl_apply_to_picker": {
+          "label": "Apply ETA / TTL settings to the assignment picker",
+          "help": "Use the same ETA / TTL mode in the officer assignment picker."
+        },
+        "show_workload": {
+          "label": "Show workload",
+          "help": "Show the per-officer active-case-count badge in the assignment picker."
+        },
+        "show_assigned_cases": {
+          "label": "Show assigned cases",
+          "help": "Show the per-officer assigned-cases count and expandable list."
+        },
+        "enable_recommend_ranking": {
+          "label": "Enable recommend ranking",
+          "help": "Rank officers by the Recommend heuristic in the assignment picker."
+        }
+      },
+      "validation": {
+        "radius_positive": "Enter a radius greater than 0.",
+        "interval_min": "Enter a whole number of seconds of at least 15.",
+        "provider_invalid": "Select a valid map provider."
+      },
+      "banner": {
+        "not_saved": {
+          "title": "Not saved to the server",
+          "body": "The Map Settings backend is not available yet, so your changes were not saved. Your edits are kept here until you leave the page.",
+          "dismiss": "Dismiss"
+        }
+      },
+      "action": {
+        "save": {
+          "success": "Map settings saved."
+        }
+      }
+    },
+    "assignment": {
+      "group": {
+        "smart_routing": "Smart Routing & Assignment Rules",
+        "workload_allocation": "Workload & Resource Allocation"
+      },
+      "field": {
+        "routing_method": {
+          "label": "Routing method",
+          "help": "How incoming cases are routed to personnel. Configuration only — no automatic routing runs yet; dispatchers still assign every case by hand."
+        },
+        "allocation_method": {
+          "label": "Allocation method",
+          "help": "How work is distributed across eligible personnel once a routing method has selected them."
+        }
+      },
+      "routing": {
+        "manual": {
+          "label": "Manual",
+          "desc": "No automatic routing — dispatchers assign every case by hand (current behaviour)."
+        },
+        "skill_based": {
+          "label": "Skill-Based Routing",
+          "desc": "Assign by personnel skills, expertise and equipment matched to the incident type."
+        },
+        "location_based": {
+          "label": "Location-Based Routing",
+          "desc": "Assign the field personnel closest to the incident location."
+        },
+        "department": {
+          "label": "Department Routing",
+          "desc": "Filter and forward to the directly responsible department or division."
+        },
+        "availability": {
+          "label": "Availability Routing",
+          "desc": "Check work status (available, on duty, on break) and only assign personnel ready to work."
+        },
+        "case_type": {
+          "label": "Case Type Routing",
+          "desc": "Classify and assign based on incident type and severity (the existing case priority)."
+        }
+      },
+      "allocation": {
+        "round_robin": {
+          "label": "Round Robin Assignment",
+          "desc": "Cyclical assignment across the personnel list, equally."
+        },
+        "load_balance": {
+          "label": "Load Balance Assignment",
+          "desc": "Assignment based on cumulative workload, to avoid concentration."
+        }
+      },
+      "banner": {
+        "not_saved": {
+          "title": "Not saved to the server",
+          "body": "The Assignment Rules backend is not available yet, so your changes were not saved. Your edits are kept here until you leave the page.",
+          "dismiss": "Dismiss"
+        }
+      },
+      "action": {
+        "save": {
+          "success": "Assignment rules saved."
+        }
+      }
+    }
+  },
   "common": {
     "welcome": "Welcome",
     "hello": "Hello",
@@ -462,7 +652,8 @@
                 "unit": "Unit Management",
                 "property": "Property Management",
                 "skill": "Skill Management",
-                "area": "Area Management"
+                "area": "Area Management",
+                "organization_settings": "Organization Settings"
               }
             },
             "user_mgmt": {
@@ -679,7 +870,8 @@
             "skill_management": "Skill Management",
             "property_management": "Property Management",
             "area_management": "Area Management",
-            "area_template_management": "Area Templates"
+            "area_template_management": "Area Templates",
+            "organization_settings": "Organization Settings"
           }
         }
       },

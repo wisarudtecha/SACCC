@@ -40,6 +40,7 @@ import AreaManagementPage from "@/cms/pages/Admin/AreaManagement";
 import AreaTemplateDetailPage from "@/cms/pages/Admin/AreaTemplateDetail";
 import AreaTemplateManagementPage from "@/cms/pages/Admin/AreaTemplateManagement";
 import AreaTemplateVersionsPage from "@/cms/pages/Admin/AreaTemplateVersions";
+import OrganizationSettingsManagementPage from "@/cms/pages/Admin/OrganizationSettingsManagement";
 import PropertyManagementPage from "@/cms/pages/Admin/PropertyManagement";
 import ServiceManagementPage from "@/cms/pages/Admin/ServiceManagement";
 import SkillManagementPage from "@/cms/pages/Admin/SkillManagement";
@@ -163,6 +164,7 @@ export default function CmsApp() {
           <Route path="/property" element={<PropertyManagementPage />} />
           <Route path="/service" element={<ServiceManagementPage />} />
           <Route path="/skill" element={<SkillManagementPage />} />
+          <Route path="/settings/organization" element={<OrganizationSettingsManagementPage />} />
           <Route path="/unit" element={<UnitManagementPage />} />
           <Route path="/unit/create" element={<UnitFormPage />} />
           <Route path="/unit/:id" element={<UnitFormPage />} />

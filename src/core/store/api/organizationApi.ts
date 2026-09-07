@@ -10,7 +10,9 @@ import type {
   Command, CommandCreateData, CommandUpdateData,
   Station, StationCreateData, StationUpdateData,
   Organization, OrganizationQueryParams,
-  OrgSettings
+  OrgSettings,
+  OrgMapSettings, OrgMapSettingsUpdateData,
+  OrgAssignmentRuleSettings, OrgAssignmentRulesUpdateData
 } from "@/core/types/organization";
 
 export const organizationApi = baseApi.injectEndpoints({
@@ -199,6 +201,61 @@ export const organizationApi = baseApi.injectEndpoints({
       query: orgId => ({ url: `/organizations/${orgId}` }),
       providesTags: ["Organization"],
     }),
+
+    // ===================================================================
+    // Org map settings (Organization/System Settings -> Map Settings)
+    // ===================================================================
+    // GET / PATCH api/v1/organizations/{orgId}/map-settings
+    //
+    // FE contract ahead of the backend: neither route exists server-side yet.
+    // A 404 (or a GraphQL error) on GET is expected until it ships -
+    // useOrgMapSettings isolates the failure and falls back to schema defaults;
+    // a failed PATCH keeps the admin's edits and shows a persistent "not saved"
+    // banner. GraphQL environments need the matching GQL_ORG_MAP_SETTINGS entry
+    // registered in src/core/store/api/graphql/organizationQueries.ts (no REST
+    // fallback when GraphQL is on) - already added so the cut-over is a no-op.
+    getOrgMapSettings: builder.query<ApiResponse<OrgMapSettings>, string>({
+      query: orgId => ({ url: `/organizations/${orgId}/map-settings` }),
+      providesTags: ["Organization"],
+    }),
+
+    // PATCH api/v1/organizations/{orgId}/map-settings
+    updateOrgMapSettings: builder.mutation<ApiResponse<OrgMapSettings>, { orgId: string; data: OrgMapSettingsUpdateData }>({
+      query: ({ orgId, data }) => ({
+        url: `/organizations/${orgId}/map-settings`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["Organization"],
+    }),
+
+    // ===================================================================
+    // Org assignment rules (Organization/System Settings -> Assignment Rules)
+    // ===================================================================
+    // GET / PATCH api/v1/organizations/{orgId}/assignment-rules
+    //
+    // FE contract ahead of the backend: neither route exists server-side yet.
+    // A 404 (or a GraphQL error) on GET is expected until it ships -
+    // useOrgAssignmentRules isolates the failure and falls back to schema
+    // defaults; a failed PATCH keeps the admin's edits and shows a persistent
+    // "not saved" banner. GraphQL environments need the matching entry
+    // registered in src/core/store/api/graphql/organizationQueries.ts (no REST
+    // fallback when GraphQL is on) - already added so the cut-over is a no-op.
+    // Configuration only: no routing/assignment engine consumes these values.
+    getOrgAssignmentRules: builder.query<ApiResponse<OrgAssignmentRuleSettings>, string>({
+      query: orgId => ({ url: `/organizations/${orgId}/assignment-rules` }),
+      providesTags: ["Organization"],
+    }),
+
+    // PATCH api/v1/organizations/{orgId}/assignment-rules
+    updateOrgAssignmentRules: builder.mutation<ApiResponse<OrgAssignmentRuleSettings>, { orgId: string; data: OrgAssignmentRulesUpdateData }>({
+      query: ({ orgId, data }) => ({
+        url: `/organizations/${orgId}/assignment-rules`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["Organization"],
+    }),
   }),
   // Vite HMR re-runs this module without a full page reload, which calls injectEndpoints a
   // second time. Without this, RTK Query keeps the definitions registered by the previous
@@ -227,5 +284,9 @@ export const {
   useDeleteStationsMutation,
   // organization
   useGetOrganizationsQuery,
-  useGetOrgSettingsQuery
+  useGetOrgSettingsQuery,
+  useGetOrgMapSettingsQuery,
+  useUpdateOrgMapSettingsMutation,
+  useGetOrgAssignmentRulesQuery,
+  useUpdateOrgAssignmentRulesMutation
 } = organizationApi;

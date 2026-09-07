@@ -55,7 +55,8 @@ export class AuthService {
       { permId: "sop.update", id: 109 },
       { permId: "dashboard.view", id: 110 },
       { permId: "settings.view", id: 111 },
-      { permId: "settings.update", id: 112 }
+      { permId: "settings.update", id: 112 },
+      { permId: "organization_settings.manage", id: 113 }
     ];
 
     return permissions.map((perm) => ({

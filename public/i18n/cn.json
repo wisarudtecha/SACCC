@@ -1,4 +1,194 @@
 {
+  "settings": {
+    "title": "组织设置",
+    "section": {
+      "map": "地图设置",
+      "assignment_rules": "分派规则"
+    },
+    "actions": {
+      "save": "保存",
+      "cancel": "取消",
+      "saving": "保存中..."
+    },
+    "map": {
+      "advanced": "高级",
+      "advanced_has_errors": "展开“高级”以修正无效的自动间隔。",
+      "group": {
+        "general": "常规",
+        "layers": "图层",
+        "incident": "事件",
+        "staff": "人员",
+        "assignment": "指派"
+      },
+      "field": {
+        "mode_manual": "手动",
+        "mode_auto": "自动",
+        "map_provider": {
+          "label": "地图服务商",
+          "help": "为该组织覆盖部署默认的地图服务商。",
+          "inherit": "继承部署默认值"
+        },
+        "default_basemap": {
+          "label": "默认地图样式",
+          "help": "打开地图时使用的底图。",
+          "provider_default": "服务商默认值"
+        },
+        "allow_map_style_change": {
+          "label": "更改地图样式",
+          "help": "显示底图切换器，允许用户更改地图样式。"
+        },
+        "show_place": {
+          "label": "显示地点",
+          "help": "在地图上显示地点和兴趣点标记。"
+        },
+        "show_boundaries": {
+          "label": "显示边界与多边形",
+          "help": "在地图上显示行政边界多边形。"
+        },
+        "show_search": {
+          "label": "搜索位置",
+          "help": "在地图上显示位置搜索框。"
+        },
+        "show_address_coordinates": {
+          "label": "显示地址与坐标",
+          "help": "在地图上显示地址与坐标卡片。"
+        },
+        "allow_place_incident_pin": {
+          "label": "在地图上放置事件位置标记",
+          "help": "允许通过点击或拖动在地图上放置事件标记。"
+        },
+        "radius_meters": {
+          "label": "备用半径（米）",
+          "help": "当没有匹配的服务中心多边形时所绘制备用圆的半径。"
+        },
+        "show_radius": {
+          "label": "显示半径",
+          "help": "在无匹配情况下绘制备用圆。"
+        },
+        "auto_lock_service_center": {
+          "label": "匹配时自动锁定服务中心",
+          "help": "当恰好有一个多边形匹配时，自动选择并锁定服务中心字段。"
+        },
+        "show_staff": {
+          "label": "显示人员",
+          "help": "在地图上显示人员图层。"
+        },
+        "show_trail": {
+          "label": "显示轨迹",
+          "help": "在地图上显示人员轨迹。"
+        },
+        "staff_routing": {
+          "label": "人员路径规划",
+          "interval": "路径规划自动间隔（秒）"
+        },
+        "staff_eta_ttl": {
+          "label": "人员 ETA / TTL",
+          "interval": "ETA / TTL 自动间隔（秒）"
+        },
+        "staff_tracking": {
+          "label": "人员追踪",
+          "interval": "追踪自动间隔（秒）"
+        },
+        "eta_ttl_apply_to_picker": {
+          "label": "将 ETA / TTL 设置应用于指派选择器",
+          "help": "在人员指派选择器中使用相同的 ETA / TTL 模式。"
+        },
+        "show_workload": {
+          "label": "显示工作量",
+          "help": "在指派选择器中显示每位人员的进行中案件数量徽标。"
+        },
+        "show_assigned_cases": {
+          "label": "显示已指派案件",
+          "help": "显示每位人员的已指派案件数量及可展开列表。"
+        },
+        "enable_recommend_ranking": {
+          "label": "启用推荐排序",
+          "help": "在指派选择器中按推荐算法对人员排序。"
+        }
+      },
+      "validation": {
+        "radius_positive": "请输入大于 0 的半径。",
+        "interval_min": "请输入不小于 15 的整数秒。",
+        "provider_invalid": "请选择有效的地图服务商。"
+      },
+      "banner": {
+        "not_saved": {
+          "title": "未保存到服务器",
+          "body": "地图设置的后端尚不可用，因此您的更改未被保存。在您离开此页面前，您的编辑将保留在此处。",
+          "dismiss": "关闭"
+        }
+      },
+      "action": {
+        "save": {
+          "success": "地图设置已保存。"
+        }
+      }
+    },
+    "assignment": {
+      "group": {
+        "smart_routing": "智能路由与分派规则",
+        "workload_allocation": "工作量与资源分配"
+      },
+      "field": {
+        "routing_method": {
+          "label": "路由方式",
+          "help": "来案如何路由给人员。仅为配置项 —— 尚未运行任何自动路由，调度员仍需手动分派每个案件。"
+        },
+        "allocation_method": {
+          "label": "分配方式",
+          "help": "在路由方式筛选出人员后，如何在符合条件的人员之间分配工作。"
+        }
+      },
+      "routing": {
+        "manual": {
+          "label": "手动",
+          "desc": "无自动路由 —— 调度员手动分派每个案件（当前行为）。"
+        },
+        "skill_based": {
+          "label": "基于技能的路由",
+          "desc": "根据人员的技能、专长和装备与事件类型进行匹配分派。"
+        },
+        "location_based": {
+          "label": "基于位置的路由",
+          "desc": "分派距离事件位置最近的外勤人员。"
+        },
+        "department": {
+          "label": "部门路由",
+          "desc": "筛选并转发给直接负责的部门或处室。"
+        },
+        "availability": {
+          "label": "基于可用性的路由",
+          "desc": "检查工作状态（空闲、值勤、休息），仅分派给可立即工作的人员。"
+        },
+        "case_type": {
+          "label": "基于案件类型的路由",
+          "desc": "根据事件类型和严重程度（现有的案件优先级）进行分类和分派。"
+        }
+      },
+      "allocation": {
+        "round_robin": {
+          "label": "轮询分派",
+          "desc": "按人员列表循环、平均地分派。"
+        },
+        "load_balance": {
+          "label": "负载均衡分派",
+          "desc": "根据累计工作量进行分派，避免集中。"
+        }
+      },
+      "banner": {
+        "not_saved": {
+          "title": "未保存到服务器",
+          "body": "分派规则的后端尚不可用，因此您的更改未被保存。在您离开此页面前，您的编辑将保留在此处。",
+          "dismiss": "关闭"
+        }
+      },
+      "action": {
+        "save": {
+          "success": "分派规则已保存。"
+        }
+      }
+    }
+  },
   "common": {
     "line": "LINE",
     "facebook": "Facebook",
@@ -369,7 +559,8 @@
                 "unit": "单位管理",
                 "property": "属性管理",
                 "skill": "技能管理",
-                "area": "区域管理"
+                "area": "区域管理",
+                "organization_settings": "组织设置"
               }
             },
             "user_mgmt": {
@@ -579,7 +770,8 @@
             "skill_management": "技能管理",
             "property_management": "属性管理",
             "area_management": "区域管理",
-            "area_template_management": "区域模板"
+            "area_template_management": "区域模板",
+            "organization_settings": "组织设置"
           }
         }
       },

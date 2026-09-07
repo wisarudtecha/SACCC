@@ -127,6 +127,205 @@ export function isOrgSettings(value: unknown): value is OrgSettings {
   );
 }
 
+/**
+ * Organization-level map configuration (the "Map Settings" section of the
+ * Organization/System Settings page).
+ *
+ * FE contract ahead of the backend: `GET`/`PATCH /organizations/{orgId}/map-settings`
+ * do not exist server-side yet. Until they ship, `useOrgMapSettings` isolates the
+ * failure - a 404 / GraphQL error / bad shape all fall back to
+ * `buildDefaultOrgMapSettings` (schema defaults), and Save surfaces a persistent
+ * "not saved to server" banner without discarding the admin's edits. With
+ * `VITE_MOCK_API="true"` a session-scoped stub backs both calls so the page is
+ * fully demoable.
+ *
+ * GraphQL environments (`VITE_USE_GRAPHQL="true"`, which is every `.env*` here)
+ * additionally need a `GQL_ORG_MAP_SETTINGS` entry keyed by the exact REST url,
+ * registered in `src/core/store/api/graphql/organizationQueries.ts` and spread
+ * into `GQL_MAP` (`src/core/utils/gqlMapper.ts`), since there is no REST fallback
+ * once GraphQL is on. Adding it now makes the backend cut-over a no-op FE change.
+ */
+export type AutoManualMode = "auto" | "manual";
+
+export interface AutoManualSetting {
+  mode: AutoManualMode;
+  /** Required (non-null) when mode = "auto"; should be null when mode = "manual". */
+  autoIntervalSeconds: number | null;
+}
+
+export interface OrgMapGeneralSettings {
+  /** Org-level override of VITE_MAP_PROVIDER. null = inherit the deployment default. */
+  mapProvider: "arcgis" | "longdo" | "maptiler" | null;
+  /** Initial BasemapOptionId (mapTypes.ts / basemaps.ts). null = provider default. */
+  defaultBasemapId: string | null;
+  /** "Change Map Style" - shows/hides the basemap switcher (AddressMapProps.showBasemapSwitcher). */
+  allowMapStyleChange: boolean;
+}
+
+export interface OrgMapLayerSettings {
+  /** "Show Place" - named place / POI markers. Rendered disabled in v1 (see UI section). */
+  showPlace: boolean;
+  /** "Show Boundaries + Polygon" - AddressMapProps.boundaries. */
+  showBoundaries: boolean;
+  /** "Search for locations" - AddressMapProps.showSearch. */
+  showSearch: boolean;
+  /** "Show Address + Coordinates" - AddressMapProps.showLocationInfo. */
+  showAddressCoordinates: boolean;
+  /** "Place incident location pin on the map" - enables map-click/drag pin placement. */
+  allowPlaceIncidentPin: boolean;
+}
+
+export interface OrgMapIncidentSettings {
+  /** Fallback circle radius, metres. Must be > 0. Supersedes the flat OrgSettings.incidentRadiusMeters. */
+  radiusMeters: number;
+  /** "Show Radius" - whether the fallback circle renders on the no-match path. */
+  showRadius: boolean;
+  /** Auto-select + lock the Service Center field on a single polygon match (capabilities.autoLockedArea). */
+  autoLockServiceCenterOnMatch: boolean;
+}
+
+export interface OrgMapStaffSettings {
+  /** "Show Staff" - AddressMapProps.showStaff. */
+  showStaff: boolean;
+  /** Breadcrumb trail toggle - AddressMapProps.showTrail. */
+  showTrail: boolean;
+  /** "Staff Routing Auto/Manual". */
+  routing: AutoManualSetting;
+  /** "Staff ETA/TTL Auto/Manual" - map staff panel AND, when applyToAssignmentPicker, singleAssignOfficer.tsx. */
+  etaTtl: AutoManualSetting & { applyToAssignmentPicker: boolean };
+  /** "Staff Tracking Auto/Manual" - live position/telemetry refresh. */
+  tracking: AutoManualSetting;
+}
+
+export interface OrgMapAssignmentSettings {
+  /** Per-officer active-case-count badge in singleAssignOfficer.tsx. */
+  showWorkload: boolean;
+  /** Per-officer currently-assigned-cases count + expand-to-list. */
+  showAssignedCases: boolean;
+  /** "Recommend" ranking toggle. */
+  enableRecommendRanking: boolean;
+}
+
+/** PATCH body - every section optional so the FE can send a partial update; server merges onto the stored record. */
+export interface OrgMapSettingsUpdateData {
+  general?: Partial<OrgMapGeneralSettings>;
+  layers?: Partial<OrgMapLayerSettings>;
+  incident?: Partial<OrgMapIncidentSettings>;
+  staff?: Partial<{
+    showStaff: boolean;
+    showTrail: boolean;
+    routing: Partial<AutoManualSetting>;
+    etaTtl: Partial<OrgMapStaffSettings["etaTtl"]>;
+    tracking: Partial<AutoManualSetting>;
+  }>;
+  assignment?: Partial<OrgMapAssignmentSettings>;
+  /** @deprecated use incident.radiusMeters. Kept only for the old flat-shape rollout window. */
+  incidentRadiusMeters?: number | null;
+}
+
+/** GET / PATCH response `data` - always fully populated (server fills unset fields with defaults). */
+export interface OrgMapSettings {
+  orgId: string;
+  general: OrgMapGeneralSettings;
+  layers: OrgMapLayerSettings;
+  incident: OrgMapIncidentSettings;
+  staff: OrgMapStaffSettings;
+  assignment: OrgMapAssignmentSettings;
+  updatedAt?: string;
+  updatedBy?: string | null;
+}
+
+export function isOrgMapSettings(value: unknown): value is OrgMapSettings {
+  if (typeof value !== "object" || value === null) return false;
+  const c = value as Record<string, unknown>;
+  return (
+    typeof c.orgId === "string" &&
+    typeof c.general === "object" &&
+    typeof c.layers === "object" &&
+    typeof c.incident === "object" &&
+    typeof c.staff === "object" &&
+    typeof c.assignment === "object"
+  );
+}
+
+/**
+ * Organization-level assignment rules (the "Assignment Rules" section of the
+ * Organization/System Settings page).
+ *
+ * Configuration only: an admin picks one routing method and one workload-
+ * allocation method. No routing/assignment engine consumes these values yet -
+ * selecting one changes nothing about how a real case is assigned. "manual" is
+ * the default and preserves today's dispatcher-driven behaviour.
+ *
+ * FE contract ahead of the backend: `GET`/`PATCH /organizations/{orgId}/assignment-rules`
+ * do not exist server-side yet. Until they ship, `useOrgAssignmentRules` isolates
+ * the failure - a 404 / GraphQL error / bad shape all fall back to
+ * `buildDefaultOrgAssignmentRuleSettings` (schema defaults), and Save surfaces a
+ * persistent "not saved to server" banner without discarding the admin's edits.
+ * With `VITE_MOCK_API="true"` a session-scoped stub backs both calls so the page
+ * is fully demoable.
+ *
+ * GraphQL environments (`VITE_USE_GRAPHQL="true"`, which is every `.env*` here)
+ * additionally need the matching entry keyed by the exact REST url, registered in
+ * `src/core/store/api/graphql/organizationQueries.ts` (spread into `GQL_MAP` via
+ * `...GQL_ORGANIZATION`), since there is no REST fallback once GraphQL is on.
+ * Adding it now makes the backend cut-over a no-op FE change.
+ */
+export type RoutingMethod =
+  | "manual"
+  | "skill_based"
+  | "location_based"
+  | "department"
+  | "availability"
+  | "case_type";
+
+export type AllocationMethod = "round_robin" | "load_balance";
+
+/** Routing methods in display order (also the type-guard whitelist). */
+export const ROUTING_METHODS: readonly RoutingMethod[] = [
+  "manual",
+  "skill_based",
+  "location_based",
+  "department",
+  "availability",
+  "case_type",
+];
+
+/** Allocation methods in display order (also the type-guard whitelist). */
+export const ALLOCATION_METHODS: readonly AllocationMethod[] = [
+  "round_robin",
+  "load_balance",
+];
+
+/** PATCH body - both fields optional so the FE can send a partial update; server merges onto the stored record. */
+export interface OrgAssignmentRulesUpdateData {
+  routingMethod?: RoutingMethod;
+  allocationMethod?: AllocationMethod;
+}
+
+/** GET / PATCH response `data` - always fully populated (server fills unset fields with defaults). */
+export interface OrgAssignmentRuleSettings {
+  orgId: string;
+  /** The active routing method. "manual" = no automatic routing (default). */
+  routingMethod: RoutingMethod;
+  /** The active workload-distribution method. */
+  allocationMethod: AllocationMethod;
+  updatedAt?: string;
+  updatedBy?: string | null;
+}
+
+export function isOrgAssignmentRuleSettings(
+  value: unknown
+): value is OrgAssignmentRuleSettings {
+  if (typeof value !== "object" || value === null) return false;
+  const c = value as Record<string, unknown>;
+  return (
+    typeof c.orgId === "string" &&
+    ROUTING_METHODS.includes(c.routingMethod as RoutingMethod) &&
+    ALLOCATION_METHODS.includes(c.allocationMethod as AllocationMethod)
+  );
+}
+
 export interface OrganizationManagementProps {
   departments?: Department[];
   commands?: Command[];

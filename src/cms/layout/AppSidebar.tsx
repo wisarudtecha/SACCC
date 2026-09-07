@@ -197,7 +197,7 @@ const AppSidebar: React.FC = () => {
       icon: <PlugInIcon />,
       name: t("navigation.sidebar.main.system_configuration.title"),
       permission: permissions.hasAnyPermission([
-        "service.view", "unit.view", "settings.view",
+        "service.view", "unit.view", "settings.view", "organization_settings.manage",
       ]),
       subItems: [
         {
@@ -229,6 +229,11 @@ const AppSidebar: React.FC = () => {
           name: t("navigation.sidebar.main.system_configuration.nested.area_template_management"),
           path: "/area-template",
           permission: permissions.hasPermission("settings.view"),
+        },
+        {
+          name: t("navigation.sidebar.main.system_configuration.nested.organization_settings"),
+          path: "/settings/organization",
+          permission: permissions.hasPermission("organization_settings.manage"),
         },
       ],
     },

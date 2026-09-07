@@ -2,7 +2,15 @@ import { useState } from "react";
 
 interface SwitchProps {
   label: string;
+  /** Uncontrolled initial state. Ignored when `checked` is provided. */
   defaultChecked?: boolean;
+  /**
+   * Controlled state. When supplied, the switch renders from this value and stops
+   * tracking its own - needed for toggles that must reflect async-loaded data or
+   * a Cancel-triggered reset. Omit it to keep the original uncontrolled
+   * (`defaultChecked`) behaviour.
+   */
+  checked?: boolean;
   disabled?: boolean;
   onChange?: (checked: boolean) => void;
   onChick?:()=>void;
@@ -12,17 +20,22 @@ interface SwitchProps {
 const Switch: React.FC<SwitchProps> = ({
   label,
   defaultChecked = false,
+  checked,
   disabled = false,
   onChange,
   color = "blue", // Default to blue color
   onChick
 }) => {
-  const [isChecked, setIsChecked] = useState(defaultChecked);
+  const isControlled = checked !== undefined;
+  const [internalChecked, setInternalChecked] = useState(defaultChecked);
+  const isChecked = isControlled ? checked : internalChecked;
 
   const handleToggle = () => {
     if (disabled) return;
     const newCheckedState = !isChecked;
-    setIsChecked(newCheckedState);
+    if (!isControlled) {
+      setInternalChecked(newCheckedState);
+    }
     if (onChange) {
       onChange(newCheckedState);
     }
