@@ -1,4 +1,10 @@
 {
+  "0.69.0": {
+    "date": "2026-09-07",
+    "segment": "MINOR",
+    "notes": "feat(cms): add an Organization Settings page for map and case-assignment defaults\n- A new Organization Settings screen is available under System Configuration. It gathers organisation-wide defaults that until now could only be changed in configuration files, and is limited to administrators holding the new Organisation Settings permission.\n- Map Settings: choose the default map provider and base map for the case map; decide which map tools are offered (place search, boundary layers, address coordinates, dropping the incident pin); set the default radius shown around an incident and whether the service centre is locked automatically when the pin falls inside a single area; and control what the officer map shows - staff markers, movement trail, workload and assigned-case figures, and how often positions refresh.\n- Assignment Rules: choose the organisation's default case-routing method and how work is shared out between officers.\n- Each section is saved on its own, with a Cancel that restores the last saved values, a clear message against any field whose value is not valid, and a notice if a change could not be saved.\n- The settings screen is in place now; the chosen values will begin to take effect across the product as the supporting services are connected.\n- changelog.json / package.json: bump version 0.68.1 -> 0.69.0",
+    "author": "Wisarud Techa"
+  },
   "0.68.1": {
     "date": "2026-09-07",
     "segment": "PATCH",
