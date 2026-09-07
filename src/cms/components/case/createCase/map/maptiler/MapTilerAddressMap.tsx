@@ -399,7 +399,11 @@ function MapTilerAddressMapBase({
       <div ref={containerRef} className="h-full w-full" />
 
       {isSearchEnabled && isReady && (
-        <div className="absolute left-2 top-2 z-10">
+        // `z-20`, a step above the rest of the map's overlays (`z-10`): the
+        // results list drops down the top-left column that the staff
+        // detail/group card also occupies (see CaseStaffMapField), and the
+        // card - rendered last - would otherwise cover the list.
+        <div className="absolute left-2 top-2 z-20">
           <MapTilerSearchBox
             onSelect={handleSearchSelect}
             onError={onError}

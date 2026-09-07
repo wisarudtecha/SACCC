@@ -526,7 +526,12 @@ function LongdoAddressMapBase({
         // `left-14`, not `left-2`: Longdo draws its own zoom / geolocation
         // buttons in the top-left corner, and at `left-2` the search box sits
         // right on top of them.
-        <div className="absolute left-14 top-2 z-10">
+        //
+        // `z-20`, a step above the rest of the map's overlays (`z-10`): the
+        // results list drops down the top-left column that the staff
+        // detail/group card also occupies (see CaseStaffMapField), and the
+        // card - rendered last - would otherwise cover the list.
+        <div className="absolute left-14 top-2 z-20">
           <LongdoSearchBox
             onSelect={handleSearchSelect}
             onError={onError}

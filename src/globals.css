@@ -76,3 +76,20 @@
   outline: var(--esri-view-outline);
   outline-offset: var(--esri-view-outline-offset);
 }
+
+/* ArcGIS Search widget stacking.
+
+   The Search widget's suggestion / result menu drops down the map's top-left
+   column - the same column the staff detail / group card occupies at z-10 (see
+   `renderOverlaySlot` in CaseStaffMapField). Esri's top-left UI corner carries
+   no z-index, so that card, rendered last, covers the open results list. Lift
+   the corner one step above the app's own map overlays.
+
+   Only the Search widget is added to `top-left`; Zoom and Compass go to
+   `bottom-right` (see ArcgisAddressMap), so nothing else rides along.
+
+   Prefixed with `.esri-view` to outrank the SDK's runtime-injected stylesheet,
+   exactly as the focus-outline rules above do. */
+.esri-view .esri-ui-top-left {
+  z-index: 20;
+}
