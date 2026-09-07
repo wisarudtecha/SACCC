@@ -1,4 +1,10 @@
 {
+  "0.68.1": {
+    "date": "2026-09-07",
+    "segment": "PATCH",
+    "notes": "fix(cms): keep the map's place-search results above the staff card\n- When finding a location by name on the case map, the list of matching places now opens on top of the staff information card shown on the map. The card was covering the lower results, so they could not be read or selected.\n- Applies to every map style available for the case map.\n- changelog.json / package.json: bump version 0.68.0 -> 0.68.1",
+    "author": "Wisarud Techa"
+  },
   "0.68.0": {
     "date": "2026-09-04",
     "segment": "MINOR",
