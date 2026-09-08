@@ -17,6 +17,8 @@ import type { BoundaryLayerConfig } from "./boundaries/boundaryTypes";
 import type { BoundarySketchConfig } from "./sketch/sketchTypes";
 import type { StaffMarker, StaffSelection } from "./staff/staffTypes";
 import type { TrailPoint } from "./staff/useStaffTrails";
+import type { PlaceMarker } from "./place/placeTypes";
+import type { DeviceMarker } from "./device/deviceTypes";
 
 export type { MapProviderId };
 
@@ -197,6 +199,29 @@ export interface AddressMapProps {
    * intercept a map click. Purely a visual aid; never persisted.
    */
   incidentRadius?: IncidentRadiusOverlay | null;
+  /**
+   * Optional Place overlay: org-curated facility markers (Police Station /
+   * Hospital / Fire Station). Same "state owned above, component draws what it
+   * is handed" contract as `staff` - the component draws the markers it is given
+   * and reports a click on one. A Place click is informational only: it never
+   * changes the case (stakeholder decision Q1), so `onPlaceSelect` is for the
+   * caller's own UI (info popup, highlight), not a write-back.
+   */
+  places?: readonly PlaceMarker[];
+  showPlace?: boolean;
+  selectedPlaceId?: string | null;
+  onPlaceSelect?: (place: PlaceMarker | null) => void;
+  /**
+   * Optional Device overlay: IoT device markers (Camera / Fire Hydrant / AED)
+   * within the current map extent. Same contract as `staff`. Unlike Place, a
+   * Device click DOES feed a decision - the caller sets `caseState.iotDevice` to
+   * the selected device's id and nothing else (stakeholder decision Q2) - but
+   * that write lives in the caller; this component only reports the click.
+   */
+  devices?: readonly DeviceMarker[];
+  showDevice?: boolean;
+  selectedDeviceId?: string | null;
+  onDeviceSelect?: (device: DeviceMarker | null) => void;
   /**
    * Controls rendered inside the map container, on top of the map. The caller
    * positions them (e.g. `absolute bottom-2 left-2`), as the expand button does.
