@@ -27,6 +27,7 @@ import type {
   RouteOverlay
 } from "./mapTypes";
 import type { StaffMarker, StaffSelection } from "./staff/staffTypes";
+import type { PlaceMarker } from "./place/placeTypes";
 import type { BoundaryLayerConfig } from "./boundaries/boundaryTypes";
 import type { BoundarySketchConfig } from "./sketch/sketchTypes";
 
@@ -54,6 +55,15 @@ interface AddressMapFieldProps {
   showStaff?: boolean;
   selectedStaffId?: string | null;
   onStaffSelect?: (selection: StaffSelection | null) => void;
+  /**
+   * Place overlay (org-curated facilities), forwarded verbatim to both map
+   * instances - same contract as `staff`. Read-only: `onPlaceSelect` drives the
+   * caller's own info popup, never a case write (Q1).
+   */
+  places?: readonly PlaceMarker[];
+  showPlace?: boolean;
+  selectedPlaceId?: string | null;
+  onPlaceSelect?: (place: PlaceMarker | null) => void;
   /**
    * Route overlay, forwarded verbatim to both map instances - same contract as
    * `staff`.
@@ -111,6 +121,10 @@ function AddressMapFieldBase({
   showStaff = false,
   selectedStaffId = null,
   onStaffSelect,
+  places,
+  showPlace = false,
+  selectedPlaceId = null,
+  onPlaceSelect,
   route,
   showRoute = false,
   trail,
@@ -193,6 +207,10 @@ function AddressMapFieldBase({
         showStaff={showStaff}
         selectedStaffId={selectedStaffId}
         onStaffSelect={onStaffSelect}
+        places={places}
+        showPlace={showPlace}
+        selectedPlaceId={selectedPlaceId}
+        onPlaceSelect={onPlaceSelect}
         route={route}
         showRoute={showRoute}
         trail={trail}
@@ -231,6 +249,10 @@ function AddressMapFieldBase({
             showStaff={showStaff}
             selectedStaffId={selectedStaffId}
             onStaffSelect={onStaffSelect}
+            places={places}
+            showPlace={showPlace}
+            selectedPlaceId={selectedPlaceId}
+            onPlaceSelect={onPlaceSelect}
             route={route}
             showRoute={showRoute}
             trail={trail}

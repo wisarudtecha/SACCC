@@ -1,6 +1,7 @@
 // @refresh reset
 import store from "@/core/store/index";
 import { caseApi, CaseListParams } from "@/cms/store/api/caseApi";
+import { caseResultApi } from "@/cms/store/api/caseResultApi";
 import { customerApi } from "@/cms/store/api/custommerApi";
 import { formApi } from "@/cms/store/api/formApi";
 import { CaseTypeSubType } from "../../interface/CaseType";
@@ -193,7 +194,7 @@ export const fetchCase = async (params: CaseListParams) => {
 
 export const fetchCaseResults = async () => {
   const result = await store.dispatch(
-    caseApi.endpoints.getCaseResults.initiate({}, { forceRefetch: true })
+    caseResultApi.endpoints.getCaseResults.initiate({}, { forceRefetch: true })
   );
   if (result.data?.data) {
     localStorage.setItem("caseResultsList", JSON.stringify(result.data?.data));

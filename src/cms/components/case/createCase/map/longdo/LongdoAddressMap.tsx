@@ -30,6 +30,7 @@ import { MAP_CONTROL_REVEAL_ON_GROUP } from "../mapControlStyles";
 import { BasemapOptionId, DEFAULT_BASEMAP_ID } from "../basemaps";
 import type { AddressMapProps, MapLatLon } from "../mapTypes";
 import type { StaffMarker } from "../staff/staffTypes";
+import type { PlaceMarker } from "../place/placeTypes";
 import { longdoGeocodeService, type PlaceCandidate } from "../services/longdoGeocode";
 import { applyLongdoBasemap, toLongdoLanguage } from "./longdoBasemaps";
 import type { LongdoGlobal, LongdoLocation, LongdoMap, LongdoOverlay } from "./longdoApi";
@@ -43,6 +44,10 @@ import {
   useLongdoStaffOverlays,
   type StaffOverlayClickResolver
 } from "./staff/useLongdoStaffOverlays";
+import {
+  useLongdoPlaceOverlays,
+  type PlaceOverlayClickResolver
+} from "./place/useLongdoPlaceOverlays";
 import { useLongdoBreadcrumbOverlay } from "./staff/useLongdoBreadcrumbOverlay";
 import { useLongdoRouteOverlay } from "./staff/useLongdoRouteOverlay";
 import { useLongdoSketchOverlay } from "./sketch/useLongdoSketchOverlay";
@@ -51,9 +56,10 @@ import { useLongdoIncidentRadiusOverlay } from "./incidentRadius/useLongdoIncide
 const DEFAULT_CENTER: [number, number] = [100.5018, 13.7563]; // Bangkok
 const DEFAULT_ZOOM = 12;
 
-// Stable empty list so maps without a staff overlay don't re-run the sync
-// effect on every render.
+// Stable empty lists so maps without a staff / place overlay don't re-run the
+// sync effect on every render.
 const EMPTY_STAFF: readonly StaffMarker[] = [];
+const EMPTY_PLACES: readonly PlaceMarker[] = [];
 
 interface ScreenPosition {
   clientX: number;
@@ -80,6 +86,10 @@ function LongdoAddressMapBase({
   staff,
   showStaff = false,
   selectedStaffId = null,
+  places,
+  showPlace = false,
+  selectedPlaceId = null,
+  onPlaceSelect,
   route,
   showRoute = false,
   trail,
@@ -121,6 +131,9 @@ function LongdoAddressMapBase({
   //                         Must NOT fall through to a reverse geocode.
   //   { selection }         report it.
   const resolveOverlaySelectionRef = useRef<StaffOverlayClickResolver | null>(null);
+  // The Place layer's click resolver, same slot pattern. A Place hit is
+  // informational only (Q1) - the resolver just reports which marker was clicked.
+  const resolvePlaceSelectionRef = useRef<PlaceOverlayClickResolver | null>(null);
   // True while a sketch gesture owns the map's clicks. The ArcGIS
   // SketchViewModel swallows the click implicitly; here it has to be stated, or
   // every vertex placed while drawing would also drop a pin and reverse-geocode.
@@ -147,12 +160,14 @@ function LongdoAddressMapBase({
   const readOnlyRef = useRef(readOnly);
   const onBasemapChangeRef = useRef(onBasemapChange);
   const onStaffSelectRef = useRef(onStaffSelect);
+  const onPlaceSelectRef = useRef(onPlaceSelect);
   const languageRef = useRef(language);
   onSelectRef.current = onSelect;
   onErrorRef.current = onError;
   readOnlyRef.current = readOnly;
   onBasemapChangeRef.current = onBasemapChange;
   onStaffSelectRef.current = onStaffSelect;
+  onPlaceSelectRef.current = onPlaceSelect;
   languageRef.current = language;
 
   const reportError = useCallback((message: string, error?: unknown) => {
@@ -187,6 +202,18 @@ function LongdoAddressMapBase({
     visible: showStaff,
     zoom: settledZoom,
     resolverRef: resolveOverlaySelectionRef
+  });
+
+  // Org-curated Place markers. Same resolver-slot pattern; read-only (Q1), so a
+  // hit opens the caller's info popup and nothing else.
+  useLongdoPlaceOverlays({
+    longdoRef,
+    mapRef,
+    isReady,
+    places: places ?? EMPTY_PLACES,
+    selectedPlaceId,
+    visible: showPlace,
+    resolverRef: resolvePlaceSelectionRef
   });
 
   // The solved officer -> case route. Unlike every other overlay on this map it
@@ -385,6 +412,15 @@ function LongdoAddressMapBase({
             if (outcome.selection) {
               onStaffSelectRef.current?.(outcome.selection);
             }
+            return;
+          }
+
+          // Place markers next, before the readOnly / sketch guard: a Place is
+          // informational on every surface, so a hit opens the popup and never
+          // drops a pin. Staff still wins a tie.
+          const placeHit = resolvePlaceSelectionRef.current?.(overlay) ?? null;
+          if (placeHit) {
+            onPlaceSelectRef.current?.(placeHit);
             return;
           }
 

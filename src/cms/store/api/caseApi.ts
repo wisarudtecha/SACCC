@@ -2,7 +2,7 @@ import { ApiResponse } from "@/cms/types";
 import { CaseSubType, CaseType, CaseTypeSubType } from "@/cms/components/interface/CaseType";
 import { PaginationParams } from "./custommerApi";
 import { FormFieldWithNode } from "@/cms/components/interface/FormField";
-import { Attachment, caseResults } from "@/cms/types/case";
+import { Attachment } from "@/cms/types/case";
 import { baseApi } from "@/core/store/api/baseApi";
 
 export interface CreateCase {
@@ -326,14 +326,6 @@ export const caseApi = baseApi.injectEndpoints({
         getStatus: builder.query<ApiResponse<CaseStatus[]>, PaginationParams>({
             query: (params) => ({
                 url: "/case_status",
-                params,
-            }),
-            providesTags: ["Cases"],
-        }),
-
-        getCaseResults : builder.query<ApiResponse<caseResults[]>, PaginationParams>({
-            query: (params) => ({
-                url: "/case/result/",
                 params,
             }),
             providesTags: ["Cases"],

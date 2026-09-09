@@ -9,19 +9,15 @@
 // types are referenced by the case form and the case detail view, neither of
 // which should pull a mapping SDK into its chunk.
 
-/**
- * The v1 category set (stakeholder decision 2). A controlled vocabulary rather
- * than free text because this is data the org fully owns through the admin
- * screen - unlike `Device.deviceType`, which is free text on an existing feed.
- * "etc." categories are a later phase.
- */
-export type PlaceCategory = "police_station" | "hospital" | "fire_station";
+// The category vocabulary is owned by the entity types, not the map layer - the
+// admin/API layer needs the same union. Imported and re-exported here so map-side
+// importers keep a single, stable path.
+import { PLACE_CATEGORIES } from "@/cms/types/place";
+import type { Place, PlaceCategory } from "@/cms/types/place";
+import { isMappableCoordinate } from "../staff/staffTypes";
 
-export const PLACE_CATEGORIES: readonly PlaceCategory[] = [
-  "police_station",
-  "hospital",
-  "fire_station"
-] as const;
+export { PLACE_CATEGORIES };
+export type { PlaceCategory };
 
 /**
  * One admin-curated facility, normalised for the map.
@@ -37,4 +33,39 @@ export interface PlaceMarker {
   category: PlaceCategory;
   latitude: number;
   longitude: number;
+}
+
+/** A finite number, or null. `Place` coordinates arrive from the API as strings. */
+function toFiniteNumber(value: unknown): number | null {
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+/**
+ * `Place[]` from the admin API -> `PlaceMarker[]` the map can draw.
+ *
+ * The single place that decides what counts as a mappable Place, mirroring
+ * `toStaffMarkers`: parse the string coordinates, drop anything that is not a
+ * usable point (exact 0/0, out of range), and resolve the bilingual name to the
+ * active language once so every consumer agrees on the label.
+ */
+export function toPlaceMarkers(
+  places: readonly Place[] | undefined,
+  language: string
+): PlaceMarker[] {
+  if (!places?.length) {
+    return [];
+  }
+  return places.reduce<PlaceMarker[]>((markers, place) => {
+    const latitude = toFiniteNumber(place.latitude);
+    const longitude = toFiniteNumber(place.longitude);
+    if (latitude === null || longitude === null || !isMappableCoordinate(latitude, longitude)) {
+      return markers;
+    }
+    const name = language === "th" ? place.th || place.en : place.en || place.th;
+    return [
+      ...markers,
+      { id: place.id, name: name || place.id, category: place.category, latitude, longitude }
+    ];
+  }, []);
 }

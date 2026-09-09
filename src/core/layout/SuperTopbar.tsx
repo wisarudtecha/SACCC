@@ -24,6 +24,7 @@ import {
   LayoutGrid,
   LayoutTemplate,
   Map,
+  MapPin,
   Menu,
   NotebookPen,
   Package,
@@ -373,10 +374,22 @@ const SuperTopbar = (
           permission: permissions.hasPermission("unit.view")
         },
         {
+          icon: <MapPin />,
+          name: t("navigation.super_app.topbar.more.menu.system_config.sub_menu.place"),
+          path: "/cms/place",
+          permission: permissions.hasPermission("organization_settings.manage")
+        },
+        {
           icon: <Wrench />,
           name: t("navigation.super_app.topbar.more.menu.system_config.sub_menu.skill"),
           path: "/cms/skill",
           permission: permissions.hasAnyPermission(["unit.view"])
+        },
+        {
+          icon: <ClipboardList />,
+          name: t("navigation.super_app.topbar.more.menu.system_config.sub_menu.case_result"),
+          path: "/cms/case-result",
+          permission: permissions.hasPermission("settings.view")
         },
         {
           icon: <Map />,

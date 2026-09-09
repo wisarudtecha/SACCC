@@ -48,6 +48,11 @@ const commonTagTypes = [
   "AreaTemplate",
   "Device Iot",
   "Unit",
+  // placesApi's /mdm/places CRUD. Registered here because a tag not in this list
+  // is silently ignored (see the "Organization" and "Store" notes).
+  "Place",
+  // caseResultApi's /case/result CRUD - same reason as "Place" above.
+  "CaseResult",
   "Files",
   "AppointmentType",
   "ServiceType",

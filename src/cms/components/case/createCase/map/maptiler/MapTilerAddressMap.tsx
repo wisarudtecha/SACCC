@@ -28,6 +28,7 @@ import { MAP_CONTROL_REVEAL_ON_GROUP } from "../mapControlStyles";
 import { BasemapOptionId, DEFAULT_BASEMAP_ID } from "../basemaps";
 import type { AddressMapProps, MapLatLon } from "../mapTypes";
 import type { StaffMarker } from "../staff/staffTypes";
+import type { PlaceMarker } from "../place/placeTypes";
 import { maptilerGeocodeService, type PlaceCandidate } from "../services/maptilerGeocode";
 import { ensureMapTilerWorker } from "./maptilerSetup";
 import { mapTilerStyleFor, mapTilerStyleSignature } from "./maptilerBasemaps";
@@ -35,6 +36,7 @@ import { createCaseMarkerElement } from "./maptilerSymbols";
 import MapTilerSearchBox from "./MapTilerSearchBox";
 import { useMapTilerBoundaryOverlays } from "./boundaries/useMapTilerBoundaryOverlays";
 import { useMapTilerStaffOverlays } from "./staff/useMapTilerStaffOverlays";
+import { useMapTilerPlaceOverlays } from "./place/useMapTilerPlaceOverlays";
 import { useMapTilerRouteOverlay } from "./staff/useMapTilerRouteOverlay";
 import { useMapTilerBreadcrumbOverlay } from "./staff/useMapTilerBreadcrumbOverlay";
 import { useMapTilerSketchOverlay } from "./sketch/useMapTilerSketchOverlay";
@@ -46,6 +48,7 @@ const DEFAULT_ZOOM = 12;
 // Stable empty list so maps without a staff overlay don't re-run the sync
 // effect on every render.
 const EMPTY_STAFF: readonly StaffMarker[] = [];
+const EMPTY_PLACES: readonly PlaceMarker[] = [];
 
 function MapTilerAddressMapBase({
   value,
@@ -63,6 +66,10 @@ function MapTilerAddressMapBase({
   staff,
   showStaff = false,
   selectedStaffId = null,
+  places,
+  showPlace = false,
+  selectedPlaceId = null,
+  onPlaceSelect,
   route,
   showRoute = false,
   trail,
@@ -148,6 +155,18 @@ function MapTilerAddressMapBase({
     visible: showStaff,
     zoom: settledZoom,
     onSelect: onStaffSelect
+  });
+
+  // Org-curated Place markers. DOM markers with their own click listener, so no
+  // styleEpoch, no zoom re-sync, and no map-click surgery: the element's
+  // stopPropagation() keeps a marker click off the map. Read-only (Q1).
+  useMapTilerPlaceOverlays({
+    mapRef,
+    isReady,
+    places: places ?? EMPTY_PLACES,
+    selectedPlaceId,
+    visible: showPlace,
+    onSelect: onPlaceSelect
   });
 
   // The solved officer -> case route. ORS returns geometry, so this draws the

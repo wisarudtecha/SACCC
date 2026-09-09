@@ -5,11 +5,13 @@ import type { RoleAnalytics, RoleMetrics } from "@/core/types/role";
 import type { UserMetrics, UserGroupMetrics } from "@/core/types/user";
 import type { AppointmentTypeMetrics } from "@/cms/types/appointmentType";
 import type { PropertyMetrics, UnitMetrics } from "@/cms/types/unit";
+import type { PlaceMetrics } from "@/cms/types/place";
+import type { CaseResultMetrics } from "@/cms/types/caseResult";
 import type { WorkflowAnalytics } from "@/cms/types/workflow";
 import MetricsCard from "@/core/components/admin/MetricsCard";
 
 const MetricsView: React.FC<{
-  metrics: ResponseMetrics | RoleAnalytics | RoleMetrics | UserMetrics | UserGroupMetrics | UnitMetrics | PropertyMetrics | AppointmentTypeMetrics | WorkflowAnalytics | undefined;
+  metrics: ResponseMetrics | RoleAnalytics | RoleMetrics | UserMetrics | UserGroupMetrics | UnitMetrics | PropertyMetrics | PlaceMetrics | CaseResultMetrics | AppointmentTypeMetrics | WorkflowAnalytics | undefined;
   attrMetrics: {
     key: string;
     title: string;

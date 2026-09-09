@@ -651,7 +651,9 @@
                 "service_type": "Service Type Management",
                 "unit": "Unit Management",
                 "property": "Property Management",
+                "place": "Place Management",
                 "skill": "Skill Management",
+                "case_result": "Case Result Management",
                 "area": "Area Management",
                 "organization_settings": "Organization Settings"
               }
@@ -868,7 +870,9 @@
               }
             },
             "skill_management": "Skill Management",
+            "case_result_management": "Case Result Management",
             "property_management": "Property Management",
+            "place_management": "Place Management",
             "area_management": "Area Management",
             "area_template_management": "Area Templates",
             "organization_settings": "Organization Settings"
@@ -2703,6 +2707,164 @@
         "inactive": "Inactive Appointment Types"
       }
     },
+    "place": {
+      "name": "Place",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search places..."
+          }
+        },
+        "header": {
+          "name": "Name",
+          "category": "Category",
+          "status": "Status"
+        },
+        "preview": {
+          "header": "Place Information"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "Create Place",
+          "update": "Edit Place"
+        },
+        "th": {
+          "label": "Name (TH)",
+          "placeholder": "Enter place name in Thai language",
+          "required": "Place name (Thai) is required"
+        },
+        "en": {
+          "label": "Name (EN)",
+          "placeholder": "Enter place name in English language",
+          "required": "Place name (English) is required"
+        },
+        "category": {
+          "label": "Category",
+          "placeholder": "Select a category",
+          "required": "Category is required"
+        },
+        "latitude": {
+          "label": "Latitude",
+          "placeholder": "e.g. 13.7563",
+          "required": "A valid latitude (-90 to 90) is required"
+        },
+        "longitude": {
+          "label": "Longitude",
+          "placeholder": "e.g. 100.5018",
+          "required": "A valid longitude (-180 to 180) is required"
+        },
+        "active": {
+          "label": "Active"
+        }
+      },
+      "confirm": {
+        "create": {
+          "title": "Create place confirmation",
+          "message": "Please confirm to create _PLACE_."
+        },
+        "update": {
+          "title": "Update place confirmation",
+          "message": "Please confirm to update _PLACE_."
+        },
+        "button": {
+          "cancel": "Cancel",
+          "confirm": "Confirm",
+          "saving": "Saving..."
+        }
+      },
+      "action": {
+        "create": {
+          "success": "Place created successfully",
+          "error": "Failed to create place"
+        },
+        "update": {
+          "success": "Place updated successfully",
+          "error": "Failed to update place"
+        },
+        "button": {
+          "save": "Save",
+          "delete": "Delete",
+          "reset": "Reset"
+        }
+      },
+      "metrics": {
+        "total": "Total Places",
+        "active": "Active Places",
+        "inactive": "Inactive Places"
+      }
+    },
+    "case_result": {
+      "name": "Case Result",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search case results..."
+          }
+        },
+        "header": {
+          "name": "Name",
+          "status": "Status"
+        },
+        "preview": {
+          "header": "Case Result Information"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "Create Case Result",
+          "update": "Edit Case Result"
+        },
+        "th": {
+          "label": "Name (TH)",
+          "placeholder": "Enter case result name in Thai language",
+          "required": "Case result name (Thai) is required"
+        },
+        "en": {
+          "label": "Name (EN)",
+          "placeholder": "Enter case result name in English language",
+          "required": "Case result name (English) is required"
+        },
+        "active": {
+          "label": "Active"
+        }
+      },
+      "confirm": {
+        "create": {
+          "title": "Create case result confirmation",
+          "message": "Please confirm to create _CASE_RESULT_."
+        },
+        "update": {
+          "title": "Update case result confirmation",
+          "message": "Please confirm to update _CASE_RESULT_."
+        },
+        "button": {
+          "cancel": "Cancel",
+          "confirm": "Confirm",
+          "saving": "Saving..."
+        }
+      },
+      "action": {
+        "create": {
+          "success": "Case result created successfully",
+          "error": "Failed to create case result"
+        },
+        "update": {
+          "success": "Case result updated successfully",
+          "error": "Failed to update case result"
+        },
+        "button": {
+          "save": "Save",
+          "delete": "Delete",
+          "reset": "Reset"
+        }
+      },
+      "metrics": {
+        "total": "Total Case Results",
+        "active": "Active Case Results",
+        "inactive": "Inactive Case Results"
+      }
+    },
     "property": {
       "name": "Property",
       "list": {
@@ -3541,6 +3703,11 @@
       "map_staff_section_eta_ttl_desc": "Live estimated time of arrival and time to arrive for the responding unit, adjusted for traffic.",
       "map_staff_case_details_button": "View full case details",
       "map_place": "Place",
+      "map_place_hide": "Hide places",
+      "map_place_empty": "No places to show",
+      "map_place_error": "Could not load places",
+      "map_place_coordinates": "Coordinates",
+      "map_place_close": "Close",
       "map_place_category_police_station": "Police Station",
       "map_place_category_hospital": "Hospital",
       "map_place_category_fire_station": "Fire Station",

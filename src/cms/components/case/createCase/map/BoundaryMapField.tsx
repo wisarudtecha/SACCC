@@ -33,6 +33,8 @@ import MapPlaceButton from "./MapPlaceButton";
 import BoundaryPickerPanel from "./boundaries/BoundaryPickerPanel";
 import BoundaryToolbar from "./boundaries/BoundaryToolbar";
 import { useBoundarySelection } from "./boundaries/useBoundarySelection";
+import PlaceInfoPopup from "./place/PlaceInfoPopup";
+import { usePlaceLayer } from "./place/usePlaceLayer";
 import type { StaffMarker, StaffSelection } from "./staff/staffTypes";
 
 interface BoundaryMapFieldProps {
@@ -97,6 +99,24 @@ function BoundaryMapFieldBase({
   const { theme } = useTheme();
   const isDarkTheme = theme === "dark";
   const boundary = useBoundarySelection();
+  // Place layer state. Owned here (not in AddressMapField) for the same reason as
+  // the boundary state: AddressMapField renders a second MapView when expanded,
+  // so the layer's toggle, filters and selection have to survive that. Being the
+  // one component all three case-map surfaces go through, none of them need to
+  // know the Place layer exists. Gated on `showPlaceButton`, which every surface
+  // that wants Place already passes.
+  const {
+    places: placeMarkers,
+    showPlace,
+    toggleShowPlace,
+    categoryVisibility: placeCategoryVisibility,
+    toggleCategory: togglePlaceCategory,
+    selectedPlace,
+    selectedPlaceId,
+    selectPlace,
+    notice: placeNotice
+  } = usePlaceLayer();
+  const isPlaceLayerOn = showPlaceButton && showPlace;
 
   const { closePanel } = boundary;
   // Closing the large map has to take the picker with it. The panel only renders
@@ -115,15 +135,29 @@ function BoundaryMapFieldBase({
   const renderToolbarSlot = useCallback(
     (context: MapSlotContext) => (
       <>
-        <BoundaryToolbar
-          visibility={boundary.visibility}
-          onToggleLevel={boundary.toggleLevel}
-          onOpenPicker={boundary.openPanel}
-          isPickerOpen={boundary.isPanelOpen}
-          showPicker={context.isExpanded}
-          collapsible={!context.isExpanded}
-        />
-        {showPlaceButton && <MapPlaceButton compact={!context.isExpanded} />}
+        {/* Boundary + Place are both layer toggles - keep them as one tight
+            cluster (`gap-1`), set apart from staff / basemap / expand by the
+            toolbar row's own `gap-2`. */}
+        <div className="flex items-start gap-1">
+          <BoundaryToolbar
+            visibility={boundary.visibility}
+            onToggleLevel={boundary.toggleLevel}
+            onOpenPicker={boundary.openPanel}
+            isPickerOpen={boundary.isPanelOpen}
+            showPicker={context.isExpanded}
+            collapsible={!context.isExpanded}
+          />
+          {showPlaceButton && (
+            <MapPlaceButton
+              isActive={showPlace}
+              onToggle={toggleShowPlace}
+              categoryVisibility={placeCategoryVisibility}
+              onToggleCategory={togglePlaceCategory}
+              notice={placeNotice}
+              compact={!context.isExpanded}
+            />
+          )}
+        </div>
         {extraToolbarSlot?.(context)}
       </>
     ),
@@ -133,6 +167,11 @@ function BoundaryMapFieldBase({
       boundary.openPanel,
       boundary.isPanelOpen,
       showPlaceButton,
+      showPlace,
+      toggleShowPlace,
+      placeCategoryVisibility,
+      togglePlaceCategory,
+      placeNotice,
       extraToolbarSlot
     ]
   );
@@ -156,6 +195,16 @@ function BoundaryMapFieldBase({
             className="absolute right-2 top-12 z-20 max-h-[calc(100%-3.5rem)]"
           />
         )}
+        {/* Left edge, below the staff cards (left-2 top-16) and clear of the
+            boundary picker (right-2 top-12). Read-only: closing it writes
+            nothing to the case (Q1). */}
+        {showPlaceButton && selectedPlace && (
+          <PlaceInfoPopup
+            place={selectedPlace}
+            onClose={() => selectPlace(null)}
+            className="absolute bottom-2 left-2 z-20 max-w-[16rem]"
+          />
+        )}
         {extraOverlaySlot?.(context)}
       </>
     ),
@@ -170,6 +219,9 @@ function BoundaryMapFieldBase({
       boundary.apply,
       boundary.cancel,
       isDarkTheme,
+      showPlaceButton,
+      selectedPlace,
+      selectPlace,
       extraOverlaySlot
     ]
   );
@@ -188,6 +240,10 @@ function BoundaryMapFieldBase({
       showStaff={showStaff}
       selectedStaffId={selectedStaffId}
       onStaffSelect={onStaffSelect}
+      places={placeMarkers}
+      showPlace={isPlaceLayerOn}
+      selectedPlaceId={selectedPlaceId}
+      onPlaceSelect={selectPlace}
       route={route}
       showRoute={showRoute}
       trail={trail}

@@ -558,7 +558,9 @@
                 "service_type": "服务类型管理",
                 "unit": "单位管理",
                 "property": "属性管理",
+                "place": "地点管理",
                 "skill": "技能管理",
+                "case_result": "结案结果管理",
                 "area": "区域管理",
                 "organization_settings": "组织设置"
               }
@@ -768,7 +770,9 @@
               }
             },
             "skill_management": "技能管理",
+            "case_result_management": "结案结果管理",
             "property_management": "属性管理",
+            "place_management": "地点管理",
             "area_management": "区域管理",
             "area_template_management": "区域模板",
             "organization_settings": "组织设置"
@@ -2587,6 +2591,164 @@
         "inactive": "已停用预约类型"
       }
     },
+    "place": {
+      "name": "地点",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索地点..."
+          }
+        },
+        "header": {
+          "name": "名称",
+          "category": "类别",
+          "status": "状态"
+        },
+        "preview": {
+          "header": "地点信息"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "创建地点",
+          "update": "编辑地点"
+        },
+        "th": {
+          "label": "名称（泰语）",
+          "placeholder": "请输入泰语地点名称",
+          "required": "地点名称（泰语）为必填项"
+        },
+        "en": {
+          "label": "名称（英语）",
+          "placeholder": "请输入英语地点名称",
+          "required": "地点名称（英语）为必填项"
+        },
+        "category": {
+          "label": "类别",
+          "placeholder": "请选择类别",
+          "required": "类别为必填项"
+        },
+        "latitude": {
+          "label": "纬度",
+          "placeholder": "例如 13.7563",
+          "required": "请输入有效纬度（-90 至 90）"
+        },
+        "longitude": {
+          "label": "经度",
+          "placeholder": "例如 100.5018",
+          "required": "请输入有效经度（-180 至 180）"
+        },
+        "active": {
+          "label": "启用"
+        }
+      },
+      "confirm": {
+        "create": {
+          "title": "创建地点确认",
+          "message": "请确认以创建 _PLACE_"
+        },
+        "update": {
+          "title": "更新地点确认",
+          "message": "请确认以更新 _PLACE_"
+        },
+        "button": {
+          "cancel": "取消",
+          "confirm": "确认",
+          "saving": "正在保存..."
+        }
+      },
+      "action": {
+        "create": {
+          "success": "地点创建成功",
+          "error": "地点创建失败"
+        },
+        "update": {
+          "success": "地点更新成功",
+          "error": "地点更新失败"
+        },
+        "button": {
+          "save": "保存",
+          "delete": "删除",
+          "reset": "重置"
+        }
+      },
+      "metrics": {
+        "total": "地点总数",
+        "active": "已启用地点",
+        "inactive": "已停用地点"
+      }
+    },
+    "case_result": {
+      "name": "结案结果",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索结案结果..."
+          }
+        },
+        "header": {
+          "name": "名称",
+          "status": "状态"
+        },
+        "preview": {
+          "header": "结案结果信息"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "创建结案结果",
+          "update": "编辑结案结果"
+        },
+        "th": {
+          "label": "名称（泰语）",
+          "placeholder": "请输入泰语结案结果名称",
+          "required": "结案结果名称（泰语）为必填项"
+        },
+        "en": {
+          "label": "名称（英语）",
+          "placeholder": "请输入英语结案结果名称",
+          "required": "结案结果名称（英语）为必填项"
+        },
+        "active": {
+          "label": "启用"
+        }
+      },
+      "confirm": {
+        "create": {
+          "title": "创建结案结果确认",
+          "message": "请确认以创建 _CASE_RESULT_"
+        },
+        "update": {
+          "title": "更新结案结果确认",
+          "message": "请确认以更新 _CASE_RESULT_"
+        },
+        "button": {
+          "cancel": "取消",
+          "confirm": "确认",
+          "saving": "正在保存..."
+        }
+      },
+      "action": {
+        "create": {
+          "success": "结案结果创建成功",
+          "error": "结案结果创建失败"
+        },
+        "update": {
+          "success": "结案结果更新成功",
+          "error": "结案结果更新失败"
+        },
+        "button": {
+          "save": "保存",
+          "delete": "删除",
+          "reset": "重置"
+        }
+      },
+      "metrics": {
+        "total": "结案结果总数",
+        "active": "已启用结案结果",
+        "inactive": "已停用结案结果"
+      }
+    },
     "property": {
       "name": "属性",
       "list": {
@@ -3434,6 +3596,11 @@
       "map_staff_section_eta_ttl_desc": "处置单位的实时预计到达时间与所需时间，并按路况调整。",
       "map_staff_case_details_button": "查看完整案件详情",
       "map_place": "地点",
+      "map_place_hide": "隐藏地点",
+      "map_place_empty": "没有可显示的地点",
+      "map_place_error": "无法加载地点",
+      "map_place_coordinates": "坐标",
+      "map_place_close": "关闭",
       "map_place_category_police_station": "警察局",
       "map_place_category_hospital": "医院",
       "map_place_category_fire_station": "消防站",

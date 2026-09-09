@@ -36,6 +36,8 @@ import { useBreadcrumbGraphicsLayer } from "./staff/useBreadcrumbGraphicsLayer";
 import { useAdminBoundaryLayers } from "./boundaries/useAdminBoundaryLayers";
 import { useBoundarySketchLayer } from "./sketch/useBoundarySketchLayer";
 import { useArcgisIncidentRadiusLayer } from "./incidentRadius/useArcgisIncidentRadiusLayer";
+import { useArcgisPlaceLayer } from "./place/useArcgisPlaceLayer";
+import type { PlaceMarker } from "./place/placeTypes";
 import type { AddressMapProps, MapLatLon } from "./mapTypes";
 
 const DEFAULT_CENTER: [number, number] = [100.5018, 13.7563]; // Bangkok
@@ -48,9 +50,10 @@ const DEFAULT_ZOOM = 12;
  */
 const SEARCH_MIN_CHARACTERS = 3;
 
-// Stable empty list so maps without a staff overlay don't re-run the sync effect
-// on every render.
+// Stable empty lists so maps without a staff / place overlay don't re-run the
+// sync effect on every render.
 const EMPTY_STAFF: readonly StaffMarker[] = [];
+const EMPTY_PLACES: readonly PlaceMarker[] = [];
 
 // Minimal shapes for the only two event fields we read. The SDK's generated
 // event types aren't reliably importable across major versions, so we type just
@@ -108,6 +111,10 @@ function ArcgisAddressMapBase({
   showStaff = false,
   selectedStaffId = null,
   onStaffSelect,
+  places,
+  showPlace = false,
+  selectedPlaceId = null,
+  onPlaceSelect,
   route,
   showRoute = false,
   trail,
@@ -161,11 +168,13 @@ function ArcgisAddressMapBase({
   const readOnlyRef = useRef(readOnly);
   const onBasemapChangeRef = useRef(onBasemapChange);
   const onStaffSelectRef = useRef(onStaffSelect);
+  const onPlaceSelectRef = useRef(onPlaceSelect);
   onSelectRef.current = onSelect;
   onErrorRef.current = onError;
   readOnlyRef.current = readOnly;
   onBasemapChangeRef.current = onBasemapChange;
   onStaffSelectRef.current = onStaffSelect;
+  onPlaceSelectRef.current = onPlaceSelect;
 
   // Draws the staff markers and answers "did this click hit an officer?".
   // `resolveStaffClick` is stable, so the mount-time click handler can call it.
@@ -179,6 +188,19 @@ function ArcgisAddressMapBase({
   });
   const resolveStaffClickRef = useRef(resolveStaffClick);
   resolveStaffClickRef.current = resolveStaffClick;
+
+  // Draws the org-curated Place markers and answers "did this click hit one?".
+  // Read-only: a hit opens the caller's info popup and nothing else (Q1).
+  const { resolvePlaceClick } = useArcgisPlaceLayer({
+    mapRef,
+    viewRef,
+    isReady,
+    places: places ?? EMPTY_PLACES,
+    selectedPlaceId,
+    visible: showPlace
+  });
+  const resolvePlaceClickRef = useRef(resolvePlaceClick);
+  resolvePlaceClickRef.current = resolvePlaceClick;
 
   // Administrative boundary polygons. Drawn beneath the marker and staff layers,
   // and with popups disabled, so they never intercept a map click. Labels are
@@ -404,6 +426,15 @@ function ArcgisAddressMapBase({
       const staffSelection = await resolveStaffClickRef.current(event);
       if (staffSelection) {
         onStaffSelectRef.current?.(staffSelection);
+        return;
+      }
+
+      // Place markers next, and before the readOnly guard: a Place is
+      // informational on every surface, so a hit opens the popup and never
+      // moves the incident pin. Staff still wins a tie.
+      const placeHit = await resolvePlaceClickRef.current(event);
+      if (placeHit) {
+        onPlaceSelectRef.current?.(placeHit);
         return;
       }
 
