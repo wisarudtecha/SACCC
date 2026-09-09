@@ -1,4 +1,10 @@
 {
+  "0.70.0": {
+    "date": "2026-09-09",
+    "segment": "MINOR",
+    "notes": "feat(cms): add Place Management and show key facilities on the case map\n- A new Place Management screen is available under System Configuration, for administrators holding the Organisation Settings permission. It keeps the organisation's list of key facilities - police stations, hospitals and fire stations - each with a name in Thai and English, a category, a map location, and an active or inactive state. Facilities can be added, edited and removed, with a confirmation step before each change and the list updating in place afterwards.\n- The case map now has a Place control in its toolbar. Turning it on marks the saved facilities on the map, with a colour for each category and a filter to show or hide each category on its own. The layer starts hidden until it is switched on.\n- Selecting a facility on the map opens a small card with its name, category and coordinates. This is for reference only - it never changes the incident location or any other case detail.\n- The Place layer works on every map style offered for the case map, on both the case creation and case assignment screens.\n- If the facility list cannot be loaded, or there is nothing to show, the map now says so rather than simply showing an empty layer.\n- A new Case Result Management screen is also available under System Configuration. It holds the organisation's list of case close reasons - the choices an agent picks when closing or cancelling a case, such as \"Work Closed\" - each with a name in Thai and English and an active or inactive state. Reasons can be added, edited and removed, and the case close and cancel forms continue to draw their choices from this list, refreshed when a user signs in.\n- changelog.json / package.json: bump version 0.69.0 -> 0.70.0",
+    "author": "Wisarud Techa"
+  },
   "0.69.0": {
     "date": "2026-09-07",
     "segment": "MINOR",
