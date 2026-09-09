@@ -1,4 +1,10 @@
 {
+  "0.70.1": {
+    "date": "2026-09-09",
+    "segment": "PATCH",
+    "notes": "fix(cms): allow closing a case when the workflow's next step is the closing step\n- A case can now be closed from the case screen when its workflow's next step is the closing step, even if the case's current status is not one of the standard close-ready statuses. Workflows that use their own status names could previously reach a point where the close action was unavailable.\n- The \"Assign Officer\" button is now hidden once the workflow's next step will close the case, since assigning someone to a case that is about to close serves no purpose.\n- changelog.json / package.json: bump version 0.70.0 -> 0.70.1",
+    "author": "Wisarud Techa"
+  },
   "0.70.0": {
     "date": "2026-09-09",
     "segment": "MINOR",
