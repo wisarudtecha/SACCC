@@ -24,7 +24,7 @@ import dispatchUpdateLocate from "./caseLocalStorage.tsx/caseLocalStorage"
 import { useNavigate, useParams } from "react-router-dom"
 import Panel from "./CasePanel"
 import OfficerDataModal from "./OfficerDataModal"
-import { AcknowledgedStatus, cancelAndCloseStatus, CaseStatusInterface, doneStatus, RequestCloesStage } from "../ui/status/status"
+import { AcknowledgedStatus, cancelAndCloseStatus, CaseStatusInterface, closeStatus, doneStatus, RequestCloesStage } from "../ui/status/status"
 import { ConfirmationModal } from "./modal/ConfirmationModal"
 import { CaseDetailsModal } from "./modal/CaseDetailsModal"
 import { useWebSocket } from "@/core/components/websocket/websocket"
@@ -292,7 +292,6 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         JSON.parse(localStorage.getItem("caseResultsList") ?? "[]") as caseResults[], []
     );
     const { toasts, addToast, removeToast } = useToast();
-    const isCloseStage = RequestCloesStage.find(status => status === caseState?.status);
     const [disableButton, setDisableButton] = useState<boolean>(false);
     const [disableCloseCancelForm, setDisableCloseCancelForm] = useState<boolean>(false);
     const caseTypeSupTypeData = useMemo(() =>
@@ -314,6 +313,14 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             skip: !initialCaseData?.caseId
         }
     );
+    // Close is allowed when the case is already at a close-ready status, or when
+    // the SOP's next step will move it to "closed" (S007) - the latter lets
+    // workflows with non-standard status ids still close from the UI.
+    const isCloseStage = useMemo(() => {
+        const nextStateAction = sopData?.data?.nextStage?.data?.data?.config?.action;
+        return RequestCloesStage.includes(caseState?.status ?? "")
+            || nextStateAction === closeStatus;
+    }, [sopData?.data?.nextStage, caseState?.status]);
     const [delFileApi] = useDeleteFileMutationMutation();
     const [updateCase] = usePatchUpdateCaseMutation();
     const [postDispatch] = usePostDispacthMutationMutation();

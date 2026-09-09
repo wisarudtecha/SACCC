@@ -20,7 +20,7 @@ import { Comments } from "../comment/Comment";
 import { getPriorityBorderColorClass, getTextPriority } from "../function/Prioriy";
 import { CaseTypeSubType } from "../interface/CaseType";
 import ProgressStepPreview from "./activityTimeline/caseActivityTimeline";
-import { cancelAndCloseStatus, CaseStatusInterface } from "../ui/status/status";
+import { cancelAndCloseStatus, CaseStatusInterface, closeStatus } from "../ui/status/status";
 import { CaseDetails, FileItem } from "@/cms/types/case";
 import { mapSopToOrderedProgress } from "./sopStepTranForm";
 import { useTranslation } from "@/core/hooks/useTranslation";
@@ -92,6 +92,10 @@ export const CaseCard: React.FC<CaseCardProps> = ({
 
     // Use dynamic steps if available, otherwise use default
     const stepsToDisplay = progressSteps.length > 0 ? progressSteps : defaultProgressSteps;
+
+    // Hide "Assign Officer" once the SOP's next step will close the case (S007) -
+    // assigning someone to a case that is about to close makes no sense.
+    const isHeadingToClose = caseData.nextStage?.data?.data?.config?.action === closeStatus;
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState<boolean>(false);
     const handleButtonClick = () => {
@@ -239,7 +243,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                         after the first assignment - the modal filters out whoever is
                         already on the case (unitLists), and revoking is no longer a
                         prerequisite for assigning someone else. */}
-                    {permissions.hasPermission("case.assign") && caseData.caseVersion !== "draft" && onAssignClick && !cancelAndCloseStatus.includes(caseData.statusId) &&
+                    {permissions.hasPermission("case.assign") && caseData.caseVersion !== "draft" && onAssignClick && !cancelAndCloseStatus.includes(caseData.statusId) && !isHeadingToClose &&
                         <Button onClick={onAssignClick} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white ">
                             <User_Icon className="w-4 h-4" />
                             <span>{t("case.sop_card.assign_officer")}</span>
