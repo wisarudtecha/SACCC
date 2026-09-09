@@ -13,6 +13,7 @@ export function TableView<T extends { id: string }>({
   columns,
   isAllSelected,
   module,
+  actionPermission,
   selectedItems,
   sortConfig,
   onClickItem,
@@ -78,6 +79,7 @@ export function TableView<T extends { id: string }>({
                 columns={columns}
                 selectedItems={selectedItems}
                 module={module}
+                actionPermission={actionPermission}
                 onClick={onClickItem}
                 onSelectItem={selectItem}
               />

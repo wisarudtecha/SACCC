@@ -55,6 +55,12 @@ interface EnhancedCrudContainerProps<T> {
   keyboardShortcuts?: KeyboardShortcut[];
   loading?: boolean;
   module?: string;
+  // Gate the create button AND every row action (view/update/delete) on this
+  // exact permission string, instead of the `${module}.${action}` the
+  // module-based gate checks. For screens whose whole route is already gated by
+  // one coarse permission (e.g. Place admin -> organization_settings.manage) and
+  // that have no per-entity `${module}.*` permission family.
+  actionPermission?: string;
   previewConfig?: PreviewConfig<T>;
   searchFields?: (keyof T)[];
   customFilterFunction?: (item: T, filters: Record<string, unknown>) => boolean;
@@ -92,6 +98,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   keyboardShortcuts = [],
   loading = false,
   module,
+  actionPermission,
   previewConfig,
   searchFields = [],
   customFilterFunction,
@@ -552,7 +559,12 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
 
             {/* Create Button */}
             {onCreate && (
-              <PermissionGate key="create" module={module} action="create">
+              <PermissionGate
+                key="create"
+                {...(actionPermission
+                  ? { permission: actionPermission }
+                  : { module, action: "create" })}
+              >
                 <Button onClick={onCreate} variant="primary" className="h-11">
                   {/* Create {config.entityName} */}
                   {createEntity}
@@ -608,6 +620,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
                 onClick={handleItemClick}
                 onSelectItem={selectItem}
                 module={module}
+                actionPermission={actionPermission}
               >
                 {renderCard(item)}
               </ClickableCard>
@@ -637,6 +650,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
                   toggleSelectAll={toggleSelectAll}
                   bulkSelectionEnabled={enabledFeatures.bulkActions}
                   module={module}
+                  actionPermission={actionPermission}
                 />
               </div>
             </div>

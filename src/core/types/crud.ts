@@ -69,6 +69,8 @@ export interface TableViewProps<T> {
   data: T[];
   isAllSelected: boolean;
   module?: string;
+  // When set, row actions gate on this exact permission instead of `${module}.${action}`.
+  actionPermission?: string;
   selectedItems: T[];
   sortConfig: { key: string | keyof T; direction: "asc" | "desc" };
   onClickItem: (item: T) => void;

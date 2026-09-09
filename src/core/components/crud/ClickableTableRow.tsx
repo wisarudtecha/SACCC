@@ -11,6 +11,7 @@ interface ClickableTableRowProps<T> {
   columns: TableColumn<T>[];
   item: T;
   module?: string;
+  actionPermission?: string;
   selectedItems: T[];
   onClick: (item: T) => void;
   onSelectItem: (item: T) => void;
@@ -22,10 +23,11 @@ export const ClickableTableRow = <T extends { id: string }>({
   columns,
   item,
   module,
+  actionPermission,
   selectedItems,
   onClick,
   onSelectItem,
-  
+
 }: ClickableTableRowProps<T>) => {
   // const isSelected = selectedItems.some(selected => selected.id === item.id);
   const isSelected = (item: T) => selectedItems.some(selected => selected.id === item.id);
@@ -92,7 +94,12 @@ export const ClickableTableRow = <T extends { id: string }>({
               .map((action) => {
                 const Icon = action.icon;
                 return (
-                  <PermissionGate key={action.key} module={module} action={`${action?.key as "view" | "create" | "update" | "delete"}`}>
+                  <PermissionGate
+                    key={action.key}
+                    {...(actionPermission
+                      ? { permission: actionPermission }
+                      : { module, action: `${action?.key as "view" | "create" | "update" | "delete"}` })}
+                  >
                     <Button
                       key={action.key}
                       onClick={() => action.onClick(item)}

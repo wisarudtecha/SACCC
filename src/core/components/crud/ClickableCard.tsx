@@ -15,6 +15,7 @@ interface ClickableCardProps<T> {
   bulkSelectionEnabled?: boolean;
   className?: string;
   module?: string;
+  actionPermission?: string;
 }
 
 export const ClickableCard = <T extends { id: string }>({
@@ -26,7 +27,8 @@ export const ClickableCard = <T extends { id: string }>({
   onSelectItem,
   bulkSelectionEnabled = false,
   // className = ""
-  module
+  module,
+  actionPermission
 }: ClickableCardProps<T>) => {
   // const isSelected = selectedItems.some(selected => selected.id === item.id);
   const isSelected = (item: T) => selectedItems.some(selected => selected.id === item.id);
@@ -66,7 +68,12 @@ export const ClickableCard = <T extends { id: string }>({
               .map((action) => {
                 const Icon = action.icon;
                 return (
-                  <PermissionGate key={action.key} module={module} action={`${action?.key as "view" | "create" | "update" | "delete"}`}>
+                  <PermissionGate
+                    key={action.key}
+                    {...(actionPermission
+                      ? { permission: actionPermission }
+                      : { module, action: `${action?.key as "view" | "create" | "update" | "delete"}` })}
+                  >
                     <Button
                       key={action.key}
                       onClick={() => action.onClick(item)}
