@@ -1,4 +1,10 @@
 {
+  "0.72.0": {
+    "date": "2026-09-10",
+    "segment": "MINOR",
+    "notes": "feat(cms): choose the service center automatically when editing a case\n- Editing a case now checks the incident location against the service center areas the same way creating a case does. If the incident falls inside exactly one service center area, that service center is filled in and locked automatically; if it falls on a boundary between areas or outside them all, the field stays open for manual selection with a distance circle drawn around the pin.\n- On the edit screen the automatic choice only replaces the saved service center once the incident pin is actually moved. A case saved with its pin close to an area boundary is left unchanged when it is simply reopened for editing.\n- Two organisation map settings now take effect where they are configured: one turns off the automatic service center lock so a single matching area is only suggested rather than applied, and one hides the distance circle shown when there is no single match.\n- changelog.json / package.json: bump version 0.71.1 -> 0.72.0",
+    "author": "Wisarud Techa"
+  },
   "0.71.1": {
     "date": "2026-09-10",
     "segment": "PATCH",
