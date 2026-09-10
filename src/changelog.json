@@ -1,4 +1,10 @@
 {
+  "0.71.1": {
+    "date": "2026-09-10",
+    "segment": "PATCH",
+    "notes": "feat(cms): set a facility location on a map in Place Management\n- When adding or editing a facility in Place Management, its location can now be set on an embedded map - search for the place or click to drop a pin - instead of only typing the latitude and longitude. The map and the coordinate fields stay in step, so either can be used.\n- changelog.json / package.json: bump version 0.71.0 -> 0.71.1",
+    "author": "Wisarud Techa"
+  },
   "0.71.0": {
     "date": "2026-09-10",
     "segment": "MINOR",
