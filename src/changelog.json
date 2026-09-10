@@ -1,4 +1,10 @@
 {
+  "0.71.0": {
+    "date": "2026-09-10",
+    "segment": "MINOR",
+    "notes": "feat(cms): add a Device Management screen and show IoT devices on the case map\n- A new Device Management screen is available under System Configuration, for administrators holding the Organisation Settings permission. It keeps the organisation list of IoT devices - cameras, fire hydrants, AEDs and other equipment - each with a name in Thai and English, a device type, optional model, firmware, IP and MAC details, a map location, and an active or inactive state. Devices can be added and edited, with a confirmation step before each change and the list updating in place afterwards. Removing a device marks it inactive rather than deleting it, so it leaves the map while its record is kept.\n- When adding or editing a device, its location can be set on an embedded map - search for the site or click to drop a pin - with the latitude and longitude fields kept in step with the map.\n- The case map now has a Device control in its toolbar. Turning it on marks the IoT devices for the area currently in view, with a colour for each category - Camera, Fire Hydrant, AED - and a filter to show or hide each category on its own. Device types that do not match a known category are grouped as Uncategorized. The layer starts hidden until switched on, and refreshes as the map is panned or zoomed.\n- Selecting a device on the map opens a small card with its name, type, model and coordinates. On the case creation screen the card also offers to link that device to the case, or to unlink it; on other screens the card is for reference only.\n- The Device layer works on every map style offered for the case map, on both the case creation and case assignment screens, and reports clearly when devices cannot be loaded or there are none in view.\n- The saved case view again shows the IoT device linked to a case.\n- changelog.json / package.json: bump version 0.70.1 -> 0.71.0",
+    "author": "Wisarud Techa"
+  },
   "0.70.1": {
     "date": "2026-09-09",
     "segment": "PATCH",
