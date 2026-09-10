@@ -1,12 +1,13 @@
 // /src/components/admin/system-configuration/place/PlaceManagement.tsx
 //
 // Cloned from ../property/PropertyManagement.tsx. Three deliberate departures:
-//   1. adds a fixed `category` Select + latitude/longitude number inputs;
+//   1. adds a fixed `category` Select, an embedded AddressMapField coordinate
+//      picker, and lat/lon number inputs kept in two-way sync with it;
 //   2. relies on the "Place" RTK cache tag (placesApi) to refresh the list after
 //      a mutation, instead of window.location.replace;
 //   3. every in-screen permission check uses `organization_settings.manage`
 //      (ticket Q3) - there is no per-entity `place.*` permission family.
-import React, { useCallback, useMemo, useState } from "react";
+import React, { Suspense, lazy, useCallback, useMemo, useState } from "react";
 import { CheckLineIcon, CloseIcon, GroupIcon, TimeIcon } from "@/core/icons";
 import { EnhancedCrudContainer } from "@/core/components/crud/EnhancedCrudContainer";
 import { ToastContainer } from "@/core/components/crud/ToastContainer";
@@ -30,6 +31,11 @@ import Input from "@/core/components/form/input/InputField";
 import Select from "@/core/components/form/Select";
 import Switch from "@/core/components/form/switch/Switch";
 import Button from "@/core/components/ui/button/Button";
+import Loading from "@/core/components/common/Loading";
+import type { AddressResult } from "@/cms/components/case/createCase/map/mapTypes";
+
+// Heavy (pulls the map SDK); only loaded when the create/edit modal opens.
+const AddressMapField = lazy(() => import("@/cms/components/case/createCase/map/AddressMapField"));
 
 const MANAGE_PERMISSION = "organization_settings.manage";
 const LAT_MIN = -90;
@@ -81,6 +87,28 @@ const PlaceManagementComponent: React.FC<PlaceManagementProps> = ({
     })),
     [t]
   );
+
+  // The map picker and the two number inputs both read/write `latitude` /
+  // `longitude`, so they stay in sync in both directions for free: `mapValue` is
+  // derived from the strings (typing re-pins the map), and `handleMapSelect`
+  // writes the strings back (clicking/searching fills the inputs).
+  const mapValue = useMemo(() => {
+    const lat = parseFloat(latitude);
+    const lon = parseFloat(longitude);
+    return Number.isFinite(lat) && Number.isFinite(lon)
+      ? { latitude: lat, longitude: lon }
+      : null;
+  }, [latitude, longitude]);
+
+  const handleMapSelect = useCallback((result: AddressResult) => {
+    setLatitude(String(result.latitude));
+    setLongitude(String(result.longitude));
+    setValidationErrors(prev => ({ ...prev, latitude: "", longitude: "" }));
+  }, []);
+
+  const handleMapError = useCallback(() => {
+    addToast("error", t("case.display.geocode_failed"));
+  }, [addToast, t]);
 
   const handlePlaceReset = () => {
     setActive(true);
@@ -421,6 +449,26 @@ const PlaceManagementComponent: React.FC<PlaceManagementProps> = ({
               onChange={(value) => setCategory(value as PlaceCategory)}
             />
             <span className="text-red-500 dark:text-red-400 text-xs">{validationErrors.category}</span>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+              {t("crud.place.form.coordinate.label")}
+            </label>
+            <div className="mt-1">
+              <Suspense fallback={<Loading />}>
+                <AddressMapField
+                  value={mapValue}
+                  onSelect={handleMapSelect}
+                  onError={handleMapError}
+                  readOnly={false}
+                  height={360}
+                  showExpand={false}
+                />
+              </Suspense>
+            </div>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {t("crud.place.form.coordinate.hint")}
+            </span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
