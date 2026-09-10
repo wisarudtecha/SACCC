@@ -6,10 +6,13 @@
 //
 // Rule (confirmed with the stakeholder):
 //   - exactly one Area whose district polygon contains the point  -> `matched`,
-//     that Area is adopted and the field locks for the create flow.
+//     that Area is adopted and the field locks (create, and edit after a re-pin).
 //   - zero, or more than one                                      -> `no-match`,
 //     the field stays manually selectable and the caller draws the radius
 //     circle as a decision aid.
+// Two org toggles (OrgMapIncidentSettings, see useOrgIncidentMapConfig) can
+// narrow this: `autoLockOnMatch: false` demotes a lone match to `no-match` for
+// area adoption, and `showRadius: false` suppresses the fallback circle.
 // Nothing here is persisted with the case.
 import type { Area } from "@/cms/store/api/area";
 import type { AreaDistrict, PolygonCoordinates } from "@/cms/types/area";
@@ -50,15 +53,29 @@ interface ResolveOptions {
   incident: MapLatLon;
   areaList: readonly Area[];
   polygonByKey: ReadonlyMap<string, PolygonCoordinates>;
-  /** Org-configured circle radius for the no-match path (see useOrgIncidentRadiusMeters). */
+  /** Org-configured circle radius for the no-match path (see useOrgIncidentMapConfig). */
   radiusMeters: number;
+  /**
+   * OrgMapIncidentSettings.showRadius. `false` -> `incidentRadius` is always
+   * null (the fallback circle never renders). Defaults to `true`.
+   */
+  showRadius?: boolean;
+  /**
+   * OrgMapIncidentSettings.autoLockServiceCenterOnMatch. `false` -> a lone
+   * containing polygon is treated as `no-match` for area adoption: no
+   * `matchedArea`, the field stays manually selectable, and the circle is still
+   * drawn subject to `showRadius`. Defaults to `true`.
+   */
+  autoLockOnMatch?: boolean;
 }
 
 export function resolveServiceCenterMatch({
   incident,
   areaList,
   polygonByKey,
-  radiusMeters
+  radiusMeters,
+  showRadius = true,
+  autoLockOnMatch = true
 }: ResolveOptions): ResolvedServiceCenterMatch {
   const point: [number, number] = [incident.longitude, incident.latitude];
 
@@ -67,13 +84,13 @@ export function resolveServiceCenterMatch({
     return rings ? isPointInPolygon(point, rings) : false;
   });
 
-  if (containing.length === 1) {
+  if (containing.length === 1 && autoLockOnMatch) {
     return { status: "matched", matchedArea: containing[0], incidentRadius: null };
   }
 
   return {
     status: "no-match",
     matchedArea: null,
-    incidentRadius: { center: incident, radiusMeters }
+    incidentRadius: showRadius ? { center: incident, radiusMeters } : null
   };
 }

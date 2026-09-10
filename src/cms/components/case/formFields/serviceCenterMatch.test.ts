@@ -50,6 +50,7 @@ const INSIDE_A = { latitude: 13.755, longitude: 100.495 };
 const OUTSIDE_BOTH = { latitude: 13.9, longitude: 100.0 };
 
 describe("resolveServiceCenterMatch", () => {
+  // Exercises the default path: autoLockOnMatch = true, showRadius = true.
   it("locks onto the single Area whose district polygon contains the incident", () => {
     const areaA = area({ id: "A", distId: "1001" });
     const areaB = area({ id: "B", distId: "1002" });
@@ -148,5 +149,58 @@ describe("resolveServiceCenterMatch", () => {
 
     // The province differs, so the polygon must not be borrowed across it.
     expect(result.status).toBe("no-match");
+  });
+
+  it("demotes a lone containing polygon to no-match when autoLockOnMatch is false", () => {
+    const areaA = area({ id: "A", distId: "1001" });
+    const polygonByKey = buildDistrictPolygonIndex([district("1001", SQUARE_A)]);
+
+    const result = resolveServiceCenterMatch({
+      incident: INSIDE_A,
+      areaList: [areaA],
+      polygonByKey,
+      radiusMeters: 900,
+      autoLockOnMatch: false
+    });
+
+    // The org has turned auto-lock off: the field stays manual and the decision
+    // circle is still drawn (showRadius defaults true).
+    expect(result.status).toBe("no-match");
+    expect(result.matchedArea).toBeNull();
+    expect(result.incidentRadius).toEqual({ center: INSIDE_A, radiusMeters: 900 });
+  });
+
+  it("suppresses the fallback circle when showRadius is false", () => {
+    const areaA = area({ id: "A", distId: "1001" });
+    const polygonByKey = buildDistrictPolygonIndex([district("1001", SQUARE_A)]);
+
+    const result = resolveServiceCenterMatch({
+      incident: OUTSIDE_BOTH,
+      areaList: [areaA],
+      polygonByKey,
+      radiusMeters: 900,
+      showRadius: false
+    });
+
+    expect(result.status).toBe("no-match");
+    expect(result.incidentRadius).toBeNull();
+  });
+
+  it("composes both suppressions: no lock and no circle", () => {
+    const areaA = area({ id: "A", distId: "1001" });
+    const polygonByKey = buildDistrictPolygonIndex([district("1001", SQUARE_A)]);
+
+    const result = resolveServiceCenterMatch({
+      incident: INSIDE_A,
+      areaList: [areaA],
+      polygonByKey,
+      radiusMeters: 900,
+      showRadius: false,
+      autoLockOnMatch: false
+    });
+
+    expect(result.status).toBe("no-match");
+    expect(result.matchedArea).toBeNull();
+    expect(result.incidentRadius).toBeNull();
   });
 });

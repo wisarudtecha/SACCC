@@ -31,10 +31,11 @@ const EARTH_RADIUS_METERS = 6_378_137;
 /**
  * Coerces a raw org-configured radius value into a usable number of metres.
  *
- * The org radius comes from the org record (see `useOrgIncidentRadiusMeters`),
- * which is a FE contract ahead of the backend - the field is often absent, null,
- * or (once it exists) could arrive as a string. Anything that is not a finite
- * positive number falls back to DEFAULT_INCIDENT_RADIUS_METERS.
+ * The org radius comes from OrgMapIncidentSettings.radiusMeters (see
+ * `useOrgIncidentMapConfig`), which is a FE contract ahead of the backend - the
+ * field is often absent, null, or (once it exists) could arrive as a string.
+ * Anything that is not a finite positive number falls back to
+ * DEFAULT_INCIDENT_RADIUS_METERS.
  *
  * Phase 2 - a per-case-type radius override - is explicitly deferred. When it
  * lands it should resolve to a number and pass through here unchanged.

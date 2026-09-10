@@ -6,7 +6,13 @@
 export interface CaseFormCapabilities {
     /** Lock the case type - it cannot be changed once the case exists. */
     lockCaseType: boolean;
-    /** Lock the service center (edit-after-create: it cannot be changed). */
+    /**
+     * Hard-lock the Service Center: disable the field AND skip incident-polygon
+     * matching entirely. Both create and edit now leave this `false` (edit mode
+     * gained the map-driven match); a live single-polygon match still re-locks
+     * the field via `autoLockedArea`. Kept as an overridable flag so a future
+     * read-only screen can pass `lockArea: true`.
+     */
     lockArea: boolean;
     /**
      * Lock the service center because the incident location resolved to exactly
@@ -28,7 +34,10 @@ export interface CaseFormCapabilities {
 /** The create/edit presets the app has today. `isCreate` maps onto these. */
 export const capabilitiesForMode = (isCreate: boolean): CaseFormCapabilities => ({
     lockCaseType: !isCreate,
-    lockArea: !isCreate,
+    // `false` in both presets: the Service Center is editable in edit mode too,
+    // and the incident-polygon match runs there (gated on `!lockArea` in
+    // CaseFormFields). A single match still auto-locks the field live.
+    lockArea: false,
     // Off by default in both presets - only a live incident-polygon match raises
     // it, and only on the create screen (see CaseFormFields).
     autoLockedArea: false,

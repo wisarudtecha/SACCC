@@ -192,11 +192,12 @@ export const organizationApi = baseApi.injectEndpoints({
     // GET api/v1/organizations/{orgId}
     //
     // FE contract ahead of the backend: neither this route nor the
-    // `incidentRadiusMeters` field exists server-side yet. A 404 is expected
-    // until it ships - useOrgIncidentRadiusMeters isolates the failure and falls
-    // back to DEFAULT_INCIDENT_RADIUS_METERS, so nothing breaks in the meantime.
-    // GraphQL environments must first register a GQL_ORG_SETTINGS entry keyed by
-    // this url in src/core/utils/gqlMapper.ts (no REST fallback when GraphQL is on).
+    // `incidentRadiusMeters` field exists server-side yet. The nested
+    // OrgMapIncidentSettings (getOrgMapSettings below) supersedes this flat
+    // field and is now the only runtime reader of the incident radius, so this
+    // endpoint currently has no consumer - kept as API surface for the eventual
+    // backend. GraphQL environments must first register a GQL_ORG_SETTINGS entry
+    // keyed by this url in src/core/utils/gqlMapper.ts (no REST fallback when GraphQL is on).
     getOrgSettings: builder.query<ApiResponse<OrgSettings>, string>({
       query: orgId => ({ url: `/organizations/${orgId}` }),
       providesTags: ["Organization"],

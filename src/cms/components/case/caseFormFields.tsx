@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import { Area } from "@/cms/store/api/area";
 import { Customer } from "@/cms/store/api/custommerApi";
 import { CaseDetails, CaseTypeSubType } from "@/cms/types/case";
@@ -84,9 +84,22 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
             : null;
     }, [caseState?.caseLat, caseState?.caseLon]);
 
+    // Whether the dispatcher has actually moved the pin since the form opened.
+    // On create it is always "moved" (there is no prior area to protect). On
+    // edit, a case opens with a saved incident coordinate already in place; the
+    // match still locks the field to its current verdict, but the stored
+    // Service Center is only rewritten once the pin genuinely changes - a saved
+    // pin sitting just inside a neighbouring district (boundary imprecision)
+    // must not silently reassign the case on mount.
+    const incidentKey = incidentCoord
+        ? `${incidentCoord.latitude},${incidentCoord.longitude}`
+        : null;
+    const initialIncidentKeyRef = useRef(incidentKey);
+    const pinMoved = isCreate || initialIncidentKeyRef.current !== incidentKey;
+
     // Test the incident point against the org's Service Center (district)
-    // polygons. Only runs where the field is create-time editable: an
-    // edit-after-create screen already locks it (lockArea) and is left alone.
+    // polygons. Runs on create and on edit (both leave lockArea false); a screen
+    // that hard-locks the field via capabilities passes lockArea true to skip it.
     const serviceCenterMatch = useServiceCenterMatch({
         incident: incidentCoord,
         areaList,
@@ -94,16 +107,16 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
     });
 
     // On a single unambiguous match, adopt that Service Center and lock the
-    // field for the rest of the create flow. Zero or multiple matches leave the
-    // field manually selectable and hand the map a radius circle instead.
+    // field. Zero or multiple matches leave the field manually selectable and
+    // hand the map a radius circle instead.
     const isAreaAutoLocked = autoLockedArea || serviceCenterMatch.status === "matched";
 
     useEffect(() => {
         const matched = serviceCenterMatch.matchedArea;
-        if (matched && caseState?.area?.id !== matched.id) {
+        if (matched && pinMoved && caseState?.area?.id !== matched.id) {
             onCaseChange({ area: matched });
         }
-    }, [serviceCenterMatch.matchedArea, caseState?.area?.id, onCaseChange]);
+    }, [serviceCenterMatch.matchedArea, pinMoved, caseState?.area?.id, onCaseChange]);
 
     const {
         selectedCaseTypeForm,

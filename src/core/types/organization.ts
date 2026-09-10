@@ -103,11 +103,13 @@ export interface Organization {
 /**
  * Org-scoped case settings, read from the org record.
  *
- * Currently carries one field: the fallback radius for the no-match incident
- * circle on the case map (see useOrgIncidentRadiusMeters). It is a FE contract
- * ahead of the backend - `GET /organizations/{orgId}` and the
- * `incidentRadiusMeters` column do not exist server-side yet, so the field is
- * optional and every reader falls back to DEFAULT_INCIDENT_RADIUS_METERS.
+ * Carries one field: the fallback radius for the no-match incident circle on the
+ * case map. Superseded by the nested `OrgMapIncidentSettings.radiusMeters` (see
+ * `useOrgIncidentMapConfig`), which is now the only runtime reader - this flat
+ * shape is kept only for the old rollout window. It is a FE contract ahead of
+ * the backend - `GET /organizations/{orgId}` and the `incidentRadiusMeters`
+ * column do not exist server-side yet, so the field is optional and readers fall
+ * back to DEFAULT_INCIDENT_RADIUS_METERS.
  *
  * GraphQL environments (VITE_USE_GRAPHQL="true") additionally need a
  * GQL_ORG_SETTINGS entry keyed by the exact REST url registered in

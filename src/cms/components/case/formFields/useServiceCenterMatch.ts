@@ -11,13 +11,14 @@
 //
 // The decision rule itself lives in serviceCenterMatch.ts as a pure function;
 // this hook only adds the async concerns (fetch the districts, report idle /
-// loading). Nothing here is persisted with the case.
+// loading) and the org config (fallback radius, plus the show-radius /
+// auto-lock-on-match toggles). Nothing here is persisted with the case.
 import { useMemo } from "react";
 import { useGetDistrictsQuery } from "@/cms/store/api/area";
 import type { Area } from "@/cms/store/api/area";
 import type { IncidentRadiusOverlay, MapLatLon } from "@/cms/components/case/createCase/map/mapTypes";
 import { buildDistrictPolygonIndex, resolveServiceCenterMatch } from "./serviceCenterMatch";
-import { useOrgIncidentRadiusMeters } from "./useOrgIncidentRadiusMeters";
+import { useOrgIncidentMapConfig } from "./useOrgIncidentMapConfig";
 
 export type ServiceCenterMatchStatus = "idle" | "loading" | "matched" | "no-match";
 
@@ -39,9 +40,9 @@ interface UseServiceCenterMatchOptions {
   /** The Area rows the manual picker also uses (one country+province+district triple each). */
   areaList: readonly Area[];
   /**
-   * Run matching only where the Service Center field is editable at create time.
-   * Edit-after-create screens already lock the field (capabilities.lockArea) and
-   * must be left untouched, so they pass `false`.
+   * Run matching only where the Service Center field is editable (create, and
+   * now edit mode too - see capabilities.lockArea). Read-only screens that only
+   * want the fallback circle pass `showMap && !!incident`.
    */
   enabled: boolean;
 }
@@ -70,7 +71,7 @@ export function useServiceCenterMatch({
     [districtsResponse]
   );
 
-  const radiusMeters = useOrgIncidentRadiusMeters();
+  const { radiusMeters, showRadius, autoLockOnMatch } = useOrgIncidentMapConfig();
 
   return useMemo<ServiceCenterMatchResult>(() => {
     if (!enabled || !incident) {
@@ -85,6 +86,24 @@ export function useServiceCenterMatch({
     if (isFetching || !isSuccess) {
       return { status: "loading", matchedArea: null, incidentRadius: null };
     }
-    return resolveServiceCenterMatch({ incident, areaList, polygonByKey, radiusMeters });
-  }, [enabled, incident, isError, isFetching, isSuccess, areaList, polygonByKey, radiusMeters]);
+    return resolveServiceCenterMatch({
+      incident,
+      areaList,
+      polygonByKey,
+      radiusMeters,
+      showRadius,
+      autoLockOnMatch
+    });
+  }, [
+    enabled,
+    incident,
+    isError,
+    isFetching,
+    isSuccess,
+    areaList,
+    polygonByKey,
+    radiusMeters,
+    showRadius,
+    autoLockOnMatch
+  ]);
 }
