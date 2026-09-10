@@ -49,6 +49,13 @@ export const CaseLocationSection = ({
         addToast("error", t("case.display.geocode_failed"));
     }, [addToast, t]);
 
+    // Linking a Device marker on the map is the one map interaction that writes
+    // to the case: it sets `iotDevice` to the device id and nothing else
+    // (stakeholder decision Q2). Unlink passes null -> cleared.
+    const handleDeviceSelect = useCallback((deviceId: string | null) => {
+        onCaseChange({ iotDevice: deviceId ?? "" });
+    }, [onCaseChange]);
+
     const mapValue = useMemo(() => {
         const lat = parseFloat(caseState?.caseLat ?? "");
         const lon = parseFloat(caseState?.caseLon ?? "");
@@ -73,6 +80,9 @@ export const CaseLocationSection = ({
                             readOnly={false}
                             height={320}
                             showPlaceButton
+                            showDeviceButton
+                            onDeviceSelect={handleDeviceSelect}
+                            linkedDeviceId={caseState?.iotDevice || null}
                             incidentRadius={incidentRadius}
                         />
                     </Suspense>

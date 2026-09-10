@@ -43,6 +43,7 @@ import AreaTemplateVersionsPage from "@/cms/pages/Admin/AreaTemplateVersions";
 import CaseResultManagementPage from "@/cms/pages/Admin/CaseResultManagement";
 import OrganizationSettingsManagementPage from "@/cms/pages/Admin/OrganizationSettingsManagement";
 import PlaceManagementPage from "@/cms/pages/Admin/PlaceManagement";
+import DeviceManagementPage from "@/cms/pages/Admin/DeviceManagement";
 import PropertyManagementPage from "@/cms/pages/Admin/PropertyManagement";
 import ServiceManagementPage from "@/cms/pages/Admin/ServiceManagement";
 import SkillManagementPage from "@/cms/pages/Admin/SkillManagement";
@@ -165,6 +166,7 @@ export default function CmsApp() {
           <Route path="/area-template/:id/versions" element={<AreaTemplateVersionsPage />} />
           <Route path="/property" element={<PropertyManagementPage />} />
           <Route path="/place" element={<PlaceManagementPage />} />
+          <Route path="/device" element={<DeviceManagementPage />} />
           <Route path="/service" element={<ServiceManagementPage />} />
           <Route path="/skill" element={<SkillManagementPage />} />
           <Route path="/case-result" element={<CaseResultManagementPage />} />

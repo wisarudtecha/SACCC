@@ -31,6 +31,7 @@ import { BasemapOptionId, DEFAULT_BASEMAP_ID } from "../basemaps";
 import type { AddressMapProps, MapLatLon } from "../mapTypes";
 import type { StaffMarker } from "../staff/staffTypes";
 import type { PlaceMarker } from "../place/placeTypes";
+import type { DeviceMarker } from "../device/deviceTypes";
 import { longdoGeocodeService, type PlaceCandidate } from "../services/longdoGeocode";
 import { applyLongdoBasemap, toLongdoLanguage } from "./longdoBasemaps";
 import type { LongdoGlobal, LongdoLocation, LongdoMap, LongdoOverlay } from "./longdoApi";
@@ -48,6 +49,10 @@ import {
   useLongdoPlaceOverlays,
   type PlaceOverlayClickResolver
 } from "./place/useLongdoPlaceOverlays";
+import {
+  useLongdoDeviceOverlays,
+  type DeviceOverlayClickResolver
+} from "./device/useLongdoDeviceOverlays";
 import { useLongdoBreadcrumbOverlay } from "./staff/useLongdoBreadcrumbOverlay";
 import { useLongdoRouteOverlay } from "./staff/useLongdoRouteOverlay";
 import { useLongdoSketchOverlay } from "./sketch/useLongdoSketchOverlay";
@@ -60,6 +65,7 @@ const DEFAULT_ZOOM = 12;
 // sync effect on every render.
 const EMPTY_STAFF: readonly StaffMarker[] = [];
 const EMPTY_PLACES: readonly PlaceMarker[] = [];
+const EMPTY_DEVICES: readonly DeviceMarker[] = [];
 
 interface ScreenPosition {
   clientX: number;
@@ -90,6 +96,11 @@ function LongdoAddressMapBase({
   showPlace = false,
   selectedPlaceId = null,
   onPlaceSelect,
+  devices,
+  showDevice = false,
+  selectedDeviceId = null,
+  onDeviceSelect,
+  onBoundsChange,
   route,
   showRoute = false,
   trail,
@@ -134,6 +145,9 @@ function LongdoAddressMapBase({
   // The Place layer's click resolver, same slot pattern. A Place hit is
   // informational only (Q1) - the resolver just reports which marker was clicked.
   const resolvePlaceSelectionRef = useRef<PlaceOverlayClickResolver | null>(null);
+  // The Device layer's click resolver, same slot pattern. A Device hit opens the
+  // caller's info popup; the case write ("link") happens only from that popup.
+  const resolveDeviceSelectionRef = useRef<DeviceOverlayClickResolver | null>(null);
   // True while a sketch gesture owns the map's clicks. The ArcGIS
   // SketchViewModel swallows the click implicitly; here it has to be stated, or
   // every vertex placed while drawing would also drop a pin and reverse-geocode.
@@ -161,6 +175,8 @@ function LongdoAddressMapBase({
   const onBasemapChangeRef = useRef(onBasemapChange);
   const onStaffSelectRef = useRef(onStaffSelect);
   const onPlaceSelectRef = useRef(onPlaceSelect);
+  const onDeviceSelectRef = useRef(onDeviceSelect);
+  const onBoundsChangeRef = useRef(onBoundsChange);
   const languageRef = useRef(language);
   onSelectRef.current = onSelect;
   onErrorRef.current = onError;
@@ -168,6 +184,8 @@ function LongdoAddressMapBase({
   onBasemapChangeRef.current = onBasemapChange;
   onStaffSelectRef.current = onStaffSelect;
   onPlaceSelectRef.current = onPlaceSelect;
+  onDeviceSelectRef.current = onDeviceSelect;
+  onBoundsChangeRef.current = onBoundsChange;
   languageRef.current = language;
 
   const reportError = useCallback((message: string, error?: unknown) => {
@@ -214,6 +232,18 @@ function LongdoAddressMapBase({
     selectedPlaceId,
     visible: showPlace,
     resolverRef: resolvePlaceSelectionRef
+  });
+
+  // Viewport-scoped IoT device markers. Same resolver-slot pattern; a hit opens
+  // the caller's info popup, and the "link" write happens only from its button.
+  useLongdoDeviceOverlays({
+    longdoRef,
+    mapRef,
+    isReady,
+    devices: devices ?? EMPTY_DEVICES,
+    selectedDeviceId,
+    visible: showDevice,
+    resolverRef: resolveDeviceSelectionRef
   });
 
   // The solved officer -> case route. Unlike every other overlay on this map it
@@ -424,6 +454,14 @@ function LongdoAddressMapBase({
             return;
           }
 
+          // Device markers next, same rule: informational-until-link on every
+          // surface, so a hit opens the popup and never drops a pin.
+          const deviceHit = resolveDeviceSelectionRef.current?.(overlay) ?? null;
+          if (deviceHit) {
+            onDeviceSelectRef.current?.(deviceHit);
+            return;
+          }
+
           // Same rule as the map's own click handler: a live sketch gesture owns
           // the click, including one that landed on the polygon being drawn.
           if (readOnlyRef.current || isSketchActiveRef.current || !map) {
@@ -468,12 +506,36 @@ function LongdoAddressMapBase({
               zoom: currentZoom
             };
           }
+
+          // The current visible extent, for the Device layer's viewport fetch.
+          // `useDeviceLayer` debounces + de-dupes these, so reporting on every
+          // settle (including programmatic moves) is cheap.
+          if (onBoundsChangeRef.current) {
+            const b = settled.bound();
+            onBoundsChangeRef.current({
+              minLat: b.minLat,
+              minLon: b.minLon,
+              maxLat: b.maxLat,
+              maxLon: b.maxLon
+            });
+          }
         });
 
         if (value) {
           setMarker(toLongdoLocation(value));
         }
         setIsReady(true);
+
+        // Kick off the first Device fetch for the initial viewport.
+        if (onBoundsChangeRef.current) {
+          const b = map.bound();
+          onBoundsChangeRef.current({
+            minLat: b.minLat,
+            minLon: b.minLon,
+            maxLat: b.maxLat,
+            maxLon: b.maxLon
+          });
+        }
       })
       .catch((error: unknown) => {
         if (isCancelled) {

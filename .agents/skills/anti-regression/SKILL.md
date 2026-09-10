@@ -493,3 +493,27 @@ new lesson and update this file when the lesson is generalizable.
   // CORRECT - src/cms/utils/areaGeometry.ts imports only types
   import { MIN_RING_POINTS, closeRing, ringsSignature, roundRing } from "@/cms/utils/areaGeometry";
   ```
+
+### Adding CRUD to a read-only entity: reuse its cache tag, and check `deleteItem`'s signature
+- **Date:** 2026-09-10
+- **Mistake risk:** Device Management (`system-configuration/device/DeviceManagement.tsx`) added
+  create/update to the previously read-only `deviceIoTApi`. Two traps: (1) minting a fresh RTK
+  cache tag would have left the case-map Device layer (`getDevicesInBounds`) stale after an admin
+  edit; (2) `EnhancedCrudContainer`'s `deleteItem` prop is `(id: string) => Promise<unknown>` -
+  it never passes the row, so a *soft* delete (PATCH `active: false`) has nothing to build the
+  body from unless the callback closes over the loaded `data`.
+- **Root Cause:** RTK Query refetches a query only when a mutation invalidates a tag that query
+  `provides`. A new tag no existing query provides refreshes nothing. And a container callback's
+  signature is the contract - "delete" there means "I have an id", not "I have the entity".
+- **Correct Behavior:** Both new mutations `invalidatesTags: ["Device Iot"]`, the same tag
+  `getDeviceIoT` **and** `getDevicesInBounds` already `provide`, so one edit refreshes the admin
+  list and the dispatcher's map together. `softDeleteDevice(id)` does `data.find(d => d.id === id)`
+  then PATCHes `{ ...toDeviceUpdateData(row), active: false }`.
+- **Prevention Rule:** When extending a read-only `*Api.ts` with mutations, grep the file for the
+  tag its queries `provide` and reuse it - do not add a new one unless the read and write genuinely
+  address different caches. Before wiring `EnhancedCrudContainer.deleteItem` to anything other than
+  a plain hard `DELETE`, re-read its type in `EnhancedCrudContainer.tsx` - it is id-only.
+- **Also:** new fields on a shared read model (`Device` gained `en`/`th`/`active`) must be
+  **optional** if any existing consumer constructs the object as a literal
+  (`deviceBoundsStub.ts`, test helpers) - a required field breaks `tsc -b` at every such site,
+  and the BFF may not echo the field yet anyway.

@@ -35,6 +35,9 @@ import BoundaryToolbar from "./boundaries/BoundaryToolbar";
 import { useBoundarySelection } from "./boundaries/useBoundarySelection";
 import PlaceInfoPopup from "./place/PlaceInfoPopup";
 import { usePlaceLayer } from "./place/usePlaceLayer";
+import MapDeviceButton from "./device/MapDeviceButton";
+import DeviceInfoPopup from "./device/DeviceInfoPopup";
+import { useDeviceLayer } from "./device/useDeviceLayer";
 import type { StaffMarker, StaffSelection } from "./staff/staffTypes";
 
 interface BoundaryMapFieldProps {
@@ -47,8 +50,18 @@ interface BoundaryMapFieldProps {
   searchMode?: "always" | "expanded-only" | "never";
   height?: number | string;
   className?: string;
-  /** Show the (disabled, in-development) Place control. */
+  /** Show the Place layer control (org-curated facilities). */
   showPlaceButton?: boolean;
+  /** Show the Device layer control (viewport-scoped IoT devices). */
+  showDeviceButton?: boolean;
+  /**
+   * Link the selected device to the case. Only the create form passes this; when
+   * omitted the Device info popup is read-only (no Link/Unlink buttons). The
+   * argument is the device id, or null on unlink.
+   */
+  onDeviceSelect?: (deviceId: string | null) => void;
+  /** The case's current `iotDevice`, so the popup can show the linked state. */
+  linkedDeviceId?: string | null;
   /** Staff overlay, forwarded untouched for CaseStaffMapField. */
   staff?: readonly StaffMarker[];
   showStaff?: boolean;
@@ -83,6 +96,9 @@ function BoundaryMapFieldBase({
   height = 320,
   className = "",
   showPlaceButton = false,
+  showDeviceButton = false,
+  onDeviceSelect,
+  linkedDeviceId = null,
   staff,
   showStaff = false,
   selectedStaffId = null,
@@ -117,6 +133,27 @@ function BoundaryMapFieldBase({
     notice: placeNotice
   } = usePlaceLayer();
   const isPlaceLayerOn = showPlaceButton && showPlace;
+
+  // Device layer state. Owned here for the same reason as the Place / boundary
+  // state (a second MapView is mounted on expand). Selecting a marker only opens
+  // the popup; the popup's Link button is the only writer of `iotDevice`, via
+  // the `onDeviceSelect` prop this component received from the surface.
+  const {
+    devices: deviceMarkers,
+    showDevice,
+    toggleShowDevice,
+    categoryVisibility: deviceCategoryVisibility,
+    toggleCategory: toggleDeviceCategory,
+    selectedDevice,
+    selectedDeviceId: selectedDeviceMarkerId,
+    selectDevice,
+    linkSelectedDevice,
+    unlinkDevice,
+    linkedDeviceId: currentLinkedDeviceId,
+    reportBounds: reportDeviceBounds,
+    notice: deviceNotice
+  } = useDeviceLayer({ onSelect: onDeviceSelect, linkedDeviceId });
+  const isDeviceLayerOn = showDeviceButton && showDevice;
 
   const { closePanel } = boundary;
   // Closing the large map has to take the picker with it. The panel only renders
@@ -157,6 +194,16 @@ function BoundaryMapFieldBase({
               compact={!context.isExpanded}
             />
           )}
+          {showDeviceButton && (
+            <MapDeviceButton
+              isActive={showDevice}
+              onToggle={toggleShowDevice}
+              categoryVisibility={deviceCategoryVisibility}
+              onToggleCategory={toggleDeviceCategory}
+              notice={deviceNotice}
+              compact={!context.isExpanded}
+            />
+          )}
         </div>
         {extraToolbarSlot?.(context)}
       </>
@@ -172,6 +219,12 @@ function BoundaryMapFieldBase({
       placeCategoryVisibility,
       togglePlaceCategory,
       placeNotice,
+      showDeviceButton,
+      showDevice,
+      toggleShowDevice,
+      deviceCategoryVisibility,
+      toggleDeviceCategory,
+      deviceNotice,
       extraToolbarSlot
     ]
   );
@@ -205,6 +258,19 @@ function BoundaryMapFieldBase({
             className="absolute bottom-2 left-2 z-20 max-w-[16rem]"
           />
         )}
+        {/* Shares the bottom-left slot with PlaceInfoPopup - both selected at
+            once is a rare edge case; this one renders last, so it sits on top. */}
+        {showDeviceButton && selectedDevice && (
+          <DeviceInfoPopup
+            device={selectedDevice}
+            canLink={Boolean(onDeviceSelect)}
+            isLinked={selectedDevice.deviceId === currentLinkedDeviceId}
+            onClose={() => selectDevice(null)}
+            onLink={linkSelectedDevice}
+            onUnlink={unlinkDevice}
+            className="absolute bottom-2 left-2 z-20 max-w-[16rem]"
+          />
+        )}
         {extraOverlaySlot?.(context)}
       </>
     ),
@@ -222,6 +288,13 @@ function BoundaryMapFieldBase({
       showPlaceButton,
       selectedPlace,
       selectPlace,
+      showDeviceButton,
+      onDeviceSelect,
+      selectedDevice,
+      currentLinkedDeviceId,
+      selectDevice,
+      linkSelectedDevice,
+      unlinkDevice,
       extraOverlaySlot
     ]
   );
@@ -244,6 +317,11 @@ function BoundaryMapFieldBase({
       showPlace={isPlaceLayerOn}
       selectedPlaceId={selectedPlaceId}
       onPlaceSelect={selectPlace}
+      devices={deviceMarkers}
+      showDevice={isDeviceLayerOn}
+      selectedDeviceId={selectedDeviceMarkerId}
+      onDeviceSelect={selectDevice}
+      onBoundsChange={reportDeviceBounds}
       route={route}
       showRoute={showRoute}
       trail={trail}

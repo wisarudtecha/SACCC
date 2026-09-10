@@ -399,6 +399,7 @@ function CaseStaffMapFieldBase({
       height={height}
       className={className}
       showPlaceButton
+      showDeviceButton
       incidentRadius={incidentRadius}
       staff={staff}
       showStaff={effectiveShowStaff}

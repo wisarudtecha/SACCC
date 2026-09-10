@@ -380,6 +380,12 @@ const SuperTopbar = (
           permission: permissions.hasPermission("organization_settings.manage")
         },
         {
+          icon: <Server />,
+          name: t("navigation.super_app.topbar.more.menu.system_config.sub_menu.device"),
+          path: "/cms/device",
+          permission: permissions.hasPermission("organization_settings.manage")
+        },
+        {
           icon: <Wrench />,
           name: t("navigation.super_app.topbar.more.menu.system_config.sub_menu.skill"),
           path: "/cms/skill",

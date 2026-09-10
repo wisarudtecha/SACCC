@@ -1,4 +1,4 @@
-import { CalendarDays, ChartColumnStacked, ClockArrowUp, Contact, MapPin, MapPinHouse, Phone, Share2, Siren, Ticket } from "lucide-react";
+import { CalendarDays, ChartColumnStacked, ClockArrowUp, Contact, Cpu, MapPin, MapPinHouse, Phone, Share2, Siren, Ticket } from "lucide-react";
 import FormViewer from "../form/dynamic-form/FormViewValue";
 // import { getTextPriority } from "../function/Prioriy";
 import { mergeArea } from "@/cms/store/api/area";
@@ -215,6 +215,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                                         readOnly
                                         height={220}
                                         showPlaceButton
+                                        showDeviceButton
                                         incidentRadius={serviceCenterMatch.incidentRadius}
                                     />
                                 )}
@@ -255,7 +256,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                     </div>
 
                     {/* IoT Device */}
-                    {/* <div className="mb-4">
+                    <div className="mb-4">
                         <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
                             <Cpu className="h-4 w-4 mr-2" />
                             <span>{t("case.display.iot_device")}</span>
@@ -263,7 +264,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                         <div className="pl-6 text-md font-medium text-gray-900 dark:text-white">
                             {caseData?.iotDevice || "-"}
                         </div>
-                    </div> */}
+                    </div>
 
                     {/* Schedule Date */}
                     {/* {caseData?.requireSchedule && (

@@ -20,6 +20,7 @@ import { BasemapOptionId, readBasemapPreference, writeBasemapPreference } from "
 import type {
   AddressResult,
   IncidentRadiusOverlay,
+  MapBounds,
   MapLatLon,
   MapSearchMode,
   MapSlot,
@@ -28,6 +29,7 @@ import type {
 } from "./mapTypes";
 import type { StaffMarker, StaffSelection } from "./staff/staffTypes";
 import type { PlaceMarker } from "./place/placeTypes";
+import type { DeviceMarker } from "./device/deviceTypes";
 import type { BoundaryLayerConfig } from "./boundaries/boundaryTypes";
 import type { BoundarySketchConfig } from "./sketch/sketchTypes";
 
@@ -64,6 +66,17 @@ interface AddressMapFieldProps {
   showPlace?: boolean;
   selectedPlaceId?: string | null;
   onPlaceSelect?: (place: PlaceMarker | null) => void;
+  /**
+   * Device overlay (viewport-scoped IoT devices), forwarded verbatim to both map
+   * instances - same contract as `staff`. `onDeviceSelect` reports a marker
+   * click; the case write ("link") lives above in useDeviceLayer.
+   * `onBoundsChange` lets that hook refetch for the new viewport.
+   */
+  devices?: readonly DeviceMarker[];
+  showDevice?: boolean;
+  selectedDeviceId?: string | null;
+  onDeviceSelect?: (device: DeviceMarker | null) => void;
+  onBoundsChange?: (bounds: MapBounds) => void;
   /**
    * Route overlay, forwarded verbatim to both map instances - same contract as
    * `staff`.
@@ -103,6 +116,14 @@ interface AddressMapFieldProps {
    * the expanded map only use this to drop the state behind them.
    */
   onExpandedChange?: (isExpanded: boolean) => void;
+  /**
+   * Show the "expand to large map" button (and its modal). On by default. Turn
+   * it OFF when this field is itself embedded in a Modal: the app's Modal is not
+   * nest-safe - it fires every open modal's onClose on Escape and does not
+   * depth-count the body scroll lock - so a nested expand modal would close the
+   * host modal too.
+   */
+  showExpand?: boolean;
   className?: string;
 }
 
@@ -125,6 +146,11 @@ function AddressMapFieldBase({
   showPlace = false,
   selectedPlaceId = null,
   onPlaceSelect,
+  devices,
+  showDevice = false,
+  selectedDeviceId = null,
+  onDeviceSelect,
+  onBoundsChange,
   route,
   showRoute = false,
   trail,
@@ -135,6 +161,7 @@ function AddressMapFieldBase({
   overlaySlot,
   toolbarSlot,
   onExpandedChange,
+  showExpand = true,
   className = ""
 }: AddressMapFieldProps) {
   const { t } = useTranslation();
@@ -211,6 +238,11 @@ function AddressMapFieldBase({
         showPlace={showPlace}
         selectedPlaceId={selectedPlaceId}
         onPlaceSelect={onPlaceSelect}
+        devices={devices}
+        showDevice={showDevice}
+        selectedDeviceId={selectedDeviceId}
+        onDeviceSelect={onDeviceSelect}
+        onBoundsChange={onBoundsChange}
         route={route}
         showRoute={showRoute}
         trail={trail}
@@ -223,9 +255,10 @@ function AddressMapFieldBase({
         compactControls
         overlaySlot={overlaySlot?.({ isExpanded: false })}
         toolbarSlot={toolbarSlot?.({ isExpanded: false })}
-        onExpand={openExpanded}
+        onExpand={showExpand ? openExpanded : undefined}
       />
 
+      {showExpand && (
       <Modal
         isOpen={isExpanded}
         onClose={closeExpanded}
@@ -253,6 +286,11 @@ function AddressMapFieldBase({
             showPlace={showPlace}
             selectedPlaceId={selectedPlaceId}
             onPlaceSelect={onPlaceSelect}
+            devices={devices}
+            showDevice={showDevice}
+            selectedDeviceId={selectedDeviceId}
+            onDeviceSelect={onDeviceSelect}
+            onBoundsChange={onBoundsChange}
             route={route}
             showRoute={showRoute}
             trail={trail}
@@ -268,6 +306,7 @@ function AddressMapFieldBase({
           />
         </div>
       </Modal>
+      )}
     </div>
   );
 }

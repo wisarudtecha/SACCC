@@ -12,4 +12,59 @@ export interface Device {
   updatedAt: string;
   createdBy: string;
   updatedBy: string;
+  /**
+   * Fields below are added by the Device Management admin screen
+   * (CAD-FE-Device-Management). They are OPTIONAL on the read model on purpose:
+   * the BFF does not echo them yet (still PROVISIONAL, see deviceIoTQueries.ts),
+   * and existing read consumers (`CasePanel`, `toDeviceMarkers`,
+   * `buildStubDevicesInBounds`) must keep compiling without them. The create /
+   * edit form always sends them - see `DeviceCreateData` / `DeviceUpdateData`.
+   */
+  en?: string;
+  th?: string;
+  active?: boolean;
+}
+
+/** Payload for `POST /devices/add`. Mirrors `PlaceCreateData` in `types/place.ts`. */
+export interface DeviceCreateData {
+  en: string;
+  th: string;
+  deviceType: string;
+  model: string;
+  firmwareVer: string;
+  ipAddress: string;
+  macAddress: string;
+  latitude: string;
+  longitude: string;
+  active: boolean;
+}
+
+/** Payload for `PATCH /devices/:id`. Same shape as `DeviceCreateData` (mirrors Place). */
+export type DeviceUpdateData = DeviceCreateData;
+
+/** Props for the `DeviceManagement` component - mirrors `PlaceManagementProps`. */
+export interface DeviceManagementProps {
+  devices?: Device[];
+  isLoading?: boolean;
+  isError?: boolean;
+  /** Re-run the list query (RTK Query `refetch`) - used by the container's retry. */
+  onRefresh?: () => void;
+}
+
+export interface DeviceMetrics {
+  totalDevices: number | string;
+  activeDevices: number | string;
+  inactiveDevices: number | string;
+}
+
+/**
+ * Bounding box for the viewport-scoped device query. WGS84 degrees. The case-map
+ * Device layer (P5) sends the current map extent and refetches (debounced) on
+ * pan/zoom - ticket Decision 4, "full visible-extent set".
+ */
+export interface DeviceBoundsRequest {
+  minLat: number;
+  minLon: number;
+  maxLat: number;
+  maxLon: number;
 }

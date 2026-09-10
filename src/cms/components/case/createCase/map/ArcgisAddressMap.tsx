@@ -15,6 +15,8 @@ import MapView from "@arcgis/core/views/MapView.js";
 import Graphic from "@arcgis/core/Graphic.js";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer.js";
 import Point from "@arcgis/core/geometry/Point.js";
+import type Extent from "@arcgis/core/geometry/Extent.js";
+import * as webMercatorUtils from "@arcgis/core/geometry/support/webMercatorUtils.js";
 import Search from "@arcgis/core/widgets/Search.js";
 import Zoom from "@arcgis/core/widgets/Zoom.js";
 import Compass from "@arcgis/core/widgets/Compass.js";
@@ -38,6 +40,8 @@ import { useBoundarySketchLayer } from "./sketch/useBoundarySketchLayer";
 import { useArcgisIncidentRadiusLayer } from "./incidentRadius/useArcgisIncidentRadiusLayer";
 import { useArcgisPlaceLayer } from "./place/useArcgisPlaceLayer";
 import type { PlaceMarker } from "./place/placeTypes";
+import { useArcgisDeviceLayer } from "./device/useArcgisDeviceLayer";
+import type { DeviceMarker } from "./device/deviceTypes";
 import type { AddressMapProps, MapLatLon } from "./mapTypes";
 
 const DEFAULT_CENTER: [number, number] = [100.5018, 13.7563]; // Bangkok
@@ -54,6 +58,7 @@ const SEARCH_MIN_CHARACTERS = 3;
 // sync effect on every render.
 const EMPTY_STAFF: readonly StaffMarker[] = [];
 const EMPTY_PLACES: readonly PlaceMarker[] = [];
+const EMPTY_DEVICES: readonly DeviceMarker[] = [];
 
 // Minimal shapes for the only two event fields we read. The SDK's generated
 // event types aren't reliably importable across major versions, so we type just
@@ -115,6 +120,11 @@ function ArcgisAddressMapBase({
   showPlace = false,
   selectedPlaceId = null,
   onPlaceSelect,
+  devices,
+  showDevice = false,
+  selectedDeviceId = null,
+  onDeviceSelect,
+  onBoundsChange,
   route,
   showRoute = false,
   trail,
@@ -169,12 +179,16 @@ function ArcgisAddressMapBase({
   const onBasemapChangeRef = useRef(onBasemapChange);
   const onStaffSelectRef = useRef(onStaffSelect);
   const onPlaceSelectRef = useRef(onPlaceSelect);
+  const onDeviceSelectRef = useRef(onDeviceSelect);
+  const onBoundsChangeRef = useRef(onBoundsChange);
   onSelectRef.current = onSelect;
   onErrorRef.current = onError;
   readOnlyRef.current = readOnly;
   onBasemapChangeRef.current = onBasemapChange;
   onStaffSelectRef.current = onStaffSelect;
   onPlaceSelectRef.current = onPlaceSelect;
+  onDeviceSelectRef.current = onDeviceSelect;
+  onBoundsChangeRef.current = onBoundsChange;
 
   // Draws the staff markers and answers "did this click hit an officer?".
   // `resolveStaffClick` is stable, so the mount-time click handler can call it.
@@ -201,6 +215,20 @@ function ArcgisAddressMapBase({
   });
   const resolvePlaceClickRef = useRef(resolvePlaceClick);
   resolvePlaceClickRef.current = resolvePlaceClick;
+
+  // Draws the viewport-scoped IoT device markers and answers "did this click hit
+  // one?". A hit opens the caller's info popup; the case write ("link") happens
+  // only from that popup's button (stakeholder decision Q2).
+  const { resolveDeviceClick } = useArcgisDeviceLayer({
+    mapRef,
+    viewRef,
+    isReady,
+    devices: devices ?? EMPTY_DEVICES,
+    selectedDeviceId,
+    visible: showDevice
+  });
+  const resolveDeviceClickRef = useRef(resolveDeviceClick);
+  resolveDeviceClickRef.current = resolveDeviceClick;
 
   // Administrative boundary polygons. Drawn beneath the marker and staff layers,
   // and with popups disabled, so they never intercept a map click. Labels are
@@ -400,12 +428,34 @@ function ArcgisAddressMapBase({
       });
     }
 
+    // Report the current visible extent (in WGS84 degrees) to `onBoundsChange`.
+    // `view.extent` is Web Mercator, so it has to be projected back first. The
+    // Device layer debounces + de-dupes these before they drive a refetch.
+    const emitBounds = () => {
+      const report = onBoundsChangeRef.current;
+      if (!report || !view.extent) {
+        return;
+      }
+      const geographic = webMercatorUtils.webMercatorToGeographic(view.extent) as Extent | null;
+      if (!geographic) {
+        return;
+      }
+      report({
+        minLat: geographic.ymin,
+        minLon: geographic.xmin,
+        maxLat: geographic.ymax,
+        maxLon: geographic.xmax
+      });
+    };
+
     view.when(
       () => {
         if (value) {
           setMarker(makePoint(value));
         }
         setIsReady(true);
+        // Kick off the first Device fetch for the initial viewport.
+        emitBounds();
       },
       (error: unknown) => {
         if (isAbortError(error)) {
@@ -438,6 +488,15 @@ function ArcgisAddressMapBase({
         return;
       }
 
+      // Device markers next, also before the readOnly guard: a hit opens the
+      // caller's popup and never moves the incident pin. Staff, then Place, then
+      // Device is the tie order.
+      const deviceHit = await resolveDeviceClickRef.current(event);
+      if (deviceHit) {
+        onDeviceSelectRef.current?.(deviceHit);
+        return;
+      }
+
       if (readOnlyRef.current) {
         return;
       }
@@ -467,17 +526,21 @@ function ArcgisAddressMapBase({
     // NEXT mount (after this one unmounts on modal close) can restore it. Only
     // set up when a ref was supplied - the inline map is never remounted this
     // way and has nothing to gain from tracking it.
-    let viewpointHandle: { remove: () => void } | null = null;
-    if (viewpointRef) {
-      viewpointHandle = reactiveUtils.watch(
+    let settleHandle: { remove: () => void } | null = null;
+    if (viewpointRef || onBoundsChange) {
+      settleHandle = reactiveUtils.watch(
         () => view.stationary,
         (stationary: boolean) => {
-          if (stationary) {
+          if (!stationary) {
+            return;
+          }
+          if (viewpointRef) {
             viewpointRef.current = {
               center: [view.center.longitude ?? 0, view.center.latitude ?? 0],
               zoom: view.zoom
             };
           }
+          emitBounds();
         }
       );
     }
@@ -485,7 +548,7 @@ function ArcgisAddressMapBase({
     return () => {
       searchHandle?.remove();
       clickHandle.remove();
-      viewpointHandle?.remove();
+      settleHandle?.remove();
       view.destroy();
       viewRef.current = null;
       mapRef.current = null;

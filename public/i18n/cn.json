@@ -559,6 +559,7 @@
                 "unit": "单位管理",
                 "property": "属性管理",
                 "place": "地点管理",
+                "device": "设备管理",
                 "skill": "技能管理",
                 "case_result": "结案结果管理",
                 "area": "区域管理",
@@ -773,6 +774,7 @@
             "case_result_management": "结案结果管理",
             "property_management": "属性管理",
             "place_management": "地点管理",
+            "device_management": "设备管理",
             "area_management": "区域管理",
             "area_template_management": "区域模板",
             "organization_settings": "组织设置"
@@ -2628,6 +2630,10 @@
           "placeholder": "请选择类别",
           "required": "类别为必填项"
         },
+        "coordinate": {
+          "label": "位置",
+          "hint": "搜索该设施或点击地图放置标记；可用下方字段微调。"
+        },
         "latitude": {
           "label": "纬度",
           "placeholder": "例如 13.7563",
@@ -2676,6 +2682,116 @@
         "total": "地点总数",
         "active": "已启用地点",
         "inactive": "已停用地点"
+      }
+    },
+    "device": {
+      "name": "设备",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "搜索设备..."
+          }
+        },
+        "header": {
+          "name": "名称",
+          "type": "类型",
+          "status": "状态"
+        },
+        "preview": {
+          "header": "设备信息"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "创建设备",
+          "update": "编辑设备"
+        },
+        "th": {
+          "label": "名称（泰语）",
+          "placeholder": "请输入泰语设备名称",
+          "required": "设备名称（泰语）为必填项"
+        },
+        "en": {
+          "label": "名称（英语）",
+          "placeholder": "请输入英语设备名称",
+          "required": "设备名称（英语）为必填项"
+        },
+        "deviceType": {
+          "label": "设备类型",
+          "placeholder": "例如 Camera、Fire Hydrant、AED",
+          "hint": "自由文本。系统识别 \"Camera\"、\"Fire Hydrant\" 和 \"AED\" 用于地图类别筛选；其他值显示为未分类。",
+          "required": "设备类型为必填项"
+        },
+        "model": {
+          "label": "型号",
+          "placeholder": "例如 AXIS-P3245"
+        },
+        "firmwareVer": {
+          "label": "固件版本",
+          "placeholder": "例如 1.4.2"
+        },
+        "ipAddress": {
+          "label": "IP 地址",
+          "placeholder": "例如 10.0.0.1",
+          "invalid": "请输入有效的 IPv4 地址（例如 10.0.0.1）"
+        },
+        "macAddress": {
+          "label": "MAC 地址",
+          "placeholder": "例如 AA:BB:CC:DD:EE:FF",
+          "invalid": "请输入有效的 MAC 地址（例如 AA:BB:CC:DD:EE:FF）"
+        },
+        "coordinate": {
+          "label": "位置",
+          "hint": "搜索设备所在地或点击地图放置标记；可用下方字段微调。"
+        },
+        "latitude": {
+          "label": "纬度",
+          "placeholder": "例如 13.7563",
+          "required": "请输入有效纬度（-90 至 90）"
+        },
+        "longitude": {
+          "label": "经度",
+          "placeholder": "例如 100.5018",
+          "required": "请输入有效经度（-180 至 180）"
+        },
+        "active": {
+          "label": "启用"
+        }
+      },
+      "confirm": {
+        "create": {
+          "title": "创建设备确认",
+          "message": "请确认以创建 _DEVICE_"
+        },
+        "update": {
+          "title": "更新设备确认",
+          "message": "请确认以更新 _DEVICE_"
+        },
+        "button": {
+          "cancel": "取消",
+          "confirm": "确认",
+          "saving": "正在保存..."
+        }
+      },
+      "action": {
+        "create": {
+          "success": "设备创建成功",
+          "error": "设备创建失败"
+        },
+        "update": {
+          "success": "设备更新成功",
+          "error": "设备更新失败"
+        },
+        "button": {
+          "save": "保存",
+          "deactivate": "停用",
+          "reset": "重置"
+        }
+      },
+      "metrics": {
+        "total": "设备总数",
+        "active": "已启用设备",
+        "inactive": "已停用设备"
       }
     },
     "case_result": {
@@ -3607,6 +3723,19 @@
       "map_device_category_camera": "摄像头",
       "map_device_category_fire_hydrant": "消防栓",
       "map_device_category_aed": "自动体外除颤器（AED）",
+      "map_device_category_uncategorized": "未分类",
+      "map_device": "设备",
+      "map_device_hide": "隐藏设备",
+      "map_device_empty": "此区域没有设备",
+      "map_device_error": "无法加载设备",
+      "map_device_coordinates": "坐标",
+      "map_device_close": "关闭",
+      "map_device_model": "型号",
+      "map_device_id": "设备编号",
+      "map_device_uncategorised": "未分类",
+      "map_device_link": "将此设备关联到案件",
+      "map_device_unlink": "取消与案件的关联",
+      "map_device_linked": "已关联到此案件",
       "map_staff_assign_button": "指派至此案件",
       "map_staff_assign_section_button": "指派此人员",
       "map_staff_cancel_button": "从此案件移除",

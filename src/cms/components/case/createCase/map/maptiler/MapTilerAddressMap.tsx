@@ -29,6 +29,7 @@ import { BasemapOptionId, DEFAULT_BASEMAP_ID } from "../basemaps";
 import type { AddressMapProps, MapLatLon } from "../mapTypes";
 import type { StaffMarker } from "../staff/staffTypes";
 import type { PlaceMarker } from "../place/placeTypes";
+import type { DeviceMarker } from "../device/deviceTypes";
 import { maptilerGeocodeService, type PlaceCandidate } from "../services/maptilerGeocode";
 import { ensureMapTilerWorker } from "./maptilerSetup";
 import { mapTilerStyleFor, mapTilerStyleSignature } from "./maptilerBasemaps";
@@ -37,6 +38,7 @@ import MapTilerSearchBox from "./MapTilerSearchBox";
 import { useMapTilerBoundaryOverlays } from "./boundaries/useMapTilerBoundaryOverlays";
 import { useMapTilerStaffOverlays } from "./staff/useMapTilerStaffOverlays";
 import { useMapTilerPlaceOverlays } from "./place/useMapTilerPlaceOverlays";
+import { useMapTilerDeviceOverlays } from "./device/useMapTilerDeviceOverlays";
 import { useMapTilerRouteOverlay } from "./staff/useMapTilerRouteOverlay";
 import { useMapTilerBreadcrumbOverlay } from "./staff/useMapTilerBreadcrumbOverlay";
 import { useMapTilerSketchOverlay } from "./sketch/useMapTilerSketchOverlay";
@@ -49,6 +51,7 @@ const DEFAULT_ZOOM = 12;
 // effect on every render.
 const EMPTY_STAFF: readonly StaffMarker[] = [];
 const EMPTY_PLACES: readonly PlaceMarker[] = [];
+const EMPTY_DEVICES: readonly DeviceMarker[] = [];
 
 function MapTilerAddressMapBase({
   value,
@@ -70,6 +73,11 @@ function MapTilerAddressMapBase({
   showPlace = false,
   selectedPlaceId = null,
   onPlaceSelect,
+  devices,
+  showDevice = false,
+  selectedDeviceId = null,
+  onDeviceSelect,
+  onBoundsChange,
   route,
   showRoute = false,
   trail,
@@ -120,11 +128,13 @@ function MapTilerAddressMapBase({
   const onErrorRef = useRef(onError);
   const readOnlyRef = useRef(readOnly);
   const onBasemapChangeRef = useRef(onBasemapChange);
+  const onBoundsChangeRef = useRef(onBoundsChange);
   const languageRef = useRef(language);
   onSelectRef.current = onSelect;
   onErrorRef.current = onError;
   readOnlyRef.current = readOnly;
   onBasemapChangeRef.current = onBasemapChange;
+  onBoundsChangeRef.current = onBoundsChange;
   languageRef.current = language;
 
   const reportError = useCallback((message: string, error?: unknown) => {
@@ -167,6 +177,19 @@ function MapTilerAddressMapBase({
     selectedPlaceId,
     visible: showPlace,
     onSelect: onPlaceSelect
+  });
+
+  // Viewport-scoped IoT device markers. DOM markers with their own click
+  // listener (stopPropagation keeps a marker click off the map), so no
+  // styleEpoch, no zoom re-sync, no map-click surgery. A hit opens the caller's
+  // info popup; the "link" write happens only from its button (Q2).
+  useMapTilerDeviceOverlays({
+    mapRef,
+    isReady,
+    devices: devices ?? EMPTY_DEVICES,
+    selectedDeviceId,
+    visible: showDevice,
+    onSelect: onDeviceSelect
   });
 
   // The solved officer -> case route. ORS returns geometry, so this draws the
@@ -319,6 +342,17 @@ function MapTilerAddressMapBase({
           }
           setIsReady(true);
           setStyleEpoch((epoch) => epoch + 1);
+          // Kick off the first Device fetch for the initial viewport.
+          const current = mapRef.current;
+          if (onBoundsChangeRef.current && current) {
+            const b = current.getBounds();
+            onBoundsChangeRef.current({
+              minLat: b.getSouth(),
+              minLon: b.getWest(),
+              maxLat: b.getNorth(),
+              maxLon: b.getEast()
+            });
+          }
         });
 
         // A completed style swap: let every source/layer overlay hook rebuild
@@ -354,6 +388,18 @@ function MapTilerAddressMapBase({
           if (viewpointRef) {
             const centre = current.getCenter();
             viewpointRef.current = { center: [centre.lng, centre.lat], zoom };
+          }
+          // The current visible extent, for the Device layer's viewport fetch.
+          // `useDeviceLayer` debounces + de-dupes these, so reporting on every
+          // settle (including programmatic moves) is cheap.
+          if (onBoundsChangeRef.current) {
+            const b = current.getBounds();
+            onBoundsChangeRef.current({
+              minLat: b.getSouth(),
+              minLon: b.getWest(),
+              maxLat: b.getNorth(),
+              maxLon: b.getEast()
+            });
           }
         });
       })

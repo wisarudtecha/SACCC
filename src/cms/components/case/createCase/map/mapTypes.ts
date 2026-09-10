@@ -38,6 +38,19 @@ export interface AddressResult extends MapLatLon {
 }
 
 /**
+ * The map's current visible extent, in WGS84 degrees. Reported (debounced)
+ * whenever the view settles - see `AddressMapProps.onBoundsChange`. Kept here,
+ * structurally identical to `DeviceBoundsRequest` in `@/cms/types/deviceIoT`,
+ * so this SDK-/entity-free file does not have to import from the entity layer.
+ */
+export interface MapBounds {
+  minLat: number;
+  minLon: number;
+  maxLat: number;
+  maxLon: number;
+}
+
+/**
  * A route's shape, in GeoJSON coordinate order ([lng, lat]) and WGS84 degrees.
  *
  * Deliberately a plain data shape rather than a provider's polyline class: the
@@ -222,6 +235,14 @@ export interface AddressMapProps {
   showDevice?: boolean;
   selectedDeviceId?: string | null;
   onDeviceSelect?: (device: DeviceMarker | null) => void;
+  /**
+   * Fires (debounced) whenever the map view settles, with the current visible
+   * extent in WGS84 degrees. The Device layer uses it to refetch devices for
+   * the new viewport (ticket Decision 4 - "full visible-extent set"). Callers
+   * that do not show the Device layer omit it, and a provider that has not wired
+   * it yet simply never calls it (the layer then fetches nothing).
+   */
+  onBoundsChange?: (bounds: MapBounds) => void;
   /**
    * Controls rendered inside the map container, on top of the map. The caller
    * positions them (e.g. `absolute bottom-2 left-2`), as the expand button does.

@@ -652,6 +652,7 @@
                 "unit": "การจัดการหน่วย",
                 "property": "การจัดการคุณสมบัติ",
                 "place": "การจัดการสถานที่",
+                "device": "การจัดการอุปกรณ์",
                 "skill": "การจัดการทักษะ",
                 "case_result": "การจัดการผลการปิดเคส",
                 "area": "การจัดการพื้นที่",
@@ -873,6 +874,7 @@
             "case_result_management": "การจัดการผลการปิดเคส",
             "property_management": "การจัดการคุณสมบัติ",
             "place_management": "การจัดการสถานที่",
+            "device_management": "การจัดการอุปกรณ์",
             "area_management": "การจัดการพื้นที่",
             "area_template_management": "แม่แบบพื้นที่",
             "organization_settings": "การตั้งค่าองค์กร"
@@ -2744,6 +2746,10 @@
           "placeholder": "เลือกประเภท",
           "required": "ต้องเลือกประเภท"
         },
+        "coordinate": {
+          "label": "ตำแหน่ง",
+          "hint": "ค้นหาสถานที่หรือคลิกบนแผนที่เพื่อปักหมุด แล้วปรับค่าให้ละเอียดในช่องด้านล่าง"
+        },
         "latitude": {
           "label": "ละติจูด",
           "placeholder": "เช่น 13.7563",
@@ -2792,6 +2798,116 @@
         "total": "สถานที่ทั้งหมด",
         "active": "สถานที่ที่ใช้งาน",
         "inactive": "สถานที่ที่ไม่ใช้งาน"
+      }
+    },
+    "device": {
+      "name": "อุปกรณ์",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "ค้นหาอุปกรณ์..."
+          }
+        },
+        "header": {
+          "name": "ชื่อ",
+          "type": "ประเภท",
+          "status": "สถานะ"
+        },
+        "preview": {
+          "header": "ข้อมูลอุปกรณ์"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "เพิ่มอุปกรณ์",
+          "update": "แก้ไขอุปกรณ์"
+        },
+        "th": {
+          "label": "ชื่อ (ภาษาไทย)",
+          "placeholder": "กรอกชื่ออุปกรณ์เป็นภาษาไทย",
+          "required": "ต้องกรอกชื่ออุปกรณ์ (ภาษาไทย)"
+        },
+        "en": {
+          "label": "ชื่อ (ภาษาอังกฤษ)",
+          "placeholder": "กรอกชื่ออุปกรณ์เป็นภาษาอังกฤษ",
+          "required": "ต้องกรอกชื่ออุปกรณ์ (ภาษาอังกฤษ)"
+        },
+        "deviceType": {
+          "label": "ประเภทอุปกรณ์",
+          "placeholder": "เช่น Camera, Fire Hydrant, AED",
+          "hint": "ข้อความอิสระ ระบบรู้จักค่า \"Camera\", \"Fire Hydrant\" และ \"AED\" สำหรับตัวกรองหมวดหมู่บนแผนที่ ค่าอื่นจะแสดงเป็น ไม่ระบุหมวดหมู่",
+          "required": "ต้องกรอกประเภทอุปกรณ์"
+        },
+        "model": {
+          "label": "รุ่น",
+          "placeholder": "เช่น AXIS-P3245"
+        },
+        "firmwareVer": {
+          "label": "เวอร์ชันเฟิร์มแวร์",
+          "placeholder": "เช่น 1.4.2"
+        },
+        "ipAddress": {
+          "label": "หมายเลข IP",
+          "placeholder": "เช่น 10.0.0.1",
+          "invalid": "กรอกหมายเลข IPv4 ที่ถูกต้อง (เช่น 10.0.0.1)"
+        },
+        "macAddress": {
+          "label": "หมายเลข MAC",
+          "placeholder": "เช่น AA:BB:CC:DD:EE:FF",
+          "invalid": "กรอกหมายเลข MAC ที่ถูกต้อง (เช่น AA:BB:CC:DD:EE:FF)"
+        },
+        "coordinate": {
+          "label": "ตำแหน่ง",
+          "hint": "ค้นหาตำแหน่งอุปกรณ์หรือคลิกบนแผนที่เพื่อปักหมุด แล้วปรับค่าให้ละเอียดในช่องด้านล่าง"
+        },
+        "latitude": {
+          "label": "ละติจูด",
+          "placeholder": "เช่น 13.7563",
+          "required": "ต้องกรอกละติจูดที่ถูกต้อง (-90 ถึง 90)"
+        },
+        "longitude": {
+          "label": "ลองจิจูด",
+          "placeholder": "เช่น 100.5018",
+          "required": "ต้องกรอกลองจิจูดที่ถูกต้อง (-180 ถึง 180)"
+        },
+        "active": {
+          "label": "เปิดใช้งาน"
+        }
+      },
+      "confirm": {
+        "create": {
+          "title": "ยืนยันการเพิ่มอุปกรณ์",
+          "message": "โปรดยืนยันเพื่อเพิ่ม _DEVICE_"
+        },
+        "update": {
+          "title": "ยืนยันการแก้ไขอุปกรณ์",
+          "message": "โปรดยืนยันเพื่อแก้ไข _DEVICE_"
+        },
+        "button": {
+          "cancel": "ยกเลิก",
+          "confirm": "ยืนยัน",
+          "saving": "กำลังบันทึก..."
+        }
+      },
+      "action": {
+        "create": {
+          "success": "เพิ่มอุปกรณ์สำเร็จ",
+          "error": "เพิ่มอุปกรณ์ไม่สำเร็จ"
+        },
+        "update": {
+          "success": "อัปเดตอุปกรณ์สำเร็จ",
+          "error": "อัปเดตอุปกรณ์ไม่สำเร็จ"
+        },
+        "button": {
+          "save": "บันทึก",
+          "deactivate": "ปิดใช้งาน",
+          "reset": "รีเซ็ต"
+        }
+      },
+      "metrics": {
+        "total": "อุปกรณ์ทั้งหมด",
+        "active": "อุปกรณ์ที่ใช้งาน",
+        "inactive": "อุปกรณ์ที่ไม่ใช้งาน"
       }
     },
     "case_result": {
@@ -3714,6 +3830,19 @@
       "map_device_category_camera": "กล้องวงจรปิด",
       "map_device_category_fire_hydrant": "หัวจ่ายน้ำดับเพลิง",
       "map_device_category_aed": "เครื่องกระตุกหัวใจ (AED)",
+      "map_device_category_uncategorized": "ไม่ระบุหมวดหมู่",
+      "map_device": "อุปกรณ์",
+      "map_device_hide": "ซ่อนอุปกรณ์",
+      "map_device_empty": "ไม่มีอุปกรณ์ในพื้นที่นี้",
+      "map_device_error": "ไม่สามารถโหลดอุปกรณ์ได้",
+      "map_device_coordinates": "พิกัด",
+      "map_device_close": "ปิด",
+      "map_device_model": "รุ่น",
+      "map_device_id": "รหัสอุปกรณ์",
+      "map_device_uncategorised": "ไม่ระบุประเภท",
+      "map_device_link": "เชื่อมอุปกรณ์นี้กับเคส",
+      "map_device_unlink": "ยกเลิกการเชื่อมกับเคส",
+      "map_device_linked": "เชื่อมกับเคสนี้แล้ว",
       "map_staff_assign_button": "สั่งการเข้าเคสนี้",
       "map_staff_assign_section_button": "สั่งการเจ้าหน้าที่คนนี้",
       "map_staff_cancel_button": "ถอนออกจากเคสนี้",

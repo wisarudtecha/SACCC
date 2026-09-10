@@ -652,6 +652,7 @@
                 "unit": "Unit Management",
                 "property": "Property Management",
                 "place": "Place Management",
+                "device": "Device Management",
                 "skill": "Skill Management",
                 "case_result": "Case Result Management",
                 "area": "Area Management",
@@ -873,6 +874,7 @@
             "case_result_management": "Case Result Management",
             "property_management": "Property Management",
             "place_management": "Place Management",
+            "device_management": "Device Management",
             "area_management": "Area Management",
             "area_template_management": "Area Templates",
             "organization_settings": "Organization Settings"
@@ -2744,6 +2746,10 @@
           "placeholder": "Select a category",
           "required": "Category is required"
         },
+        "coordinate": {
+          "label": "Location",
+          "hint": "Search for the facility or click the map to drop a pin; fine-tune with the fields below."
+        },
         "latitude": {
           "label": "Latitude",
           "placeholder": "e.g. 13.7563",
@@ -2792,6 +2798,116 @@
         "total": "Total Places",
         "active": "Active Places",
         "inactive": "Inactive Places"
+      }
+    },
+    "device": {
+      "name": "Device",
+      "list": {
+        "toolbar": {
+          "search": {
+            "placeholder": "Search devices..."
+          }
+        },
+        "header": {
+          "name": "Name",
+          "type": "Type",
+          "status": "Status"
+        },
+        "preview": {
+          "header": "Device Information"
+        }
+      },
+      "form": {
+        "header": {
+          "create": "Create Device",
+          "update": "Edit Device"
+        },
+        "th": {
+          "label": "Name (TH)",
+          "placeholder": "Enter device name in Thai language",
+          "required": "Device name (Thai) is required"
+        },
+        "en": {
+          "label": "Name (EN)",
+          "placeholder": "Enter device name in English language",
+          "required": "Device name (English) is required"
+        },
+        "deviceType": {
+          "label": "Device Type",
+          "placeholder": "e.g. Camera, Fire Hydrant, AED",
+          "hint": "Free text. \"Camera\", \"Fire Hydrant\" and \"AED\" are recognised for the map category filter; other values show as Uncategorized.",
+          "required": "Device type is required"
+        },
+        "model": {
+          "label": "Model",
+          "placeholder": "e.g. AXIS-P3245"
+        },
+        "firmwareVer": {
+          "label": "Firmware Version",
+          "placeholder": "e.g. 1.4.2"
+        },
+        "ipAddress": {
+          "label": "IP Address",
+          "placeholder": "e.g. 10.0.0.1",
+          "invalid": "Enter a valid IPv4 address (e.g. 10.0.0.1)"
+        },
+        "macAddress": {
+          "label": "MAC Address",
+          "placeholder": "e.g. AA:BB:CC:DD:EE:FF",
+          "invalid": "Enter a valid MAC address (e.g. AA:BB:CC:DD:EE:FF)"
+        },
+        "coordinate": {
+          "label": "Location",
+          "hint": "Search for the device site or click the map to drop a pin; fine-tune with the fields below."
+        },
+        "latitude": {
+          "label": "Latitude",
+          "placeholder": "e.g. 13.7563",
+          "required": "A valid latitude (-90 to 90) is required"
+        },
+        "longitude": {
+          "label": "Longitude",
+          "placeholder": "e.g. 100.5018",
+          "required": "A valid longitude (-180 to 180) is required"
+        },
+        "active": {
+          "label": "Active"
+        }
+      },
+      "confirm": {
+        "create": {
+          "title": "Create device confirmation",
+          "message": "Please confirm to create _DEVICE_."
+        },
+        "update": {
+          "title": "Update device confirmation",
+          "message": "Please confirm to update _DEVICE_."
+        },
+        "button": {
+          "cancel": "Cancel",
+          "confirm": "Confirm",
+          "saving": "Saving..."
+        }
+      },
+      "action": {
+        "create": {
+          "success": "Device created successfully",
+          "error": "Failed to create device"
+        },
+        "update": {
+          "success": "Device updated successfully",
+          "error": "Failed to update device"
+        },
+        "button": {
+          "save": "Save",
+          "deactivate": "Deactivate",
+          "reset": "Reset"
+        }
+      },
+      "metrics": {
+        "total": "Total Devices",
+        "active": "Active Devices",
+        "inactive": "Inactive Devices"
       }
     },
     "case_result": {
@@ -3714,6 +3830,19 @@
       "map_device_category_camera": "Camera",
       "map_device_category_fire_hydrant": "Fire Hydrant",
       "map_device_category_aed": "AED",
+      "map_device_category_uncategorized": "Uncategorized",
+      "map_device": "Devices",
+      "map_device_hide": "Hide devices",
+      "map_device_empty": "No devices in this area",
+      "map_device_error": "Could not load devices",
+      "map_device_coordinates": "Coordinates",
+      "map_device_close": "Close",
+      "map_device_model": "Model",
+      "map_device_id": "Device ID",
+      "map_device_uncategorised": "Uncategorised",
+      "map_device_link": "Link this device to the case",
+      "map_device_unlink": "Unlink from the case",
+      "map_device_linked": "Linked to this case",
       "map_staff_assign_button": "Assign to this case",
       "map_staff_assign_section_button": "Assign this staff member",
       "map_staff_cancel_button": "Remove from this case",
