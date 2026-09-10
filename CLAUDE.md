@@ -45,12 +45,13 @@ pnpm install          # this repo uses pnpm (pnpm-lock.yaml is authoritative; pa
 pnpm dev              # start Vite dev server on :5173
 pnpm build            # tsc -b && vite build
 pnpm lint             # eslint .
+pnpm test             # vitest run (unit tests only)
 pnpm preview          # preview a production build
 pnpm prod             # build then preview
 ```
 
 - Mode-specific builds: `vite build --mode <env>` where `<env>` matches one of `.env.dev`, `.env.qa`, `.env.sit`, `.env.staging`, `.env.production` (see Dockerfile `ARG ENVIRONMENT`).
-- There is no test runner configured (no `test` script, no test files in `src`). Don't assume Jest/Vitest exists.
+- Test runner is **Vitest** (`pnpm test` / `pnpm test:watch`), added 2026-09 for the case-map Place/Device work. Config is a `test` block in `vite.config.ts` (`environment: "node"`, `include: ["src/**/*.test.{ts,tsx}"]`). Coverage is thin and pure-logic only — a handful of `*.test.ts` files (`src/cms/utils/pointInPolygon.test.ts`, `.../incidentRadius.test.ts`, `src/cms/components/case/formFields/serviceCenterMatch.test.ts`, `src/cms/components/case/createCase/map/device/*.test.ts`). No component/DOM tests, no jsdom, no E2E. `*.test.ts(x)` is excluded from `tsconfig.app.json`, so `tsc -b` / `pnpm build` ignore tests.
 - `depcheck`, `ts-prune`, and `unimported` are devDependencies for manual dead-code audits; run via `npx` (no npm scripts wire them up).
 - No ESLint/type-check filtering for a single file is scripted — run `pnpm lint` or `tsc -b` directly, or point ESLint/tsc at a specific path.
 

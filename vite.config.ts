@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import { version } from "./package.json";
 import react from "@vitejs/plugin-react";
@@ -250,5 +251,15 @@ export default defineConfig({
     __DEV__: JSON.stringify(process.env.NODE_ENV === "development"),
     __API_URL__: JSON.stringify(process.env.VITE_API_BASE_URL),
     __APP_VERSION__: JSON.stringify(version)
+  },
+
+  // Unit tests (Vitest). The suite is pure logic only - SDK-free utilities and
+  // normalizers - so the default "node" environment is enough; no jsdom, no
+  // setup file. `*.test.ts(x)` is excluded from tsconfig.app.json, so `tsc -b`
+  // ignores these while Vitest transpiles them itself. The `@/` aliases above
+  // are reused automatically.
+  test: {
+    environment: "node",
+    include: ["src/**/*.test.{ts,tsx}"]
   }
 });
