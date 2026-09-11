@@ -1,4 +1,10 @@
 {
+  "0.73.0": {
+    "date": "2026-09-11",
+    "segment": "MINOR",
+    "notes": "feat(cms): show a customer's personal details on their profile\n- The customer profile now has a Personal Details section - title, name, national ID, date of birth, blood group and gender - alongside the contact and address details already shown there.\n- Sensitive details such as national ID and date of birth stay masked for anyone who does not have permission to view them, the same as elsewhere on the profile.\n- Only the fields your organisation has chosen to collect are shown; any field turned off in the customer form configuration is left out.\n- changelog.json / package.json: bump version 0.72.0 -> 0.73.0",
+    "author": "Wisarud Techa"
+  },
   "0.72.0": {
     "date": "2026-09-10",
     "segment": "MINOR",
