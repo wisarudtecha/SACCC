@@ -1,4 +1,10 @@
 {
+  "0.74.0": {
+    "date": "2026-09-11",
+    "segment": "MINOR",
+    "notes": "feat(cms): add an internal notes tab to the customer profile\n- The customer profile now has an Internal Note tab, so notes about a customer can be kept and reviewed alongside their case and product history without leaving the profile.\n- The Contact Channels tab is now shown or hidden based on your organisation's customer form configuration, matching how the rest of the profile already respects that setting.\n- changelog.json / package.json: bump version 0.73.0 -> 0.74.0",
+    "author": "Wisarud Techa"
+  },
   "0.73.0": {
     "date": "2026-09-11",
     "segment": "MINOR",
