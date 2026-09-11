@@ -1,4 +1,4 @@
-import { Globe, Heart, Mail, MapPin, NotebookPen, Phone } from "lucide-react";
+import { Globe, Heart, Mail, MapPin, NotebookPen, Phone, User } from "lucide-react";
 import Button from "@/core/components/ui/button/Button";
 import FormViewer from "../form/dynamic-form/FormViewValue";
 import { i18nUserType } from "./constant";
@@ -11,6 +11,7 @@ import { useTranslation } from "@/core/hooks/useTranslation";
 import { usePiiMasker } from "@/core/hooks/useMaskedValue";
 import { ChatIcon } from "@/core/icons";
 import { Avatar } from "@/core/components/ui/avatar/Avatarv2";
+import { formatDate } from "@/core/utils/crud";
 
 export const CustomerPreviewData = ({ customer, className }: { customer: Customer | undefined, className?: string }) => {
     const { t } = useTranslation();
@@ -30,6 +31,39 @@ export const CustomerPreviewData = ({ customer, className }: { customer: Custome
     const isAddressConfigured = (config: any) => {
         if (!config) return true;
         return Object.values(config).some(val => val === true);
+    };
+
+    const personalFields: Array<{ key: keyof Customer; labelKey: string; piiPath?: string }> = [
+        { key: "title", labelKey: "userform.title" },
+        { key: "firstName", labelKey: "userform.firstName" },
+        { key: "middleName", labelKey: "userform.middleName" },
+        { key: "lastName", labelKey: "userform.lastName" },
+        { key: "citizenId", labelKey: "userform.citizenId", piiPath: "citizenId" },
+        { key: "dob", labelKey: "userform.dob", piiPath: "dob" },
+        { key: "blood", labelKey: "userform.blood" },
+        { key: "gender", labelKey: "userform.gender" },
+    ];
+
+    const isPersonalDetailConfigured = personalFields.some(
+        ({ key }) => (formConfig as Record<string, unknown> | undefined)?.[key] !== false
+    );
+
+    const formatPersonalValue = (field: (typeof personalFields)[number]): string => {
+        const rawValue = customer?.[field.key] as string | undefined;
+
+        if (!rawValue) return "-";
+
+        // `dob` is masked to a `••/••/1990`-shaped string, not an ISO date, so it must only
+        // pass through `formatDate` on the branch where it is still the unmasked raw value.
+        if (field.key === "dob" && canViewField("dob")) {
+            return formatDate(rawValue, { includeTime: false });
+        }
+
+        if (field.piiPath) {
+            return maskValue(field.piiPath, rawValue) || "-";
+        }
+
+        return rawValue;
     };
     
     // Masked before merging, not after: `mergeAddress` flattens the object into one string,
@@ -142,6 +176,33 @@ export const CustomerPreviewData = ({ customer, className }: { customer: Custome
                                 </p>
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* Personal Details */}
+            {isPersonalDetailConfigured && (
+                <div className='my-3 mx-3 space-y-3'>
+                    <div className='flex items-center text-gray-600 dark:text-gray-300 space-x-2'>
+                        <User className="w-4 h-4" />
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                            {t("userform.personal")}
+                        </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 text-gray-600 dark:text-gray-300 gap-2">
+                        {personalFields.map((field) => (
+                            (formConfig as Record<string, unknown> | undefined)?.[field.key] !== false && (
+                                <div key={field.key} className="flex flex-col">
+                                    <span className="text-sm font-semibold dark:text-gray-300">
+                                        {t(field.labelKey)}
+                                    </span>
+                                    <span className="text-sm leading-relaxed text-gray-400 break-all">
+                                        {formatPersonalValue(field)}
+                                    </span>
+                                </div>
+                            )
+                        ))}
                     </div>
                 </div>
             )}
