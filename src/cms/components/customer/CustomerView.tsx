@@ -4,6 +4,7 @@ import { CaseCard } from "@/cms/components/case/kanbanCard";
 import Loading from "@/core/components/common/Loading";
 import { CustomerPreviewData } from "@/cms/components/customer/CustomerPreview";
 import { ContactChannelList } from "@/cms/components/customer/social/ContactChannelList";
+import { NoteManager } from "@/cms/components/customer/notes/NoteManager";
 import { useCustomerSocials } from "@/cms/hooks/useCustomerSocials";
 import { useCustomerPrimaryContact } from "@/cms/hooks/useCustomerPrimaryContact";
 import { getTodayDate } from "@/cms/components/date/DateToString";
@@ -740,8 +741,9 @@ export const ProductCard: React.FC<{ product: CustomerProductList }> = ({
 const CustomerView: React.FC<CustomerViewProps> = ({ customer }) => {
     const { t, language } = useTranslation();
     const { data: customerData, isFetching: isFetchingCustomer } = useGetCustomerQuery(customer.id);
+    const { data: formConfigRes } = useGetCustomerFormConfigQuery();
     const [dataOfCustomer, setDataOfCustomer] = useState<Customer | null>(null);
-    
+
     useEffect(() => {
         if (customerData?.data) {
             setDataOfCustomer(customerData?.data);
@@ -763,7 +765,10 @@ const CustomerView: React.FC<CustomerViewProps> = ({ customer }) => {
                                 { id: "assignment", label: t("common.appointment"), content: <AppointmentTab customerId={dataOfCustomer?.id || customer.id} /> },
                                 { id: "addProduct", label: t("common.add_product"), content: <AddProduct t={t} language={language} customerId={dataOfCustomer?.id || customer.id} /> },
                                 { id: "addService", label: t("common.add_service"), content: <AddService t={t} language={language} customerId={dataOfCustomer?.id || customer.id} /> },
-                                { id: "contactChannels", label: t("customer.social.channels"), content: <ContactChannelsTab customer={dataOfCustomer || customerData?.data} /> }
+                                ...(formConfigRes?.data?.social !== false
+                                    ? [{ id: "contactChannels", label: t("customer.social.channels"), content: <ContactChannelsTab customer={dataOfCustomer || customerData?.data} /> }]
+                                    : []),
+                                { id: "internalNote", label: t("customer.note.title"), content: <div className="p-5"><NoteManager customerId={dataOfCustomer?.id || customer.id} /></div> }
                             ]}
                             defaultTab="customer"
                             className="flex flex-col h-full"
