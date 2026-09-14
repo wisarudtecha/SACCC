@@ -34,7 +34,9 @@ Before creating or modifying code, follow these steps:
 - **Drag & drop**: `@dnd-kit/*`, `react-dnd`, `@hello-pangea/dnd` (different features use different DnD libraries — check the surrounding component before picking one)
 - **Calendar/scheduling**: FullCalendar
 - **UI primitives**: Headless UI, Radix UI, Lucide icons
-- **i18n**: custom JSON-catalog loader (`en`/`th`/`cn`), catalogs served from `public/i18n/` — not Lingui, see i18n section below
+- **i18n**: custom JSON-catalog loader (`en`/`th`/`cn`), catalogs served from `public/i18n/` — not Lingui, see i18n section below. Exception: `kms` uses `i18next`/`react-i18next` instead (its own island, see Module architecture).
+- **Maps**: the case-form address map supports three interchangeable providers selected via `VITE_MAP_PROVIDER` (`src/core/config/api.ts` → `API_CONFIG.MAP_PROVIDER`): `@arcgis/core` (Esri, default), MapLibre GL + MapTiler, and Longdo (loaded as a `window.longdo` script tag, not an npm package — see `longdoSetup.ts`). Each lives under its own folder in `src/cms/components/case/createCase/map/{arcgis,maptiler,longdo}*`.
+- **Export/reporting**: `jspdf`, `html2canvas`, `html-to-image` (dashboard export, `src/cms/components/dashboard/ServiceDashboard.tsx`)
 - **Persistence**: `idb` (IndexedDB) for offline/case caching, `js-cookie`
 - **Linting/typing**: ESLint (`typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`); TypeScript is `strict` with `noUnusedLocals`/`noUnusedParameters` on (`tsconfig.app.json`) — unused vars/params fail `pnpm build`, not just lint
 
@@ -43,7 +45,7 @@ Before creating or modifying code, follow these steps:
 ```bash
 pnpm install          # this repo uses pnpm (pnpm-lock.yaml is authoritative; package-lock.json is stale)
 pnpm dev              # start Vite dev server on :5173
-pnpm build            # tsc -b && vite build
+pnpm build            # tsc -b && cross-env NODE_OPTIONS=--max-old-space-size=8192 vite build
 pnpm lint             # eslint .
 pnpm test             # vitest run (unit tests only)
 pnpm preview          # preview a production build
@@ -75,7 +77,8 @@ Defined in both `vite.config.ts` and `tsconfig.app.json` — keep them in sync i
 - **`core`** — shared platform: auth, layout shell (`SuperLayout`/`SuperSidebar`/`SuperTopbar`), Redux store, RTK Query base APIs, permissions, dashboard widgets (`src/core/components/dashboard/`, `src/core/components/widgets/`), websocket provider, admin (org/user/role) pages. The intended direction is that other modules depend on `core`, not the reverse — but this isn't fully enforced: `core` currently imports from `@/cms` in dozens of places, including real logic (not just types), e.g. `src/core/providers/AuthProvider.tsx` imports `caseApiSetup` from `@/cms/components/case/uitls/CaseApiManager`. Treat `core` → `cms` imports as an existing tangle to work around, not a pattern to extend.
 - **`cms`** — the main product surface, mounted at `/cms/*` (see `ROUTE_PREFIX` in `src/core/router/routePrefix.ts` — currently the only module with a registered prefix; `ai`/`cc`/`kms` don't have one) and also the default redirect target (`/` → `/cms`). Contains case management, CRM (products/inventory/orders/services), appointments, workflow builder pages, area/skill/unit admin, and reporting. This is where most feature work happens.
 - **`cc`** — a separate, much smaller "Cloud Contact" app (dashboard/workspace) with its own `App.tsx`, still early-stage.
-- **`ai`**, **`kms`** — stub modules, essentially empty placeholders for future AI and knowledge-management apps. Don't assume functionality exists there beyond the route mount.
+- **`kms`** — a fully built-out Knowledge Management System (articles, category manager, broadcast, banner management, file manager, its own dashboard — ~130 files under `src/kms/`), but architecturally an island: it runs `antd` for UI, `@tanstack/react-query` for server state (its own `QueryClient` in `src/kms/App.tsx`), `i18next`/`react-i18next` for i18n, and its own `ThemeContext` — none of `core`'s RTK Query/Redux/custom-i18n patterns apply inside it. Don't reuse `core`/`cms` UI or data-fetching conventions when working in `kms`, and don't import `kms` patterns back into `core`/`cms`.
+- **`ai`** — still a stub: `App.tsx` renders only a catch-all `NotFound` route. Don't assume functionality exists there beyond the route mount.
 
 Within `cms` (and to a lesser extent `core`), feature areas follow a consistent split: `components/<feature>`, `pages/<Feature>`, `store/api/<feature>Api.ts` (RTK Query), `store/api/graphql/<feature>Queries.ts` (GraphQL mapping), `types/<feature>.ts`.
 
@@ -113,11 +116,11 @@ Dashboard composition lives in `src/core/hooks/useDashboard.ts` (plain React sta
 
 Runtime JSON catalogs, not Lingui — `src/core/config/i18n.ts` fetches `/i18n/{lang}.json` (served from `public/i18n/{en,th,cn}.json`) and caches them per language (`th` is default). `LanguageContext`/`LanguageContextObject` (`src/core/context/`) expose the active language and lookup; `TranslationLoader` (`src/core/components/common/TranslationLoader.tsx`) preloads all catalogs and gates initial render until ready (`main.tsx`). To add a translation key, add it to all three files under `public/i18n/`.
 
-Note: `@lingui/*` deps, `.babelrc`, and `lingui.config.js` are leftover from an earlier approach and unused in `src` — don't build new i18n on top of Lingui macros.
+Note: `@lingui/*` deps, `.babelrc`, and `lingui.config.js` are leftover from an earlier approach and unused anywhere in `src` (including `kms`) — don't build new i18n on top of Lingui macros. `kms` is the one exception to everything above: it uses `i18next`/`react-i18next` (`src/kms/i18n/i18n.ts`, `lng: "th"`, `fallbackLng: "en"`) instead of the catalog loader — keep that self-contained rather than wiring it into `LanguageContext`.
 
 ## Environment configuration
 
-Per-environment `.env.*` files (`local`/`dev`/`qa`/`sit`/`staging`/`production`) define `VITE_BASE_URL`, `VITE_GRAPHQL_BASE_URL`, `VITE_WEBSOCKET_BASE_URL`, feature flags, and case-list tuning (`VITE_GET_CASE_PER_REQUEST`, SLA warning/alert thresholds in seconds, etc.). `src/core/config/api.ts` resolves these into `API_CONFIG` at runtime (`resolveRuntimeEnv`). These files carry real staging credentials/URLs — treat them as sensitive, don't paste their contents into commits, issues, or external tools.
+Per-environment `.env.*` files (`.env` plus `dev`/`qa`/`sit`/`staging`/`production`) define `VITE_BASE_URL`, `VITE_GRAPHQL_BASE_URL`, `VITE_WEBSOCKET_BASE_URL`, feature flags, and case-list tuning (`VITE_GET_CASE_PER_REQUEST`, SLA warning/alert thresholds in seconds, etc.). `src/core/config/api.ts` resolves these into `API_CONFIG` at runtime (`resolveRuntimeEnv`). These files carry real staging credentials/URLs — treat them as sensitive, don't paste their contents into commits, issues, or external tools.
 
 When `VITE_MOCK_API=true` (checked in `src/core/utils/constants.ts` / `src/cms/utils/constants.ts`), some UI reads from static fixtures instead of the API — `src/core/mocks/*.json` (permissions, roles, users) and `src/cms/mocks/*.json` (appointments, case history, workflow data). If a feature behaves oddly, check this flag before assuming the API integration is broken.
 
@@ -131,7 +134,7 @@ When `VITE_MOCK_API=true` (checked in `src/core/utils/constants.ts` / `src/cms/u
 
 ## Build/deploy notes
 
-- Vite `manualChunks` currently just splits everything under `node_modules` into a single `vendor` chunk; there's commented-out finer-grained chunking left in `vite.config.ts` if bundle-size work is needed later.
+- Vite `manualChunks` puts most of `node_modules` into a single `vendor` chunk, but deliberately leaves `@arcgis`/`@esri`/`@amcharts`/`@vaadin`/`@zip.js` and `maplibre-gl` (+ its transitive deps) unassigned so Rollup keeps them in their own lazy-loaded async chunks instead of dragging the ~12MB ArcGIS SDK or the MapTiler stack into the eager bundle — see the comment block above `manualChunks` in `vite.config.ts` before changing it. `maplibre-gl` is also excluded from `optimizeDeps` (its Web Worker breaks if pre-bundled). There's further commented-out per-library chunking left in the file if more bundle-size work is needed later.
 - Docker build (`Dockerfile`) is a two-stage build: `npm run build -- --mode ${ENVIRONMENT}` then served via nginx (`nginx.conf`).
 - Dev server proxies `/api` and `/ws` to `VITE_BASE_URL`/`VITE_WEBSOCKET_BASE_URL` to avoid CORS in local dev.
 
