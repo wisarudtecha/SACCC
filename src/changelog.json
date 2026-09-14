@@ -1,4 +1,10 @@
 {
+  "0.75.0": {
+    "date": "2026-09-14",
+    "segment": "MINOR",
+    "notes": "feat(cms): add a Case Summary by Area dashboard\n- A new Case Summary by Area dashboard is available from the Dashboard menu, showing case counts for every district, broken down by category and by status (new, in progress, complete), with an overall total row.\n- The dashboard updates in real time as new cases come in, in line with the other live dashboards.\n- changelog.json / package.json: bump version 0.74.0 -> 0.75.0",
+    "author": "Wisarud Techa"
+  },
   "0.74.0": {
     "date": "2026-09-11",
     "segment": "MINOR",
