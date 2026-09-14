@@ -1,0 +1,2321 @@
+{
+  "EVENT": "DASHBOARD",
+  "id": 17112798,
+  "eventType": "hidden",
+  "additionalJson": {
+    "data": [
+      {
+        "area_en": "Total",
+        "area_th": "ทั้งหมด",
+        "distId": null,
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "bangbon",
+        "area_th": "บางบอน",
+        "distId": "ts1",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "ts",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "ratburana",
+        "area_th": "ราษฎร์บูรณะ",
+        "distId": "ts2",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "ts",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "thungkhru",
+        "area_th": "ทุ่งครุ",
+        "distId": "ts3",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "ts",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "phasicharoen",
+        "area_th": "ภาษีเจริญ",
+        "distId": "ts5",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "ts",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "nongkhaem",
+        "area_th": "หนองแขม",
+        "distId": "ts6",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "ts",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "bangkhae",
+        "area_th": "บางแค",
+        "distId": "ts7",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "ts",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "phranakhon",
+        "area_th": "พระนคร",
+        "distId": "c1",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "c",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "dusit",
+        "area_th": "ดุสิต",
+        "distId": "c2",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "c",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "ratchathewi",
+        "area_th": "ราชเทวี",
+        "distId": "c4",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "c",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "phayathai",
+        "area_th": "พญาไท",
+        "distId": "c5",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "c",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "huaikhwang",
+        "area_th": "ห้วยขวาง",
+        "distId": "c6",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "c",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "dindaeng",
+        "area_th": "ดินแดง",
+        "distId": "c7",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "c",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "wangthonglang",
+        "area_th": "วังทองหลาง",
+        "distId": "c8",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "c",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "samphanthawong",
+        "area_th": "สัมพันธวงศ์",
+        "distId": "c9",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "c",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "latkrabang",
+        "area_th": "ลาดกระบัง",
+        "distId": "e1",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "e",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "minburi",
+        "area_th": "มีนบุรี",
+        "distId": "e2",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "e",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "nongchok",
+        "area_th": "หนองจอก",
+        "distId": "e3",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "e",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "khlongsamwa",
+        "area_th": "คลองสามวา",
+        "distId": "e4",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "e",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "khannayao",
+        "area_th": "คันนายาว",
+        "distId": "e6",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "e",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "buengkum",
+        "area_th": "บึงกุ่ม",
+        "distId": "e7",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "e",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "prawet",
+        "area_th": "ประเวศ",
+        "distId": "e8",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "e",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "bangkapi",
+        "area_th": "บางกะปิ",
+        "distId": "e9",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "e",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "chatuchak",
+        "area_th": "จตุจักร",
+        "distId": "n1",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "n",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "bangkhen",
+        "area_th": "บางเขน",
+        "distId": "n2",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "n",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "laksi",
+        "area_th": "หลักสี่",
+        "distId": "n3",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "n",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "donmueang",
+        "area_th": "ดอนเมือง",
+        "distId": "n4",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "n",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "saimai",
+        "area_th": "สายไหม",
+        "distId": "n5",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "n",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "bangsue",
+        "area_th": "บางซื่อ",
+        "distId": "n7",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "n",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "pathumwan",
+        "area_th": "ปทุมวัน",
+        "distId": "s2",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "s",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "bangrak",
+        "area_th": "บางรัก",
+        "distId": "s3",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "s",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "sathon",
+        "area_th": "สาทร",
+        "distId": "s4",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "s",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "khlongtoei",
+        "area_th": "คลองเตย",
+        "distId": "s5",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "s",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "suanluang",
+        "area_th": "สวนหลวง",
+        "distId": "s6",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "s",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "bangna",
+        "area_th": "บางนา",
+        "distId": "s7",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "s",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "yannawa",
+        "area_th": "ยานนาวา",
+        "distId": "s8",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "s",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "bangkholaem",
+        "area_th": "บางคอแหลม",
+        "distId": "s10",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "s",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "bangkhunthian",
+        "area_th": "บางขุนเทียน",
+        "distId": "ts4",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "ts",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "pomprapsattruphai",
+        "area_th": "ป้อมปราบศัตรูพ่าย",
+        "distId": "c3",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "c",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "saphansung",
+        "area_th": "สะพานสูง",
+        "distId": "e5",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "e",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "latphrao",
+        "area_th": "ลาดพร้าว",
+        "distId": "n6",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "n",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      },
+      {
+        "area_en": "phrakhonong",
+        "area_th": "พระโขนง",
+        "distId": "s9",
+        "groups": [
+          {
+            "complete": 0,
+            "g6_en": "Fire Emergency",
+            "g6_th": "เพลิงไหม้",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g5_en": "Flodding",
+            "g5_th": "น้ำท่วม",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g4_en": "Accident",
+            "g4_th": "อุบัติเหตุ",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g3_en": "Traffic",
+            "g3_th": "การจราจร",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g1_en": "Censor",
+            "g1_th": "เซ็นเซอร์",
+            "inprogress": 0,
+            "new": 0
+          },
+          {
+            "complete": 0,
+            "g2_en": "CCTV",
+            "g2_th": "กล้อง",
+            "inprogress": 0,
+            "new": 0
+          }
+        ],
+        "provId": "s",
+        "total": {
+          "complete": 0,
+          "inprogress": 0,
+          "new": 0
+        }
+      }
+    ],
+    "title_en": "Work Order Summary by Area",
+    "title_th": "สรุปคำสั่งงานแยกตามพื้นที่",
+    "type": "CASE-DAILY-SUMMARY-AREA"
+  }
+}

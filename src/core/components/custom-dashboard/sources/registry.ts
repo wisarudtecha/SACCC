@@ -10,6 +10,7 @@ import {
   parseCaseDaily,
   parseCaseMonthly,
   parseCaseSummary,
+  parseCaseSummaryByArea,
   parseSla,
 } from "@/core/components/custom-dashboard/sources/parsers";
 import {
@@ -26,6 +27,7 @@ export const SOURCE_IDS = {
   sla: "sla",
   caseDaily: "case-daily",
   caseMonthly: "case-monthly",
+  caseSummaryByArea: "case-summary-by-area",
   // Product (CRM)
   growthMetrics: "growth-metrics",
   moduleOverview: "module-overview",
@@ -54,6 +56,11 @@ export const WIDGET_SOURCES: Record<string, WidgetSourceDefinition> = {
     id: SOURCE_IDS.caseMonthly,
     wsType: "CASE-MONTHLY-SUMMARY",
     parse: parseCaseMonthly,
+  },
+  [SOURCE_IDS.caseSummaryByArea]: {
+    id: SOURCE_IDS.caseSummaryByArea,
+    wsType: "CASE-DAILY-SUMMARY-AREA",
+    parse: parseCaseSummaryByArea,
   },
 
   // Product (CRM) — same subscribe frame, different message types.

@@ -28,6 +28,9 @@ import AnalyticsDashboard from "@/cms/components/dashboard/AnalyticsDashboard";
 import CallcenterDashboard from "@/cms/components/dashboard/CallcenterDashboard";
 import ServiceDashboard from "@/cms/components/dashboard/ServiceDashboard";
 
+// Dashboard Imports
+import CaseSummaryByAreaPage from "@/cms/pages/Dashboard/CaseSummaryByAreaPage";
+
 // Form Builder Imports
 import FormManagement from "@/cms/pages/Forms/FormManagement"
 
@@ -134,6 +137,15 @@ export default function CmsApp() {
           <Route path="/dashboard/agent-status" element={<AgentStatusDashboard />} />
           <Route path="/dashboard/analytics" element={<AnalyticsDashboard />} />
           <Route path="/dashboard/callcenter" element={<CallcenterDashboard />} />
+
+          <Route
+            path="/dashboard/case-summary-by-area"
+            element={
+              <ProtectedRoute requiredPermissions={["dashboard.view"]}>
+                <CaseSummaryByAreaPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Forms Builder */}
           <Route path="/form-elements" element={<FormElements />} />

@@ -462,6 +462,16 @@
           "description": "低库存备件与待审批的采购申请。"
         }
       }
+    },
+    "case_summary_by_area": {
+      "title": "按区域案件汇总",
+      "total_row": "合计",
+      "province": "省份",
+      "district": "区/地区",
+      "row_total": "合计",
+      "category_filter": "类别",
+      "all_categories": "所有类别",
+      "view_breakdown": "查看详情"
     }
   },
   "navigation": {
@@ -563,6 +573,7 @@
                 "skill": "技能管理",
                 "case_result": "结案结果管理",
                 "area": "区域管理",
+                "area_template": "区域模板",
                 "organization_settings": "组织设置"
               }
             },
@@ -590,7 +601,8 @@
               "sub_menu": {
                 "case": "案件",
                 "product": "产品",
-                "custom": "自定义仪表盘"
+                "custom": "自定义仪表盘",
+                "case_summary_by_area": "按区域案件汇总"
               }
             },
             "form": {
@@ -690,7 +702,8 @@
             "service": {
               "title": "工作单",
               "header": "工单仪表板"
-            }
+            },
+            "case_summary_by_area": "按区域案件汇总"
           }
         },
         "report": {

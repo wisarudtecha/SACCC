@@ -324,6 +324,12 @@ const SuperTopbar = (
           name: t("navigation.super_app.topbar.more.menu.dashboard_analytic.sub_menu.custom"),
           path: "/dashboard/custom",
           permission: permissions.hasPermission("dashboard.view")
+        },
+        {
+          icon: <Map />,
+          name: t("navigation.super_app.topbar.more.menu.dashboard_analytic.sub_menu.case_summary_by_area"),
+          path: "/cms/dashboard/case-summary-by-area",
+          permission: permissions.hasPermission("dashboard.view")
         }
       ]
     },
@@ -401,6 +407,12 @@ const SuperTopbar = (
           icon: <Map />,
           name: t("navigation.super_app.topbar.more.menu.system_config.sub_menu.area"),
           path: "/cms/area",
+          permission: permissions.hasPermission("settings.view")
+        },
+        {
+          icon: <Map />,
+          name: t("navigation.super_app.topbar.more.menu.system_config.sub_menu.area_template"),
+          path: "/cms/area-template",
           permission: permissions.hasPermission("settings.view")
         },
         {

@@ -555,6 +555,16 @@
           "description": "อะไหล่ที่ต่ำกว่าขั้นต่ำและคำขอซื้อที่รออนุมัติ"
         }
       }
+    },
+    "case_summary_by_area": {
+      "title": "สรุปเคสแยกตามพื้นที่",
+      "total_row": "รวมทั้งหมด",
+      "province": "จังหวัด",
+      "district": "อำเภอ / พื้นที่",
+      "row_total": "รวม",
+      "category_filter": "หมวดหมู่",
+      "all_categories": "ทุกหมวดหมู่",
+      "view_breakdown": "ดูรายละเอียด"
     }
   },
   "navigation": {
@@ -656,6 +666,7 @@
                 "skill": "การจัดการทักษะ",
                 "case_result": "การจัดการผลการปิดเคส",
                 "area": "การจัดการพื้นที่",
+                "area_template": "แม่แบบพื้นที่",
                 "organization_settings": "การตั้งค่าองค์กร"
               }
             },
@@ -683,7 +694,8 @@
               "sub_menu": {
                 "case": "เคส",
                 "product": "สินค้า",
-                "custom": "แดชบอร์ดที่กำหนดเอง"
+                "custom": "แดชบอร์ดที่กำหนดเอง",
+                "case_summary_by_area": "สรุปเคสแยกตามพื้นที่"
               }
             },
             "form": {
@@ -783,7 +795,8 @@
             "service": {
               "title": "เคส",
               "header": "สรุปเคส"
-            }
+            },
+            "case_summary_by_area": "สรุปเคสแยกตามพื้นที่"
           }
         },
         "report": {

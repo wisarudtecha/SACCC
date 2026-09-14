@@ -517,3 +517,44 @@ new lesson and update this file when the lesson is generalizable.
   **optional** if any existing consumer constructs the object as a literal
   (`deviceBoundsStub.ts`, test helpers) - a required field breaks `tsc -b` at every such site,
   and the BFF may not echo the field yet anyway.
+
+### A new menu item added to the sidebar is not automatically in the topbar
+- **Date:** 2026-09-14
+- **Mistake:** Adding the Case Summary by Area page added a sidebar entry in
+  `src/cms/layout/AppSidebar.tsx` but not the mirrored entry in `src/core/layout/SuperTopbar.tsx`'s
+  "More" dropdown — reported by the user as a recurring mistake. Auditing the two files side by
+  side while fixing it found a second, pre-existing instance of the exact same gap: `area-template`
+  (Area Templates) was in the sidebar's `system_configuration` group with no counterpart in the
+  topbar's `system_config` group.
+- **Root Cause:** `AppSidebar.tsx` and `SuperTopbar.tsx` are two independently hand-maintained
+  arrays of menu items — there is no shared source of truth, no shared config, and nothing that
+  fails to compile or fails a test when one is updated and the other isn't. Adding a route to one
+  file is silently easy to treat as "done" without ever looking at the other.
+- **Correct Behavior:** Any time a menu item is added to (or removed from) `AppSidebar.tsx`'s
+  `mainItems`, add the mirrored entry to the matching group in `SuperTopbar.tsx`'s `moreItems` in
+  the *same* change — both use `permissions.hasPermission(...)`/`hasAnyPermission(...)` gates and a
+  `t(...)` label, so the shape to copy is already established. Add the i18n keys for both
+  (`navigation.sidebar.main.*` and `navigation.super_app.topbar.more.menu.*`) together too, not one
+  at a time.
+- **Prevention Rule:** Before reporting a "new menu item" task as complete, grep both
+  `src/cms/layout/AppSidebar.tsx` and `src/core/layout/SuperTopbar.tsx` for the feature's route
+  path. If the path appears in only one file, the task is not finished. Treat this as a mandatory
+  last step, the same way i18n keys must land in all three `public/i18n/*.json` files.
+- **Example:**
+  ```tsx
+  // AppSidebar.tsx — added, but incomplete on its own
+  {
+    name: t("navigation.sidebar.main.dashboard.nested.case_summary_by_area"),
+    path: "/dashboard/case-summary-by-area",
+    permission: permissions.hasPermission("dashboard.view"),
+  }
+
+  // SuperTopbar.tsx — the required mirror, same permission, prefixed with the cms mount path
+  // because the topbar renders outside the cms router (unlike the sidebar)
+  {
+    icon: <Map />,
+    name: t("navigation.super_app.topbar.more.menu.dashboard_analytic.sub_menu.case_summary_by_area"),
+    path: "/cms/dashboard/case-summary-by-area",
+    permission: permissions.hasPermission("dashboard.view")
+  }
+  ```

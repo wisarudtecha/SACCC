@@ -111,10 +111,47 @@ export interface InventoryAlertData {
   purchaseRequestsWaiting: number;
 }
 
+export interface CaseAreaGroupBreakdown {
+  label: BilingualText;
+  complete: number;
+  inprogress: number;
+  new: number;
+}
+
+export interface CaseAreaStatusTotals {
+  complete: number;
+  inprogress: number;
+  new: number;
+}
+
+/** One row of the `CASE-DAILY-SUMMARY-AREA` payload — one district, or the synthetic Total row. */
+export interface CaseAreaRow {
+  /** `distId ?? "total"` — stable id/key since `distId` is `null` on the Total row. */
+  areaId: string;
+  area: BilingualText;
+  distId: string | null;
+  provId?: string;
+  isTotal: boolean;
+  groups: CaseAreaGroupBreakdown[];
+  total: CaseAreaStatusTotals;
+}
+
+/**
+ * Parsed `CASE-DAILY-SUMMARY-AREA`. The Total row is split out of `rows` at parse time
+ * so consumers never need to filter it back out.
+ */
+export interface CaseSummaryByAreaData {
+  kind: "case-summary-by-area";
+  title: BilingualText;
+  rows: CaseAreaRow[];
+  total: CaseAreaRow | undefined;
+}
+
 export type WidgetSourceData =
   | CaseSummaryData
   | SlaData
   | CaseSeriesData
+  | CaseSummaryByAreaData
   | GrowthMetricsData
   | ModuleOverviewData
   | TopOrderedData

@@ -12,7 +12,11 @@ import { findKeyDeep, findKeyInArray } from "@/core/utils/dashboard";
 import type { JSONArray, JSONObject, JSONValue } from "@/core/types/dashboard";
 import type {
   BilingualText,
+  CaseAreaGroupBreakdown,
+  CaseAreaRow,
+  CaseAreaStatusTotals,
   CaseSeriesData,
+  CaseSummaryByAreaData,
   CaseSummaryData,
   CaseSummaryGroup,
   SlaData,
@@ -184,3 +188,63 @@ const buildCaseSeries = (envelope: JSONObject, sortChronologically: boolean): Ca
 export const parseCaseDaily = (envelope: JSONObject): CaseSeriesData => buildCaseSeries(envelope, false);
 
 export const parseCaseMonthly = (envelope: JSONObject): CaseSeriesData => buildCaseSeries(envelope, true);
+
+// ---------------------------------------------------------------------------
+// CASE-DAILY-SUMMARY-AREA
+// ---------------------------------------------------------------------------
+
+const readGroupBreakdown = (group: JSONObject): CaseAreaGroupBreakdown | undefined => {
+  const englishKey = Object.keys(group).find(key => /^g\d+_en$/.test(key));
+  if (!englishKey) {
+    return undefined;
+  }
+  const field = englishKey.replace(/_en$/, "");
+  return {
+    label: { en: toText(group[englishKey]), th: toText(group[`${field}_th`]) },
+    complete: toNumber(group["complete"]),
+    inprogress: toNumber(group["inprogress"]),
+    new: toNumber(group["new"]),
+  };
+};
+
+/** `row.total` is a plain `{complete,inprogress,new}` object, not the bilingual-row idiom. */
+const readRowTotals = (row: JSONObject): CaseAreaStatusTotals => {
+  const total = row["total"];
+  const totalObject = total && typeof total === "object" && !Array.isArray(total) ? (total as JSONObject) : {};
+  return {
+    complete: toNumber(totalObject["complete"]),
+    inprogress: toNumber(totalObject["inprogress"]),
+    new: toNumber(totalObject["new"]),
+  };
+};
+
+export const parseCaseSummaryByArea = (envelope: JSONObject): CaseSummaryByAreaData => {
+  const rawRows = getRows(envelope);
+
+  const parsedRows: CaseAreaRow[] = rawRows.map(row => {
+    const distId = typeof row["distId"] === "string" ? row["distId"] : null;
+    const provId = typeof row["provId"] === "string" ? row["provId"] : undefined;
+    const rawGroups = row["groups"];
+    const groups = (Array.isArray(rawGroups) ? rawGroups : [])
+      .filter((group): group is JSONObject => typeof group === "object" && group !== null && !Array.isArray(group))
+      .map(readGroupBreakdown)
+      .filter((group): group is CaseAreaGroupBreakdown => group !== undefined);
+
+    return {
+      areaId: distId ?? "total",
+      area: { en: toText(row["area_en"]), th: toText(row["area_th"]) },
+      distId,
+      provId,
+      isTotal: distId === null,
+      groups,
+      total: readRowTotals(row),
+    };
+  });
+
+  return {
+    kind: "case-summary-by-area",
+    title: getTitle(envelope),
+    rows: parsedRows.filter(row => !row.isTotal),
+    total: parsedRows.find(row => row.isTotal),
+  };
+};

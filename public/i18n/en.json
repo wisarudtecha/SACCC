@@ -555,6 +555,16 @@
           "description": "Low-stock parts and pending purchase approvals."
         }
       }
+    },
+    "case_summary_by_area": {
+      "title": "Case Summary by Area",
+      "total_row": "Total",
+      "province": "Province",
+      "district": "District / Area",
+      "row_total": "Total",
+      "category_filter": "Category",
+      "all_categories": "All Categories",
+      "view_breakdown": "View breakdown"
     }
   },
   "navigation": {
@@ -656,6 +666,7 @@
                 "skill": "Skill Management",
                 "case_result": "Case Result Management",
                 "area": "Area Management",
+                "area_template": "Area Templates",
                 "organization_settings": "Organization Settings"
               }
             },
@@ -683,7 +694,8 @@
               "sub_menu": {
                 "case": "Case",
                 "product": "Product",
-                "custom": "Custom Dashboard"
+                "custom": "Custom Dashboard",
+                "case_summary_by_area": "Case Summary by Area"
               }
             },
             "form": {
@@ -783,7 +795,8 @@
             "service": {
               "title": "Case",
               "header": "Case Dashboard"
-            }
+            },
+            "case_summary_by_area": "Case Summary by Area"
           }
         },
         "report": {
