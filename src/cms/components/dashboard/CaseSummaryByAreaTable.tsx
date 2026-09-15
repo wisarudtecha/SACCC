@@ -1,5 +1,5 @@
 // src/cms/components/dashboard/CaseSummaryByAreaTable.tsx
-import React, { useMemo, useState } from "react";
+import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ChevronDownIcon } from "@/core/icons";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/core/components/ui/table";
 import { pickText, statusLabels } from "@/core/components/custom-dashboard/widgets/chartTheme";
@@ -15,8 +15,30 @@ interface CaseSummaryByAreaTableProps {
   total?: CaseAreaRow;
 }
 
-const headerCellClass = "px-4 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400";
+const headerCellClass = "sticky z-10 bg-gray-50 dark:bg-gray-900 px-4 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-400";
 const bodyCellClass = "px-4 py-3 text-sm text-gray-700 dark:text-gray-300";
+
+/** Tracks an element's rendered height so a sticky sibling can stack beneath it exactly. */
+const useElementHeight = (ref: React.RefObject<HTMLElement | null>): number => {
+  const [height, setHeight] = useState(0);
+
+  useLayoutEffect(() => {
+    const node = ref.current;
+    if (!node) {
+      return;
+    }
+    const observer = new ResizeObserver(entries => {
+      const entry = entries[0];
+      if (entry) {
+        setHeight(entry.contentRect.height);
+      }
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [ref]);
+
+  return height;
+};
 
 /** Displayed New/In Progress/Complete for a row: the row total, or one category's numbers when filtered. */
 const getDisplayedTotals = (row: CaseAreaRow, selectedCategory: string | null): CaseAreaStatusTotals => {
@@ -62,6 +84,9 @@ export const CaseSummaryByAreaTable: React.FC<CaseSummaryByAreaTableProps> = ({ 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("area");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
+  const totalStripRef = useRef<HTMLDivElement>(null);
+  const totalStripHeight = useElementHeight(totalStripRef);
 
   const categories = useMemo(() => {
     const source = total?.groups.length ? total.groups : rows[0]?.groups ?? [];
@@ -122,20 +147,6 @@ export const CaseSummaryByAreaTable: React.FC<CaseSummaryByAreaTableProps> = ({ 
 
   return (
     <div className="space-y-4">
-      {totalTotals && (
-        <div className="flex flex-wrap items-center gap-6 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-          <div className="text-sm font-semibold text-gray-900 dark:text-white">
-            {t("dashboard.case_summary_by_area.total_row")}
-          </div>
-          <div className="flex flex-wrap gap-6 text-sm">
-            <span className="text-gray-500 dark:text-gray-400">{labels.new}: <span className="font-semibold text-gray-900 dark:text-white">{totalTotals.new}</span></span>
-            <span className="text-gray-500 dark:text-gray-400">{labels.inProgress}: <span className="font-semibold text-gray-900 dark:text-white">{totalTotals.inprogress}</span></span>
-            <span className="text-gray-500 dark:text-gray-400">{labels.complete}: <span className="font-semibold text-gray-900 dark:text-white">{totalTotals.complete}</span></span>
-            <span className="text-gray-500 dark:text-gray-400">{t("dashboard.case_summary_by_area.row_total")}: <span className="font-semibold text-gray-900 dark:text-white">{rowTotalOf(totalTotals)}</span></span>
-          </div>
-        </div>
-      )}
-
       {categories.length > 0 && (
         <div className="flex items-center gap-2">
           <label className="text-sm text-gray-500 dark:text-gray-400">
@@ -154,26 +165,42 @@ export const CaseSummaryByAreaTable: React.FC<CaseSummaryByAreaTableProps> = ({ 
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+      <div className="max-h-[70vh] overflow-x-auto overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700">
+        {totalTotals && (
+          <div
+            ref={totalStripRef}
+            className="sticky top-0 z-20 flex flex-wrap items-center gap-6 border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+          >
+            <div className="text-sm font-semibold text-gray-900 dark:text-white">
+              {t("dashboard.case_summary_by_area.total_row")}
+            </div>
+            <div className="flex flex-wrap gap-6 text-sm">
+              <span className="text-gray-500 dark:text-gray-400">{labels.new}: <span className="font-semibold text-gray-900 dark:text-white">{totalTotals.new}</span></span>
+              <span className="text-gray-500 dark:text-gray-400">{labels.inProgress}: <span className="font-semibold text-gray-900 dark:text-white">{totalTotals.inprogress}</span></span>
+              <span className="text-gray-500 dark:text-gray-400">{labels.complete}: <span className="font-semibold text-gray-900 dark:text-white">{totalTotals.complete}</span></span>
+              <span className="text-gray-500 dark:text-gray-400">{t("dashboard.case_summary_by_area.row_total")}: <span className="font-semibold text-gray-900 dark:text-white">{rowTotalOf(totalTotals)}</span></span>
+            </div>
+          </div>
+        )}
         <Table className="divide-y divide-gray-200 dark:divide-gray-700">
           <TableHeader className="bg-gray-50 dark:bg-gray-900">
             <TableRow>
-              <TableCell isHeader className={headerCellClass}>
+              <TableCell isHeader className={headerCellClass} style={{ top: totalStripHeight }}>
                 <SortButton label={t("dashboard.case_summary_by_area.district")} active={sortKey === "area"} direction={sortDirection} onClick={() => toggleSort("area")} />
               </TableCell>
-              <TableCell isHeader className={headerCellClass}>
+              <TableCell isHeader className={headerCellClass} style={{ top: totalStripHeight }}>
                 <SortButton label={labels.new} active={sortKey === "new"} direction={sortDirection} onClick={() => toggleSort("new")} />
               </TableCell>
-              <TableCell isHeader className={headerCellClass}>
+              <TableCell isHeader className={headerCellClass} style={{ top: totalStripHeight }}>
                 <SortButton label={labels.inProgress} active={sortKey === "inprogress"} direction={sortDirection} onClick={() => toggleSort("inprogress")} />
               </TableCell>
-              <TableCell isHeader className={headerCellClass}>
+              <TableCell isHeader className={headerCellClass} style={{ top: totalStripHeight }}>
                 <SortButton label={labels.complete} active={sortKey === "complete"} direction={sortDirection} onClick={() => toggleSort("complete")} />
               </TableCell>
-              <TableCell isHeader className={headerCellClass}>
+              <TableCell isHeader className={headerCellClass} style={{ top: totalStripHeight }}>
                 <SortButton label={t("dashboard.case_summary_by_area.row_total")} active={sortKey === "rowTotal"} direction={sortDirection} onClick={() => toggleSort("rowTotal")} />
               </TableCell>
-              <TableCell isHeader className={headerCellClass}>{null}</TableCell>
+              <TableCell isHeader className={headerCellClass} style={{ top: totalStripHeight }}>{null}</TableCell>
             </TableRow>
           </TableHeader>
           <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">

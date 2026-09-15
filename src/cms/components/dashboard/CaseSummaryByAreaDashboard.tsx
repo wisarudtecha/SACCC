@@ -4,9 +4,13 @@ import { DashboardSourceProvider } from "@/core/components/custom-dashboard/sour
 import { useWidgetSource } from "@/core/components/custom-dashboard/sources/useWidgetSource";
 import { SOURCE_IDS } from "@/core/components/custom-dashboard/sources/registry";
 import { Skeleton } from "@/core/components/ui/loading/LoadingSystem";
+import Tabs from "@/core/components/ui/tab/Tab";
+import { useTranslation } from "@/core/hooks/useTranslation";
 import { CaseSummaryByAreaTable } from "@/cms/components/dashboard/CaseSummaryByAreaTable";
+import { CaseAreaChoroplethMap } from "@/cms/components/dashboard/map/CaseAreaChoroplethMap";
 
 const CaseSummaryByAreaContent: React.FC = () => {
+  const { t } = useTranslation();
   const { data, hasData } = useWidgetSource(SOURCE_IDS.caseSummaryByArea);
 
   if (!hasData || data?.kind !== "case-summary-by-area") {
@@ -18,7 +22,24 @@ const CaseSummaryByAreaContent: React.FC = () => {
     );
   }
 
-  return <CaseSummaryByAreaTable rows={data.rows} total={data.total} />;
+  return (
+    <Tabs
+      variant="badge"
+      defaultTab="table"
+      items={[
+        {
+          id: "table",
+          label: t("dashboard.case_summary_by_area.view_table"),
+          content: <CaseSummaryByAreaTable rows={data.rows} total={data.total} />,
+        },
+        {
+          id: "map",
+          label: t("dashboard.case_summary_by_area.view_map"),
+          content: <CaseAreaChoroplethMap rows={data.rows} />,
+        },
+      ]}
+    />
+  );
 };
 
 /**
