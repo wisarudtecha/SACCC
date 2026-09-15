@@ -1,4 +1,10 @@
 {
+  "0.76.0": {
+    "date": "2026-09-15",
+    "segment": "MINOR",
+    "notes": "feat(core): add compact widget tiles and a Top Districts widget\n- Dashboard widgets can now be switched to a compact tile that shows just one key number, so more widgets fit on screen at a glance.\n- Added a new Top Districts widget that ranks areas by case volume, with a configurable number of districts shown.\n- changelog.json / package.json: bump version 0.75.0 -> 0.76.0",
+    "author": "Wisarud Techa"
+  },
   "0.75.0": {
     "date": "2026-09-14",
     "segment": "MINOR",
