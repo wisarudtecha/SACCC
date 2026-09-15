@@ -30,6 +30,11 @@ import ServiceDashboard from "@/cms/components/dashboard/ServiceDashboard";
 
 // Dashboard Imports
 import CaseSummaryByAreaPage from "@/cms/pages/Dashboard/CaseSummaryByAreaPage";
+import DispatchDashboardPage from "@/cms/pages/Dashboard/DispatchDashboardPage";
+// Registers the Dispatch widgets into the Custom Dashboard's widget registry (side effect only).
+import "@/cms/components/dashboard/dispatch/registerDispatchWidgets";
+// Registers the Case Summary by Area heatmap into the Custom Dashboard's widget registry (side effect only).
+import "@/cms/components/dashboard/registerCaseSummaryByAreaHeatmapWidget";
 
 // Form Builder Imports
 import FormManagement from "@/cms/pages/Forms/FormManagement"
@@ -143,6 +148,15 @@ export default function CmsApp() {
             element={
               <ProtectedRoute requiredPermissions={["dashboard.view"]}>
                 <CaseSummaryByAreaPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/dispatch"
+            element={
+              <ProtectedRoute requiredPermissions={["dashboard.view"]}>
+                <DispatchDashboardPage />
               </ProtectedRoute>
             }
           />

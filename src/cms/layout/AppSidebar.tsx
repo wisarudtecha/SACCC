@@ -121,6 +121,11 @@ const AppSidebar: React.FC = () => {
           path: "/dashboard/case-summary-by-area",
           permission: permissions.hasPermission("dashboard.view"),
         },
+        {
+          name: t("navigation.sidebar.main.dashboard.nested.dispatch"),
+          path: "/dashboard/dispatch",
+          permission: permissions.hasPermission("dashboard.view"),
+        },
       ],
     },
     {

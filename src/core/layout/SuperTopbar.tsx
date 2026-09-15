@@ -32,6 +32,7 @@ import {
   PackageSearch,
   Phone,
   PlusCircle,
+  Radar,
   Server,
   Settings,
   ShieldCheck,
@@ -329,6 +330,12 @@ const SuperTopbar = (
           icon: <Map />,
           name: t("navigation.super_app.topbar.more.menu.dashboard_analytic.sub_menu.case_summary_by_area"),
           path: "/cms/dashboard/case-summary-by-area",
+          permission: permissions.hasPermission("dashboard.view")
+        },
+        {
+          icon: <Radar />,
+          name: t("navigation.super_app.topbar.more.menu.dashboard_analytic.sub_menu.dispatch"),
+          path: "/cms/dashboard/dispatch",
           permission: permissions.hasPermission("dashboard.view")
         }
       ]
