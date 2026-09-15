@@ -19,6 +19,8 @@ interface WidgetConfigModalProps {
 }
 
 const MONTH_RANGE_OPTIONS = [3, 6, 12];
+const TOP_N_OPTIONS = [3, 5, 10];
+const DISPLAY_MODE_OPTIONS: Array<"detailed" | "compact"> = ["detailed", "compact"];
 
 const range = (min: number, max: number): number[] =>
   Array.from({ length: max - min + 1 }, (_, index) => min + index);
@@ -35,6 +37,8 @@ export const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({ widget, on
   const [colSpan, setColSpan] = useState(1);
   const [rowSpan, setRowSpan] = useState(1);
   const [monthRange, setMonthRange] = useState(6);
+  const [topN, setTopN] = useState(5);
+  const [displayMode, setDisplayMode] = useState<"detailed" | "compact">("detailed");
 
   // Re-seed the form whenever a different widget is opened.
   useEffect(() => {
@@ -46,6 +50,8 @@ export const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({ widget, on
     setColSpan(widget.position.colSpan);
     setRowSpan(widget.position.rowSpan);
     setMonthRange(widget.config.monthRange ?? 6);
+    setTopN(widget.config.topN ?? 5);
+    setDisplayMode(widget.config.displayMode ?? "detailed");
   }, [widget]);
 
   if (!widget) {
@@ -60,7 +66,7 @@ export const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({ widget, on
       // An empty title means "fall back to the payload's own title", so store undefined.
       title: title.trim() ? title.trim() : undefined,
       position: { ...widget.position, colSpan, rowSpan },
-      config: { ...widget.config, showHeader, monthRange },
+      config: { ...widget.config, showHeader, monthRange, topN, displayMode },
     });
     onClose();
   };
@@ -137,6 +143,44 @@ export const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({ widget, on
             >
               {MONTH_RANGE_OPTIONS.map(value => (
                 <option key={value} value={value}>{value}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {configurable.includes("topN") && (
+          <div>
+            <label className={fieldLabelClass} htmlFor="widget-top-n">
+              {t("dashboard.custom.top_n_districts")}
+            </label>
+            <select
+              id="widget-top-n"
+              value={topN}
+              onChange={event => setTopN(Number(event.target.value))}
+              className={fieldInputClass}
+            >
+              {TOP_N_OPTIONS.map(value => (
+                <option key={value} value={value}>{value}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {configurable.includes("displayMode") && (
+          <div>
+            <label className={fieldLabelClass} htmlFor="widget-display-mode">
+              {t("dashboard.custom.display_mode")}
+            </label>
+            <select
+              id="widget-display-mode"
+              value={displayMode}
+              onChange={event => setDisplayMode(event.target.value as "detailed" | "compact")}
+              className={fieldInputClass}
+            >
+              {DISPLAY_MODE_OPTIONS.map(value => (
+                <option key={value} value={value}>
+                  {t(`dashboard.custom.display_mode_${value}`)}
+                </option>
               ))}
             </select>
           </div>

@@ -28,6 +28,10 @@ export interface WidgetConfig {
   showHeader?: boolean;
   /** Number of trailing months a monthly-series widget should show. */
   monthRange?: number;
+  /** Number of ranked rows a top-N list widget should show. */
+  topN?: number;
+  /** "compact" swaps the widget's normal chart/table rendering for a single icon+number tile. */
+  displayMode?: "detailed" | "compact";
 }
 
 export interface DashboardWidget {

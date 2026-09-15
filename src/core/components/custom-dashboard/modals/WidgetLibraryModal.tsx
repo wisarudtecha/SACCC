@@ -14,6 +14,7 @@ interface WidgetLibraryModalProps {
 /** Section order + label key per group. A group with no widgets is simply skipped. */
 const GROUP_ORDER: { group: WidgetGroup; labelKey: string }[] = [
   { group: "case", labelKey: "dashboard.custom.groups.case" },
+  { group: "dispatch", labelKey: "dashboard.custom.groups.dispatch" },
   { group: "product", labelKey: "dashboard.custom.groups.product" },
   { group: "kms", labelKey: "dashboard.custom.groups.kms" },
   { group: "workspace", labelKey: "dashboard.custom.groups.workspace" },
