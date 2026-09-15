@@ -1,4 +1,10 @@
 {
+  "0.78.0": {
+    "date": "2026-09-15",
+    "segment": "MINOR",
+    "notes": "feat(cms): add a Dispatch Dashboard\n- A new Dispatch Dashboard is available from the Dashboard menu, showing live officer availability, a feed of recent case events, and an incident density heatmap for field operations at a glance.\n- Officer Status, Events Feed and Incident Heatmap widgets can now also be added to other dashboards.\n- changelog.json / package.json: bump version 0.77.0 -> 0.78.0",
+    "author": "Wisarud Techa"
+  },
   "0.77.0": {
     "date": "2026-09-15",
     "segment": "MINOR",
