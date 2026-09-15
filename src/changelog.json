@@ -1,4 +1,10 @@
 {
+  "0.77.0": {
+    "date": "2026-09-15",
+    "segment": "MINOR",
+    "notes": "feat(cms): add a map view to the Case Summary by Area dashboard\n- The Case Summary by Area dashboard now has a Map view, showing case volume per district as a color-coded map, alongside the existing table.\n- Added a Heatmap widget for case density by area to the dashboard widget library.\n- The table view keeps its column headers visible while scrolling through long lists of districts.\n- changelog.json / package.json: bump version 0.76.0 -> 0.77.0",
+    "author": "Wisarud Techa"
+  },
   "0.76.0": {
     "date": "2026-09-15",
     "segment": "MINOR",
