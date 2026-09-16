@@ -100,6 +100,7 @@ export const buildCountryFields = ({
       placeholder: t("crud.area.form.country.countryCode.placeholder"),
       value: countryCode,
       error: countryValidateErrors.countryCode,
+      required: true,
       onChange: setCountryCode
     },
     {
@@ -111,6 +112,7 @@ export const buildCountryFields = ({
       placeholder: t("crud.area.form.country.countryTh.placeholder"),
       value: countryTh,
       error: countryValidateErrors.countryTh,
+      required: true,
       onChange: setCountryTh
     },
     {
@@ -122,6 +124,7 @@ export const buildCountryFields = ({
       placeholder: t("crud.area.form.country.countryEn.placeholder"),
       value: countryEn,
       error: countryValidateErrors.countryEn,
+      required: true,
       onChange: setCountryEn
     },
     {
@@ -250,6 +253,7 @@ export const buildProvinceFields = ({
       value: provCountryId,
       error: provValidateErrors.countryId,
       options: countriesOptions,
+      required: true,
       onChange: setProvCountryId
     },
     {
@@ -261,6 +265,7 @@ export const buildProvinceFields = ({
       placeholder: t("crud.area.form.province.provinceCode.placeholder"),
       value: provinceCode,
       error: provValidateErrors.provinceCode,
+      required: true,
       onChange: setProvinceCode
     },
     {
@@ -272,6 +277,7 @@ export const buildProvinceFields = ({
       placeholder: t("crud.area.form.province.provinceTh.placeholder"),
       value: provinceTh,
       error: provValidateErrors.provinceTh,
+      required: true,
       onChange: setProvinceTh
     },
     {
@@ -283,6 +289,7 @@ export const buildProvinceFields = ({
       placeholder: t("crud.area.form.province.provinceEn.placeholder"),
       value: provinceEn,
       error: provValidateErrors.provinceEn,
+      required: true,
       onChange: setProvinceEn
     },
     {
@@ -383,6 +390,7 @@ export const buildDistrictFields = ({
       value: distCountryId,
       error: distValidateErrors.countryId,
       options: countriesOptions,
+      required: true,
       onChange: value => {
         setDistCountryId(value);
         // The province list is scoped to the country, so a stale selection here
@@ -401,6 +409,7 @@ export const buildDistrictFields = ({
       error: distValidateErrors.provId,
       options: provincesOptions.filter(option => option.countryId === distCountryId),
       disabled: !distCountryId,
+      required: true,
       onChange: setDistProvId
     },
     {
@@ -412,6 +421,7 @@ export const buildDistrictFields = ({
       placeholder: t("crud.area.form.district.districtCode.placeholder"),
       value: districtCode,
       error: distValidateErrors.districtCode,
+      required: true,
       onChange: setDistrictCode
     },
     {
@@ -422,6 +432,7 @@ export const buildDistrictFields = ({
       placeholder: t("crud.area.form.district.districtTh.placeholder"),
       value: districtTh,
       error: distValidateErrors.districtTh,
+      required: true,
       onChange: setDistrictTh
     },
     {
@@ -432,6 +443,7 @@ export const buildDistrictFields = ({
       placeholder: t("crud.area.form.district.districtEn.placeholder"),
       value: districtEn,
       error: distValidateErrors.districtEn,
+      required: true,
       onChange: setDistrictEn
     },
     {

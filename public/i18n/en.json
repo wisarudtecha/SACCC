@@ -2495,6 +2495,10 @@
           "delete": {
             "title": "Delete country confirmation",
             "message": "Are you sure you want to delete _COUNTRY_? This action cannot be undone."
+          },
+          "generate_prompt": {
+            "title": "Regenerate area tree?",
+            "message": "_COUNTRY_ has been deleted. Its cached area tree may still exist - generate it now to clear it."
           }
         },
         "province": {
@@ -2529,7 +2533,8 @@
           "cancel": "Cancel",
           "confirm": "Confirm",
           "saving": "Saving...",
-          "deleting": "Deleting..."
+          "deleting": "Deleting...",
+          "generate": "Generate"
         }
       },
       "action": {
@@ -4381,11 +4386,11 @@
   },
   "report": {
     "1": "1.Service Summary Report",
-    "2": "2.Service Detail Report",
     "1_1": "1.1 Daily Service Summary Report",
     "1_2": "1.2 Monthly Service Summary Report",
     "1_3": "1.3 Service Comparison Report by Day",
     "1_4": "1.4 Service Comparison Report by Month",
+    "2": "2.Service Detail Report",
     "2_1": "2.1 Service Data Detail Report",
     "2_2": "2.2 Service Summary Report Classified by Service Type",
     "2_3": "2.3 Service Summary Report Classified by Service Outcome",
@@ -4396,10 +4401,10 @@
     },
     "order": {
       "1": "1.Order Summary Report",
-      "2": "2.Order Detail Report",
       "1_1": "1.1 Daily Order Summary Report",
       "1_2": "1.2 Product Summary Report",
       "1_3": "1.3 Parts Summary Report",
+      "2": "2.Order Detail Report",
       "2_1": "2.1 Order Detail Information Report",
       "2_2": "2.2 Parts/Component Requisition Summary Report",
       "2_3": "2.3 Top 10 Sales Report"

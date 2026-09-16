@@ -1,5 +1,6 @@
 // /src/components/admin/system-configuration/area/AreaHierarchyView.tsx
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { RefreshCw } from "lucide-react";
 import { CloseIcon, FileIcon } from "@/core/icons";
 import { Modal } from "@/core/components/ui/modal";
 import { useTranslation } from "@/core/hooks/useTranslation";
@@ -45,8 +46,8 @@ interface AreaHierarchyViewProps {
   countries: Country[];
   showInactive: boolean;
   handleCountryDelete: (id: number) => void;
-  handleProvinceDelete: (id: number) => void;
-  handleDistrictDelete: (id: number) => void;
+  handleProvinceDelete: (id: number, countryCode: string) => void;
+  handleDistrictDelete: (id: number, countryCode: string) => void;
   /**
    * Open the edit form for one record. The parent fetches it by id rather than
    * being handed field-by-field setters: the tree omits nameSpace entirely and is
@@ -65,6 +66,10 @@ interface AreaHierarchyViewProps {
   /** Whether the current user may see the edit / delete actions at all. */
   canUpdate: boolean;
   canDelete: boolean;
+  /** Regenerates the cached tree for one country - see generateOrgCountryTree in store/api/area.ts. */
+  onGenerateCountryTree: (id: number, countryCode: string) => void;
+  /** Country codes with unregenerated changes, used to highlight their Generate button. */
+  dirtyCountryCodes: Set<string>;
 }
 
 const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
@@ -79,6 +84,8 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
   focusTarget = null,
   canUpdate,
   canDelete,
+  onGenerateCountryTree,
+  dirtyCountryCodes,
 }) => {
   const { language, t } = useTranslation();
 
@@ -87,6 +94,9 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
   const [deleteMessage, setDeleteMessage] = useState("");
   const [deleteHeader, setDeleteHeader] = useState("");
   const [deleteType, setDeleteType] = useState("");
+  // Only province/district deletes need this - handleCountryDelete already gets
+  // the country's own id, which is all a country delete requires.
+  const [deleteCountryCode, setDeleteCountryCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   // Flatten the nested trees into generic hierarchy items, namespacing ids via
@@ -182,6 +192,7 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
     setDeleteId(Number(stripPrefix(String(item.id))));
     setDeleteIsOpen(true);
     setDeleteType(type);
+    setDeleteCountryCode((item.metadata?.countryCode as string) || "");
 
     if (type === "country") {
       setDeleteHeader(t("crud.area.confirm.country.delete.title"));
@@ -199,15 +210,15 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
     setIsLoading(false);
   }, [t]);
 
-  const handleDeleteSelection = (id: number, type: string) => {
+  const handleDeleteSelection = (id: number, type: string, countryCode: string) => {
     if (type === "country") {
       handleCountryDelete(id);
     }
     else if (type === "province") {
-      handleProvinceDelete(id);
+      handleProvinceDelete(id, countryCode);
     }
     else if (type === "district") {
-      handleDistrictDelete(id);
+      handleDistrictDelete(id, countryCode);
     }
   }
 
@@ -311,6 +322,19 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
         styling: {
           indentSize: 32,
         },
+        leadingActions: [
+          {
+            key: "generateTree",
+            icon: <RefreshCw className="w-4 h-4" />,
+            label: t("crud.area.tree.generate.button"),
+            variant: "outline",
+            onClick: (item) => onGenerateCountryTree(
+              Number(stripPrefix(String(item.id))),
+              (item.metadata?.countryCode as string) || ""
+            ),
+            highlightWhen: (item) => dirtyCountryCodes.has((item.metadata?.countryCode as string) || "")
+          }
+        ],
         actions: [
           {
             label: t("crud.common.update"),
@@ -404,7 +428,7 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
         ]
       }
     ]
-  }), [canUpdate, canDelete, geometryLabels, handleDelete, handleEdit, t]);
+  }), [canUpdate, canDelete, geometryLabels, handleDelete, handleEdit, onGenerateCountryTree, dirtyCountryCodes, t]);
 
   // Creating a child needs only the parent's codes, which are structural rather
   // than record data - the new row has no id to fetch yet.
@@ -449,7 +473,7 @@ const AreaHierarchyView: React.FC<AreaHierarchyViewProps> = ({
           <div className="flex gap-3">
             <Button onClick={() => setDeleteIsOpen(false)} variant="outline">{t("crud.area.confirm.button.cancel")}</Button>
             <Button onClick={() => {
-              handleDeleteSelection(deleteId, deleteType);
+              handleDeleteSelection(deleteId, deleteType, deleteCountryCode);
               setDeleteIsOpen(false);
             }} variant="error">{!isLoading && t("crud.area.confirm.button.confirm") || t("crud.area.confirm.button.deleting")}</Button>
           </div>

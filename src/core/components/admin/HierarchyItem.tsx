@@ -336,6 +336,28 @@ export const HierarchyItemComponent: React.FC<HierarchyItemProps> = ({
       
       {/* Actions */}
       <div className="flex items-center space-x-1">
+        {/* Leading Actions - rendered before Create Child, e.g. a per-row utility action */}
+        {(levelConfig.leadingActions || []).map((action, index) => {
+          if (action.showWhen && !action.showWhen(item)) {
+            return null;
+          }
+
+          const isHighlighted = action.highlightWhen?.(item);
+
+          return (
+            <Button
+              key={action.key || `leading-${index}`}
+              disabled={isLoading}
+              size={action.size || "xs"}
+              variant={action.variant || "outline"}
+              title={action.label}
+              className={isHighlighted ? "ring-2 ring-amber-400 dark:ring-amber-500 animate-pulse" : undefined}
+              onClick={() => handleActionClick(action)}
+            >
+              {action.icon ?? action.label}
+            </Button>
+          );
+        })}
         {/* Create Child Action */}
         {canHaveChildren && onCreateChild && (
           <Button

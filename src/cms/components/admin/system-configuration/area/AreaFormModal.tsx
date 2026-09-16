@@ -61,6 +61,8 @@ export interface AreaFormField {
   /** Required for type "select". */
   options?: { value: string; label: string }[];
   disabled?: boolean;
+  /** Shows a red asterisk next to the label - purely visual, validation lives in AreaManagement. */
+  required?: boolean;
   onChange: (value: string) => void;
 }
 
@@ -91,6 +93,7 @@ const AreaFormFieldRow: React.FC<{ field: AreaFormField; disabled: boolean }> = 
       className="text-sm font-medium text-gray-700 dark:text-gray-200"
     >
       {field.label}
+      {field.required && <span className="text-red-500 dark:text-red-400 ml-1">*</span>}
     </label>
 
     {field.type === "toggle" && (

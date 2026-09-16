@@ -2,10 +2,14 @@
 export interface HierarchyAction {
   key?: string;
   label: string;
+  /** Rendered in place of `label` inside the button; `label` still backs the title/aria-label. */
+  icon?: React.ReactNode;
   size?: "xs" | "sm" | "md" | "lg";
   variant: "primary" | "secondary" | "success" | "error" | "warning" | "info" | "light" | "dark" | "outline" | "ghost";
   onClick: (item: HierarchyItem) => void;
   showWhen?: (item: HierarchyItem) => boolean;
+  /** Visually flags the button (e.g. a pending-regeneration nudge) without hiding/disabling it. */
+  highlightWhen?: (item: HierarchyItem) => boolean;
 }
 
 export interface HierarchyAnalytics {
@@ -26,6 +30,8 @@ export interface LevelConfig {
   emptyChildrenMessage?: string;
   expandIcon?: React.ReactNode;
   icon?: React.ReactNode;
+  /** Rendered before the "Create Child" button, e.g. a row-scoped utility action. */
+  leadingActions?: HierarchyAction[];
   metadataDisplay?: {
     showChildCount?: boolean;
     showMetadata?: boolean;

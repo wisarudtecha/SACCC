@@ -23,6 +23,7 @@ import {
   useLazyGetCountryByIdQuery,
   useLazyGetProvinceByIdQuery,
   useLazyGetDistrictByIdQuery,
+  useGenerateOrgCountryTreeMutation,
 } from "@/cms/store/api/area";
 import type {
   CountryCreateData, CountryUpdateData,
@@ -31,6 +32,7 @@ import type {
   AreaCountryTree, AreaDistrict, AreaProvince, Country, PolygonCoordinates
 } from "@/cms/types/area";
 import { isApiSuccess, resolveApiError, resolveApiMessage } from "@/cms/utils/apiResponse";
+import { capitalizeWords } from "@/core/utils/stringFormatters";
 import { formatPolygonRings, parsePolygonRings, toCoordinatesPayload } from "@/cms/utils/areaGeometry";
 import { filterAreaTrees } from "@/cms/utils/areaTree";
 import { invalidateOrgBoundaryData } from "@/cms/components/case/createCase/map/boundaries/boundarySource";
@@ -74,6 +76,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
   const [createDistrict] = useCreateDistrictMutation();
   const [updateDistrict] = useUpdateDistrictMutation();
   const [deleteDistrict] = useDeleteDistrictMutation();
+  const [generateOrgCountryTree] = useGenerateOrgCountryTreeMutation();
 
   // Editing reads the authoritative record rather than the tree: the tree omits
   // nameSpace entirely and is a server-side cache, so a form seeded from it would
@@ -151,6 +154,16 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [localValue, setLocalValue] = useState<string>("");
 
+  // Countries (by business code) with province/district/country changes not yet
+  // reflected in the cached getOrgCountryTree read - see generateOrgCountryTree
+  // in store/api/area.ts. Keyed by code rather than the numeric row id because
+  // the code is known synchronously at every save/delete call site, while a
+  // freshly created country has no id until the trees refetch.
+  const [dirtyCountryCodes, setDirtyCountryCodes] = useState<Set<string>>(new Set());
+  // Drives the "generate now?" modal shown after a country delete, since that
+  // row (and its inline Generate button) is gone once the delete succeeds.
+  const [generatePromptCountry, setGeneratePromptCountry] = useState<{ id: number; code: string; name: string } | null>(null);
+
   // ===================================================================
   // Modals and dialogs
   // ===================================================================
@@ -211,6 +224,48 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
   const refreshAfterWrite = useCallback(async () => {
     invalidateOrgBoundaryData();
   }, []);
+
+  /** Flags a country's cached tree as stale after a write under it. */
+  const markCountryDirty = useCallback((code: string) => {
+    if (!code) {
+      return;
+    }
+    setDirtyCountryCodes(previous => previous.has(code) ? previous : new Set(previous).add(code));
+  }, []);
+
+  /**
+   * Calls generateOrgCountryTree for one country, clearing its dirty flag on
+   * success. Shared by the per-row Generate button and the post-country-delete
+   * prompt - see generatePromptCountry.
+   */
+  const handleGenerateCountryTree = useCallback(async (id: number, countryCode: string) => {
+    if (!id) {
+      return;
+    }
+    try {
+      setLoading(true);
+      const response = await generateOrgCountryTree(id).unwrap();
+      if (!isApiSuccess(response)) {
+        throw new Error(resolveApiError(response, t("errors.unknownApi")));
+      }
+      addToast("success", resolveApiMessage(response, t("crud.area.tree.generate.success")));
+      setDirtyCountryCodes(previous => {
+        if (!previous.has(countryCode)) {
+          return previous;
+        }
+        const next = new Set(previous);
+        next.delete(countryCode);
+        return next;
+      });
+      await refreshAfterWrite();
+    }
+    catch (error) {
+      addToast("error", resolveApiError(error, t("crud.area.tree.generate.error")));
+    }
+    finally {
+      setLoading(false);
+    }
+  }, [generateOrgCountryTree, addToast, refreshAfterWrite, t]);
 
   // ===================================================================
   // Validation before saving
@@ -281,6 +336,10 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
     if (!id) {
       return;
     }
+    // Captured before the delete: once it succeeds, this country's row (and its
+    // own countryId/name) is gone from `trees`, but generate still needs the id
+    // to flush the now-stale cached tree - see generatePromptCountry below.
+    const countryRecord = (trees || []).find(country => country.id === id);
     try {
       setLoading(true);
       if (!permissions.hasAnyPermission(["area.delete"])) {
@@ -292,6 +351,21 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
       }
       addToast("success", resolveApiMessage(response, t("crud.area.action.country.delete.success")));
       setFocusTarget(null);
+      if (countryRecord) {
+        setDirtyCountryCodes(previous => {
+          if (!previous.has(countryRecord.countryId)) {
+            return previous;
+          }
+          const next = new Set(previous);
+          next.delete(countryRecord.countryId);
+          return next;
+        });
+        setGeneratePromptCountry({
+          id,
+          code: countryRecord.countryId,
+          name: (language === "th" && countryRecord.th || capitalizeWords(countryRecord.en || "")) || countryRecord.countryId
+        });
+      }
       await refreshAfterWrite();
     }
     catch (error) {
@@ -300,7 +374,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
     finally {
       setLoading(false);
     }
-  }, [permissions, addToast, deleteCountry, refreshAfterWrite, t]);
+  }, [permissions, addToast, deleteCountry, refreshAfterWrite, trees, language, t]);
 
   const handleCountrySave = useCallback(async () => {
     if (!validateCountry()) {
@@ -342,6 +416,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
       setCountryIsOpen(false);
       handleCountryReset();
       setFocusTarget({ level: "country", code: countryCode });
+      markCountryDirty(countryCode);
       await refreshAfterWrite();
     }
     catch (error) {
@@ -357,7 +432,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
     countryCode, countryEn, countryId, countryTh, countryCoordinatesText, existingCountryCoordinates,
     countryYearOfData, countryShapeArea, countryShapeLength, countryNameSpace, countryActive,
     permissions, addToast,
-    createCountry, updateCountry, validateCountry, handleCountryReset, refreshAfterWrite, t
+    createCountry, updateCountry, validateCountry, handleCountryReset, markCountryDirty, refreshAfterWrite, t
   ]);
 
   // ===================================================================
@@ -377,7 +452,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
     setProvValidateErrors({ provinceCode: "", countryId: "", provinceTh: "", provinceEn: "", coordinates: "" });
   }, []);
 
-  const handleProvinceDelete = useCallback(async (id: number) => {
+  const handleProvinceDelete = useCallback(async (id: number, countryCode: string) => {
     if (!id) {
       return;
     }
@@ -392,6 +467,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
       }
       addToast("success", resolveApiMessage(response, t("crud.area.action.province.delete.success")));
       setFocusTarget(null);
+      markCountryDirty(countryCode);
       await refreshAfterWrite();
     }
     catch (error) {
@@ -400,7 +476,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
     finally {
       setLoading(false);
     }
-  }, [permissions, addToast, deleteProvince, refreshAfterWrite, t]);
+  }, [permissions, addToast, deleteProvince, markCountryDirty, refreshAfterWrite, t]);
 
   const handleProvinceSave = useCallback(async () => {
     if (!validateProvince()) {
@@ -435,6 +511,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
       setProvinceIsOpen(false);
       handleProvinceReset();
       setFocusTarget({ level: "province", code: provinceCode, countryCode: provCountryId });
+      markCountryDirty(provCountryId);
       await refreshAfterWrite();
     }
     catch (error) {
@@ -449,7 +526,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
   }, [
     provCountryId, provId, provinceCode, provinceEn, provinceTh, provinceCoordinatesText,
     existingProvinceCoordinates, provinceNameSpace, provinceActive, permissions, addToast,
-    createProvince, updateProvince, validateProvince, handleProvinceReset, refreshAfterWrite, t
+    createProvince, updateProvince, validateProvince, handleProvinceReset, markCountryDirty, refreshAfterWrite, t
   ]);
 
   // ===================================================================
@@ -470,7 +547,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
     setDistValidateErrors({ districtCode: "", countryId: "", provId: "", districtTh: "", districtEn: "", coordinates: "" });
   }, []);
 
-  const handleDistrictDelete = useCallback(async (id: number) => {
+  const handleDistrictDelete = useCallback(async (id: number, countryCode: string) => {
     if (!id) {
       return;
     }
@@ -485,6 +562,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
       }
       addToast("success", resolveApiMessage(response, t("crud.area.action.district.delete.success")));
       setFocusTarget(null);
+      markCountryDirty(countryCode);
       await refreshAfterWrite();
     }
     catch (error) {
@@ -493,7 +571,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
     finally {
       setLoading(false);
     }
-  }, [permissions, addToast, deleteDistrict, refreshAfterWrite, t]);
+  }, [permissions, addToast, deleteDistrict, markCountryDirty, refreshAfterWrite, t]);
 
   const handleDistrictSave = useCallback(async () => {
     if (!validateDistrict()) {
@@ -534,6 +612,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
         countryCode: distCountryId,
         provinceCode: distProvId
       });
+      markCountryDirty(distCountryId);
       await refreshAfterWrite();
     }
     catch (error) {
@@ -548,7 +627,7 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
   }, [
     distCountryId, distId, distProvId, districtCode, districtEn, districtTh, districtCoordinatesText,
     existingDistrictCoordinates, districtNameSpace, districtActive, permissions, addToast,
-    createDistrict, updateDistrict, validateDistrict, handleDistrictReset, refreshAfterWrite, t
+    createDistrict, updateDistrict, validateDistrict, handleDistrictReset, markCountryDirty, refreshAfterWrite, t
   ]);
 
   // ===================================================================
@@ -1062,6 +1141,8 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
                 handleDistrictDelete={handleDistrictDelete}
                 onEditRecord={handleEditRecord}
                 onCreateChild={handleCreateChild}
+                onGenerateCountryTree={handleGenerateCountryTree}
+                dirtyCountryCodes={dirtyCountryCodes}
               />
             )}
             {/* Empty state */}
@@ -1174,6 +1255,46 @@ const AreaManagementComponent: React.FC<AreaManagementProps> = ({
             </Button>
             <Button onClick={handleConfirmedSave} variant="success" disabled={loading}>
               {!loading && t("crud.area.confirm.button.confirm") || t("crud.area.confirm.button.saving")}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Prompts a Generate right after a country delete - that row (and its own
+          inline Generate button) is gone once the delete succeeds, so this is the
+          only remaining way to flush the now-stale cached tree for that id. */}
+      <Modal
+        isOpen={Boolean(generatePromptCountry)}
+        onClose={() => setGeneratePromptCountry(null)}
+        className="max-w-xl p-6 max-h-[80vh] overflow-y-auto"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
+            {t("crud.area.confirm.country.generate_prompt.title")}
+          </h3>
+          <Button onClick={() => setGeneratePromptCountry(null)} size="sm" variant="ghost">
+            <CloseIcon className="w-4 h-4" />
+          </Button>
+        </div>
+        <div className="space-y-4 text-gray-800 dark:text-gray-100 cursor-default">
+          {t("crud.area.confirm.country.generate_prompt.message").replace("_COUNTRY_", generatePromptCountry?.name || "")}
+        </div>
+        <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex gap-3">
+            <Button onClick={() => setGeneratePromptCountry(null)} variant="outline">
+              {t("crud.area.confirm.button.cancel")}
+            </Button>
+            <Button
+              onClick={async () => {
+                if (generatePromptCountry) {
+                  await handleGenerateCountryTree(generatePromptCountry.id, generatePromptCountry.code);
+                }
+                setGeneratePromptCountry(null);
+              }}
+              variant="success"
+              disabled={loading}
+            >
+              {t("crud.area.confirm.button.generate")}
             </Button>
           </div>
         </div>
