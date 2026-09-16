@@ -21,6 +21,10 @@ interface CaseLocationSectionProps extends CaseFieldSectionProps {
      * decision aid - nothing about it is persisted with the case.
      */
     incidentRadius?: IncidentRadiusOverlay | null;
+    /** Forwarded to BoundaryMapField - see its prop docs (REQ 3/4/5). */
+    manualOnly?: boolean;
+    authorizedDistrictIds?: readonly string[];
+    autoShowDistrictCode?: string | null;
     className?: string;
 }
 
@@ -30,6 +34,9 @@ export const CaseLocationSection = ({
     onCaseChange,
     showMap = true,
     incidentRadius = null,
+    manualOnly = false,
+    authorizedDistrictIds,
+    autoShowDistrictCode = null,
     className = "pr-0 col-span-2",
 }: CaseLocationSectionProps) => {
     const { t } = useTranslation();
@@ -84,6 +91,9 @@ export const CaseLocationSection = ({
                             onDeviceSelect={handleDeviceSelect}
                             linkedDeviceId={caseState?.iotDevice || null}
                             incidentRadius={incidentRadius}
+                            manualOnly={manualOnly}
+                            authorizedDistrictIds={authorizedDistrictIds}
+                            autoShowDistrictCode={autoShowDistrictCode}
                         />
                     </Suspense>
                 </div>

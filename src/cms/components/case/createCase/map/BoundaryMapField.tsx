@@ -17,7 +17,7 @@
 // State lives here rather than inside AddressMapField because that
 // component renders a SECOND MapView when expanded - exactly the reason
 // CaseStaffMapField owns the staff state instead of letting the map own it.
-import { memo, useCallback } from "react";
+import { memo, useCallback, useEffect } from "react";
 import type { TrailPoint } from "./staff/useStaffTrails";
 import { useTheme } from "@/core/context/ThemeContext";
 import AddressMapField from "./AddressMapField";
@@ -84,6 +84,28 @@ interface BoundaryMapFieldProps {
   /** Caller's own overlay cards. The picker owns the top-right corner. */
   extraOverlaySlot?: MapSlot;
   onExpandedChange?: (isExpanded: boolean) => void;
+  /**
+   * Start every boundary level hidden and unselected instead of the historical
+   * one-level auto-default. The case create/assignment screens pass this so
+   * layers and polygons only appear once the dispatcher explicitly asks for
+   * them; other consumers (e.g. the read-only Case Preview map) omit it and
+   * keep today's behavior.
+   */
+  manualOnly?: boolean;
+  /**
+   * The dispatcher's authorized District ids. Narrows the boundary picker to
+   * those districts plus the provinces/countries they roll up into. Omit or
+   * pass empty for no restriction (the create screen has no notion of "area
+   * of responsibility").
+   */
+  authorizedDistrictIds?: readonly string[];
+  /**
+   * A resolved Service Center match's district code. When set, forces the
+   * District level on and adds this code to the selection, on top of
+   * whatever the user already picked - the case-assignment auto-show
+   * exception to `manualOnly` (only the assignment/edit screen passes this).
+   */
+  autoShowDistrictCode?: string | null;
 }
 
 function BoundaryMapFieldBase({
@@ -110,11 +132,23 @@ function BoundaryMapFieldBase({
   incidentRadius,
   extraToolbarSlot,
   extraOverlaySlot,
-  onExpandedChange
+  onExpandedChange,
+  manualOnly = false,
+  authorizedDistrictIds,
+  autoShowDistrictCode = null
 }: BoundaryMapFieldProps) {
   const { theme } = useTheme();
   const isDarkTheme = theme === "dark";
-  const boundary = useBoundarySelection();
+  const boundary = useBoundarySelection({ startAllHidden: manualOnly, authorizedDistrictIds });
+
+  const { showDistrict } = boundary;
+  // The one exception to manual-only display: a resolved Service Center match
+  // auto-shows its district even though nothing else was turned on (REQ 4).
+  useEffect(() => {
+    if (autoShowDistrictCode) {
+      showDistrict(autoShowDistrictCode);
+    }
+  }, [autoShowDistrictCode, showDistrict]);
   // Place layer state. Owned here (not in AddressMapField) for the same reason as
   // the boundary state: AddressMapField renders a second MapView when expanded,
   // so the layer's toggle, filters and selection have to survive that. Being the

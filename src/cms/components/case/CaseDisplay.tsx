@@ -15,6 +15,7 @@ import Loading from "@/core/components/common/Loading";
 import type { StaffAssignmentOverlay } from "./createCase/map/staff/CaseStaffMapField";
 import { useServiceCenterMatch } from "./formFields";
 import { readCachedAreas } from "./caseFormOptions";
+import { useAuthorizedDistrictIds } from "@/core/hooks/useAuthorizedDistrictIds";
 
 // Heavy @arcgis/core SDK - lazy-loaded so it stays out of the initial bundle.
 // BoundaryMapField rather than the bare map: this is the small map in the Case
@@ -78,6 +79,14 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
         areaList,
         enabled: showMap && !!mapValue,
     });
+
+    // Case-assignment (dispatch) only: scope the boundary picker to the
+    // dispatcher's own districts, and auto-show the matched Service Center's
+    // district even though the assignment map otherwise starts fully manual.
+    // Both are no-ops on the plain (non-staffOverlay) branch below, which is
+    // not passed either prop.
+    const authorizedDistrictIds = useAuthorizedDistrictIds();
+    const autoShowDistrictCode = serviceCenterMatch.matchedArea?.distId ?? null;
 
 
     return (
@@ -205,6 +214,9 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                                         readOnly
                                         height={320}
                                         incidentRadius={serviceCenterMatch.incidentRadius}
+                                        manualOnly
+                                        authorizedDistrictIds={authorizedDistrictIds}
+                                        autoShowDistrictCode={autoShowDistrictCode}
                                         assignment={staffOverlay.assignment}
                                     />
                                 ) : (

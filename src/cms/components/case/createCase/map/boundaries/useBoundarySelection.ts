@@ -17,6 +17,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { boundarySource } from "./boundarySource";
 import { ADMIN_LEVELS, BOUNDARY_LEVELS } from "./boundaryLevels";
+import { expandAuthorizedScope, type AuthorizedScope } from "./boundaryAuthorizedScope";
 import {
   EMPTY_BOUNDARY_INDEX,
   EMPTY_BOUNDARY_SELECTION,
@@ -42,9 +43,39 @@ const DEFAULT_VISIBILITY: BoundaryVisibility = BOUNDARY_LEVELS.reduce<BoundaryVi
   { country: false, province: false, district: false, subdistrict: false }
 );
 
+/**
+ * Every level off. Used instead of DEFAULT_VISIBILITY when the caller asks
+ * for manual-only defaults (case create/assignment - see `startAllHidden`).
+ */
+const ALL_HIDDEN_VISIBILITY: BoundaryVisibility = {
+  country: false,
+  province: false,
+  district: false,
+  subdistrict: false
+};
+
 type OptionsByLevel = Readonly<Record<AdminLevel, readonly BoundaryOption[]>>;
 
 const EMPTY_OPTIONS: OptionsByLevel = EMPTY_BOUNDARY_INDEX;
+
+export interface UseBoundarySelectionOptions {
+  /**
+   * Start every level hidden and unselected instead of the one
+   * `defaultVisible` level with everything under it selected. The case
+   * create/assignment screens pass this so no polygon appears until the user
+   * has explicitly asked for it (REQ 3/4) - other BoundaryMapField consumers
+   * (e.g. the read-only Case Preview map) keep the historical auto-default.
+   */
+  startAllHidden?: boolean;
+  /**
+   * The dispatcher's authorized District ids (see useAuthorizedDistrictIds).
+   * When non-empty, the loaded index is narrowed to those districts plus the
+   * provinces/countries they roll up into, so the picker only offers areas
+   * within the dispatcher's own responsibility (REQ 5). Empty/omitted is
+   * unrestricted.
+   */
+  authorizedDistrictIds?: readonly string[];
+}
 
 export interface UseBoundarySelectionResult {
   /** Hand straight to AddressMapField's `boundaries` prop. */
@@ -57,6 +88,14 @@ export interface UseBoundarySelectionResult {
   draft: BoundarySelection;
   toggleCode: (level: AdminLevel, code: string) => void;
   setLevelCodes: (level: AdminLevel, codes: readonly string[]) => void;
+  /**
+   * Force the District level on and add `code` to its selection, on top of
+   * whatever the user has already chosen. Used by the case-assignment screen
+   * to auto-show the district a resolved Service Center match falls in (REQ
+   * 4), even under `startAllHidden`. Additive by design: it must not clear a
+   * boundary the dispatcher picked manually.
+   */
+  showDistrict: (code: string) => void;
   /** True when draft and applied differ, i.e. Apply would change the map. */
   isDirty: boolean;
   apply: () => void;
@@ -74,6 +113,17 @@ function sameCodes(a: readonly string[], b: readonly string[]): boolean {
   }
   const seen = new Set(a);
   return b.every((code) => seen.has(code));
+}
+
+/** Narrows an index to the codes an authorized scope allows, level by level. */
+function restrictBoundaryIndex(index: BoundaryIndex, scope: AuthorizedScope): BoundaryIndex {
+  return ADMIN_LEVELS.reduce<BoundaryIndex>((restricted, level) => {
+    const allowed = scope[level];
+    return {
+      ...restricted,
+      [level]: allowed ? index[level].filter((option) => allowed.has(option.code)) : index[level]
+    };
+  }, EMPTY_BOUNDARY_INDEX);
 }
 
 function selectAll(index: BoundaryIndex): BoundarySelection {
@@ -121,32 +171,42 @@ function pruneOrphans(index: BoundaryIndex, draft: BoundarySelection): BoundaryS
   return { ...EMPTY_BOUNDARY_SELECTION, ...pruned };
 }
 
-export function useBoundarySelection(): UseBoundarySelectionResult {
+export function useBoundarySelection(
+  hookOptions: UseBoundarySelectionOptions = {}
+): UseBoundarySelectionResult {
+  const { startAllHidden = false, authorizedDistrictIds } = hookOptions;
+
   const [index, setIndex] = useState<BoundaryIndex | null>(null);
   const [applied, setApplied] = useState<BoundarySelection>(EMPTY_BOUNDARY_SELECTION);
   const [draft, setDraft] = useState<BoundarySelection>(EMPTY_BOUNDARY_SELECTION);
-  const [visibility, setVisibility] = useState<BoundaryVisibility>(DEFAULT_VISIBILITY);
+  const [visibility, setVisibility] = useState<BoundaryVisibility>(
+    startAllHidden ? ALL_HIDDEN_VISIBILITY : DEFAULT_VISIBILITY
+  );
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   // Everything starts selected, so switching a level on shows that whole level
   // rather than an empty map the user has to go and populate by hand. Clearing
   // a level is then an explicit act, and "cleared" genuinely means "draw none"
-  // (see buildDefinitionExpression).
+  // (see buildDefinitionExpression). Under `startAllHidden` nothing starts
+  // selected either - every level is off, so there is nothing to draw until
+  // the dispatcher turns one on and picks areas.
   useEffect(() => {
     let isStale = false;
     boundarySource.loadIndex().then((loaded) => {
       if (isStale) {
         return;
       }
-      const everything = selectAll(loaded);
-      setIndex(loaded);
+      const scope = authorizedDistrictIds ? expandAuthorizedScope(loaded, authorizedDistrictIds) : {};
+      const scoped = restrictBoundaryIndex(loaded, scope);
+      const everything = startAllHidden ? EMPTY_BOUNDARY_SELECTION : selectAll(scoped);
+      setIndex(scoped);
       setApplied(everything);
       setDraft(everything);
     });
     return () => {
       isStale = true;
     };
-  }, []);
+  }, [startAllHidden, authorizedDistrictIds]);
 
   const options = useMemo<OptionsByLevel>(() => {
     if (!index) {
@@ -217,6 +277,16 @@ export function useBoundarySelection(): UseBoundarySelectionResult {
     setVisibility((current) => ({ ...current, [level]: !current[level] }));
   }, []);
 
+  const showDistrict = useCallback((code: string) => {
+    setVisibility((current) => (current.district ? current : { ...current, district: true }));
+    const addCode = (selection: BoundarySelection): BoundarySelection =>
+      selection.district.includes(code)
+        ? selection
+        : { ...selection, district: [...selection.district, code] };
+    setApplied(addCode);
+    setDraft(addCode);
+  }, []);
+
   const isDirty = useMemo(
     () => ADMIN_LEVELS.some((level) => !sameCodes(draft[level], applied[level])),
     [draft, applied]
@@ -253,6 +323,7 @@ export function useBoundarySelection(): UseBoundarySelectionResult {
     draft,
     toggleCode,
     setLevelCodes: updateDraft,
+    showDistrict,
     isDirty,
     apply,
     cancel,

@@ -186,6 +186,25 @@ describe("resolveServiceCenterMatch", () => {
     expect(result.incidentRadius).toBeNull();
   });
 
+  it("matches regardless of boundary layer visibility (REQ 1: the map never has to show a polygon for the match to apply)", () => {
+    // resolveServiceCenterMatch takes no boundary-visibility input at all - this
+    // test locks that invariant in so a future refactor cannot accidentally
+    // gate the match on useBoundarySelection's `visibility` state, the way the
+    // case map's OTHER polygon controls do since REQ 3/4 (manual-only display).
+    const areaA = area({ id: "A", distId: "1001" });
+    const polygonByKey = buildDistrictPolygonIndex([district("1001", SQUARE_A)]);
+
+    const result = resolveServiceCenterMatch({
+      incident: INSIDE_A,
+      areaList: [areaA],
+      polygonByKey,
+      radiusMeters: 900
+    });
+
+    expect(result.status).toBe("matched");
+    expect(result.matchedArea?.id).toBe("A");
+  });
+
   it("composes both suppressions: no lock and no circle", () => {
     const areaA = area({ id: "A", distId: "1001" });
     const polygonByKey = buildDistrictPolygonIndex([district("1001", SQUARE_A)]);

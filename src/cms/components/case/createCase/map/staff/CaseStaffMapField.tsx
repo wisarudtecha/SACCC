@@ -77,6 +77,27 @@ interface CaseStaffMapFieldProps {
    * matched no single Service Center polygon; null otherwise.
    */
   incidentRadius?: IncidentRadiusOverlay | null;
+  /**
+   * Start every boundary level hidden and unselected instead of the historical
+   * one-level auto-default. The case-assignment (dispatch) map passes this so
+   * layers and polygons only appear once the dispatcher explicitly asks for
+   * them - forwarded untouched to BoundaryMapField.
+   */
+  manualOnly?: boolean;
+  /**
+   * The dispatcher's authorized District ids, forwarded untouched to
+   * BoundaryMapField. Narrows the boundary picker to those districts plus the
+   * provinces/countries they roll up into. Omit or pass empty for no
+   * restriction.
+   */
+  authorizedDistrictIds?: readonly string[];
+  /**
+   * A resolved Service Center match's district code, forwarded untouched to
+   * BoundaryMapField. When set, forces the District level on and adds this
+   * code to the selection - the case-assignment auto-show exception to
+   * `manualOnly`.
+   */
+  autoShowDistrictCode?: string | null;
   /** Required: every panel section renders against this context. */
   assignment: StaffAssignmentOverlay;
 }
@@ -94,6 +115,9 @@ function CaseStaffMapFieldBase({
   height = 320,
   className = "",
   incidentRadius = null,
+  manualOnly = false,
+  authorizedDistrictIds,
+  autoShowDistrictCode = null,
   assignment
 }: CaseStaffMapFieldProps) {
   const { t } = useTranslation();
@@ -401,6 +425,9 @@ function CaseStaffMapFieldBase({
       showPlaceButton
       showDeviceButton
       incidentRadius={incidentRadius}
+      manualOnly={manualOnly}
+      authorizedDistrictIds={authorizedDistrictIds}
+      autoShowDistrictCode={autoShowDistrictCode}
       staff={staff}
       showStaff={effectiveShowStaff}
       selectedStaffId={selectedStaffId}

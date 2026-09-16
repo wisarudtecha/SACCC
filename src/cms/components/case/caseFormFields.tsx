@@ -1,4 +1,5 @@
-import { memo, useEffect, useMemo, useRef } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useAuthorizedDistrictIds } from "@/core/hooks/useAuthorizedDistrictIds";
 import { Area } from "@/cms/store/api/area";
 import { Customer } from "@/cms/store/api/custommerApi";
 import { CaseDetails, CaseTypeSubType } from "@/cms/types/case";
@@ -18,7 +19,9 @@ import {
     CaseTypeSelect,
     CaseWorkOrderRefInput,
     capabilitiesForMode,
+    ServiceCenterRetryButton,
     useCaseTypeForm,
+    useResolveServiceCenter,
     useServiceCenterMatch,
 } from "./formFields";
 import type { CaseFormCapabilities } from "./formFields";
@@ -106,10 +109,38 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
         enabled: !lockArea,
     });
 
-    // On a single unambiguous match, adopt that Service Center and lock the
-    // field. Zero or multiple matches leave the field manually selectable and
-    // hand the map a radius circle instead.
-    const isAreaAutoLocked = autoLockedArea || serviceCenterMatch.status === "matched";
+    // REQ 2: when the polygon match comes back `no-match`, "Try Again" asks the
+    // (stubbed) backend to pick a Service Center instead. Tracked separately
+    // from serviceCenterMatch so a successful backend resolution locks the
+    // field the same way a polygon match does, and resets once the pin moves
+    // again - a fresh incident gets its own resolution, not the last one's.
+    const [backendResolvedAreaId, setBackendResolvedAreaId] = useState<string | null>(null);
+    useEffect(() => {
+        setBackendResolvedAreaId(null);
+    }, [incidentKey]);
+    const handleBackendResolved = useCallback((resolved: Area) => {
+        setBackendResolvedAreaId(resolved.id);
+        onCaseChange({ area: resolved });
+    }, [onCaseChange]);
+    const serviceCenterResolve = useResolveServiceCenter(areaList, handleBackendResolved);
+
+    // On a single unambiguous match (polygon or backend fallback), adopt that
+    // Service Center and lock the field. Zero or multiple polygon matches with
+    // no backend resolution yet leave the field manually selectable and hand
+    // the map a radius circle instead.
+    const isAreaAutoLocked =
+        autoLockedArea ||
+        serviceCenterMatch.status === "matched" ||
+        (backendResolvedAreaId !== null && caseState?.area?.id === backendResolvedAreaId);
+
+    const showServiceCenterRetry = !lockArea && !isAreaAutoLocked && serviceCenterMatch.status === "no-match";
+
+    // Assignment/edit-only: scope the boundary picker to the dispatcher's own
+    // districts (REQ 5), and auto-show the matched Service Center's district
+    // even though the map otherwise starts fully manual (REQ 4). The create
+    // screen has no "area of responsibility" concept, so both stay unset there.
+    const authorizedDistrictIds = useAuthorizedDistrictIds();
+    const autoShowDistrictCode = !isCreate ? serviceCenterMatch.matchedArea?.distId ?? null : null;
 
     useEffect(() => {
         const matched = serviceCenterMatch.matchedArea;
@@ -172,13 +203,22 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
 
             {/* Service Center, Customer and Location */}
             <div className="xl:grid grid-cols-2">
-                <CaseAreaSelect
-                    caseState={caseState}
-                    onCaseChange={onCaseChange}
-                    areaList={areaList}
-                    disabled={lockArea || isAreaAutoLocked}
-                    autoLocked={isAreaAutoLocked && !lockArea}
-                />
+                <div>
+                    <CaseAreaSelect
+                        caseState={caseState}
+                        onCaseChange={onCaseChange}
+                        areaList={areaList}
+                        disabled={lockArea || isAreaAutoLocked}
+                        autoLocked={isAreaAutoLocked && !lockArea}
+                    />
+                    {showServiceCenterRetry && (
+                        <ServiceCenterRetryButton
+                            status={serviceCenterResolve.status}
+                            isDisabled={serviceCenterResolve.isDisabled}
+                            onRetry={serviceCenterResolve.retry}
+                        />
+                    )}
+                </div>
                 <CaseCustomerSection
                     caseState={caseState}
                     onCaseChange={onCaseChange}
@@ -188,6 +228,9 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
                     caseState={caseState}
                     onCaseChange={onCaseChange}
                     incidentRadius={serviceCenterMatch.incidentRadius}
+                    manualOnly
+                    authorizedDistrictIds={!isCreate ? authorizedDistrictIds : undefined}
+                    autoShowDistrictCode={autoShowDistrictCode}
                 />
             </div>
 

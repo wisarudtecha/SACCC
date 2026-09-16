@@ -3788,6 +3788,8 @@
       "service_center": "Service Center",
       "select_service_center": "Select Service Center",
       "service_center_auto": "Selected automatically from the incident location on the map",
+      "service_center_retry": "Try Again",
+      "service_center_resolving": "Please wait…",
       "area": "Event Area",
       "area_placeholder": "Enter Location",
       "location_coordinates": "Coordinates",
