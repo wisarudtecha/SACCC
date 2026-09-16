@@ -1,4 +1,10 @@
 {
+  "0.80.0": {
+    "date": "2026-09-16",
+    "segment": "MINOR",
+    "notes": "feat(cms): regenerate the cached area tree after admin edits\n- After adding, editing or deleting a country, province or district in Area Management, that country is now marked as having changes not yet reflected everywhere the area list is used, with a Generate button to refresh it whenever it's convenient.\n- Deleting a country now offers to refresh its area data right away, since the country itself is no longer there to show the reminder.\n- Country, Province and District forms now mark which fields are required.\n- changelog.json / package.json: bump version 0.79.1 -> 0.80.0",
+    "author": "Wisarud Techa"
+  },
   "0.79.1": {
     "date": "2026-09-16",
     "segment": "PATCH",
