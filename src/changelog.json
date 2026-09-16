@@ -1,4 +1,10 @@
 {
+  "0.79.1": {
+    "date": "2026-09-16",
+    "segment": "PATCH",
+    "notes": "refactor(cms): tidy up the map's Place and Device layer controls\n- The Place and Device buttons on the case map now open a dropdown list of categories instead of a row of buttons, so the toolbar stays a consistent width as more categories are added.\n- changelog.json / package.json: bump version 0.79.0 -> 0.79.1",
+    "author": "Wisarud Techa"
+  },
   "0.79.0": {
     "date": "2026-09-16",
     "segment": "MINOR",
