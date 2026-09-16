@@ -1,4 +1,10 @@
 {
+  "0.79.0": {
+    "date": "2026-09-16",
+    "segment": "MINOR",
+    "notes": "feat(cms): scope the case-assignment map to the dispatcher's area and add a Service Center retry option\n- On the case assignment and edit screens, the location map now starts with its boundary layers hidden, and for dispatchers with an assigned area of responsibility, only shows the districts (and their provinces/countries) they're authorized to work in. The Service Center's matched district is still shown automatically.\n- When the incident location doesn't fall clearly inside one Service Center area, a \"Try Again\" option now asks the system to pick one instead of leaving the field to be chosen manually with no other option.\n- changelog.json / package.json: bump version 0.78.0 -> 0.79.0",
+    "author": "Wisarud Techa"
+  },
   "0.78.0": {
     "date": "2026-09-15",
     "segment": "MINOR",
