@@ -24,11 +24,17 @@ const area = (overrides: Partial<Area>): Area => ({
   ...overrides
 });
 
-const district = (distId: string, ring: number[][]): Partial<AreaDistrict> => ({
+const district = (
+  distId: string,
+  ring: number[][],
+  overrides: Partial<AreaDistrict> = {}
+): Partial<AreaDistrict> => ({
   countryId: "TH",
   provId: "10",
   distId,
-  coordinates: [ring]
+  active: true,
+  coordinates: [ring],
+  ...overrides
 });
 
 const SQUARE_A = [
@@ -105,6 +111,26 @@ describe("resolveServiceCenterMatch", () => {
 
     expect(result.status).toBe("no-match");
     expect(result.incidentRadius?.radiusMeters).toBe(900);
+  });
+
+  it("matches on a duplicate Area row for the same Service Center (same id, differing only by a stale label)", () => {
+    // Real-world case: /area/country_province_districts returned the same
+    // Service Center twice with different provinceEn casing ("Bangkok1" vs
+    // "BANGKOK") but the same `id`. This must resolve as one match, not an
+    // ambiguous one.
+    const canonical = area({ id: "166", distId: "1001", provinceEn: "Bangkok1" });
+    const duplicateLabel = area({ id: "166", distId: "1001", provinceEn: "BANGKOK" });
+    const polygonByKey = buildDistrictPolygonIndex([district("1001", SQUARE_A)]);
+
+    const result = resolveServiceCenterMatch({
+      incident: INSIDE_A,
+      areaList: [canonical, duplicateLabel],
+      polygonByKey,
+      radiusMeters: 900
+    });
+
+    expect(result.status).toBe("matched");
+    expect(result.matchedArea?.id).toBe("166");
   });
 
   it("ignores Area rows whose district has no geometry", () => {
@@ -203,6 +229,59 @@ describe("resolveServiceCenterMatch", () => {
 
     expect(result.status).toBe("matched");
     expect(result.matchedArea?.id).toBe("A");
+  });
+
+  it("excludes an inactive Area even when its polygon contains the incident", () => {
+    const retiredArea = area({ id: "A", distId: "1001", districtActive: false });
+    const polygonByKey = buildDistrictPolygonIndex([district("1001", SQUARE_A)]);
+
+    const result = resolveServiceCenterMatch({
+      incident: INSIDE_A,
+      areaList: [retiredArea],
+      polygonByKey,
+      radiusMeters: 900
+    });
+
+    // A deactivated Service Center must never be silently adopted.
+    expect(result.status).toBe("no-match");
+    expect(result.matchedArea).toBeNull();
+  });
+
+  it("excludes an inactive district row from the polygon index, even for an active Area", () => {
+    const areaA = area({ id: "A", distId: "1001" });
+    const polygonByKey = buildDistrictPolygonIndex([district("1001", SQUARE_A, { active: false })]);
+
+    const result = resolveServiceCenterMatch({
+      incident: INSIDE_A,
+      areaList: [areaA],
+      polygonByKey,
+      radiusMeters: 900
+    });
+
+    // The active Area has no geometry of its own to borrow from the retired row.
+    expect(result.status).toBe("no-match");
+  });
+
+  it("matches the active district when an old, retired boundary overlaps it at the same point", () => {
+    const retiredArea = area({ id: "OLD", distId: "1001", districtActive: false });
+    const activeArea = area({ id: "NEW", distId: "1002" });
+    // Both districts carry the same footprint (the org redrew 1001 as 1002
+    // without deleting the old row), so a naive containment test would see two
+    // matches and fall back to no-match. Only the active one should count.
+    const polygonByKey = buildDistrictPolygonIndex([
+      district("1001", SQUARE_A, { active: false }),
+      district("1002", SQUARE_A)
+    ]);
+
+    const result = resolveServiceCenterMatch({
+      incident: INSIDE_A,
+      areaList: [retiredArea, activeArea],
+      polygonByKey,
+      radiusMeters: 900
+    });
+
+    expect(result.status).toBe("matched");
+    expect(result.matchedArea?.id).toBe("NEW");
   });
 
   it("composes both suppressions: no lock and no circle", () => {

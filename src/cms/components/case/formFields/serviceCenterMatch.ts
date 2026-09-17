@@ -42,7 +42,12 @@ export function buildDistrictPolygonIndex(
 ): Map<string, PolygonCoordinates> {
   const index = new Map<string, PolygonCoordinates>();
   rows.forEach(row => {
-    if (row?.distId && Array.isArray(row.coordinates) && row.coordinates.length > 0) {
+    if (
+      row?.distId &&
+      row.active !== false &&
+      Array.isArray(row.coordinates) &&
+      row.coordinates.length > 0
+    ) {
       index.set(districtKey(row), row.coordinates);
     }
   });
@@ -80,12 +85,19 @@ export function resolveServiceCenterMatch({
   const point: [number, number] = [incident.longitude, incident.latitude];
 
   const containing = areaList.filter(area => {
+    if (area.districtActive === false) return false;
     const rings = polygonByKey.get(districtKey(area));
     return rings ? isPointInPolygon(point, rings) : false;
   });
 
-  if (containing.length === 1 && autoLockOnMatch) {
-    return { status: "matched", matchedArea: containing[0], incidentRadius: null };
+  // The upstream area listing can carry duplicate rows for the same Service
+  // Center (same `id`, e.g. differing only by a stale label casing) - collapse
+  // those before judging ambiguity, so a duplicate row never masks an
+  // otherwise-unambiguous match.
+  const uniqueContaining = [...new Map(containing.map(a => [a.id, a])).values()];
+
+  if (uniqueContaining.length === 1 && autoLockOnMatch) {
+    return { status: "matched", matchedArea: uniqueContaining[0], incidentRadius: null };
   }
 
   return {
