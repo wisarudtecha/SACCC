@@ -182,7 +182,7 @@ export interface UnitQueryParams {
 }
 
 // export type UnitUpdateData = Omit<Unit, keyof BaseEntity>;
-export type UnitUpdateData = Omit<UnitFormData, keyof BaseEntity>;
+export type UnitUpdateData = Omit<UnitFormData, keyof BaseEntity | "orgId">;
 
 export type ViewMode = "overview" | "hierarchy" | "performance" | "matrix";
 export type DisplayMode = "cards" | "table";

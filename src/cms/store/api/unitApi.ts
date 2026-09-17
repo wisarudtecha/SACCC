@@ -43,12 +43,26 @@ export const unitApi = baseApi.injectEndpoints({
       providesTags: (_result, _error, id) => [{ type: "Unit", id }],
     }),
 
+    // The BFF rejects unit updates that echo back read-only/audit fields, so strip them
+    // here regardless of what the caller's `data` object actually carries at runtime -
+    // UnitForm.tsx seeds its form state from a full `Unit` record, which still has these
+    // fields even though UnitUpdateData's type no longer declares them.
     updateUnits: builder.mutation<ApiResponse<Unit>, { id: number; data: UnitUpdateData }>({
-      query: ({ id, data }) => ({
-        url: `/mdm/units/${id}`,
-        method: "PATCH",
-        body: data,
-      }),
+      query: ({ id, data }) => {
+        const {
+          orgId: _orgId,
+          createdAt: _createdAt,
+          updatedAt: _updatedAt,
+          createdBy: _createdBy,
+          updatedBy: _updatedBy,
+          ...body
+        } = data as UnitUpdateData & Partial<Pick<Unit, "orgId" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy">>;
+        return {
+          url: `/mdm/units/${id}`,
+          method: "PATCH",
+          body,
+        };
+      },
       invalidatesTags: (_result, _error, { id }) => [{ type: "Unit", id }],
     }),
 

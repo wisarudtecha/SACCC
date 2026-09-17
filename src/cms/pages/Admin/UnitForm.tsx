@@ -89,8 +89,16 @@ const UnitFormPage: React.FC = () => {
       let response;
       if (permissions.hasAnyPermission(["unit.create", "unit.update"])) {
         if (id) {
+          const {
+            orgId: _orgId,
+            createdAt: _createdAt,
+            updatedAt: _updatedAt,
+            createdBy: _createdBy,
+            updatedBy: _updatedBy,
+            ...cleanData
+          } = data as UnitFormData & Partial<Pick<Unit, "orgId" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy">>;
           response = await updateUnits({
-            id: id, data: data
+            id: id, data: cleanData
           }).unwrap();
         }
         else {
