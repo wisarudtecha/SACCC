@@ -1,4 +1,10 @@
 {
+  "0.80.1": {
+    "date": "2026-09-17",
+    "segment": "PATCH",
+    "notes": "fix(cms): case map and Service Center accuracy fixes\n- Service Centers that have been retired are no longer picked automatically for a case, even if their old map boundary still overlaps the incident location.\n- Fixed a case where the same Service Center could be reported as \"no match\" instead of being selected automatically, when the area list contained a duplicate entry for it.\n- Fixed a rare case where a nearby area's boundary could be drawn on the case map instead of the correct one.\n- The boundary layers control on the case map now matches the look of the other map buttons.\n- Fixed unit records sometimes failing to save when edited, due to extra internal information being sent along with the update.\n- changelog.json / package.json: bump version 0.80.0 -> 0.80.1",
+    "author": "Wisarud Techa"
+  },
   "0.80.0": {
     "date": "2026-09-16",
     "segment": "MINOR",
