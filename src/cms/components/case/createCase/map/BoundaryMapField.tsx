@@ -85,11 +85,13 @@ interface BoundaryMapFieldProps {
   extraOverlaySlot?: MapSlot;
   onExpandedChange?: (isExpanded: boolean) => void;
   /**
-   * Start every boundary level hidden and unselected instead of the historical
-   * one-level auto-default. The case create/assignment screens pass this so
-   * layers and polygons only appear once the dispatcher explicitly asks for
-   * them; other consumers (e.g. the read-only Case Preview map) omit it and
-   * keep today's behavior.
+   * Start every boundary level unselected, and every level but District
+   * hidden, instead of the historical one-level auto-default. The case
+   * create/assignment screens pass this so polygons only appear once the
+   * dispatcher explicitly asks for them - District starts as the active
+   * level, but with nothing checked under it yet, so nothing draws until a
+   * selection is made. Other consumers (e.g. the read-only Case Preview map)
+   * omit it and keep today's behavior.
    */
   manualOnly?: boolean;
   /**
@@ -216,8 +218,10 @@ function BoundaryMapFieldBase({
             onOpenPicker={boundary.openPanel}
             isPickerOpen={boundary.isPanelOpen}
             showPicker={context.isExpanded}
-            collapsible={!context.isExpanded}
+            asDropdown={!context.isExpanded}
           />
+          {/* The master toggle works at both sizes; only the category
+              checklist (a dropdown that needs real room) is large-map-only. */}
           {showPlaceButton && (
             <MapPlaceButton
               isActive={showPlace}
@@ -226,6 +230,7 @@ function BoundaryMapFieldBase({
               onToggleCategory={togglePlaceCategory}
               notice={placeNotice}
               compact={!context.isExpanded}
+              showCategoryDropdown={context.isExpanded}
             />
           )}
           {showDeviceButton && (
@@ -236,6 +241,7 @@ function BoundaryMapFieldBase({
               onToggleCategory={toggleDeviceCategory}
               notice={deviceNotice}
               compact={!context.isExpanded}
+              showCategoryDropdown={context.isExpanded}
             />
           )}
         </div>

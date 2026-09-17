@@ -36,8 +36,8 @@ const ZERO_BOUNDS: DeviceBoundsRequest = { minLat: 0, minLon: 0, maxLat: 0, maxL
 
 type CategoryVisibility = Record<DeviceCategory, boolean>;
 
-const ALL_CATEGORIES_VISIBLE: CategoryVisibility = DEVICE_CATEGORIES.reduce(
-  (visibility, category) => ({ ...visibility, [category]: true }),
+const ALL_CATEGORIES_HIDDEN: CategoryVisibility = DEVICE_CATEGORIES.reduce(
+  (visibility, category) => ({ ...visibility, [category]: false }),
   {} as CategoryVisibility
 );
 
@@ -82,11 +82,12 @@ export function useDeviceLayer({
   const { t } = useTranslation();
   const isMock = DEV_CONFIG.MOCK_API;
 
-  // Reset every mount (ticket Decision 6): layer hidden, every category visible,
+  // Reset every mount (ticket Decision 6): layer hidden, every category
+  // unchecked too (mirrors the Boundaries picker's nothing-selected default),
   // nothing selected, nothing persisted.
   const [showDevice, setShowDevice] = useState(false);
   const [categoryVisibility, setCategoryVisibility] =
-    useState<CategoryVisibility>(ALL_CATEGORIES_VISIBLE);
+    useState<CategoryVisibility>(ALL_CATEGORIES_HIDDEN);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
   const [bounds, setBounds] = useState<DeviceBoundsRequest | null>(null);
 

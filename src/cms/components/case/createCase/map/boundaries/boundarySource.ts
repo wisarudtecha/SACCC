@@ -267,8 +267,9 @@ function buildOrgLevels(trees: readonly AreaCountryTree[]): OrgLevelDataByLevel 
   const districts: OrgNodeInput[] = [];
 
   trees.filter(isActive).forEach((country) => {
+    const countryCode = country.countryId;
     countries.push({
-      code: country.countryId,
+      code: countryCode,
       parent: null,
       en: country.en,
       th: country.th,
@@ -276,9 +277,18 @@ function buildOrgLevels(trees: readonly AreaCountryTree[]): OrgLevelDataByLevel 
     });
 
     (country.provinces || []).filter(isActive).forEach((province: AreaTreeProvinceNode) => {
+      // provId/distId are only unique within their immediate parent (the same
+      // lesson as serviceCenterMatch.ts's districtKey) - namespace every
+      // level's code by its full lineage so two different areas that happen to
+      // share a raw id never collide as the same BoundaryOption/React key, and
+      // so buildDefinitionExpression (which filters purely by this code value)
+      // can never draw the wrong one. The FeatureCollection's own CODE/PARENT
+      // properties are built from this same value below, so the two stay in
+      // lockstep automatically.
+      const provinceCode = `${countryCode}_${province.provId}`;
       provinces.push({
-        code: province.provId,
-        parent: country.countryId,
+        code: provinceCode,
+        parent: countryCode,
         en: province.en,
         th: province.th,
         coordinates: province.coordinates
@@ -286,8 +296,8 @@ function buildOrgLevels(trees: readonly AreaCountryTree[]): OrgLevelDataByLevel 
 
       (province.districts || []).filter(isActive).forEach((district) => {
         districts.push({
-          code: district.distId,
-          parent: province.provId,
+          code: `${provinceCode}_${district.distId}`,
+          parent: provinceCode,
           en: district.en,
           th: district.th,
           coordinates: district.coordinates

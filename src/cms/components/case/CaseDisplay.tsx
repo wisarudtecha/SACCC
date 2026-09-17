@@ -16,6 +16,7 @@ import type { StaffAssignmentOverlay } from "./createCase/map/staff/CaseStaffMap
 import { useServiceCenterMatch } from "./formFields";
 import { readCachedAreas } from "./caseFormOptions";
 import { useAuthorizedDistrictIds } from "@/core/hooks/useAuthorizedDistrictIds";
+import { buildDistrictBoundaryCode } from "./createCase/map/boundaries/boundaryLevels";
 
 // Heavy @arcgis/core SDK - lazy-loaded so it stays out of the initial bundle.
 // BoundaryMapField rather than the bare map: this is the small map in the Case
@@ -86,7 +87,9 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
     // Both are no-ops on the plain (non-staffOverlay) branch below, which is
     // not passed either prop.
     const authorizedDistrictIds = useAuthorizedDistrictIds();
-    const autoShowDistrictCode = serviceCenterMatch.matchedArea?.distId ?? null;
+    const autoShowDistrictCode = serviceCenterMatch.matchedArea
+        ? buildDistrictBoundaryCode(serviceCenterMatch.matchedArea)
+        : null;
 
 
     return (

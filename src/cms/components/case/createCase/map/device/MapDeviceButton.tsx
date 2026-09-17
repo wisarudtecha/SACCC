@@ -27,6 +27,8 @@ interface MapDeviceButtonProps {
   notice?: string;
   /** Collapse to a single icon until hovered/focused/clicked (small inline maps). */
   compact?: boolean;
+  /** Show the category dropdown. Off on the small inline maps (large-map-only). */
+  showCategoryDropdown?: boolean;
   /** Positioning classes; the caller places the control over the map. */
   className?: string;
 }
@@ -38,6 +40,7 @@ function MapDeviceButtonBase({
   onToggleCategory,
   notice,
   compact = false,
+  showCategoryDropdown = true,
   className = ""
 }: MapDeviceButtonProps) {
   const { t } = useTranslation();
@@ -66,6 +69,7 @@ function MapDeviceButtonBase({
       onToggleCategory={onToggleCategory}
       notice={notice}
       compact={compact}
+      showCategoryDropdown={showCategoryDropdown}
       className={className}
     />
   );

@@ -29,6 +29,8 @@ interface MapPlaceButtonProps {
    * inline maps, where a labelled button covers the map it belongs to.
    */
   compact?: boolean;
+  /** Show the category dropdown. Off on the small inline maps (large-map-only). */
+  showCategoryDropdown?: boolean;
   /** Positioning classes; the caller places the control over the map. */
   className?: string;
 }
@@ -40,6 +42,7 @@ function MapPlaceButtonBase({
   onToggleCategory,
   notice,
   compact = false,
+  showCategoryDropdown = true,
   className = ""
 }: MapPlaceButtonProps) {
   const { t } = useTranslation();
@@ -68,6 +71,7 @@ function MapPlaceButtonBase({
       onToggleCategory={onToggleCategory}
       notice={notice}
       compact={compact}
+      showCategoryDropdown={showCategoryDropdown}
       className={className}
     />
   );

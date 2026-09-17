@@ -222,11 +222,32 @@ export function outFieldsFor(config: BoundaryLevelConfig): string[] {
 
 /**
  * Codes are data-file strings, but this builds SQL that the layer executes, so
- * treat them as untrusted anyway and drop anything that is not alphanumeric. A
- * stray quote would otherwise break the expression.
+ * treat them as untrusted anyway and drop anything that is not alphanumeric
+ * (plus `_`, the lineage separator boundarySource.ts's buildOrgLevels codes
+ * with - e.g. "TH_10_1002" - which has to survive alongside the alphanumerics
+ * it namespaces). A stray quote would otherwise break the expression.
  */
 function sanitiseCode(code: string): string {
-  return code?.replace(/[^a-zA-Z0-9]/g, "");
+  return code?.replace(/[^a-zA-Z0-9_]/g, "");
+}
+
+/**
+ * The composite code a district's BoundaryOption carries under the org source
+ * (see boundarySource.ts's buildOrgLevels) - callers outside the map that only
+ * have the business ids (e.g. the Service Center auto-show wiring) need this
+ * to build the SAME code, not just the raw distId, since district codes are
+ * namespaced by full lineage (distId alone is not unique across provinces -
+ * the same reasoning as serviceCenterMatch.ts's districtKey). Falls back to
+ * the bare distId under the local source, which never lineage-prefixes.
+ */
+export function buildDistrictBoundaryCode(area: {
+  countryId: string;
+  provId: string;
+  distId: string;
+}): string {
+  return API_CONFIG.BOUNDARY_SOURCE === "local"
+    ? area.distId
+    : `${area.countryId}_${area.provId}_${area.distId}`;
 }
 
 /**

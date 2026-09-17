@@ -38,6 +38,13 @@ interface MapLayerDropdownButtonProps<TCategory extends string> {
    * on the small inline maps, where a labelled control covers the map itself.
    */
   compact?: boolean;
+  /**
+   * Show the dropdown trigger + category checklist. Off on the small inline
+   * maps: the master toggle still works there, but a full category list needs
+   * more room than a small map's toolbar row has to spare - that panel is a
+   * large-map-only feature. Defaults to `true`.
+   */
+  showCategoryDropdown?: boolean;
   /** Positioning classes; the caller places the control over the map. */
   className?: string;
 }
@@ -53,6 +60,7 @@ function MapLayerDropdownButtonInner<TCategory extends string>({
   onToggleCategory,
   notice,
   compact = false,
+  showCategoryDropdown = true,
   className = ""
 }: MapLayerDropdownButtonProps<TCategory>) {
   const [isOpen, setIsOpen] = useState(false);
@@ -110,47 +118,51 @@ function MapLayerDropdownButtonInner<TCategory extends string>({
 
         {/* Dropdown trigger - opens the category list. `dropdown-toggle` is
             required by Dropdown's outside-click handler, same as BasemapSwitcher. */}
-        <button
-          type="button"
-          onClick={toggleMenu}
-          title={label}
-          aria-label={label}
-          aria-haspopup="true"
-          aria-expanded={isOpen}
-          className="dropdown-toggle flex items-center rounded-md bg-white/90 px-1.5 py-1 text-xs text-gray-700 shadow-sm transition-colors hover:bg-white dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800"
-        >
-          <ChevronDown className="h-3.5 w-3.5 shrink-0" />
-        </button>
+        {showCategoryDropdown && (
+          <button
+            type="button"
+            onClick={toggleMenu}
+            title={label}
+            aria-label={label}
+            aria-haspopup="true"
+            aria-expanded={isOpen}
+            className="dropdown-toggle flex items-center rounded-md bg-white/90 px-1.5 py-1 text-xs text-gray-700 shadow-sm transition-colors hover:bg-white dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800"
+          >
+            <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+          </button>
+        )}
       </div>
 
-      <Dropdown isOpen={isOpen} onClose={closeMenu} className="top-full w-48 p-1">
-        {categories.map((category) => {
-          const [r, g, b] = category.rgb;
-          const on = categoryVisibility[category.value];
-          return (
-            <DropdownItem
-              key={category.value}
-              tag="button"
-              onItemClick={() => onToggleCategory(category.value)}
-              baseClassName={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                on
-                  ? "bg-gray-100 font-medium text-gray-900 dark:bg-white/10 dark:text-white"
-                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white"
-              }`}
-            >
-              <span className="flex items-center gap-2">
-                <span
-                  aria-hidden
-                  className="inline-block h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-black/10"
-                  style={{ backgroundColor: `rgb(${r}, ${g}, ${b})` }}
-                />
-                {category.label}
-              </span>
-              {on && <Check className="h-4 w-4 shrink-0" />}
-            </DropdownItem>
-          );
-        })}
-      </Dropdown>
+      {showCategoryDropdown && (
+        <Dropdown isOpen={isOpen} onClose={closeMenu} className="top-full w-48 p-1">
+          {categories.map((category) => {
+            const [r, g, b] = category.rgb;
+            const on = categoryVisibility[category.value];
+            return (
+              <DropdownItem
+                key={category.value}
+                tag="button"
+                onItemClick={() => onToggleCategory(category.value)}
+                baseClassName={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                  on
+                    ? "bg-gray-100 font-medium text-gray-900 dark:bg-white/10 dark:text-white"
+                    : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white"
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <span
+                    aria-hidden
+                    className="inline-block h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-black/10"
+                    style={{ backgroundColor: `rgb(${r}, ${g}, ${b})` }}
+                  />
+                  {category.label}
+                </span>
+                {on && <Check className="h-4 w-4 shrink-0" />}
+              </DropdownItem>
+            );
+          })}
+        </Dropdown>
+      )}
 
       {/* Layer status line. Hidden while the dropdown is open so the two never
           overlap - both anchor to the same top-full edge. */}

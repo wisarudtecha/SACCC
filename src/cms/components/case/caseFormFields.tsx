@@ -5,6 +5,7 @@ import { Customer } from "@/cms/store/api/custommerApi";
 import { CaseDetails, CaseTypeSubType } from "@/cms/types/case";
 import { TodayLocalDate } from "@/cms/components/date/DateToString";
 import { readCachedAreas, readCachedCaseTypeSubTypes, readCachedCustomers } from "./caseFormOptions";
+import { buildDistrictBoundaryCode } from "./createCase/map/boundaries/boundaryLevels";
 import {
     CaseAreaSelect,
     CaseAttachmentsSection,
@@ -140,7 +141,9 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
     // even though the map otherwise starts fully manual (REQ 4). The create
     // screen has no "area of responsibility" concept, so both stay unset there.
     const authorizedDistrictIds = useAuthorizedDistrictIds();
-    const autoShowDistrictCode = !isCreate ? serviceCenterMatch.matchedArea?.distId ?? null : null;
+    const autoShowDistrictCode = !isCreate && serviceCenterMatch.matchedArea
+        ? buildDistrictBoundaryCode(serviceCenterMatch.matchedArea)
+        : null;
 
     useEffect(() => {
         const matched = serviceCenterMatch.matchedArea;

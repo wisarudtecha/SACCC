@@ -70,7 +70,7 @@ function BoundaryPickerPanelBase({
         // Scrolls as a whole as well as per section: three expanded sections are
         // taller than the panel's share of the map.
         <div className="min-h-0 flex-1 overflow-y-auto">
-          {BOUNDARY_LEVELS.map(({ level, labelKey, defaultVisible }) => (
+          {BOUNDARY_LEVELS.map(({ level, labelKey }) => (
             <BoundaryLevelSection
               key={level}
               level={level}
@@ -80,9 +80,13 @@ function BoundaryPickerPanelBase({
               onToggleCode={onToggleCode}
               onSetCodes={onSetCodes}
               isDarkTheme={isDarkTheme}
-              // The default-visible level is the only one drawn when the panel
-              // opens, so it is the one worth expanding.
-              defaultOpen={defaultVisible}
+              // The coarsest level is the natural starting point for narrowing
+              // down to an area - independent of useBoundarySelection's
+              // default-VISIBLE level (which controls what draws on the map,
+              // not which picker section opens first). BOUNDARY_LEVELS is
+              // documented as ordered coarsest-first, so its first entry is
+              // "country" for the org table, "province" for the local one.
+              defaultOpen={level === BOUNDARY_LEVELS[0].level}
             />
           ))}
         </div>

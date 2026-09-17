@@ -26,8 +26,8 @@ const PLACE_FETCH_LIMIT = 1000;
 
 type CategoryVisibility = Record<PlaceCategory, boolean>;
 
-const ALL_CATEGORIES_VISIBLE: CategoryVisibility = PLACE_CATEGORIES.reduce(
-  (visibility, category) => ({ ...visibility, [category]: true }),
+const ALL_CATEGORIES_HIDDEN: CategoryVisibility = PLACE_CATEGORIES.reduce(
+  (visibility, category) => ({ ...visibility, [category]: false }),
   {} as CategoryVisibility
 );
 
@@ -52,11 +52,12 @@ export function usePlaceLayer(): UsePlaceLayerResult {
   const { language, t } = useTranslation();
   const { data, isLoading, isError } = useGetPlacesQuery({ start: 0, length: PLACE_FETCH_LIMIT });
 
-  // Reset every time (ticket Decision 6): the layer starts hidden, every category
-  // starts visible, nothing persists across mounts.
+  // Reset every time (ticket Decision 6): the layer starts hidden, every
+  // category starts unchecked too (mirrors the Boundaries picker's
+  // nothing-selected default), nothing persists across mounts.
   const [showPlace, setShowPlace] = useState(false);
   const [categoryVisibility, setCategoryVisibility] =
-    useState<CategoryVisibility>(ALL_CATEGORIES_VISIBLE);
+    useState<CategoryVisibility>(ALL_CATEGORIES_HIDDEN);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
 
   const allMarkers = useMemo(() => toPlaceMarkers(data?.data, language), [data, language]);

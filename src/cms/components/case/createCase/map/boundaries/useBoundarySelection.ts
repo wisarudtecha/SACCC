@@ -44,13 +44,18 @@ const DEFAULT_VISIBILITY: BoundaryVisibility = BOUNDARY_LEVELS.reduce<BoundaryVi
 );
 
 /**
- * Every level off. Used instead of DEFAULT_VISIBILITY when the caller asks
- * for manual-only defaults (case create/assignment - see `startAllHidden`).
+ * Every level off except District. Used instead of DEFAULT_VISIBILITY when the
+ * caller asks for manual-only defaults (case create/assignment - see
+ * `startAllHidden`). District starts as the active level so the toolbar isn't
+ * presented with nothing selected, but - unlike DEFAULT_VISIBILITY, which also
+ * pre-selects every area under its default level (see `selectAll` below) -
+ * nothing is pre-checked under it: `applied`/`draft` still start empty, so no
+ * polygon draws until the dispatcher actually picks areas.
  */
-const ALL_HIDDEN_VISIBILITY: BoundaryVisibility = {
+const MANUAL_DEFAULT_VISIBILITY: BoundaryVisibility = {
   country: false,
   province: false,
-  district: false,
+  district: true,
   subdistrict: false
 };
 
@@ -60,11 +65,12 @@ const EMPTY_OPTIONS: OptionsByLevel = EMPTY_BOUNDARY_INDEX;
 
 export interface UseBoundarySelectionOptions {
   /**
-   * Start every level hidden and unselected instead of the one
-   * `defaultVisible` level with everything under it selected. The case
-   * create/assignment screens pass this so no polygon appears until the user
-   * has explicitly asked for it (REQ 3/4) - other BoundaryMapField consumers
-   * (e.g. the read-only Case Preview map) keep the historical auto-default.
+   * Start every level unselected, and every level but District hidden,
+   * instead of the one `defaultVisible` level with everything under it
+   * selected. The case create/assignment screens pass this so no polygon
+   * appears until the user has explicitly asked for it (REQ 3/4) - other
+   * BoundaryMapField consumers (e.g. the read-only Case Preview map) keep the
+   * historical auto-default.
    */
   startAllHidden?: boolean;
   /**
@@ -180,7 +186,7 @@ export function useBoundarySelection(
   const [applied, setApplied] = useState<BoundarySelection>(EMPTY_BOUNDARY_SELECTION);
   const [draft, setDraft] = useState<BoundarySelection>(EMPTY_BOUNDARY_SELECTION);
   const [visibility, setVisibility] = useState<BoundaryVisibility>(
-    startAllHidden ? ALL_HIDDEN_VISIBILITY : DEFAULT_VISIBILITY
+    startAllHidden ? MANUAL_DEFAULT_VISIBILITY : DEFAULT_VISIBILITY
   );
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
@@ -188,8 +194,9 @@ export function useBoundarySelection(
   // rather than an empty map the user has to go and populate by hand. Clearing
   // a level is then an explicit act, and "cleared" genuinely means "draw none"
   // (see buildDefinitionExpression). Under `startAllHidden` nothing starts
-  // selected either - every level is off, so there is nothing to draw until
-  // the dispatcher turns one on and picks areas.
+  // selected either - District is the one level switched on, but with no areas
+  // checked under it, so there is nothing to draw until the dispatcher picks
+  // some.
   useEffect(() => {
     let isStale = false;
     boundarySource.loadIndex().then((loaded) => {
