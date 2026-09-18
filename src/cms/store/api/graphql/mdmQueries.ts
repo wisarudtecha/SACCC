@@ -129,55 +129,9 @@ const DELETE_MDM_PROPERTY_MUTATION = {
   mutation: true
 };
 
-// ─── Place Queries / Mutations ───────────────────────────────────────────────
-// PROVISIONAL: no Postman collection or BFF schema doc exists in this repo for
-// the Place domain (org-curated facilities: Police Station / Hospital / Fire
-// Station). operationName / root / inputType below follow the MdmProperty
-// convention above and MUST be confirmed against the real BFF schema before
-// ship. Registered now because every environment runs VITE_USE_GRAPHQL="true"
-// with NO REST fallback (hybridBaseQuery.ts) - without a mapping, every
-// /mdm/places call is a hard error. Same status as deviceIoTQueries.ts and the
-// Org Map Settings block in organizationQueries.ts.
-
-const GET_LIST_MDM_PLACE_QUERY = {
-  operationName: "GetListMdmPlace",
-  root: "MdmPlace",
-  inputType: "ListDataInput!",
-  fields: `status msg data desc`
-};
-
-const GET_MDM_PLACE_BY_ID_QUERY = {
-  operationName: "GetMdmPlaceById",
-  root: "MdmPlace",
-  inputType: "GetIdInput!",
-  fields: `status msg data desc`
-};
-
-const CREATE_MDM_PLACE_MUTATION = {
-  operationName: "CreateMdmPlace",
-  root: "MdmPlace",
-  inputType: "MdmPlaceInput!",
-  fields: `status msg data desc`,
-  mutation: true
-};
-
-const UPDATE_MDM_PLACE_MUTATION = {
-  operationName: "UpdateMdmPlace",
-  root: "MdmPlace",
-  inputType: "MdmPlaceInput!",
-  fields: `status msg data desc`,
-  mutation: true
-};
-
-const DELETE_MDM_PLACE_MUTATION = {
-  operationName: "DeleteMdmPlace",
-  root: "MdmPlace",
-  inputType: "GetIdInput!",
-  fields: `status msg data desc`,
-  mutation: true
-};
-
 // ─── Registration Map ─────────────────────────────────────────────────────────
+// Place moved to its own file: src/cms/store/api/graphql/placeQueries.ts
+// (GQL_PLACE) - confirmed root is "Place", not "MdmPlace".
 
 export const GQL_MDM = {
   "/mdm/properties": GET_LIST_MDM_PROPERTIES_QUERY,
@@ -188,18 +142,6 @@ export const GQL_MDM = {
     DELETE: DELETE_MDM_PROPERTY_MUTATION,
   },
   "/mdm/status": GET_LIST_MDM_STATUS_QUERY,
-
-  // Place - provisional, see the "Place Queries / Mutations" note above. Bare
-  // "/mdm/places" for the list is safe: create POSTs to the distinct
-  // "/mdm/places/add" key, so it never resolves to the list query (unlike the
-  // /store and /product collection-create gotcha).
-  "/mdm/places": GET_LIST_MDM_PLACE_QUERY,
-  "/mdm/places/add": CREATE_MDM_PLACE_MUTATION,
-  "/mdm/places/:id": {
-    GET: GET_MDM_PLACE_BY_ID_QUERY,
-    PATCH: UPDATE_MDM_PLACE_MUTATION,
-    DELETE: DELETE_MDM_PLACE_MUTATION,
-  },
 
   "/mdm/units": GET_LIST_MDM_UNIT_QUERY,
   "/mdm/units/add": CREATE_MDM_UNIT_MUTATION,

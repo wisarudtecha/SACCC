@@ -1,5 +1,5 @@
-// Deterministic stand-in for the not-yet-built viewport device endpoint
-// (GET /devices/within-bounds - contract in src/cms/store/api/deviceIoT.ts).
+// Deterministic stand-in for the viewport-scoped device fetch (getDeviceIoT
+// with a bbox filter - contract in src/cms/store/api/deviceIoT.ts).
 //
 // Used ONLY when VITE_MOCK_API="true". It lets the case-map Device layer (P5) -
 // its markers, category filters, colours, and the DEVICE_TYPE_MATCH resolution -
@@ -41,7 +41,7 @@ const STUB_DEVICE_TYPES = ["Camera", "Fire Hydrant", "AED", "CCTV", "Sensor"];
 const STUB_MODELS = ["AXIS-P3245", "HYD-4000", "ZOLL-AED-PLUS", "HIK-DS2CD", "ENV-S1"];
 
 /**
- * Mirrors the promised `GET /devices/within-bounds` response for a bounding box.
+ * Mirrors a bbox-filtered `getDeviceIoT` response for a bounding box.
  * Returns ~10-14 devices at deterministic positions inside the box.
  */
 export function buildStubDevicesInBounds(bounds: DeviceBoundsRequest): Device[] {

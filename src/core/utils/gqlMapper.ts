@@ -29,6 +29,7 @@ import { GQL_DEVICE_IOT } from "@/cms/store/api/graphql/deviceIoTQueries";
 import { GQL_DISPATCH } from "@/cms/store/api/graphql/dispatchQueries";
 import { GQL_FORM } from "@/cms/store/api/graphql/formQueries";
 import { GQL_MDM } from "@/cms/store/api/graphql/mdmQueries";
+import { GQL_PLACE } from "@/cms/store/api/graphql/placeQueries";
 import { GQL_SKILL } from "@/cms/store/api/graphql/skillQueries";
 import { GQL_WORKFLOW } from "@/cms/store/api/graphql/workflowQueries";
 // CRM Import
@@ -79,6 +80,7 @@ const GQL_MAP: Record<string, GqlMapConfig | Record<string, GqlMapConfig>> = {
   ...GQL_DEVICE_IOT,
   ...GQL_DISPATCH,
   ...GQL_MDM,
+  ...GQL_PLACE,
   ...GQL_SKILL,
   ...GQL_WORKFLOW,
   // CRM

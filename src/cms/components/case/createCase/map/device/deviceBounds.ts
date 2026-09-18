@@ -45,3 +45,14 @@ export function boundsKey(bounds: DeviceBoundsRequest | null): string {
     ? `${bounds.minLat}:${bounds.minLon}:${bounds.maxLat}:${bounds.maxLon}`
     : "";
 }
+
+/**
+ * Format a viewport box as the `minLng,minLat,maxLng,maxLat` string the
+ * backend's `bbox` param expects (same convention as Place's `bbox`, see
+ * `docs/specification/API_Specification_Place_Device.md`). There is no
+ * separate "devices in bounds" operation on the backend - bbox-filtered
+ * fetching goes through the ordinary device list query (`GetDeviceLists`).
+ */
+export function boundsToBbox(bounds: DeviceBoundsRequest): string {
+  return `${bounds.minLon},${bounds.minLat},${bounds.maxLon},${bounds.maxLat}`;
+}

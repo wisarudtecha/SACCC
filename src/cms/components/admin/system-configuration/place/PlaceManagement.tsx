@@ -25,8 +25,9 @@ import {
   PLACE_CATEGORIES
 } from "@/cms/types/place";
 import type {
-  Place, PlaceCategory, PlaceCreateData, PlaceManagementProps, PlaceMetrics, PlaceUpdateData
+  Place, PlaceCategory, PlaceManagementProps, PlaceMetrics, PlaceUpdateData
 } from "@/cms/types/place";
+import type { PreviewConfig } from "@/core/types/enhanced-crud";
 import Input from "@/core/components/form/input/InputField";
 import Select from "@/core/components/form/Select";
 import Switch from "@/core/components/form/switch/Switch";
@@ -154,14 +155,22 @@ const PlaceManagementComponent: React.FC<PlaceManagementProps> = ({
   const handlePlaceSave = useCallback(async () => {
     const errors = validateError();
     if (errors.length > 0) {
+      // Rejected submission: return to the form modal (where validationErrors
+      // is actually rendered) instead of leaving the confirm dialog open with
+      // no visible reason - the user shouldn't have to click Cancel manually.
+      setIsConfirmOpen(false);
+      setIsOpen(true);
       return;
     }
-    const data: PlaceCreateData | PlaceUpdateData = {
+    // `active` is always a real boolean here (component state), so this value
+    // satisfies both PlaceCreateData's optional `active` and
+    // PlaceUpdateData's required `active`.
+    const data: PlaceUpdateData = {
       en,
       th,
       category: category as PlaceCategory,
-      latitude,
-      longitude,
+      latitude: Number(latitude),
+      longitude: Number(longitude),
       active
     };
     try {
@@ -210,6 +219,9 @@ const PlaceManagementComponent: React.FC<PlaceManagementProps> = ({
 
   const isEditAvailable = () => canManage;
   const isDeleteAvailable = () => canManage;
+  // No separate view permission for Place (same organization_settings.manage
+  // gate as everything else on this screen - ticket Q3).
+  const isViewAvailable = () => canManage;
 
   // ===================================================================
   // Real Functionality Data
@@ -261,11 +273,11 @@ const PlaceManagementComponent: React.FC<PlaceManagementProps> = ({
     entityName: t("crud.place.name"),
     entityNamePlural: t("crud.place.name"),
     apiEndpoints: {
-      list: "/mdm/places",
-      create: "/mdm/places/add",
-      read: "/mdm/places/:id",
-      update: "/mdm/places/:id",
-      delete: "/mdm/places/:id"
+      list: "/places",
+      create: "/places",
+      read: "/places/:id",
+      update: "/places/:id",
+      delete: "/places/:id"
     },
     columns: [
       {
@@ -295,6 +307,15 @@ const PlaceManagementComponent: React.FC<PlaceManagementProps> = ({
     ],
     actions: [
       {
+        key: "view",
+        label: t("crud.common.read"),
+        variant: "primary" as const,
+        // No-op: EnhancedCrudContainer intercepts "view" (module="place") and
+        // opens the preview dialog itself - see previewConfig below.
+        onClick: () => {},
+        condition: () => isViewAvailable()
+      },
+      {
         key: "update",
         label: t("crud.common.update"),
         variant: "warning" as const,
@@ -304,8 +325,8 @@ const PlaceManagementComponent: React.FC<PlaceManagementProps> = ({
           setTh(placeItem.th);
           setEn(placeItem.en);
           setCategory(placeItem.category);
-          setLatitude(placeItem.latitude);
-          setLongitude(placeItem.longitude);
+          setLatitude(String(placeItem.latitude));
+          setLongitude(String(placeItem.longitude));
           setValidationErrors({ th: "", en: "", category: "", latitude: "", longitude: "" });
           setIsOpen(true);
         },
@@ -317,6 +338,80 @@ const PlaceManagementComponent: React.FC<PlaceManagementProps> = ({
         variant: "outline" as const,
         onClick: () => {},
         condition: () => isDeleteAvailable()
+      }
+    ]
+  };
+
+  // ===================================================================
+  // Preview Configuration
+  // ===================================================================
+
+  const previewConfig: PreviewConfig<Place & { id: string; name: string }> = {
+    title: () => t("crud.place.list.preview.header"),
+    size: "xl",
+    enableNavigation: true,
+    tabs: [
+      {
+        key: "overview",
+        label: "",
+        fields: [
+          {
+            key: language === "th" && "th" || "en",
+            label: t("crud.place.list.header.name"),
+            type: "custom" as const,
+            render: (_, placeItem) =>
+              <span className="text-gray-900 dark:text-white">
+                {language === "th" && placeItem.th || capitalizeWords(placeItem.en || "")} ({language === "th" && capitalizeWords(placeItem.en || "") || placeItem.th})
+              </span>,
+          },
+          {
+            key: "category",
+            label: t("crud.place.list.header.category"),
+            type: "custom",
+            render: (_, placeItem) =>
+              <span className="text-gray-700 dark:text-gray-300">
+                {t(`case.display.map_place_category_${placeItem.category}`)}
+              </span>,
+          },
+          {
+            key: "latitude",
+            label: t("crud.place.form.latitude.label"),
+            type: "custom",
+            render: value => <span>{String(value)}</span>,
+          },
+          {
+            key: "longitude",
+            label: t("crud.place.form.longitude.label"),
+            type: "custom",
+            render: value => <span>{String(value)}</span>,
+          },
+          {
+            key: "active",
+            label: t("crud.place.list.header.status"),
+            type: "custom",
+            render: (_, placeItem) => renderStatusBadge(placeItem.active)
+          },
+          {
+            key: "createdAt",
+            label: t("crud.place.list.preview.field.createdAt"),
+            type: "date",
+          },
+          {
+            key: "updatedAt",
+            label: t("crud.place.list.preview.field.updatedAt"),
+            type: "date",
+          },
+          {
+            key: "createdBy",
+            label: t("crud.place.list.preview.field.createdBy"),
+            type: "text",
+          },
+          {
+            key: "updatedBy",
+            label: t("crud.place.list.preview.field.updatedBy"),
+            type: "text",
+          },
+        ]
       }
     ]
   };
@@ -353,11 +448,11 @@ const PlaceManagementComponent: React.FC<PlaceManagementProps> = ({
         apiConfig={{
           baseUrl: "/api",
           endpoints: {
-            create: "/mdm/places/add",
-            read: "/mdm/places/:id",
-            list: "/mdm/places",
-            update: "/mdm/places/:id",
-            delete: "/mdm/places/:id"
+            create: "/places",
+            read: "/places/:id",
+            list: "/places",
+            update: "/places/:id",
+            delete: "/places/:id"
           }
         }}
         config={config}
@@ -366,6 +461,8 @@ const PlaceManagementComponent: React.FC<PlaceManagementProps> = ({
         // because deletePlace invalidates the "Place" tag, refreshes the list.
         deleteItem={(id: string) => deletePlace(id).unwrap()}
         displayModes={["card", "table"]}
+        module="place"
+        previewConfig={previewConfig}
         // Whole route is gated by organization_settings.manage; gate the create
         // button and every row action on the same string (no place.* permission
         // family - ticket Q3).

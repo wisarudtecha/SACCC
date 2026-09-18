@@ -1,16 +1,19 @@
 // src/cms/store/api/placesApi.ts
 /**
  * Place Management API Endpoints
- * Admin MDM management of org-curated facilities (Police Station / Hospital /
+ * Admin management of org-curated facilities (Police Station / Hospital /
  * Fire Station) shown as a case-map layer.
  *
- * Mirrors propertyApi.ts: same baseApi injection, same /mdm/* prefix, same
- * { id, data } PATCH convention. The GraphQL mapping lives in
- * src/cms/store/api/graphql/mdmQueries.ts (GQL_MDM) - required, since every
- * environment runs VITE_USE_GRAPHQL="true" with no REST fallback.
+ * URLs match docs/specification/API_Specification_Place_Device.md (plain
+ * /places*, no /mdm prefix or /add suffix) - the confirmed real backend
+ * contract. KNOWN GAP (accepted, Phase 2 to fix): the GraphQL mapping in
+ * src/cms/store/api/graphql/mdmQueries.ts (GQL_MDM) still keys off the OLD
+ * /mdm/places* paths, and every real environment runs VITE_USE_GRAPHQL="true"
+ * with no REST fallback - so these endpoints will hard-error there until
+ * GQL_MAP is updated to match. Deliberate tradeoff, not an oversight.
  *
- * Unlike propertyApi.ts, the "Place" cache tag IS wired: PlaceManagement relies
- * on it so a create/update/delete refreshes the list in place, without the
+ * The "Place" cache tag IS wired: PlaceManagement relies on it so a
+ * create/update/delete refreshes the list in place, without the
  * window.location.replace reload the older MDM admin screens use. The tag is
  * registered in commonTagTypes (src/core/store/api/baseApi.ts).
  */
@@ -22,17 +25,17 @@ import type {
 
 export const placesApi = baseApi.injectEndpoints({
   endpoints: builder => ({
-    // POST /mdm/places/add
+    // POST /places
     createPlace: builder.mutation<ApiResponse<Place>, PlaceCreateData>({
       query: data => ({
-        url: "/mdm/places/add",
+        url: "/places",
         method: "POST",
         body: data,
       }),
       invalidatesTags: ["Place"],
     }),
 
-    // GET /mdm/places
+    // GET /places
     getPlaces: builder.query<ApiResponse<Place[]>, PlaceQueryParams>({
       query: params => {
         const searchParams = new URLSearchParams();
@@ -41,31 +44,31 @@ export const placesApi = baseApi.injectEndpoints({
             searchParams.append(key, String(value));
           }
         });
-        return `/mdm/places?${searchParams.toString()}`;
+        return `/places?${searchParams.toString()}`;
       },
       providesTags: ["Place"],
     }),
 
-    // GET /mdm/places/{id}
+    // GET /places/{id}
     getPlaceById: builder.query<ApiResponse<Place>, string>({
-      query: id => `/mdm/places/${id}`,
+      query: id => `/places/${id}`,
       providesTags: ["Place"],
     }),
 
-    // PATCH /mdm/places/{id}
+    // PATCH /places/{id}
     updatePlace: builder.mutation<ApiResponse<Place>, { id: string; data: PlaceUpdateData }>({
       query: ({ id, data }) => ({
-        url: `/mdm/places/${id}`,
+        url: `/places/${id}`,
         method: "PATCH",
         body: data,
       }),
       invalidatesTags: ["Place"],
     }),
 
-    // DELETE /mdm/places/{id}
+    // DELETE /places/{id}
     deletePlace: builder.mutation<ApiResponse<void>, string>({
       query: id => ({
-        url: `/mdm/places/${id}`,
+        url: `/places/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Place"],

@@ -24,20 +24,22 @@ export const PLACE_CATEGORIES: readonly PlaceCategory[] = [
  * (`src/cms/types/unit.ts`): a business key + org + bilingual name + `active` +
  * audit fields, with `category` and a coordinate added.
  *
- * `latitude` / `longitude` are strings, matching `Device`
- * (`src/cms/types/deviceIoT.tsx`) and the BFF's convention for coordinates. The
- * map layer's normaliser parses and validates them before drawing, the same way
- * `toStaffMarkers` treats `Unit.locLat`.
+ * `latitude` / `longitude` are numbers, per
+ * docs/specification/API_Specification_Place_Device.md and placeCURL.sh's
+ * example responses (bare JSON numbers) - unlike `Device`
+ * (`src/cms/types/deviceIoT.tsx`), whose coordinates are genuinely strings.
+ * The map layer's normaliser (`toFiniteNumber` in placeTypes.ts) still
+ * defends against either shape before drawing, the same way `toStaffMarkers`
+ * treats `Unit.locLat`.
  */
 export interface Place {
   id: string;
-  placeId: string;
   orgId: string;
   en: string;
   th: string;
   category: PlaceCategory;
-  latitude: string;
-  longitude: string;
+  latitude: number;
+  longitude: number;
   active: boolean;
   createdAt: string;
   updatedAt: string;
@@ -49,23 +51,27 @@ export interface PlaceCreateData {
   en: string;
   th: string;
   category: PlaceCategory;
-  latitude: string;
-  longitude: string;
-  active: boolean;
+  latitude: number;
+  longitude: number;
+  /** Optional - the API defaults to `true` when omitted. */
+  active?: boolean;
 }
 
 export interface PlaceUpdateData {
   en: string;
   th: string;
   category: PlaceCategory;
-  latitude: string;
-  longitude: string;
+  latitude: number;
+  longitude: number;
   active: boolean;
 }
 
 export interface PlaceQueryParams {
   start?: number | 0;
   length?: number | 10;
+  category?: PlaceCategory;
+  /** `minLng,minLat,maxLng,maxLat` - when present, `start`/`length` are ignored server-side. */
+  bbox?: string;
 }
 
 export interface PlaceManagementProps {

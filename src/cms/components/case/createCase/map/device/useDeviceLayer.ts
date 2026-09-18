@@ -17,12 +17,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import { DEV_CONFIG } from "@/cms/utils/constants";
-import { useGetDevicesInBoundsQuery } from "@/cms/store/api/deviceIoT";
+import { useGetDeviceIoTQuery } from "@/cms/store/api/deviceIoT";
 import type { Device, DeviceBoundsRequest } from "@/cms/types/deviceIoT";
 import { buildStubDevicesInBounds } from "./deviceBoundsStub";
 import {
   DEVICE_BOUNDS_DEBOUNCE_MS,
   boundsKey,
+  boundsToBbox,
   roundBounds,
   sameBounds
 } from "./deviceBounds";
@@ -118,10 +119,14 @@ export function useDeviceLayer({
   );
 
   // --- Real fetch (skipped in mock mode / while the layer is off) ----------
+  // No separate "devices in bounds" operation on the backend - this is the
+  // ordinary device list query (GetDeviceLists), filtered by bbox instead of
+  // pagination (same shape as Place's bbox filtering).
   const shouldQuery = showDevice && !isMock && bounds !== null;
-  const { data, isFetching, isError } = useGetDevicesInBoundsQuery(bounds ?? ZERO_BOUNDS, {
-    skip: !shouldQuery
-  });
+  const { data, isFetching, isError } = useGetDeviceIoTQuery(
+    { bbox: boundsToBbox(bounds ?? ZERO_BOUNDS) },
+    { skip: !shouldQuery }
+  );
 
   // --- Mock fetch (deterministic, keyed on the rounded bounds like a refetch) --
   const [mockDevices, setMockDevices] = useState<Device[]>([]);

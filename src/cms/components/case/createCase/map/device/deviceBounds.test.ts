@@ -5,6 +5,7 @@ import {
   BOUNDS_PRECISION,
   DEVICE_BOUNDS_DEBOUNCE_MS,
   boundsKey,
+  boundsToBbox,
   roundBounds,
   sameBounds
 } from "./deviceBounds";
@@ -72,6 +73,13 @@ describe("boundsKey", () => {
 
   it("is the empty string for null", () => {
     expect(boundsKey(null)).toBe("");
+  });
+});
+
+describe("boundsToBbox", () => {
+  it("formats as minLng,minLat,maxLng,maxLat", () => {
+    expect(boundsToBbox({ minLat: 13.7, minLon: 100.4, maxLat: 13.8, maxLon: 100.6 }))
+      .toBe("100.4,13.7,100.6,13.8");
   });
 });
 

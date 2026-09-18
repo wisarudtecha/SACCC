@@ -11,11 +11,11 @@
 //      a resolved category badge via `resolveDeviceCategory`.
 //   2. Extra hardware fields: model, firmwareVer, ipAddress, macAddress. IP / MAC
 //      are optional but format-checked when filled (see ./deviceValidation).
-//   3. "Delete" is a SOFT delete - it PATCHes `active: false` rather than issuing
-//      a DELETE (there is no DELETE endpoint). `deleteItem` looks the row up in
-//      the already-loaded `data` to build the PATCH body.
-//   4. The entity key is `deviceId` (there is no separate `id`); it is what the
-//      `/devices/:id` create/update path uses.
+//   3. "Delete" is a SOFT delete server-side (DELETE /devices/:id sets
+//      active=false) - `deleteItem` calls it directly via `useDeleteDeviceMutation`.
+//   4. The entity key is `deviceId` (there is no separate `id`); it is client-
+//      supplied on create and immutable afterward, so the field is disabled
+//      once editing an existing row.
 import React, { Suspense, lazy, useCallback, useMemo, useState } from "react";
 import { CheckLineIcon, CloseIcon, GroupIcon, TimeIcon } from "@/core/icons";
 import { EnhancedCrudContainer } from "@/core/components/crud/EnhancedCrudContainer";
@@ -27,12 +27,13 @@ import { useIsSystemAdmin } from "@/core/hooks/useIsSystemAdmin";
 import { useToast } from "@/core/hooks/useToast";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import {
-  useCreateDeviceMutation, useUpdateDeviceMutation
+  useCreateDeviceMutation, useDeleteDeviceMutation, useUpdateDeviceMutation
 } from "@/cms/store/api/deviceIoT";
 import { capitalizeWords } from "@/core/utils/stringFormatters";
 import type {
   Device, DeviceCreateData, DeviceManagementProps, DeviceMetrics, DeviceUpdateData
 } from "@/cms/types/deviceIoT";
+import type { PreviewConfig } from "@/core/types/enhanced-crud";
 import {
   getDeviceCategoryLabelKey, resolveDeviceCategory
 } from "@/cms/components/case/createCase/map/device/deviceSymbols";
@@ -52,25 +53,8 @@ const AddressMapField = lazy(() => import("@/cms/components/case/createCase/map/
 const MANAGE_PERMISSION = "organization_settings.manage";
 
 const EMPTY_ERRORS = {
-  th: "", en: "", deviceType: "", latitude: "", longitude: "", ipAddress: "", macAddress: ""
+  deviceId: "", th: "", en: "", deviceType: "", latitude: "", longitude: "", ipAddress: "", macAddress: ""
 };
-
-/** Build a `DeviceUpdateData` PATCH body from a loaded row, with optional overrides. */
-const toDeviceUpdateData = (
-  source: Device, overrides: Partial<DeviceUpdateData> = {}
-): DeviceUpdateData => ({
-  en: source.en ?? "",
-  th: source.th ?? "",
-  deviceType: source.deviceType ?? "",
-  model: source.model ?? "",
-  firmwareVer: source.firmwareVer ?? "",
-  ipAddress: source.ipAddress ?? "",
-  macAddress: source.macAddress ?? "",
-  latitude: source.latitude ?? "",
-  longitude: source.longitude ?? "",
-  active: source.active !== false,
-  ...overrides
-});
 
 const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
   devices, isLoading, isError, onRefresh
@@ -83,10 +67,15 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
 
   const [createDevice] = useCreateDeviceMutation();
   const [updateDevice] = useUpdateDeviceMutation();
+  const [deleteDevice] = useDeleteDeviceMutation();
 
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  // Distinct from `deviceId`: once the spec requires deviceId on create too,
+  // `deviceId` alone can no longer tell create/edit apart (it's populated in
+  // both cases). `deviceId` is disabled once editing, since it's immutable.
+  const [isEditMode, setIsEditMode] = useState(false);
   const [deviceId, setDeviceId] = useState("");
   const [active, setActive] = useState(true);
   const [th, setTh] = useState("");
@@ -125,6 +114,7 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
 
   const handleDeviceReset = () => {
     setActive(true);
+    setIsEditMode(false);
     setDeviceId("");
     setTh("");
     setEn("");
@@ -143,6 +133,10 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
     const errors: string[] = [];
     const next = { ...EMPTY_ERRORS };
 
+    if (!isEditMode && !deviceId.trim()) {
+      next.deviceId = t("crud.device.form.deviceId.required");
+      errors.push(next.deviceId);
+    }
     if (!th.trim()) {
       next.th = t("crud.device.form.th.required");
       errors.push(next.th);
@@ -174,14 +168,19 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
 
     setValidationErrors(next);
     return errors;
-  }, [th, en, deviceType, latitude, longitude, ipAddress, macAddress, t]);
+  }, [isEditMode, deviceId, th, en, deviceType, latitude, longitude, ipAddress, macAddress, t]);
 
   const handleDeviceSave = useCallback(async () => {
     const errors = validateError();
     if (errors.length > 0) {
+      // Rejected submission: return to the form modal (where validationErrors
+      // is actually rendered) instead of leaving the confirm dialog open with
+      // no visible reason - the user shouldn't have to click Cancel manually.
+      setIsConfirmOpen(false);
+      setIsOpen(true);
       return;
     }
-    const data: DeviceCreateData | DeviceUpdateData = {
+    const updateData: DeviceUpdateData = {
       en,
       th,
       deviceType,
@@ -197,11 +196,12 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
       setLoading(true);
       let response;
       if (canManage) {
-        if (deviceId) {
-          response = await updateDevice({ id: deviceId, data }).unwrap();
+        if (isEditMode) {
+          response = await updateDevice({ id: deviceId, data: updateData }).unwrap();
         }
         else {
-          response = await createDevice(data).unwrap();
+          const createData: DeviceCreateData = { deviceId, ...updateData };
+          response = await createDevice(createData).unwrap();
         }
       }
       else {
@@ -211,7 +211,7 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
         addToast(
           "success",
           response?.message || response?.desc || response?.msg
-          || (deviceId && t("crud.device.action.update.success"))
+          || (isEditMode && t("crud.device.action.update.success"))
           || t("crud.device.action.create.success")
         );
         // No window.location.replace: createDevice / updateDevice invalidate the
@@ -226,7 +226,7 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
       addToast("error", `${(error as { data?: { message?: string } })?.data?.message
         || (error as { data?: { desc?: string } })?.data?.desc
         || (error as { data?: { msg?: string } })?.data?.msg
-        || deviceId && t("crud.device.action.update.error") || t("crud.device.action.create.error")}: ${error}`);
+        || isEditMode && t("crud.device.action.update.error") || t("crud.device.action.create.error")}: ${error}`);
     }
     finally {
       setIsOpen(false);
@@ -235,11 +235,14 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
     }
   }, [
     active, addToast, canManage, createDevice, deviceId, deviceType, en, firmwareVer,
-    ipAddress, latitude, longitude, macAddress, model, th, t, updateDevice, validateError
+    ipAddress, isEditMode, latitude, longitude, macAddress, model, th, t, updateDevice, validateError
   ]);
 
   const isEditAvailable = () => canManage;
   const isDeleteAvailable = () => canManage;
+  // No separate view permission for Device (same organization_settings.manage
+  // gate as everything else on this screen).
+  const isViewAvailable = () => canManage;
 
   // ===================================================================
   // Real Functionality Data
@@ -253,16 +256,6 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
     })) ?? [],
     [devices, language]
   );
-
-  // Soft delete: no DELETE endpoint - look the row up in the loaded data and
-  // PATCH `active: false`. EnhancedCrudContainer's deleteItem only passes the id.
-  const softDeleteDevice = useCallback((id: string) => {
-    const row = data.find(d => d.id === id);
-    if (!row) {
-      return Promise.reject(new Error(t("errors.unknownApi")));
-    }
-    return updateDevice({ id, data: toDeviceUpdateData(row, { active: false }) }).unwrap();
-  }, [data, updateDevice, t]);
 
   // ===================================================================
   // Metrics
@@ -309,7 +302,7 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
     entityNamePlural: t("crud.device.name"),
     apiEndpoints: {
       list: "/devices",
-      create: "/devices/add",
+      create: "/devices",
       read: "/devices/:id",
       update: "/devices/:id",
       delete: "/devices/:id"
@@ -345,10 +338,20 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
     ],
     actions: [
       {
+        key: "view",
+        label: t("crud.common.read"),
+        variant: "primary" as const,
+        // No-op: EnhancedCrudContainer intercepts "view" (module="device") and
+        // opens the preview dialog itself - see previewConfig below.
+        onClick: () => {},
+        condition: () => isViewAvailable()
+      },
+      {
         key: "update",
         label: t("crud.common.update"),
         variant: "warning" as const,
         onClick: (deviceItem: Device) => {
+          setIsEditMode(true);
           setDeviceId(deviceItem.deviceId);
           setActive(deviceItem.active !== false);
           setTh(deviceItem.th ?? "");
@@ -371,6 +374,106 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
         variant: "outline" as const,
         onClick: () => {},
         condition: () => isDeleteAvailable()
+      }
+    ]
+  };
+
+  // ===================================================================
+  // Preview Configuration
+  // ===================================================================
+
+  const previewConfig: PreviewConfig<Device & { id: string; name: string }> = {
+    title: () => t("crud.device.list.preview.header"),
+    size: "xl",
+    enableNavigation: true,
+    tabs: [
+      {
+        key: "overview",
+        label: "",
+        fields: [
+          {
+            key: language === "th" && "th" || "en",
+            label: t("crud.device.list.header.name"),
+            type: "custom" as const,
+            render: (_, deviceItem) =>
+              <span className="text-gray-900 dark:text-white">
+                {language === "th" && deviceItem.th || capitalizeWords(deviceItem.en || "")} ({language === "th" && capitalizeWords(deviceItem.en || "") || deviceItem.th})
+              </span>,
+          },
+          {
+            key: "deviceId",
+            label: t("crud.device.form.deviceId.label"),
+            type: "text",
+          },
+          {
+            key: "deviceType",
+            label: t("crud.device.list.header.type"),
+            type: "custom",
+            render: (_, deviceItem) =>
+              <span className="text-gray-700 dark:text-gray-300">
+                {deviceItem.deviceType || "-"}
+                <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
+                  ({resolveCategoryLabel(deviceItem.deviceType)})
+                </span>
+              </span>,
+          },
+          {
+            key: "model",
+            label: t("crud.device.form.model.label"),
+            type: "text",
+          },
+          {
+            key: "firmwareVer",
+            label: t("crud.device.form.firmwareVer.label"),
+            type: "text",
+          },
+          {
+            key: "ipAddress",
+            label: t("crud.device.form.ipAddress.label"),
+            type: "text",
+          },
+          {
+            key: "macAddress",
+            label: t("crud.device.form.macAddress.label"),
+            type: "text",
+          },
+          {
+            key: "latitude",
+            label: t("crud.device.form.latitude.label"),
+            type: "text",
+          },
+          {
+            key: "longitude",
+            label: t("crud.device.form.longitude.label"),
+            type: "text",
+          },
+          {
+            key: "active",
+            label: t("crud.device.list.header.status"),
+            type: "custom",
+            render: (_, deviceItem) => renderStatusBadge(deviceItem.active !== false)
+          },
+          {
+            key: "createdAt",
+            label: t("crud.device.list.preview.field.createdAt"),
+            type: "date",
+          },
+          {
+            key: "updatedAt",
+            label: t("crud.device.list.preview.field.updatedAt"),
+            type: "date",
+          },
+          {
+            key: "createdBy",
+            label: t("crud.device.list.preview.field.createdBy"),
+            type: "text",
+          },
+          {
+            key: "updatedBy",
+            label: t("crud.device.list.preview.field.updatedBy"),
+            type: "text",
+          },
+        ]
       }
     ]
   };
@@ -407,7 +510,7 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
         apiConfig={{
           baseUrl: "/api",
           endpoints: {
-            create: "/devices/add",
+            create: "/devices",
             read: "/devices/:id",
             list: "/devices",
             update: "/devices/:id",
@@ -416,10 +519,13 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
         }}
         config={config}
         data={data}
-        // "Delete" is a soft delete: updateDevice invalidates the "Device Iot"
-        // tag, so the list (and the case-map Device layer) refresh.
-        deleteItem={softDeleteDevice}
+        // "Delete" is a soft delete (server sets active=false); deleteDevice
+        // invalidates the "Device Iot" tag, so the list (and the case-map
+        // Device layer) refresh.
+        deleteItem={(id: string) => deleteDevice(id).unwrap()}
         displayModes={["card", "table"]}
+        module="device"
+        previewConfig={previewConfig}
         // Whole route is gated by organization_settings.manage; gate the create
         // button and every row action on the same string.
         actionPermission={MANAGE_PERMISSION}
@@ -456,7 +562,7 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
-            {deviceId && t("crud.device.form.header.update") || t("crud.device.form.header.create")}
+            {isEditMode && t("crud.device.form.header.update") || t("crud.device.form.header.create")}
           </h3>
           <Button
             onClick={() => setIsOpen(false)}
@@ -467,6 +573,22 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
           </Button>
         </div>
         <div className="space-y-4">
+          <div>
+            <label htmlFor="deviceId" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+              {t("crud.device.form.deviceId.label")}
+            </label>
+            <Input
+              id="deviceId"
+              placeholder={t("crud.device.form.deviceId.placeholder")}
+              value={deviceId}
+              onChange={(e) => setDeviceId(e.target.value)}
+              disabled={isEditMode}
+            />
+            <span className="text-xs text-gray-500 dark:text-gray-400 block">
+              {t("crud.device.form.deviceId.hint")}
+            </span>
+            <span className="text-red-500 dark:text-red-400 text-xs">{validationErrors.deviceId}</span>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="th" className="text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -610,7 +732,7 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
           </div>
           <div>
             <Switch
-              key={deviceId || "new"}
+              key={isEditMode ? deviceId : "new"}
               label={t("crud.device.form.active.label")}
               defaultChecked={active}
               onChange={setActive}
@@ -645,7 +767,7 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
       >
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white cursor-default">
-            {deviceId && t("crud.device.confirm.update.title") || t("crud.device.confirm.create.title")}
+            {isEditMode && t("crud.device.confirm.update.title") || t("crud.device.confirm.create.title")}
           </h3>
           <Button
             onClick={() => {
@@ -659,7 +781,7 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
           </Button>
         </div>
         <div className="space-y-4">
-          {deviceId
+          {isEditMode
             && t("crud.device.confirm.update.message").replace("_DEVICE_", language === "th" && th || en)
             || t("crud.device.confirm.create.message").replace("_DEVICE_", language === "th" && th || en)
           }

@@ -361,6 +361,8 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
       if (actionKey === "view" && (
         module === "appointment" ||
         module === "case" ||
+        module === "device" ||
+        module === "place" ||
         module === "settings" ||
         module === "skill" ||
         module === "user" ||
