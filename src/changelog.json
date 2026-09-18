@@ -1,4 +1,10 @@
 {
+  "0.80.2": {
+    "date": "2026-09-18",
+    "segment": "PATCH",
+    "notes": "fix(cms): align Place/Device with the confirmed API contract and fix label bugs\n- The Place and Device management screens (and the matching layers on the case map) now talk to the confirmed backend addresses instead of the placeholder ones used while the contract was still unconfirmed, and Device records can now be removed and viewed individually, matching Place.\n- Adding a device now requires a Device ID, and both Place and Device detail views show when the record was created and last updated, and by whom.\n- Fixed the customer list showing the raw label instead of \"Active\"/\"Inactive\" for a customer's status.\n- Fixed the case attachment upload area showing a raw label instead of the drag-over message.\n- Filled in missing Thai and Chinese translations across the Dispatch Dashboard, the Case Summary by Area map view, and several other screens that were falling back to English.\n- changelog.json / package.json: bump version 0.80.1 -> 0.80.2",
+    "author": "Wisarud Techa"
+  },
   "0.80.1": {
     "date": "2026-09-17",
     "segment": "PATCH",
