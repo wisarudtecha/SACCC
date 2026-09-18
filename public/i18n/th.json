@@ -359,6 +359,9 @@
     "order": "ออเดอร์",
     "ordering": "กำลังออเดอร์",
     "newOrder": "สร้างออเดอร์ใหม่",
+    "title": "หัวข้อ",
+    "title_placeholder": "กรอกหัวข้อออเดอร์",
+    "created_successfully": "สร้างสำเร็จ",
     "totalItems": "รายการสินค้า",
     "totalQty": "จำนวนรวม",
     "currentStep": "ขั้นตอนปัจจุบัน",
@@ -507,6 +510,10 @@
       "show_header": "แสดงหัวข้อ",
       "connected": "เชื่อมต่อแล้ว",
       "disconnected": "ไม่ได้เชื่อมต่อ",
+      "top_n_districts": "อันดับพื้นที่สูงสุด",
+      "display_mode": "รูปแบบการแสดงผล",
+      "display_mode_detailed": "แบบละเอียด",
+      "display_mode_compact": "แบบย่อ",
       "groups": {
         "case": "การจัดการเคส",
         "product": "การจัดการสินค้า",
@@ -553,6 +560,21 @@
         "inventory_alert": {
           "label": "แจ้งเตือนคลังสินค้า",
           "description": "อะไหล่ที่ต่ำกว่าขั้นต่ำและคำขอซื้อที่รออนุมัติ"
+        },
+        "events_feed": {
+          "label": "ฟีดเหตุการณ์",
+          "description": "เหตุการณ์ล่าสุดของการจัดส่ง",
+          "compact_label": "เหตุการณ์"
+        },
+        "incident_heatmap": {
+          "label": "แผนที่ความหนาแน่นของเหตุการณ์",
+          "description": "แผนที่แบบเรียลไทม์แสดงความหนาแน่นของเหตุการณ์",
+          "compact_label": "ความหนาแน่น"
+        },
+        "officer_status": {
+          "label": "สถานะเจ้าหน้าที่",
+          "description": "สถานะปัจจุบันของเจ้าหน้าที่ที่ถูกมอบหมาย",
+          "compact_label": "เจ้าหน้าที่"
         }
       }
     },
@@ -564,7 +586,21 @@
       "row_total": "รวม",
       "category_filter": "หมวดหมู่",
       "all_categories": "ทุกหมวดหมู่",
-      "view_breakdown": "ดูรายละเอียด"
+      "view_breakdown": "ดูรายละเอียด",
+      "view_table": "ตาราง",
+      "view_map": "แผนที่",
+      "map_missing_boundaries": "ไม่พบขอบเขตพื้นที่ที่ตรงกัน {{count}} รายการ",
+      "map_unavailable_local_boundary": "ไม่สามารถแสดงแผนที่สำหรับข้อมูลขอบเขตท้องถิ่นได้"
+    },
+    "dispatch": {
+      "heatmap_title": "แผนที่ความหนาแน่นของเหตุการณ์",
+      "officer_density_toggle": "ความหนาแน่นเจ้าหน้าที่",
+      "officer_density_toggle_disabled_tooltip": "ต้องใช้ข้อมูลตำแหน่งแบบเรียลไทม์ทั้งองค์กร (ยังไม่พร้อมใช้งาน)",
+      "officer_status_title": "สถานะเจ้าหน้าที่",
+      "officer_status_empty": "ไม่มีเจ้าหน้าที่ให้แสดง",
+      "events_title": "เหตุการณ์ล่าสุด",
+      "events_empty": "ไม่มีเหตุการณ์ล่าสุด",
+      "no_address": "ไม่มีที่อยู่"
     }
   },
   "navigation": {
@@ -695,7 +731,8 @@
                 "case": "เคส",
                 "product": "สินค้า",
                 "custom": "แดชบอร์ดที่กำหนดเอง",
-                "case_summary_by_area": "สรุปเคสแยกตามพื้นที่"
+                "case_summary_by_area": "สรุปเคสแยกตามพื้นที่",
+                "dispatch": "การจัดส่ง"
               }
             },
             "form": {
@@ -796,7 +833,8 @@
               "title": "เคส",
               "header": "สรุปเคส"
             },
-            "case_summary_by_area": "สรุปเคสแยกตามพื้นที่"
+            "case_summary_by_area": "สรุปเคสแยกตามพื้นที่",
+            "dispatch": "การจัดส่ง"
           }
         },
         "report": {
@@ -2044,7 +2082,8 @@
             "required": "กรุณาเลือกประเภท"
           },
           "caseSla": {
-            "label": "SLA (นาที)"
+            "label": "SLA (นาที)",
+            "required": "กรุณาระบุ SLA"
           },
           "priority": {
             "label": "ความสำคัญ",
@@ -2741,7 +2780,13 @@
           "status": "สถานะ"
         },
         "preview": {
-          "header": "ข้อมูลสถานที่"
+          "header": "ข้อมูลสถานที่",
+          "field": {
+            "createdAt": "สร้างเมื่อ",
+            "updatedAt": "แก้ไขล่าสุดเมื่อ",
+            "createdBy": "สร้างโดย",
+            "updatedBy": "แก้ไขล่าสุดโดย"
+          }
         }
       },
       "form": {
@@ -2832,13 +2877,25 @@
           "status": "สถานะ"
         },
         "preview": {
-          "header": "ข้อมูลอุปกรณ์"
+          "header": "ข้อมูลอุปกรณ์",
+          "field": {
+            "createdAt": "สร้างเมื่อ",
+            "updatedAt": "แก้ไขล่าสุดเมื่อ",
+            "createdBy": "สร้างโดย",
+            "updatedBy": "แก้ไขล่าสุดโดย"
+          }
         }
       },
       "form": {
         "header": {
           "create": "เพิ่มอุปกรณ์",
           "update": "แก้ไขอุปกรณ์"
+        },
+        "deviceId": {
+          "label": "รหัสอุปกรณ์",
+          "placeholder": "เช่น รหัสฮาร์ดแวร์/ซีเรียล",
+          "hint": "รหัสเฉพาะของอุปกรณ์นี้ ไม่สามารถเปลี่ยนแปลงได้หลังจากสร้างแล้ว",
+          "required": "ต้องกรอกรหัสอุปกรณ์"
         },
         "th": {
           "label": "ชื่อ (ภาษาไทย)",
@@ -3243,10 +3300,12 @@
               "placeholder": "ระบุผู้ให้บริการตำแหน่ง"
             },
             "locGpsTime": {
-              "label": "เวลา GPS"
+              "label": "เวลา GPS",
+              "placeholder": "เลือกเวลา GPS"
             },
             "locLastUpdateTime": {
-              "label": "เวลาอัปเดตล่าสุด"
+              "label": "เวลาอัปเดตล่าสุด",
+              "placeholder": "เลือกเวลาอัปเดตล่าสุด"
             }
           }
         }
@@ -4006,6 +4065,7 @@
         "missing_close_case_data": "กรุณาใส่ข้อมูลให้ครบ",
         "upload_file_success": "อัพโหลดไฟล์สำเร็จ",
         "upload_file_fail": "อัพโหลดไฟล์ไม่สำเร็จ",
+        "partial_upload": "อัปโหลดไฟล์บางไฟล์ไม่สำเร็จ",
         "loading_case": "กำลังโหลดใบงาน",
         "loading_case_success": "โหลดใบงานสำเร็จ",
         "loading_case_fail": "โหลดใบงานไม่ สำเร็จ"
@@ -4109,6 +4169,7 @@
     "m": "นท.",
     "h": "ชม.",
     "d": "ว.",
+    "mo": "ด.",
     "y": "ป.",
     "OVERDUE": "เกินกำหนด",
     "TIMEREMAINING": "เวลาที่เหลือ",
@@ -4183,6 +4244,7 @@
     "saveChange": "บันทึกการเปลี่ยนแปลง",
     "saveForm": "บันทึกฟอร์ม",
     "preview": {
+      "title": "ตัวอย่างฟอร์ม",
       "noFields": "ยังไม่มีการเพิ่มฟิลด์ คลิก \"แก้ไข\" เพื่อเริ่มเพิ่ม",
       "versionPrefix": "เวอร์ชัน "
     },
@@ -4191,6 +4253,7 @@
       "noFields": "ไม่มีองค์ประกอบในฟอร์ม",
       "somethingWentWrong": "เกิดข้อผิดพลาดบางอย่าง",
       "unexpectedError": "เกิดข้อผิดพลาดที่ไม่คาดคิด",
+      "unexpectedResponse": "การตอบกลับจากเซิร์ฟเวอร์ไม่ถูกต้อง",
       "correctErrors": "โปรดแก้ไขข้อผิดพลาดก่อนส่ง",
       "draftLoaded": "โหลดร่างสำเร็จ:",
       "noDraftFound": "ไม่พบร่างใน localStorage",
@@ -4310,6 +4373,7 @@
   },
   "formViewer": {
     "emptyValue": "-",
+    "noFiles": "ไม่มีไฟล์",
     "noImageUploaded": "ไม่มีรูปภาพอัปโหลด",
     "noImagesUploaded": "ไม่มีรูปภาพหลายรูปอัปโหลด",
     "emptyGroup": "ไม่มีฟิลด์ในกลุ่มนี้",

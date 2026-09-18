@@ -214,7 +214,7 @@ const DragDropFileUpload: React.FC<DragDropFileUploadProps> = ({
           <Upload className={`w-8 h-8 ${isDragOver ? 'text-blue-500' : 'text-gray-400'}`} />
           <div className="text-gray-600 dark:text-gray-300">
             <p className="text-sm font-medium">
-              {isDragOver ? t("case.dnd_text_des_over") : t("case.dnd_text_des")}
+              {isDragOver ? t("case.dnd_text_des_on_over") : t("case.dnd_text_des")}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               {t("case.supports")} {t("case.images")}, PDF, DOC, DOCX, TXT ({t("case.max")} {maxSize}MB {t("case.each")} )

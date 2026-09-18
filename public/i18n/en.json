@@ -359,6 +359,9 @@
     "order": "Order",
     "ordering": "Ordering",
     "newOrder": "New Order",
+    "title": "Title",
+    "title_placeholder": "Enter order title",
+    "created_successfully": "Created successfully",
     "totalItems": "Items",
     "totalQty": "Total Qty",
     "currentStep": "Current Step",
@@ -507,6 +510,10 @@
       "show_header": "Show header",
       "connected": "Live",
       "disconnected": "Not connected",
+      "top_n_districts": "Top N districts",
+      "display_mode": "Display mode",
+      "display_mode_detailed": "Detailed",
+      "display_mode_compact": "Compact",
       "groups": {
         "case": "Case Management",
         "product": "Product Management",
@@ -553,6 +560,21 @@
         "inventory_alert": {
           "label": "Inventory Alert",
           "description": "Low-stock parts and pending purchase approvals."
+        },
+        "events_feed": {
+          "label": "Events Feed",
+          "description": "Recent dispatch events.",
+          "compact_label": "Events"
+        },
+        "incident_heatmap": {
+          "label": "Incident Heatmap",
+          "description": "Live map of incident density.",
+          "compact_label": "Heatmap"
+        },
+        "officer_status": {
+          "label": "Officer Status",
+          "description": "Current status of dispatched officers.",
+          "compact_label": "Officers"
         }
       }
     },
@@ -564,7 +586,21 @@
       "row_total": "Total",
       "category_filter": "Category",
       "all_categories": "All Categories",
-      "view_breakdown": "View breakdown"
+      "view_breakdown": "View breakdown",
+      "view_table": "Table",
+      "view_map": "Map",
+      "map_missing_boundaries": "{{count}} area(s) could not be matched to a boundary.",
+      "map_unavailable_local_boundary": "Map view isn't available for local boundary data."
+    },
+    "dispatch": {
+      "heatmap_title": "Incident Heatmap",
+      "officer_density_toggle": "Officer density",
+      "officer_density_toggle_disabled_tooltip": "Requires org-wide live position tracking (not yet available)",
+      "officer_status_title": "Officer Status",
+      "officer_status_empty": "No officers to show",
+      "events_title": "Recent Events",
+      "events_empty": "No recent events",
+      "no_address": "No address on file"
     }
   },
   "navigation": {
@@ -695,7 +731,8 @@
                 "case": "Case",
                 "product": "Product",
                 "custom": "Custom Dashboard",
-                "case_summary_by_area": "Case Summary by Area"
+                "case_summary_by_area": "Case Summary by Area",
+                "dispatch": "Dispatch"
               }
             },
             "form": {
@@ -796,7 +833,8 @@
               "title": "Case",
               "header": "Case Dashboard"
             },
-            "case_summary_by_area": "Case Summary by Area"
+            "case_summary_by_area": "Case Summary by Area",
+            "dispatch": "Dispatch"
           }
         },
         "report": {
@@ -1479,8 +1517,10 @@
             },
             "overview": {
               "description": "Description",
+              "desc": "Description",
               "status": "Status",
               "version": "Version",
+              "versions": "Versions",
               "createdAt": "Created At",
               "createdBy": "by",
               "updatedAt": "Updated At",
@@ -2044,7 +2084,8 @@
             "required": "Type is required"
           },
           "caseSla": {
-            "label": "SLA (Minutes)"
+            "label": "SLA (Minutes)",
+            "required": "Case SLA is required"
           },
           "priority": {
             "label": "Priority",
@@ -2741,7 +2782,13 @@
           "status": "Status"
         },
         "preview": {
-          "header": "Place Information"
+          "header": "Place Information",
+          "field": {
+            "createdAt": "Created At",
+            "updatedAt": "Updated At",
+            "createdBy": "Created By",
+            "updatedBy": "Updated By"
+          }
         }
       },
       "form": {
@@ -2832,13 +2879,25 @@
           "status": "Status"
         },
         "preview": {
-          "header": "Device Information"
+          "header": "Device Information",
+          "field": {
+            "createdAt": "Created At",
+            "updatedAt": "Updated At",
+            "createdBy": "Created By",
+            "updatedBy": "Updated By"
+          }
         }
       },
       "form": {
         "header": {
           "create": "Create Device",
           "update": "Edit Device"
+        },
+        "deviceId": {
+          "label": "Device ID",
+          "placeholder": "e.g. a hardware/serial identifier",
+          "hint": "Unique identifier for this device. Cannot be changed after creation.",
+          "required": "Device ID is required"
         },
         "th": {
           "label": "Name (TH)",
@@ -3243,10 +3302,12 @@
               "placeholder": "Enter location provider"
             },
             "locGpsTime": {
-              "label": "GPS Time"
+              "label": "GPS Time",
+              "placeholder": "Select GPS time"
             },
             "locLastUpdateTime": {
-              "label": "Last Update Time"
+              "label": "Last Update Time",
+              "placeholder": "Select last update time"
             }
           }
         }
@@ -4006,6 +4067,7 @@
         "missing_close_case_data": "Missing Close Details Data.",
         "upload_file_success": "Upload file Success.",
         "upload_file_fail": "Upload file fail.",
+        "partial_upload": "Some files failed to upload.",
         "loading_case": "Loading Case.",
         "loading_case_success": "Loading Case Successfully.",
         "loading_case_fail": "Loading Case Failed."
@@ -4109,6 +4171,7 @@
     "m": "m",
     "h": "h",
     "d": "d",
+    "mo": "mo",
     "y": "y",
     "OVERDUE": "OVERDUE",
     "TIMEREMAINING": "TIME REMAINING",
@@ -4159,6 +4222,7 @@
     "saveChange": "Save Change",
     "saveForm": "Save Form",
     "preview": {
+      "title": "Form Preview",
       "noFields": "No fields added yet. Click \"Edit\" to start adding.",
       "versionPrefix": "v."
     },
@@ -4167,6 +4231,7 @@
       "noFields": "There are no elements in the form.",
       "somethingWentWrong": "Something went wrong.",
       "unexpectedError": "An unexpected error occurred.",
+      "unexpectedResponse": "Unexpected response from server",
       "correctErrors": "Please correct the errors before submitting.",
       "draftLoaded": "Draft loaded successfully:",
       "noDraftFound": "No draft found in localStorage.",
@@ -4286,6 +4351,7 @@
   },
   "formViewer": {
     "emptyValue": "-",
+    "noFiles": "No files",
     "noImageUploaded": "No image uploaded",
     "noImagesUploaded": "No images uploaded",
     "emptyGroup": "No fields in this group.",

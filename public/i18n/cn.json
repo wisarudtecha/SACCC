@@ -2625,7 +2625,13 @@
           "status": "状态"
         },
         "preview": {
-          "header": "地点信息"
+          "header": "地点信息",
+          "field": {
+            "createdAt": "创建时间",
+            "updatedAt": "更新时间",
+            "createdBy": "创建人",
+            "updatedBy": "更新人"
+          }
         }
       },
       "form": {
@@ -2716,13 +2722,25 @@
           "status": "状态"
         },
         "preview": {
-          "header": "设备信息"
+          "header": "设备信息",
+          "field": {
+            "createdAt": "创建时间",
+            "updatedAt": "更新时间",
+            "createdBy": "创建人",
+            "updatedBy": "更新人"
+          }
         }
       },
       "form": {
         "header": {
           "create": "创建设备",
           "update": "编辑设备"
+        },
+        "deviceId": {
+          "label": "设备编号",
+          "placeholder": "例如硬件/序列号",
+          "hint": "此设备的唯一标识符，创建后无法更改。",
+          "required": "设备编号为必填项"
         },
         "th": {
           "label": "名称（泰语）",
@@ -3882,6 +3900,7 @@
       "created": "已创建",
       "create_date": "创建日期",
       "High Priority": "高优先级",
+      "Critical Priority": "紧急优先级",
       "Medium Priority": "中优先级",
       "Low Priority": "低优先级"
     },

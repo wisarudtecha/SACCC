@@ -230,7 +230,7 @@ const CustomerListView: React.FC<CustomerListViewProps> = ({ customerData, onEdi
                                 </td>
                                 <td className="px-6 py-4 text-center">
                                     <Badge color={customer.active ? 'success' : "error"} className="py-0 px-2 capitalize" size='sm'>
-                                        {customer.active ? t("active") : t("inactive")}
+                                        {customer.active ? t("common.active") : t("common.inactive")}
                                     </Badge>
                                 </td>
 
