@@ -12,6 +12,7 @@
 // meaning - when a second provider (Longdo) arrived and made those names wrong.
 import type { ReactNode } from "react";
 import type { MapProviderId } from "@/core/config/api";
+import type { Language } from "@/core/config/i18n";
 import type { BasemapOptionId } from "./basemaps";
 import type { BoundaryLayerConfig } from "./boundaries/boundaryTypes";
 import type { BoundarySketchConfig } from "./sketch/sketchTypes";
@@ -99,6 +100,44 @@ export interface IncidentRadiusOverlay {
 }
 
 /**
+ * A one-shot command to move the camera to a point.
+ *
+ * A command rather than state: the same target can be requested twice (press
+ * "focus" on a person, pan away, press it again), and only a changing `nonce`
+ * tells the map that the second request is new. A map that mounts while a request
+ * already exists (the large map reopening) must NOT replay it - it compares the
+ * nonce it was born with, see useArcgisFocusRequest.
+ */
+export interface MapFocusRequest extends MapLatLon {
+  /** Zoom to use when it is closer than the current one; the current zoom is kept otherwise. */
+  zoom?: number;
+  nonce: number;
+  /**
+   * Show ALL of these points in one view - zooming out as far as needed - instead
+   * of centring on `latitude` / `longitude`. Used to frame the incident pin
+   * together with every assigned responder. With fewer than two points there is
+   * nothing to frame, and the request falls back to centring on the primary point.
+   * Every provider frames in its own way (an extent, `fitBounds`, or a hand-worked
+   * centre and whole-number zoom on Longdo), so the result is "all of them
+   * visible", not identical camera positions.
+   */
+  framePoints?: readonly MapLatLon[];
+  /**
+   * Pixels of the view covered on each side (the docked cards), which framing
+   * keeps every point clear of. Only meaningful with `framePoints`.
+   */
+  insets?: { left: number; top: number; right: number; bottom: number };
+}
+
+/**
+ * One straight line to draw from a staff member to the incident pin. The pin end
+ * is the map's own `value`, so only the staff end travels here.
+ */
+export interface StaffConnector extends MapLatLon {
+  unitId: string;
+}
+
+/**
  * Which of the two map instances a slot is rendering into. Controls that belong
  * to the large map only (the staff layer) return null for the inline one.
  */
@@ -163,6 +202,20 @@ export interface AddressMapProps {
    */
   showBasemapSwitcher?: boolean;
   /**
+   * Theme applied to the map's OWN rendered content (basemap style, and Esri's
+   * `calcite-mode-dark` widget theming) - NOT the app's global theme. When
+   * supplied together with `onMapThemeChange`, BasemapSwitcher's theme picker
+   * writes here instead of the global ThemeContext, so choosing a theme from
+   * the map affects only the map. Falls back to the live global theme when
+   * omitted, for any caller that does not need a map-local override (in which
+   * case BasemapSwitcher keeps writing to the global theme, as before).
+   */
+  mapTheme?: "light" | "dark";
+  onMapThemeChange?: (theme: "light" | "dark") => void;
+  /** Same contract as `mapTheme`/`onMapThemeChange`, for the map's language. */
+  mapLanguage?: Language;
+  onMapLanguageChange?: (language: Language) => void;
+  /**
    * Optional staff overlay. The component stays generic: it draws whatever
    * markers it is handed and reports clicks on them. Where the list comes from
    * (and what a click means) is the caller's business - see CaseStaffMapField.
@@ -171,6 +224,14 @@ export interface AddressMapProps {
   showStaff?: boolean;
   selectedStaffId?: string | null;
   onStaffSelect?: (selection: StaffSelection | null) => void;
+  /**
+   * Optional straight dashed lines from each of these staff members to the
+   * incident pin (the map's `value`). NOT a route: no road network, no solving -
+   * just "where is everyone relative to the incident". Same contract as `staff`:
+   * this component draws what it is handed, and the layer is non-interactive so
+   * it can never intercept a click.
+   */
+  staffConnectors?: readonly StaffConnector[];
   /**
    * Optional route overlay: the solved officer -> case driving route. Same
    * contract as `staff` - this component draws whatever it is handed and is
@@ -236,6 +297,17 @@ export interface AddressMapProps {
   selectedDeviceId?: string | null;
   onDeviceSelect?: (device: DeviceMarker | null) => void;
   /**
+   * Fires when the incident (case) pin itself is clicked. Staff, Place and Device
+   * markers win a click that lands on them as well, so this only fires when none
+   * of those was hit. Omit it and the pin is not clickable - which is how every
+   * editable map (create / edit) keeps clicking near the pin meaning "move it".
+   */
+  onIncidentSelect?: () => void;
+  /**
+   * Moves the camera when it changes to a new request. See MapFocusRequest.
+   */
+  focusRequest?: MapFocusRequest | null;
+  /**
    * Fires (debounced) whenever the map view settles, with the current visible
    * extent in WGS84 degrees. The Device layer uses it to refetch devices for
    * the new viewport (ticket Decision 4 - "full visible-extent set"). Callers
@@ -248,6 +320,17 @@ export interface AddressMapProps {
    * positions them (e.g. `absolute bottom-2 left-2`), as the expand button does.
    */
   overlaySlot?: ReactNode;
+  /**
+   * Controls rendered as the LAST child inside the bottom-left address/
+   * coordinates column (see `showLocationInfo`), below the address card and
+   * status line. Distinct from `overlaySlot`: that renders as an independent,
+   * caller-positioned sibling, so anything placed there has no layout
+   * relationship to the address card. This slot exists so content that must
+   * always sit immediately below the address card (e.g. Place/Device info
+   * popups) does so via normal flex-column flow, not by coincidentally
+   * non-overlapping absolute positions. Renders nothing when omitted.
+   */
+  bottomLeftSlot?: ReactNode;
   /**
    * Controls rendered in the map's top-right toolbar row, to the LEFT of the
    * basemap switcher. Reading right to left the row is: expand, map style, then

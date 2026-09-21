@@ -42,7 +42,10 @@ import { useArcgisPlaceLayer } from "./place/useArcgisPlaceLayer";
 import type { PlaceMarker } from "./place/placeTypes";
 import { useArcgisDeviceLayer } from "./device/useArcgisDeviceLayer";
 import type { DeviceMarker } from "./device/deviceTypes";
-import type { AddressMapProps, MapLatLon } from "./mapTypes";
+import { useArcgisIncidentClick } from "./incident/useArcgisIncidentClick";
+import { useArcgisFocusRequest } from "./useArcgisFocusRequest";
+import { useStaffConnectorLayer } from "./staff/useStaffConnectorLayer";
+import type { AddressMapProps, MapLatLon, StaffConnector } from "./mapTypes";
 
 const DEFAULT_CENTER: [number, number] = [100.5018, 13.7563]; // Bangkok
 const DEFAULT_ZOOM = 12;
@@ -59,6 +62,7 @@ const SEARCH_MIN_CHARACTERS = 3;
 const EMPTY_STAFF: readonly StaffMarker[] = [];
 const EMPTY_PLACES: readonly PlaceMarker[] = [];
 const EMPTY_DEVICES: readonly DeviceMarker[] = [];
+const EMPTY_CONNECTORS: readonly StaffConnector[] = [];
 
 // Minimal shapes for the only two event fields we read. The SDK's generated
 // event types aren't reliably importable across major versions, so we type just
@@ -73,11 +77,14 @@ interface SearchSelectResultEventLike {
   } | null;
 }
 
+// Sized so the pin reads as something to click (it opens the Case Panel on the
+// dispatch map). The Longdo and MapTiler pins are drawn 4px larger than this, at
+// 20 - see MARKER_DIAMETER in longdoSymbols.ts / maptilerSymbols.ts.
 const MARKER_SYMBOL = {
   type: "simple-marker" as const,
   style: "circle" as const,
   color: [37, 99, 235, 0.9], // brand blue
-  size: 12,
+  size: 16,
   outline: { color: [255, 255, 255], width: 2 }
 };
 
@@ -124,6 +131,9 @@ function ArcgisAddressMapBase({
   showDevice = false,
   selectedDeviceId = null,
   onDeviceSelect,
+  onIncidentSelect,
+  focusRequest,
+  staffConnectors,
   onBoundsChange,
   route,
   showRoute = false,
@@ -132,7 +142,12 @@ function ArcgisAddressMapBase({
   boundaries,
   sketch,
   incidentRadius,
+  mapTheme,
+  onMapThemeChange,
+  mapLanguage,
+  onMapLanguageChange,
   overlaySlot,
+  bottomLeftSlot,
   toolbarSlot,
   onExpand,
   compactControls = false,
@@ -141,9 +156,31 @@ function ArcgisAddressMapBase({
   showLocationInfo = false,
   className = ""
 }: AddressMapProps) {
-  const { t, language } = useTranslation();
-  const { theme } = useTheme();
-  const isDarkTheme = theme === "dark";
+  const { t, language, setLanguage } = useTranslation();
+  const { theme, toggleTheme } = useTheme();
+  // The map's OWN rendered theme/language - an override when the caller wires
+  // one (see AddressMapProps.mapTheme), else the live global value. Only this
+  // effective value feeds the basemap/Esri-widget application below; anything
+  // reading `theme`/`language` directly (e.g. this component's own UI text)
+  // stays on the real global value.
+  const effectiveTheme = mapTheme ?? theme;
+  const effectiveLanguage = mapLanguage ?? language;
+  const isDarkTheme = effectiveTheme === "dark";
+  // Fallback for callers that don't wire a map-local override: preserves the
+  // exact previous behavior of writing straight to the global context.
+  const handleSelectTheme = useCallback(
+    (nextTheme: "light" | "dark") => {
+      if (onMapThemeChange) {
+        onMapThemeChange(nextTheme);
+        return;
+      }
+      if (nextTheme !== theme) {
+        toggleTheme();
+      }
+    },
+    [onMapThemeChange, theme, toggleTheme]
+  );
+  const handleSelectLanguage = onMapLanguageChange ?? setLanguage;
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<MapView | null>(null);
   const mapRef = useRef<esriMap | null>(null);
@@ -166,7 +203,7 @@ function ArcgisAddressMapBase({
   );
 
   const basemapId = basemapIdProp ?? internalBasemapId;
-  const esriLanguage = toEsriLanguage(language);
+  const esriLanguage = toEsriLanguage(effectiveLanguage);
   // Editable maps search by default; a view-only map opts in for navigate-only
   // search. Read at mount - the parent remounts the view when the mode changes.
   const isSearchEnabled = showSearch ?? !readOnly;
@@ -180,6 +217,7 @@ function ArcgisAddressMapBase({
   const onStaffSelectRef = useRef(onStaffSelect);
   const onPlaceSelectRef = useRef(onPlaceSelect);
   const onDeviceSelectRef = useRef(onDeviceSelect);
+  const onIncidentSelectRef = useRef(onIncidentSelect);
   const onBoundsChangeRef = useRef(onBoundsChange);
   onSelectRef.current = onSelect;
   onErrorRef.current = onError;
@@ -188,6 +226,7 @@ function ArcgisAddressMapBase({
   onStaffSelectRef.current = onStaffSelect;
   onPlaceSelectRef.current = onPlaceSelect;
   onDeviceSelectRef.current = onDeviceSelect;
+  onIncidentSelectRef.current = onIncidentSelect;
   onBoundsChangeRef.current = onBoundsChange;
 
   // Draws the staff markers and answers "did this click hit an officer?".
@@ -230,6 +269,21 @@ function ArcgisAddressMapBase({
   const resolveDeviceClickRef = useRef(resolveDeviceClick);
   resolveDeviceClickRef.current = resolveDeviceClick;
 
+  // Answers "did this click hit the incident pin?". Only switched on when the
+  // caller wants pin clicks (the dispatch map) - everywhere else a click near the
+  // pin keeps its old meaning.
+  const { resolveIncidentClick } = useArcgisIncidentClick({
+    viewRef,
+    markerLayerRef,
+    isReady,
+    enabled: Boolean(onIncidentSelect)
+  });
+  const resolveIncidentClickRef = useRef(resolveIncidentClick);
+  resolveIncidentClickRef.current = resolveIncidentClick;
+
+  // "Focus" commands from the caller (e.g. centre on a responder).
+  useArcgisFocusRequest({ viewRef, isReady, focusRequest });
+
   // Administrative boundary polygons. Drawn beneath the marker and staff layers,
   // and with popups disabled, so they never intercept a map click. Labels are
   // suppressed while staff is visible - see useAdminBoundaryLayers.ts.
@@ -251,6 +305,18 @@ function ArcgisAddressMapBase({
     isReady,
     path: route?.path ?? null,
     visible: showRoute,
+    isDarkTheme
+  });
+
+  // Straight dashed lines from each staff member to the incident pin. Not a route:
+  // no solving, no roads. Called AFTER the route hook so a solved route (same
+  // draw slot) stays on top, non-interactive - see useStaffConnectorLayer.ts.
+  useStaffConnectorLayer({
+    mapRef,
+    isReady,
+    connectors: staffConnectors ?? EMPTY_CONNECTORS,
+    incident: value,
+    visible: showStaff,
     isDarkTheme
   });
 
@@ -497,6 +563,13 @@ function ArcgisAddressMapBase({
         return;
       }
 
+      // The incident pin last of the pins, still before the readOnly guard: a
+      // hit is a request to see the case, never a request to move it.
+      if (await resolveIncidentClickRef.current(event)) {
+        onIncidentSelectRef.current?.();
+        return;
+      }
+
       if (readOnlyRef.current) {
         return;
       }
@@ -625,6 +698,10 @@ function ArcgisAddressMapBase({
             <BasemapSwitcher
               value={basemapId}
               onChange={handleBasemapChange}
+              effectiveTheme={effectiveTheme}
+              onSelectTheme={handleSelectTheme}
+              effectiveLanguage={effectiveLanguage}
+              onSelectLanguage={handleSelectLanguage}
               compact={compactControls}
             />
           )}
@@ -686,6 +763,7 @@ function ArcgisAddressMapBase({
             </div>
           )
         )}
+        {bottomLeftSlot}
       </div>
       {overlaySlot}
     </div>

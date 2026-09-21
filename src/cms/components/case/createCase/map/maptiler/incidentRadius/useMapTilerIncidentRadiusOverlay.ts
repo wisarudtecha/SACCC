@@ -22,8 +22,16 @@ import {
 } from "../../incidentRadius/incidentRadiusSymbols";
 
 const SOURCE_ID = "maptiler-incident-radius";
-const FILL_ID = "maptiler-incident-radius-fill";
-const LINE_ID = "maptiler-incident-radius-line";
+/**
+ * Exported so useMapTilerBoundaryOverlays can nudge these back to the top
+ * after it (re)adds its own layers - MapLibre paints in pure insertion order
+ * (no z-index), and boundary layers load asynchronously so can otherwise land
+ * on top of this one after the fact.
+ */
+export const INCIDENT_RADIUS_FILL_ID = "maptiler-incident-radius-fill";
+export const INCIDENT_RADIUS_LINE_ID = "maptiler-incident-radius-line";
+const FILL_ID = INCIDENT_RADIUS_FILL_ID;
+const LINE_ID = INCIDENT_RADIUS_LINE_ID;
 
 interface UseMapTilerIncidentRadiusOverlayOptions {
   mapRef: React.MutableRefObject<MlMap | null>;
@@ -113,6 +121,13 @@ export function useMapTilerIncidentRadiusOverlay({
 
     map.setPaintProperty(FILL_ID, "fill-color", incidentRadiusFillCss(isDarkTheme));
     map.setPaintProperty(LINE_ID, "line-color", incidentRadiusStrokeCss(isDarkTheme));
+
+    // Re-assert top-of-stack on every redraw. Boundary layers load
+    // asynchronously and nudge these back to the top themselves too (see
+    // useMapTilerBoundaryOverlays), but this covers the case where incident
+    // radius itself is what's (re)drawing last.
+    map.moveLayer(FILL_ID);
+    map.moveLayer(LINE_ID);
   }, [mapRef, isReady, styleEpoch, incidentRadius, isDarkTheme]);
 
   // Drop the source/layers when the hook goes away. The ref is read in the

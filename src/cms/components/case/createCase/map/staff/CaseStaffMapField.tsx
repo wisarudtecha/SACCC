@@ -7,27 +7,41 @@
 // State lives here, ABOVE AddressMapField, because that component renders
 // a second MapView when expanded. Owning `isStaffVisible` / `selectedStaffId`
 // any lower would reset the layer between renders of the large map and fetch the
-// unit list twice. It now SURVIVES the large map closing - only what the layer
-// actually draws (`effectiveShowStaff`) is gated on `isExpanded`, so reopening
-// restores the toggle state and the selected officer/group without a refetch.
+// unit list twice. It SURVIVES the large map closing, so reopening restores the
+// toggle state and the selected officer/group without a refetch.
 //
-// The whole staff layer is large-map only. Dispatch work needs room: at the
-// inline map's 320px there is space for the case, not for a roster of officers
-// and a detail card. The inline map keeps just "view larger map" and map style.
-import { memo, useCallback, useMemo, useState } from "react";
+// The staff MARKERS show on both maps: the inline map has a compact Staff toggle,
+// so a dispatcher can see where people are without expanding. Everything that
+// needs room stays large-map only - the detail / group / case cards, refresh, and
+// the selected officer's route and trail. Dispatch work needs room: at the inline
+// map's 320px there is space for the case, not for a roster and a detail card.
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { CaseDetails } from "@/cms/types/case";
+import { useUnitWorkloads } from "@/cms/components/assignOfficer/workload/useUnitWorkloads";
+import type { CaseSopUnit } from "@/cms/types/dispatch";
 import { PermissionGate } from "@/core/components/auth/PermissionGate";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import BoundaryMapField from "../BoundaryMapField";
+import { dockedCardsWidthPx } from "../frameBounds";
 import type {
   AddressResult,
   IncidentRadiusOverlay,
+  MapFocusRequest,
   MapLatLon,
   MapSlotContext,
-  RouteOverlay
+  RouteOverlay,
+  StaffConnector
 } from "../mapTypes";
+import CasePanel from "./CasePanel";
+import { collectFramePoints, resolveFocusTarget } from "./casePanelModel";
 import StaffDetailPanel from "./StaffDetailPanel";
 import StaffGroupPanel from "./StaffGroupPanel";
 import StaffMapControls from "./StaffMapControls";
+import {
+  DEFAULT_STAFF_FILTER_MODE,
+  filterStaffForMode,
+  type StaffFilterMode
+} from "./staffFilter";
 import type { StaffSectionContext } from "./staffPanelSections";
 import type { StaffMarker, StaffSelection } from "./staffTypes";
 import { useCaseRoute } from "./useCaseRoute";
@@ -46,6 +60,8 @@ export interface StaffAssignmentOverlay {
   caseLabel: string;
   /** Units already on this case, from the SOP `unitLists`. */
   assignedUnitIds: ReadonlySet<string>;
+  /** The same SOP `unitLists`, whole - the Case Panel lists who was assigned and by whom. */
+  assignedUnits: readonly CaseSopUnit[];
   /** Each assigned unit's status ON THIS CASE - distinct from their global duty
    *  status. Absent key = not assigned to this case. */
   assignedUnitStatusById: ReadonlyMap<string, string>;
@@ -56,6 +72,13 @@ export interface StaffAssignmentOverlay {
   submittingUnitId: string | null;
   onRequestAssign: (marker: StaffMarker) => void;
   onRequestCancel: (marker: StaffMarker) => void;
+  /**
+   * Drag-and-drop assignment: assigns immediately, no confirmation. Resolves true
+   * when the officer ended up dispatched. Upstream owns the toasts and refetch.
+   */
+  onAssignNow: (marker: StaffMarker) => Promise<boolean>;
+  /** Undoes a drag-and-drop assignment. Resolves true when the cancel went through. */
+  onUndoAssign: (marker: StaffMarker) => Promise<boolean>;
   /** Opens the full case record. Rendered upstream - the map clips its own children. */
   onRequestCaseDetails: () => void;
 }
@@ -100,10 +123,37 @@ interface CaseStaffMapFieldProps {
   autoShowDistrictCode?: string | null;
   /** Required: every panel section renders against this context. */
   assignment: StaffAssignmentOverlay;
+  /** The case itself, for the Case Panel opened from the incident pin. */
+  caseData?: CaseDetails;
 }
 
 /** Viewing officer positions is part of assigning them. */
 const STAFF_LAYER_PERMISSION = "case.assign";
+
+/**
+ * Zoom "focus on this responder" brings the map to when it is further out. Street
+ * level: close enough that the responder is not swallowed by a group circle.
+ */
+const RESPONDER_FOCUS_ZOOM = 16;
+
+/**
+ * Room left around the points when framing them, on top of whatever the docked
+ * cards cover: breathing space on every side, the search box across the top, and
+ * the address card and attribution strip along the bottom.
+ */
+const FRAME_MARGIN_PX = 48;
+const FRAME_TOP_INSET_PX = 72;
+const FRAME_BOTTOM_INSET_PX = 64;
+
+/**
+ * Docks the cards over the map's left edge. Fixed top and bottom, not just a
+ * max-height, so a card's own `max-h-full` has something to resolve against.
+ * `pointer-events-none` keeps the empty strip between and beside the cards
+ * clickable as map; each card turns them back on.
+ */
+const CARD_DOCK_CLASS =
+  "pointer-events-none absolute bottom-2 left-2 top-16 z-10 flex items-start gap-2";
+const CARD_CLASS = "pointer-events-auto max-h-full";
 
 function CaseStaffMapFieldBase({
   caseId,
@@ -118,11 +168,20 @@ function CaseStaffMapFieldBase({
   manualOnly = false,
   authorizedDistrictIds,
   autoShowDistrictCode = null,
-  assignment
+  assignment,
+  caseData
 }: CaseStaffMapFieldProps) {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isStaffVisible, setIsStaffVisible] = useState(false);
+  // Which officers the layer shows. Recommend is the default, as in the
+  // assign-officer modal; see staffFilter.ts. Owned here so it survives the large
+  // map closing and is shared by both maps, like the layer's on/off state.
+  const [staffFilterMode, setStaffFilterMode] = useState<StaffFilterMode>(DEFAULT_STAFF_FILTER_MODE);
+  // Whether the "an assigned case shows its staff by default" rule has been
+  // applied or pre-empted, so it fires at most once and never overrides a
+  // dispatcher who has since chosen for themselves.
+  const hasSettledStaffDefaultRef = useRef(false);
   const [selection, setSelection] = useState<StaffSelection | null>(null);
   // The group an officer was picked out of, so the detail card can offer a way
   // back to it. Null when they were clicked directly on the map.
@@ -132,28 +191,95 @@ function CaseStaffMapFieldBase({
   // its row is collapsed - and for the same reason the rest of this state lives
   // here rather than below AddressMapField.
   const [isTrailVisible, setIsTrailVisible] = useState(false);
+  // The Case Panel, opened from the incident pin. Owned here for the same reason
+  // as `selection`, and - like it - kept across the large map closing, so
+  // reopening restores what the dispatcher had open.
+  const [isCasePanelOpen, setIsCasePanelOpen] = useState(false);
+  const [isCasePanelCollapsed, setIsCasePanelCollapsed] = useState(false);
+  // The camera command behind a responder's "focus" button, and the responder a
+  // press is still waiting on: pressing it can also be what turns the staff layer
+  // on, in which case the position does not exist yet.
+  const [focusRequest, setFocusRequest] = useState<MapFocusRequest | null>(null);
+  const [pendingFocusUnitId, setPendingFocusUnitId] = useState<string | null>(null);
+  const focusNonceRef = useRef(0);
 
-  // What the layer actually draws. `isStaffVisible` alone is not enough: it is
-  // forwarded to BOTH map instances (see AddressMapField), and the inline
-  // 320px map has no controls to turn markers back off. Gating on `isExpanded`
-  // here - rather than resetting `isStaffVisible` when the modal closes - is
-  // what lets the layer's on/off state and the selected officer/group survive a
-  // close/reopen instead of forcing a full re-open every time.
-  const effectiveShowStaff = isStaffVisible && isExpanded;
+  // The staff layer is on: fetched and drawn. The flag is forwarded to BOTH map
+  // instances (see AddressMapField), and both have a toggle for it, so it is just
+  // `isStaffVisible` - the layer stays on across the large map opening and
+  // closing, and nothing is refetched for it.
+  const isStaffLayerOn = isStaffVisible;
 
-  const { staff, isLoading, isError, refresh, canRefresh } = useStaffPositions(
+  // What only makes sense with the large map open: the selected officer's route
+  // and trail. Selection can only be made there (see handleStaffSelect), so
+  // drawing them on the inline map would show a line for a card nobody can see.
+  const isExpandedStaffLayerOn = isStaffVisible && isExpanded;
+
+  const { staff, isLoading, isLoaded, isError, refresh, canRefresh } = useStaffPositions(
     caseId,
-    effectiveShowStaff
+    isStaffLayerOn
   );
 
   // Where each officer has been, for as long as the layer has been open. Fed
   // from `staff` so it inherits that hook's coalescing and validation, and
   // accumulated whether or not the trail is currently drawn - see useStaffTrails.
-  const trails = useStaffTrails(staff, effectiveShowStaff);
+  const trails = useStaffTrails(staff, isStaffLayerOn);
+
+  // Workload, only to rank the shortlist - so only fetched while the layer is on
+  // AND the filter needs it. One bulk call for every unit, never one per officer.
+  const staffUnitIds = useMemo(() => staff.map((marker) => marker.unitId), [staff]);
+  const { byUnitId: workloadByUnitId, isError: isWorkloadError } = useUnitWorkloads({
+    unitIds: staffUnitIds,
+    enabled: isStaffLayerOn && staffFilterMode === "recommend"
+  });
+
+  // The staff actually drawn and listed: `staff` narrowed by the filter. Everyone
+  // already on the case is always in it, so the assignment itself is never hidden
+  // by a filter. Anything that has to find an ASSIGNED officer (focus, the
+  // connectors, the Case Panel's roster) keeps reading the full `staff`.
+  const displayedStaff = useMemo(
+    () =>
+      filterStaffForMode({
+        mode: staffFilterMode,
+        staff,
+        assignedUnitIds: assignment.assignedUnitIds,
+        workloadByUnitId,
+        isWorkloadError
+      }),
+    [staffFilterMode, staff, assignment.assignedUnitIds, workloadByUnitId, isWorkloadError]
+  );
+
+  // A straight line from each assigned officer to the incident pin. Just the
+  // staff end - the map draws to its own `value`. Not routes: nothing is solved.
+  const staffConnectors = useMemo<StaffConnector[]>(
+    () =>
+      staff
+        .filter((marker) => assignment.assignedUnitIds.has(marker.unitId))
+        .map((marker) => ({
+          unitId: marker.unitId,
+          latitude: marker.latitude,
+          longitude: marker.longitude
+        })),
+    [staff, assignment.assignedUnitIds]
+  );
+
+  // A case that already has someone assigned opens with its staff showing, on
+  // both maps. An unassigned case stays hidden - showing every officer there is
+  // clutter until the dispatcher asks. Once only: the ref is also set by a manual
+  // toggle (see handleToggle), so a later hide is never undone.
+  useEffect(() => {
+    if (hasSettledStaffDefaultRef.current || assignment.assignedUnitIds.size === 0) {
+      return;
+    }
+    hasSettledStaffDefaultRef.current = true;
+    setIsStaffVisible(true);
+  }, [assignment.assignedUnitIds]);
 
   const clearSelection = useCallback(() => {
     setSelection(null);
     setGroupOrigin(null);
+    // Dismissing the card also withdraws a focus press still waiting for its
+    // position - otherwise the camera would jump later, for a card that is gone.
+    setPendingFocusUnitId(null);
   }, []);
 
   const toggleTrail = useCallback(() => {
@@ -161,6 +287,9 @@ function CaseStaffMapFieldBase({
   }, []);
 
   const handleToggle = useCallback(() => {
+    // A dispatcher's own choice outranks the default, even one made before the
+    // assignment list has loaded.
+    hasSettledStaffDefaultRef.current = true;
     setIsStaffVisible((visible) => {
       if (visible) {
         clearSelection();
@@ -169,12 +298,23 @@ function CaseStaffMapFieldBase({
     });
   }, [clearSelection]);
 
-  const handleStaffSelect = useCallback((next: StaffSelection | null) => {
-    setSelection(next);
-    // A fresh click on the map starts a new journey, so forget where the last
-    // one came from - otherwise "back" would return to an unrelated group.
-    setGroupOrigin(null);
-  }, []);
+  // Ignored unless the large map is open. Markers now draw on the inline map too,
+  // but its Staff toggle opens no panel, so a click there must not set a
+  // selection: the cards only render on the large map, and the next expand would
+  // open a Staff Panel nobody asked for. (A cluster that can be separated is
+  // zoomed into by the map itself, before this is ever called.)
+  const handleStaffSelect = useCallback(
+    (next: StaffSelection | null) => {
+      if (!isExpanded) {
+        return;
+      }
+      setSelection(next);
+      // A fresh click on the map starts a new journey, so forget where the last
+      // one came from - otherwise "back" would return to an unrelated group.
+      setGroupOrigin(null);
+    },
+    [isExpanded]
+  );
 
   const handlePickFromGroup = useCallback(
     (unitId: string) => {
@@ -194,22 +334,109 @@ function CaseStaffMapFieldBase({
     setGroupOrigin(null);
   }, [groupOrigin]);
 
+  // The pin toggles rather than only opens: a second click on the thing that
+  // opened the panel is where people reach for to dismiss it.
+  //
+  // Ignored unless the large map is open. The callback is forwarded to the inline
+  // map too, and a click there would flip state nobody can see - the panel only
+  // renders on the large map - so the next click after expanding would appear to
+  // close a panel that was never shown.
+  const handleIncidentSelect = useCallback(() => {
+    if (!isExpanded) {
+      return;
+    }
+    setIsCasePanelOpen((isOpen) => !isOpen);
+  }, [isExpanded]);
+
+  const closeCasePanel = useCallback(() => {
+    setIsCasePanelOpen(false);
+  }, []);
+
+  const toggleCasePanelCollapsed = useCallback(() => {
+    setIsCasePanelCollapsed((isCollapsed) => !isCollapsed);
+  }, []);
+
+  // "Focus" on a responder in the Case Panel: bring the staff layer up, open that
+  // person's Staff Panel, and centre the map on them (the effect below, once their
+  // position is known). Deliberately never touches the route - selecting a person
+  // does not solve one, that stays the Calculate button's job.
+  const handleFocusResponder = useCallback((unitId: string) => {
+    setIsStaffVisible(true);
+    setGroupOrigin(null);
+    setSelection({ type: "staff", unitId });
+    setPendingFocusUnitId(unitId);
+  }, []);
+
   // Only tracks whether the large map is open. The staff layer's on/off state
-  // and the current selection are deliberately NOT reset here anymore -
-  // `effectiveShowStaff` above already keeps markers off the inline map, so
-  // reopening the large map restores the layer and the selected officer/group
-  // exactly as they were left.
+  // and the current selection are deliberately NOT reset here, so reopening the
+  // large map restores the layer and the selected officer/group exactly as they
+  // were left.
   const handleExpandedChange = useCallback((expanded: boolean) => {
     setIsExpanded(expanded);
   }, []);
 
   const selectedStaffId = selection?.type === "staff" ? selection.unitId : null;
 
+  // Turns a pending focus press into a camera command as soon as the responder's
+  // position exists. If the list has loaded and they are not in it they have no
+  // position to go to, so the press is dropped rather than left to fire later.
+  //
+  // The command asks the map to show the incident pin together with EVERY assigned
+  // responder in one view - zooming out as far as that takes - not just to centre
+  // on the person whose button was pressed. The pressed responder's own position
+  // stays as the fallback for a map that cannot frame, or a case with no location.
+  useEffect(() => {
+    if (!pendingFocusUnitId) {
+      return;
+    }
+    const target = resolveFocusTarget(pendingFocusUnitId, staff);
+    if (target) {
+      const dockWidth = dockedCardsWidthPx({
+        isCasePanelOpen,
+        isCasePanelCollapsed,
+        // The pressed responder's Staff Panel opens beside the Case Panel.
+        hasStaffCard: true
+      });
+      focusNonceRef.current += 1;
+      setFocusRequest({
+        ...target,
+        zoom: RESPONDER_FOCUS_ZOOM,
+        nonce: focusNonceRef.current,
+        framePoints: collectFramePoints(
+          value,
+          assignment.assignedUnitIds,
+          staff,
+          pendingFocusUnitId
+        ),
+        insets: {
+          left: Math.max(dockWidth, 0) + FRAME_MARGIN_PX,
+          top: FRAME_TOP_INSET_PX,
+          right: FRAME_MARGIN_PX,
+          bottom: FRAME_BOTTOM_INSET_PX
+        }
+      });
+      setPendingFocusUnitId(null);
+      return;
+    }
+    if (isLoaded) {
+      setPendingFocusUnitId(null);
+    }
+  }, [
+    pendingFocusUnitId,
+    staff,
+    isLoaded,
+    value,
+    assignment.assignedUnitIds,
+    isCasePanelOpen,
+    isCasePanelCollapsed
+  ]);
+
   // Falls back to null when the selected officer drops out of the list (e.g. a
-  // refresh no longer returns them), which closes the panel on its own.
+  // refresh no longer returns them, or the filter now hides them), which closes
+  // the panel on its own.
   const selectedMarker = useMemo(
-    () => staff.find((marker) => marker.unitId === selectedStaffId) ?? null,
-    [staff, selectedStaffId]
+    () => displayedStaff.find((marker) => marker.unitId === selectedStaffId) ?? null,
+    [displayedStaff, selectedStaffId]
   );
 
   // One officer's trail at a time, derived from the SAME `selection` that drives
@@ -226,9 +453,9 @@ function CaseStaffMapFieldBase({
       return [];
     }
     return selection.unitIds
-      .map((unitId) => staff.find((marker) => marker.unitId === unitId))
+      .map((unitId) => displayedStaff.find((marker) => marker.unitId === unitId))
       .filter((marker): marker is StaffMarker => Boolean(marker));
-  }, [selection, staff]);
+  }, [selection, displayedStaff]);
 
   // The officer -> case driving route. Lives here, not in a section component,
   // for the same reason `selection` does: the state has to survive an accordion
@@ -329,83 +556,139 @@ function CaseStaffMapFieldBase({
   // assign / remove buttons live inside it, so they need no gate of their own.
   // Only the staff controls live here now - the boundary group and the Place
   // button are BoundaryMapField's job, and it renders them to the left of this.
+  //
+  // Both maps get the control; the inline one gets the compact form (icon and
+  // count, no refresh), which shows the markers and nothing else.
   const renderToolbarSlot = useCallback(
     ({ isExpanded }: MapSlotContext) => {
-      if (!isExpanded) {
-        return null;
-      }
       return (
         <PermissionGate permission={STAFF_LAYER_PERMISSION}>
           <StaffMapControls
+            compact={!isExpanded}
+            filterMode={staffFilterMode}
+            onFilterModeChange={setStaffFilterMode}
             isActive={isStaffVisible}
             onToggle={handleToggle}
             onRefresh={refresh}
             canRefresh={canRefresh}
             isLoading={isLoading}
-            count={staff.length}
+            count={displayedStaff.length}
             notice={notice}
           />
         </PermissionGate>
       );
     },
-    [canRefresh, handleToggle, isLoading, isStaffVisible, notice, refresh, staff.length]
+    [
+      canRefresh,
+      displayedStaff.length,
+      handleToggle,
+      isLoading,
+      isStaffVisible,
+      notice,
+      refresh,
+      staffFilterMode
+    ]
   );
+
+  // The staff card for the current selection, or null. At most one, by
+  // construction: a selection is either one officer or one group, never both.
+  const renderStaffCard = useCallback(() => {
+    if (selection?.type === "group" && groupMarkers.length > 0) {
+      return (
+        <StaffGroupPanel
+          markers={groupMarkers}
+          onSelect={handlePickFromGroup}
+          onClose={clearSelection}
+          assignedUnitStatusById={assignment.assignedUnitStatusById}
+          clusterRoutes={clusterRoutes}
+          className={CARD_CLASS}
+        />
+      );
+    }
+    if (!selectedMarker || !sectionContext) {
+      return null;
+    }
+    return (
+      <StaffDetailPanel
+        marker={selectedMarker}
+        onClose={clearSelection}
+        ctx={sectionContext}
+        onBack={groupOrigin ? handleBackToGroup : undefined}
+        backCount={groupOrigin?.length}
+        className={CARD_CLASS}
+      />
+    );
+  }, [
+    assignment,
+    clearSelection,
+    clusterRoutes,
+    groupMarkers,
+    groupOrigin,
+    handleBackToGroup,
+    handlePickFromGroup,
+    sectionContext,
+    selectedMarker,
+    selection
+  ]);
 
   const renderOverlaySlot = useCallback(
     ({ isExpanded }: MapSlotContext) => {
-      // Below the search box, with an 8px gap at the bottom. This is the ONLY
-      // height constraint on either card - a second one on the card itself would
-      // compete with this at an unpredictable precedence and let it overflow the
-      // map, where the clipped part becomes unreachable by scrolling.
-      const anchorClass = "absolute left-2 top-16 z-10 max-h-[calc(100%-4.5rem)]";
-
-      // Staff cards are large-map only, and mutually exclusive by construction:
-      // a selection is either one officer or one group, never both. The boundary
-      // picker sits on the opposite edge and is rendered by BoundaryMapField.
+      // Both cards are large-map only. The boundary picker sits on the opposite
+      // edge and is rendered by BoundaryMapField.
       if (!isExpanded) {
         return null;
       }
-      if (selection?.type === "group" && groupMarkers.length > 0) {
-        return (
-          <PermissionGate permission={STAFF_LAYER_PERMISSION}>
-            <StaffGroupPanel
-              markers={groupMarkers}
-              onSelect={handlePickFromGroup}
-              onClose={clearSelection}
-              assignedUnitStatusById={assignment.assignedUnitStatusById}
-              clusterRoutes={clusterRoutes}
-              className={anchorClass}
-            />
-          </PermissionGate>
-        );
-      }
-      if (!selectedMarker || !sectionContext) {
+      const staffCard = renderStaffCard();
+      if (!isCasePanelOpen && !staffCard) {
         return null;
       }
+
+      // The Case Panel and the staff card share ONE dock, left to right, instead
+      // of each anchoring itself: two absolutely positioned cards at the same
+      // `left-2` would sit on top of each other, and a hard-coded offset for the
+      // second would have to be kept in step with the first's width. In a flex
+      // row they cannot overlap whatever their widths become.
+      //
+      // The dock, not the cards, sets the height budget (below the search box, an
+      // 8px gap at the bottom). A second constraint on a card that competed with
+      // it would let the card overflow the map, where the clipped part becomes
+      // unreachable by scrolling.
       return (
         <PermissionGate permission={STAFF_LAYER_PERMISSION}>
-          <StaffDetailPanel
-            marker={selectedMarker}
-            onClose={clearSelection}
-            ctx={sectionContext}
-            onBack={groupOrigin ? handleBackToGroup : undefined}
-            backCount={groupOrigin?.length}
-            className={anchorClass}
-          />
+          <div className={CARD_DOCK_CLASS}>
+            {isCasePanelOpen && (
+              <CasePanel
+                caseData={caseData}
+                assignedUnits={assignment.assignedUnits}
+                staff={staff}
+                isStaffLoaded={isLoaded}
+                selectedUnitId={selectedStaffId}
+                onFocusResponder={handleFocusResponder}
+                onRequestCaseDetails={assignment.onRequestCaseDetails}
+                onClose={closeCasePanel}
+                isCollapsed={isCasePanelCollapsed}
+                onToggleCollapsed={toggleCasePanelCollapsed}
+                className={CARD_CLASS}
+              />
+            )}
+            {staffCard}
+          </div>
         </PermissionGate>
       );
     },
     [
-      assignment,
-      clearSelection,
-      clusterRoutes,
-      groupMarkers,
-      groupOrigin,
-      handleBackToGroup,
-      handlePickFromGroup,
-      sectionContext,
-      selectedMarker,
-      selection
+      assignment.assignedUnits,
+      assignment.onRequestCaseDetails,
+      caseData,
+      closeCasePanel,
+      handleFocusResponder,
+      isCasePanelCollapsed,
+      isCasePanelOpen,
+      isLoaded,
+      renderStaffCard,
+      selectedStaffId,
+      staff,
+      toggleCasePanelCollapsed
     ]
   );
 
@@ -428,19 +711,24 @@ function CaseStaffMapFieldBase({
       manualOnly={manualOnly}
       authorizedDistrictIds={authorizedDistrictIds}
       autoShowDistrictCode={autoShowDistrictCode}
-      staff={staff}
-      showStaff={effectiveShowStaff}
+      staff={displayedStaff}
+      showStaff={isStaffLayerOn}
+      staffConnectors={staffConnectors}
       selectedStaffId={selectedStaffId}
       onStaffSelect={handleStaffSelect}
       // Same gating as the staff layer: large-map only, and only while a
       // result actually exists to draw - a selection change or a failed solve
       // already collapses `routeState` back to something with no result.
       route={routeOverlay}
-      showRoute={effectiveShowStaff && routeState.status === "ready"}
+      showRoute={isExpandedStaffLayerOn && routeState.status === "ready"}
       // Same gating again, plus the operator's own toggle: a trail belongs to one
       // selected officer, so there is nothing to draw without a selection.
       trail={selectedTrail}
-      showTrail={effectiveShowStaff && isTrailVisible && Boolean(selectedStaffId)}
+      showTrail={isExpandedStaffLayerOn && isTrailVisible && Boolean(selectedStaffId)}
+      // Clicking the incident pin opens the Case Panel; "focus" on one of its
+      // responders is answered with a camera move.
+      onIncidentSelect={handleIncidentSelect}
+      focusRequest={focusRequest}
       extraOverlaySlot={renderOverlaySlot}
       extraToolbarSlot={renderToolbarSlot}
       onExpandedChange={handleExpandedChange}

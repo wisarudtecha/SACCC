@@ -76,13 +76,21 @@ export function useLongdoIncidentRadiusOverlay({
       return;
     }
 
+    // Read the max weight value rather than a named constant: OverlayWeight's
+    // keys aren't typed/verified against the SDK, and this stays correct even
+    // if the SDK adds more levels. `weight` is a per-overlay z-order property
+    // independent of add/rebuild order, so it keeps this circle above
+    // boundary overlays even though useLongdoBoundaryOverlays rebuilds and
+    // re-adds all of its polygons after this one whenever it redraws.
+    const topWeight = Math.max(...Object.values(longdo.OverlayWeight));
     const polygon = new longdo.Polygon(locations, {
       lineWidth: INCIDENT_RADIUS_OUTLINE_WIDTH,
       lineColor: incidentRadiusStrokeCss(isDarkTheme),
       fillColor: incidentRadiusFillCss(isDarkTheme),
       lineStyle: longdo.LineStyle.Dashed,
       clickable: false,
-      pointer: false
+      pointer: false,
+      weight: topWeight
     });
     map.Overlays.add(polygon);
     overlayRef.current = polygon;

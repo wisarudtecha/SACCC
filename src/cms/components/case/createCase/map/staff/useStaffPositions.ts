@@ -93,6 +93,13 @@ interface LocationPatch {
 export interface UseStaffPositionsResult {
   staff: StaffMarker[];
   isLoading: boolean;
+  /**
+   * True once the unit list for this case has arrived. Distinct from
+   * `!isLoading`, which is also true before the first request has started - and
+   * `staff` is empty both then and while the layer is off, so only this says
+   * "the list is in, and a unit missing from it really has no position".
+   */
+  isLoaded: boolean;
   isError: boolean;
   refresh: () => void;
   canRefresh: boolean;
@@ -218,7 +225,7 @@ function serverFixTimeMs(unit: Unit): number {
 export function useStaffPositions(caseId: string, enabled: boolean): UseStaffPositionsResult {
   const { onMessage } = useWebSocket();
 
-  const { data, isFetching, isError, refetch } = useGetUnitQuery(
+  const { data, isFetching, isError, isSuccess, refetch } = useGetUnitQuery(
     { caseId },
     { skip: !enabled || !caseId }
   );
@@ -484,6 +491,7 @@ export function useStaffPositions(caseId: string, enabled: boolean): UseStaffPos
   return {
     staff,
     isLoading: isFetching,
+    isLoaded: enabled && isSuccess,
     isError,
     refresh,
     canRefresh

@@ -17,6 +17,7 @@ import { memo, useMemo, useState } from "react";
 import { ArrowLeft, ChevronDown, ChevronRight, MapPin, X } from "lucide-react";
 import { DateStringToAgoFormat } from "@/cms/components/date/DateToString";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import PanelCollapseToggle from "../PanelCollapseToggle";
 import StaffActionButton from "./StaffActionButton";
 import {
   getCaseStatusName,
@@ -58,6 +59,9 @@ function StaffDetailPanelBase({
 }: StaffDetailPanelProps) {
   const { t, language } = useTranslation();
   const [openSectionIds, setOpenSectionIds] = useState<readonly string[]>([]);
+  // Collapsed to the header, to leave room when other panels are open. Local: it
+  // resets with the card, which unmounts when the selection is cleared.
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const unitStatuses = useMemo(readUnitStatuses, []);
   const caseStatuses = useMemo(readCaseStatuses, []);
@@ -89,7 +93,9 @@ function StaffDetailPanelBase({
     // as well would compete with theirs at a precedence that depends on
     // stylesheet order rather than on which one is correct.
     <div
-      className={`flex w-64 flex-col overflow-hidden rounded-lg border border-gray-200 bg-white/95 shadow-lg backdrop-blur-sm sm:w-72 dark:border-gray-700 dark:bg-gray-900/95 ${className}`}
+      className={`flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white/95 shadow-lg backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/95 ${
+        isCollapsed ? "w-48" : "w-64 sm:w-72"
+      } ${className}`}
     >
       {onBack && (
         <button
@@ -104,7 +110,11 @@ function StaffDetailPanelBase({
         </button>
       )}
 
-      <div className="flex shrink-0 items-start gap-2 border-b border-gray-200 p-3 dark:border-gray-700">
+      <div
+        className={`flex shrink-0 items-start gap-2 p-3 dark:border-gray-700 ${
+          isCollapsed ? "" : "border-b border-gray-200"
+        }`}
+      >
         <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-200 text-xs font-semibold text-gray-700 dark:bg-gray-700 dark:text-gray-100">
           {marker.photo ? (
             <img src={marker.photo} alt="" className="h-full w-full object-cover" />
@@ -135,6 +145,7 @@ function StaffDetailPanelBase({
             </p>
           )}
         </div>
+        <PanelCollapseToggle isCollapsed={isCollapsed} onToggle={() => setIsCollapsed((value) => !value)} />
         <button
           type="button"
           onClick={onClose}
@@ -148,7 +159,9 @@ function StaffDetailPanelBase({
 
       {/* Outside the scroll area on purpose: the primary action stays visible
           and clickable whatever is open below it or how far the user scrolled. */}
-      <div className="shrink-0 border-b border-gray-200 p-3 dark:border-gray-700">
+      <div
+        className={`shrink-0 border-b border-gray-200 p-3 dark:border-gray-700 ${isCollapsed ? "hidden" : ""}`}
+      >
         {ctx.isAssigned ? (
           <StaffActionButton
             variant="cancel"
@@ -177,7 +190,9 @@ function StaffDetailPanelBase({
         )}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar">
+      <div
+        className={`min-h-0 flex-1 overflow-y-auto custom-scrollbar ${isCollapsed ? "hidden" : ""}`}
+      >
         {/* The one section with real data. */}
         <div className="border-b border-gray-200 p-3 dark:border-gray-700">
           <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">

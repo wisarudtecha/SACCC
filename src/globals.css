@@ -93,3 +93,11 @@
 .esri-view .esri-ui-top-left {
   z-index: 20;
 }
+
+/* Pointer cursor over the clickable incident pin (see useArcgisIncidentClick).
+   The staff layer sets an inline `cursor` from its own pointer-move handler, so
+   the pin signals hover with an attribute and this rule wins by `!important`
+   instead of both handlers writing the same inline style. */
+.esri-view[data-incident-hover="true"] {
+  cursor: pointer !important;
+}

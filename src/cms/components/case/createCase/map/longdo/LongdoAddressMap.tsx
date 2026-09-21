@@ -15,7 +15,8 @@
 // The fix has two halves:
 //   1. Every DOM click on the container is recorded (position only).
 //   2. `overlayClick` decides what was hit. An overlay the map treats as
-//      interactive - a staff marker - reports a selection. Anything else is a
+//      interactive - a staff marker, or the case marker when the caller asked
+//      for pin clicks (`onIncidentSelect`) - reports a selection. Anything else is a
 //      click that should have reached the map, so the recorded position is
 //      converted back into a location (locationFromScreen) and handled exactly
 //      as a map click.
@@ -28,7 +29,7 @@ import { useTranslation } from "@/core/hooks/useTranslation";
 import BasemapSwitcher from "../BasemapSwitcher";
 import { MAP_CONTROL_REVEAL_ON_GROUP } from "../mapControlStyles";
 import { BasemapOptionId, DEFAULT_BASEMAP_ID } from "../basemaps";
-import type { AddressMapProps, MapLatLon } from "../mapTypes";
+import type { AddressMapProps, MapLatLon, StaffConnector } from "../mapTypes";
 import type { StaffMarker } from "../staff/staffTypes";
 import type { PlaceMarker } from "../place/placeTypes";
 import type { DeviceMarker } from "../device/deviceTypes";
@@ -55,8 +56,10 @@ import {
 } from "./device/useLongdoDeviceOverlays";
 import { useLongdoBreadcrumbOverlay } from "./staff/useLongdoBreadcrumbOverlay";
 import { useLongdoRouteOverlay } from "./staff/useLongdoRouteOverlay";
+import { useLongdoStaffConnectorOverlay } from "./staff/useLongdoStaffConnectorOverlay";
 import { useLongdoSketchOverlay } from "./sketch/useLongdoSketchOverlay";
 import { useLongdoIncidentRadiusOverlay } from "./incidentRadius/useLongdoIncidentRadiusOverlay";
+import { useLongdoFocusRequest } from "./useLongdoFocusRequest";
 
 const DEFAULT_CENTER: [number, number] = [100.5018, 13.7563]; // Bangkok
 const DEFAULT_ZOOM = 12;
@@ -66,6 +69,7 @@ const DEFAULT_ZOOM = 12;
 const EMPTY_STAFF: readonly StaffMarker[] = [];
 const EMPTY_PLACES: readonly PlaceMarker[] = [];
 const EMPTY_DEVICES: readonly DeviceMarker[] = [];
+const EMPTY_CONNECTORS: readonly StaffConnector[] = [];
 
 interface ScreenPosition {
   clientX: number;
@@ -100,6 +104,9 @@ function LongdoAddressMapBase({
   showDevice = false,
   selectedDeviceId = null,
   onDeviceSelect,
+  onIncidentSelect,
+  focusRequest,
+  staffConnectors,
   onBoundsChange,
   route,
   showRoute = false,
@@ -108,7 +115,12 @@ function LongdoAddressMapBase({
   boundaries,
   sketch,
   incidentRadius,
+  mapTheme,
+  onMapThemeChange,
+  mapLanguage,
+  onMapLanguageChange,
   overlaySlot,
+  bottomLeftSlot,
   toolbarSlot,
   onExpand,
   compactControls = false,
@@ -117,9 +129,27 @@ function LongdoAddressMapBase({
   showLocationInfo = false,
   className = ""
 }: AddressMapProps) {
-  const { t, language } = useTranslation();
-  const { theme } = useTheme();
-  const isDarkTheme = theme === "dark";
+  const { t, language, setLanguage } = useTranslation();
+  const { theme, toggleTheme } = useTheme();
+  // See ArcgisAddressMap's identical comment: `effectiveTheme`/
+  // `effectiveLanguage` feed the map's own rendered style/language, while
+  // `theme`/`language` (unchanged) still drive this component's own UI text.
+  const effectiveTheme = mapTheme ?? theme;
+  const effectiveLanguage = mapLanguage ?? language;
+  const isDarkTheme = effectiveTheme === "dark";
+  const handleSelectTheme = useCallback(
+    (nextTheme: "light" | "dark") => {
+      if (onMapThemeChange) {
+        onMapThemeChange(nextTheme);
+        return;
+      }
+      if (nextTheme !== theme) {
+        toggleTheme();
+      }
+    },
+    [onMapThemeChange, theme, toggleTheme]
+  );
+  const handleSelectLanguage = onMapLanguageChange ?? setLanguage;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const longdoRef = useRef<LongdoGlobal | null>(null);
@@ -176,8 +206,9 @@ function LongdoAddressMapBase({
   const onStaffSelectRef = useRef(onStaffSelect);
   const onPlaceSelectRef = useRef(onPlaceSelect);
   const onDeviceSelectRef = useRef(onDeviceSelect);
+  const onIncidentSelectRef = useRef(onIncidentSelect);
   const onBoundsChangeRef = useRef(onBoundsChange);
-  const languageRef = useRef(language);
+  const languageRef = useRef(effectiveLanguage);
   onSelectRef.current = onSelect;
   onErrorRef.current = onError;
   readOnlyRef.current = readOnly;
@@ -185,8 +216,9 @@ function LongdoAddressMapBase({
   onStaffSelectRef.current = onStaffSelect;
   onPlaceSelectRef.current = onPlaceSelect;
   onDeviceSelectRef.current = onDeviceSelect;
+  onIncidentSelectRef.current = onIncidentSelect;
   onBoundsChangeRef.current = onBoundsChange;
-  languageRef.current = language;
+  languageRef.current = effectiveLanguage;
 
   const reportError = useCallback((message: string, error?: unknown) => {
     console.error(message, error);
@@ -202,7 +234,7 @@ function LongdoAddressMapBase({
     mapRef,
     isReady,
     boundaries,
-    language,
+    language: effectiveLanguage,
     isDarkTheme,
     zoom: settledZoom,
     suppressLabels: showStaff
@@ -244,6 +276,18 @@ function LongdoAddressMapBase({
     selectedDeviceId,
     visible: showDevice,
     resolverRef: resolveDeviceSelectionRef
+  });
+
+  // Straight dashed lines from each staff member to the incident pin. Not a route:
+  // nothing is solved. Non-interactive, and never moves the camera.
+  useLongdoStaffConnectorOverlay({
+    longdoRef,
+    mapRef,
+    isReady,
+    connectors: staffConnectors ?? EMPTY_CONNECTORS,
+    incident: value,
+    visible: showStaff,
+    isDarkTheme
   });
 
   // The solved officer -> case route. Unlike every other overlay on this map it
@@ -290,6 +334,9 @@ function LongdoAddressMapBase({
     incidentRadius,
     isDarkTheme
   });
+
+  // "Focus" commands from the caller (e.g. centre on a responder).
+  useLongdoFocusRequest({ mapRef, containerRef, isReady, focusRequest });
 
   /** Draw (or move) the single selection marker. */
   const setMarker = useCallback((location: LongdoLocation) => {
@@ -432,9 +479,10 @@ function LongdoAddressMapBase({
         map.Event.bind("overlayClick", (event: unknown) => {
           const overlay = event as LongdoOverlay;
 
-          // Staff markers are the only interactive overlay; the layer hook that
-          // owns them resolves the click. Everything else - boundaries, the case
-          // marker itself - is a click that belongs to the map.
+          // Staff markers resolve first (Place / Device / the case marker follow
+          // below); the layer hook that owns them resolves the click. Everything
+          // else - boundaries, and the case marker when pin clicks are off - is a
+          // click that belongs to the map.
           const outcome = resolveOverlaySelectionRef.current?.(overlay) ?? null;
           if (outcome) {
             // Ours either way. A null selection means the layer handled it by
@@ -459,6 +507,16 @@ function LongdoAddressMapBase({
           const deviceHit = resolveDeviceSelectionRef.current?.(overlay) ?? null;
           if (deviceHit) {
             onDeviceSelectRef.current?.(deviceHit);
+            return;
+          }
+
+          // The case marker itself, when the caller wants pin clicks (the dispatch
+          // map): a request to see the case, never to move it, so it returns
+          // before the readOnly / sketch guard like the other markers. Compared by
+          // identity - `markerRef.current` is the very overlay the SDK hands back.
+          // Without the callback the pin stays what it always was, part of the map.
+          if (onIncidentSelectRef.current && overlay === markerRef.current) {
+            onIncidentSelectRef.current();
             return;
           }
 
@@ -584,14 +642,14 @@ function LongdoAddressMapBase({
     applyLongdoBasemap(longdo, map, basemapId, isDarkTheme);
   }, [isReady, basemapId, isDarkTheme]);
 
-  // Follow the app language.
+  // Follow the map's effective language.
   useEffect(() => {
     const map = mapRef.current;
     if (!isReady || !map) {
       return;
     }
-    map.language(toLongdoLanguage(language));
-  }, [isReady, language]);
+    map.language(toLongdoLanguage(effectiveLanguage));
+  }, [isReady, effectiveLanguage]);
 
   // Re-centre + re-mark when a controlled `value` arrives after mount.
   useEffect(() => {
@@ -652,6 +710,10 @@ function LongdoAddressMapBase({
             <BasemapSwitcher
               value={basemapId}
               onChange={handleBasemapChange}
+              effectiveTheme={effectiveTheme}
+              onSelectTheme={handleSelectTheme}
+              effectiveLanguage={effectiveLanguage}
+              onSelectLanguage={handleSelectLanguage}
               compact={compactControls}
             />
           )}
@@ -708,6 +770,7 @@ function LongdoAddressMapBase({
             </div>
           )
         )}
+        {bottomLeftSlot}
       </div>
       {overlaySlot}
     </div>

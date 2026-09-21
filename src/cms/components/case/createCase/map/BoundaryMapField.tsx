@@ -24,10 +24,12 @@ import AddressMapField from "./AddressMapField";
 import type {
   AddressResult,
   IncidentRadiusOverlay,
+  MapFocusRequest,
   MapLatLon,
   MapSlot,
   MapSlotContext,
-  RouteOverlay
+  RouteOverlay,
+  StaffConnector
 } from "./mapTypes";
 import MapPlaceButton from "./MapPlaceButton";
 import BoundaryPickerPanel from "./boundaries/BoundaryPickerPanel";
@@ -38,6 +40,7 @@ import { usePlaceLayer } from "./place/usePlaceLayer";
 import MapDeviceButton from "./device/MapDeviceButton";
 import DeviceInfoPopup from "./device/DeviceInfoPopup";
 import { useDeviceLayer } from "./device/useDeviceLayer";
+import { useMapThemeOverride } from "./useMapThemeOverride";
 import type { StaffMarker, StaffSelection } from "./staff/staffTypes";
 
 interface BoundaryMapFieldProps {
@@ -73,6 +76,11 @@ interface BoundaryMapFieldProps {
   /** Breadcrumb overlay, forwarded untouched for CaseStaffMapField. */
   trail?: readonly TrailPoint[] | null;
   showTrail?: boolean;
+  /** Incident-pin click and camera-focus command, forwarded untouched for CaseStaffMapField. */
+  onIncidentSelect?: () => void;
+  focusRequest?: MapFocusRequest | null;
+  /** Straight dashed staff -> incident lines, forwarded untouched for CaseStaffMapField. */
+  staffConnectors?: readonly StaffConnector[];
   /**
    * No-match fallback circle around the incident pin, forwarded untouched. Set
    * by CaseLocationSection only when the incident coordinate matched no single
@@ -131,6 +139,9 @@ function BoundaryMapFieldBase({
   showRoute = false,
   trail,
   showTrail = false,
+  onIncidentSelect,
+  focusRequest,
+  staffConnectors,
   incidentRadius,
   extraToolbarSlot,
   extraOverlaySlot,
@@ -141,6 +152,8 @@ function BoundaryMapFieldBase({
 }: BoundaryMapFieldProps) {
   const { theme } = useTheme();
   const isDarkTheme = theme === "dark";
+  const { effectiveTheme, effectiveLanguage, setThemeOverride, setLanguageOverride } =
+    useMapThemeOverride();
   const boundary = useBoundarySelection({ startAllHidden: manualOnly, authorizedDistrictIds });
 
   const { showDistrict } = boundary;
@@ -288,29 +301,6 @@ function BoundaryMapFieldBase({
             className="absolute right-2 top-12 z-20 max-h-[calc(100%-3.5rem)]"
           />
         )}
-        {/* Left edge, below the staff cards (left-2 top-16) and clear of the
-            boundary picker (right-2 top-12). Read-only: closing it writes
-            nothing to the case (Q1). */}
-        {showPlaceButton && selectedPlace && (
-          <PlaceInfoPopup
-            place={selectedPlace}
-            onClose={() => selectPlace(null)}
-            className="absolute bottom-2 left-2 z-20 max-w-[16rem]"
-          />
-        )}
-        {/* Shares the bottom-left slot with PlaceInfoPopup - both selected at
-            once is a rare edge case; this one renders last, so it sits on top. */}
-        {showDeviceButton && selectedDevice && (
-          <DeviceInfoPopup
-            device={selectedDevice}
-            canLink={Boolean(onDeviceSelect)}
-            isLinked={selectedDevice.deviceId === currentLinkedDeviceId}
-            onClose={() => selectDevice(null)}
-            onLink={linkSelectedDevice}
-            onUnlink={unlinkDevice}
-            className="absolute bottom-2 left-2 z-20 max-w-[16rem]"
-          />
-        )}
         {extraOverlaySlot?.(context)}
       </>
     ),
@@ -325,6 +315,44 @@ function BoundaryMapFieldBase({
       boundary.apply,
       boundary.cancel,
       isDarkTheme,
+      extraOverlaySlot
+    ]
+  );
+
+  const renderBottomLeftSlot = useCallback(
+    (context: MapSlotContext) => (
+      <>
+        {/* Stacks below the address/coordinates card the caller already
+            renders above this slot (see AddressMapProps.bottomLeftSlot).
+            Read-only: closing it writes nothing to the case (Q1).
+            Expanded-only: a 220px small map has nowhere for this card to go
+            without covering the map's other controls. The click that
+            selected it still highlights the marker on the small map - only
+            the popup's render is deferred until the map is expanded. */}
+        {context.isExpanded && showPlaceButton && selectedPlace && (
+          <PlaceInfoPopup
+            place={selectedPlace}
+            onClose={() => selectPlace(null)}
+            className="z-20 max-w-[16rem]"
+          />
+        )}
+        {/* Both selected at once is a rare edge case; now that this is a flex
+            child rather than an absolutely-positioned overlap, both simply
+            stack instead of one hiding the other. */}
+        {context.isExpanded && showDeviceButton && selectedDevice && (
+          <DeviceInfoPopup
+            device={selectedDevice}
+            canLink={Boolean(onDeviceSelect)}
+            isLinked={selectedDevice.deviceId === currentLinkedDeviceId}
+            onClose={() => selectDevice(null)}
+            onLink={linkSelectedDevice}
+            onUnlink={unlinkDevice}
+            className="z-20 max-w-[16rem]"
+          />
+        )}
+      </>
+    ),
+    [
       showPlaceButton,
       selectedPlace,
       selectPlace,
@@ -334,8 +362,7 @@ function BoundaryMapFieldBase({
       currentLinkedDeviceId,
       selectDevice,
       linkSelectedDevice,
-      unlinkDevice,
-      extraOverlaySlot
+      unlinkDevice
     ]
   );
 
@@ -366,10 +393,18 @@ function BoundaryMapFieldBase({
       showRoute={showRoute}
       trail={trail}
       showTrail={showTrail}
+      onIncidentSelect={onIncidentSelect}
+      focusRequest={focusRequest}
+      staffConnectors={staffConnectors}
       incidentRadius={incidentRadius}
       boundaries={boundary.boundaries}
+      mapTheme={effectiveTheme}
+      onMapThemeChange={setThemeOverride}
+      mapLanguage={effectiveLanguage}
+      onMapLanguageChange={setLanguageOverride}
       toolbarSlot={renderToolbarSlot}
       overlaySlot={renderOverlaySlot}
+      bottomLeftSlot={renderBottomLeftSlot}
       onExpandedChange={handleExpandedChange}
     />
   );

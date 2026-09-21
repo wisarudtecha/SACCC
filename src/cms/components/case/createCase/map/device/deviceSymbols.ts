@@ -24,9 +24,11 @@ const CATEGORY_LABEL_KEY: Record<DeviceCategory, string> = {
 };
 
 const CATEGORY_PATH: Record<DeviceCategory, string> = {
-  // Camera body with a lens.
+  // Camera body with a solid lens (sweep flags match the body's winding so the
+  // lens fills under the nonzero fill rule instead of punching a hole - a
+  // hollow lens made the icon's center visually unclickable).
   camera:
-    "M9 4 7.6 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3.6L15 4H9zm3 4.5a5 5 0 1 1 0 10 5 5 0 0 1 0-10z",
+    "M9 4 7.6 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3.6L15 4H9zm3 4.5a5 5 0 1 0 0 10 5 5 0 0 0 0-10z",
   // Hydrant.
   fire_hydrant:
     "M8 8a4 4 0 0 1 8 0v7a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V8zM6 19h12v3H6zM5 9h2v4H5zM17 9h2v4h-2z",
@@ -110,6 +112,30 @@ export function createDeviceSymbol(category: DeviceCategory, state: DeviceSymbol
     outline: {
       color: [255, 255, 255, 1],
       width: state.isSelected ? 2 : 1.5
+    }
+  };
+}
+
+const HIT_AREA_SIZE = HALO_SIZE;
+const TRANSPARENT: Rgba = [0, 0, 0, 0];
+
+/**
+ * Fully transparent circle drawn under EVERY device marker, sized well beyond
+ * the visible glyph. ArcGIS hit-tests `path`-style markers against their
+ * actual rendered geometry, so a hollow or thin icon (the camera's lens, in
+ * particular) can miss a click that lands squarely on the marker; this gives
+ * hitTest a generous, uniform circular target regardless of the glyph's shape,
+ * without changing anything visible on the map.
+ */
+export function createDeviceHitAreaSymbol() {
+  return {
+    type: "simple-marker" as const,
+    style: "circle" as const,
+    color: TRANSPARENT,
+    size: HIT_AREA_SIZE,
+    outline: {
+      color: TRANSPARENT,
+      width: 0
     }
   };
 }

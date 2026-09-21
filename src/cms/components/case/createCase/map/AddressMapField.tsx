@@ -21,12 +21,15 @@ import type {
   AddressResult,
   IncidentRadiusOverlay,
   MapBounds,
+  MapFocusRequest,
   MapLatLon,
   MapSearchMode,
   MapSlot,
   MapViewpoint,
-  RouteOverlay
+  RouteOverlay,
+  StaffConnector
 } from "./mapTypes";
+import type { Language } from "@/core/config/i18n";
 import type { StaffMarker, StaffSelection } from "./staff/staffTypes";
 import type { PlaceMarker } from "./place/placeTypes";
 import type { DeviceMarker } from "./device/deviceTypes";
@@ -78,6 +81,17 @@ interface AddressMapFieldProps {
   onDeviceSelect?: (device: DeviceMarker | null) => void;
   onBoundsChange?: (bounds: MapBounds) => void;
   /**
+   * Incident-pin click and camera-focus command, forwarded verbatim to both map
+   * instances - see AddressMapProps.onIncidentSelect / focusRequest.
+   */
+  onIncidentSelect?: () => void;
+  focusRequest?: MapFocusRequest | null;
+  /**
+   * Straight dashed staff -> incident lines, forwarded verbatim to both map
+   * instances - see AddressMapProps.staffConnectors.
+   */
+  staffConnectors?: readonly StaffConnector[];
+  /**
    * Route overlay, forwarded verbatim to both map instances - same contract as
    * `staff`.
    */
@@ -107,8 +121,24 @@ interface AddressMapFieldProps {
    * Service Center polygon; null otherwise.
    */
   incidentRadius?: IncidentRadiusOverlay | null;
+  /**
+   * Map-local theme/language override, forwarded verbatim to both map
+   * instances - see AddressMapProps.mapTheme/onMapThemeChange for the
+   * contract. State is owned above (e.g. BoundaryMapField's
+   * useMapThemeOverride) so it survives the expanded map's remount, same as
+   * `basemapId`.
+   */
+  mapTheme?: "light" | "dark";
+  onMapThemeChange?: (theme: "light" | "dark") => void;
+  mapLanguage?: Language;
+  onMapLanguageChange?: (language: Language) => void;
   /** Free-floating controls over the map; the callee positions them. */
   overlaySlot?: MapSlot;
+  /**
+   * Controls stacked below the address/coordinates card in the bottom-left
+   * column - see AddressMapProps.bottomLeftSlot.
+   */
+  bottomLeftSlot?: MapSlot;
   /** Controls for the map's top-right toolbar row. */
   toolbarSlot?: MapSlot;
   /**
@@ -151,6 +181,9 @@ function AddressMapFieldBase({
   selectedDeviceId = null,
   onDeviceSelect,
   onBoundsChange,
+  onIncidentSelect,
+  focusRequest,
+  staffConnectors,
   route,
   showRoute = false,
   trail,
@@ -158,7 +191,12 @@ function AddressMapFieldBase({
   boundaries,
   sketch,
   incidentRadius,
+  mapTheme,
+  onMapThemeChange,
+  mapLanguage,
+  onMapLanguageChange,
   overlaySlot,
+  bottomLeftSlot,
   toolbarSlot,
   onExpandedChange,
   showExpand = true,
@@ -243,6 +281,9 @@ function AddressMapFieldBase({
         selectedDeviceId={selectedDeviceId}
         onDeviceSelect={onDeviceSelect}
         onBoundsChange={onBoundsChange}
+        onIncidentSelect={onIncidentSelect}
+        focusRequest={focusRequest}
+        staffConnectors={staffConnectors}
         route={route}
         showRoute={showRoute}
         trail={trail}
@@ -250,10 +291,15 @@ function AddressMapFieldBase({
         boundaries={boundaries}
         sketch={inlineSketch}
         incidentRadius={incidentRadius}
+        mapTheme={mapTheme}
+        onMapThemeChange={onMapThemeChange}
+        mapLanguage={mapLanguage}
+        onMapLanguageChange={onMapLanguageChange}
         // The inline map is 220-320px; a row of labelled controls covers too
         // much of it. The expanded map below keeps its labels.
         compactControls
         overlaySlot={overlaySlot?.({ isExpanded: false })}
+        bottomLeftSlot={bottomLeftSlot?.({ isExpanded: false })}
         toolbarSlot={toolbarSlot?.({ isExpanded: false })}
         onExpand={showExpand ? openExpanded : undefined}
       />
@@ -291,6 +337,9 @@ function AddressMapFieldBase({
             selectedDeviceId={selectedDeviceId}
             onDeviceSelect={onDeviceSelect}
             onBoundsChange={onBoundsChange}
+            onIncidentSelect={onIncidentSelect}
+            focusRequest={focusRequest}
+            staffConnectors={staffConnectors}
             route={route}
             showRoute={showRoute}
             trail={trail}
@@ -298,10 +347,15 @@ function AddressMapFieldBase({
             boundaries={boundaries}
             sketch={sketch}
             incidentRadius={incidentRadius}
+            mapTheme={mapTheme}
+            onMapThemeChange={onMapThemeChange}
+            mapLanguage={mapLanguage}
+            onMapLanguageChange={onMapLanguageChange}
             viewpointRef={expandedViewpointRef}
             address={address}
             showLocationInfo
             overlaySlot={overlaySlot?.({ isExpanded: true })}
+            bottomLeftSlot={bottomLeftSlot?.({ isExpanded: true })}
             toolbarSlot={toolbarSlot?.({ isExpanded: true })}
           />
         </div>

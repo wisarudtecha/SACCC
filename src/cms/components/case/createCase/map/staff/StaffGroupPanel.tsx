@@ -7,9 +7,10 @@
 //
 // Rendered in the same slot and at the same anchor as StaffDetailPanel, and the
 // two are mutually exclusive, so they can never collide.
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 import { ChevronRight, Loader2, X } from "lucide-react";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import PanelCollapseToggle from "../PanelCollapseToggle";
 import { formatDistanceKm, formatDriveTime, routeErrorKey } from "./routeFormat";
 import {
   getCaseStatusName,
@@ -44,6 +45,8 @@ function StaffGroupPanelBase({
   className = ""
 }: StaffGroupPanelProps) {
   const { t, language } = useTranslation();
+  // Collapsed to the title row, to leave room when other panels are open.
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const unitStatuses = useMemo(readUnitStatuses, []);
   const caseStatuses = useMemo(readCaseStatuses, []);
   const routeByUnitId = useMemo(
@@ -56,17 +59,26 @@ function StaffGroupPanelBase({
     // of the map container, which clips overflow. The height budget is the
     // CALLER's, as with StaffDetailPanel.
     <div
-      className={`flex w-64 flex-col overflow-hidden rounded-lg border border-gray-200 bg-white/95 shadow-lg backdrop-blur-sm sm:w-72 dark:border-gray-700 dark:bg-gray-900/95 ${className}`}
+      className={`flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white/95 shadow-lg backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/95 ${
+        isCollapsed ? "w-48" : "w-64 sm:w-72"
+      } ${className}`}
     >
-      <div className="flex shrink-0 items-start gap-2 border-b border-gray-200 p-3 dark:border-gray-700">
+      <div
+        className={`flex shrink-0 items-start gap-2 p-3 dark:border-gray-700 ${
+          isCollapsed ? "" : "border-b border-gray-200"
+        }`}
+      >
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-gray-900 dark:text-white">
             {t("case.display.map_staff_group_title", { count: markers.length })}
           </p>
-          <p className="mt-0.5 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
-            {t("case.display.map_staff_group_hint")}
-          </p>
+          {!isCollapsed && (
+            <p className="mt-0.5 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
+              {t("case.display.map_staff_group_hint")}
+            </p>
+          )}
         </div>
+        <PanelCollapseToggle isCollapsed={isCollapsed} onToggle={() => setIsCollapsed((value) => !value)} />
         <button
           type="button"
           onClick={onClose}
@@ -78,7 +90,9 @@ function StaffGroupPanelBase({
         </button>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar">
+      <div
+        className={`min-h-0 flex-1 overflow-y-auto custom-scrollbar ${isCollapsed ? "hidden" : ""}`}
+      >
         {markers.map((marker) => {
           const routeState = routeByUnitId.get(marker.unitId);
           return (

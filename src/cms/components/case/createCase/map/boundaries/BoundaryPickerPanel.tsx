@@ -8,9 +8,10 @@
 //
 // Level VISIBILITY is not here: those toggles are instant and live in the
 // toolbar, next to the other map controls.
-import { memo } from "react";
+import { memo, useState } from "react";
 import { X } from "lucide-react";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import PanelCollapseToggle from "../PanelCollapseToggle";
 import BoundaryLevelSection from "./BoundaryLevelSection";
 import { BOUNDARY_LEVELS } from "./boundaryLevels";
 import type { AdminLevel, BoundaryOption, BoundarySelection } from "./boundaryTypes";
@@ -42,15 +43,31 @@ function BoundaryPickerPanelBase({
   className = ""
 }: BoundaryPickerPanelProps) {
   const { t } = useTranslation();
+  // Collapsed to the header row, to leave room when other panels are open. Only
+  // the body is hidden - never unmounted - so each level section keeps its
+  // open/closed state, and the draft itself lives in useBoundarySelection.
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const hiddenWhenCollapsed = isCollapsed ? "hidden" : "";
 
   return (
     <div
-      className={`flex w-72 flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-900 ${className}`}
+      className={`flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-900 ${
+        isCollapsed ? "w-48" : "w-72"
+      } ${className}`}
     >
-      <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-3 py-2 dark:border-gray-800">
-        <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">
+      <div
+        className={`flex shrink-0 items-center justify-between gap-1 px-3 py-2 dark:border-gray-800 ${
+          isCollapsed ? "" : "border-b border-gray-200"
+        }`}
+      >
+        <span className="min-w-0 flex-1 truncate text-xs font-semibold text-gray-900 dark:text-gray-100">
           {t("case.display.map_boundary")}
         </span>
+        <PanelCollapseToggle
+          isCollapsed={isCollapsed}
+          onToggle={() => setIsCollapsed((value) => !value)}
+          isCompact
+        />
         <button
           type="button"
           onClick={onCancel}
@@ -63,13 +80,15 @@ function BoundaryPickerPanelBase({
       </div>
 
       {isLoading ? (
-        <p className="px-3 py-6 text-center text-xs text-gray-500 dark:text-gray-400">
+        <p
+          className={`px-3 py-6 text-center text-xs text-gray-500 dark:text-gray-400 ${hiddenWhenCollapsed}`}
+        >
           {t("case.display.map_boundary_loading")}
         </p>
       ) : (
         // Scrolls as a whole as well as per section: three expanded sections are
         // taller than the panel's share of the map.
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className={`min-h-0 flex-1 overflow-y-auto ${hiddenWhenCollapsed}`}>
           {BOUNDARY_LEVELS.map(({ level, labelKey }) => (
             <BoundaryLevelSection
               key={level}
@@ -92,26 +111,30 @@ function BoundaryPickerPanelBase({
         </div>
       )}
 
-      <div className="flex shrink-0 items-center justify-between gap-2 border-t border-gray-200 px-3 py-2 dark:border-gray-800">
-        <span className="text-[10px] text-gray-500 dark:text-gray-400">
-          {isDirty ? t("case.display.map_boundary_pending") : t("case.display.map_boundary_applied")}
-        </span>
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded px-2 py-1 text-xs text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
-          >
-            {t("case.display.map_boundary_cancel")}
-          </button>
-          <button
-            type="button"
-            onClick={onApply}
-            disabled={!isDirty}
-            className="rounded bg-blue-600 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {t("case.display.map_boundary_apply")}
-          </button>
+      {/* Wrapper rather than a `hidden` class on the footer itself: the footer's
+          own `flex` would compete with it for the `display` property. */}
+      <div className={isCollapsed ? "hidden" : "shrink-0"}>
+        <div className="flex items-center justify-between gap-2 border-t border-gray-200 px-3 py-2 dark:border-gray-800">
+          <span className="text-[10px] text-gray-500 dark:text-gray-400">
+            {isDirty ? t("case.display.map_boundary_pending") : t("case.display.map_boundary_applied")}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="rounded px-2 py-1 text-xs text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
+            >
+              {t("case.display.map_boundary_cancel")}
+            </button>
+            <button
+              type="button"
+              onClick={onApply}
+              disabled={!isDirty}
+              className="rounded bg-blue-600 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {t("case.display.map_boundary_apply")}
+            </button>
+          </div>
         </div>
       </div>
     </div>

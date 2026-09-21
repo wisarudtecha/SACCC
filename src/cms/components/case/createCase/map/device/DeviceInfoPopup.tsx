@@ -10,9 +10,10 @@
 // Plain React rather than a provider popup, for the same reasons as
 // PlaceInfoPopup: native map popups render in the vendor's light theme, cannot
 // reach the app's translation catalogues, and swallow the next map click.
-import { memo } from "react";
+import { memo, useState } from "react";
 import { X } from "lucide-react";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import PanelCollapseToggle from "../PanelCollapseToggle";
 import { getDeviceCategoryLabelKey, getDeviceCategoryRgb } from "./deviceSymbols";
 import type { DeviceMarker } from "./deviceTypes";
 
@@ -39,6 +40,9 @@ function DeviceInfoPopupBase({
   className = ""
 }: DeviceInfoPopupProps) {
   const { t } = useTranslation();
+  // Collapsed to type and category, to leave room when other panels are open. The
+  // Link / Unlink action is part of what collapses - it is one press away.
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const closeLabel = t("case.display.map_device_close");
   const categoryRgb = device.category ? getDeviceCategoryRgb(device.category) : null;
   const categoryLabel = device.category
@@ -65,55 +69,66 @@ function DeviceInfoPopupBase({
             {categoryLabel}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          title={closeLabel}
-          aria-label={closeLabel}
-          className="shrink-0 rounded p-0.5 text-gray-500 hover:bg-black/5 dark:text-gray-400 dark:hover:bg-white/10"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
+        <div className="flex shrink-0 items-center gap-0.5">
+          <PanelCollapseToggle
+            isCollapsed={isCollapsed}
+            onToggle={() => setIsCollapsed((value) => !value)}
+            isCompact
+          />
+          <button
+            type="button"
+            onClick={onClose}
+            title={closeLabel}
+            aria-label={closeLabel}
+            className="shrink-0 rounded p-0.5 text-gray-500 hover:bg-black/5 dark:text-gray-400 dark:hover:bg-white/10"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </div>
 
-      {device.model && (
-        <p className="mt-2 text-gray-500 dark:text-gray-400">
-          {t("case.display.map_device_model")}: {device.model}
-        </p>
-      )}
-      <p className="mt-1 font-mono text-[11px] text-gray-500 dark:text-gray-400">
-        {t("case.display.map_device_id")}: {device.deviceId}
-      </p>
-      <p className="mt-1 text-gray-500 dark:text-gray-400">
-        {t("case.display.map_device_coordinates")}: {device.latitude.toFixed(5)},{" "}
-        {device.longitude.toFixed(5)}
-      </p>
-
-      {canLink && (
-        <div className="mt-2 border-t border-gray-200 pt-2 dark:border-gray-700">
-          {isLinked ? (
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-medium text-blue-700 dark:text-blue-300">
-                {t("case.display.map_device_linked")}
-              </span>
-              <button
-                type="button"
-                onClick={onUnlink}
-                className="shrink-0 rounded border border-gray-300 px-2 py-0.5 text-gray-700 hover:bg-black/5 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-white/10"
-              >
-                {t("case.display.map_device_unlink")}
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={onLink}
-              className="w-full rounded bg-blue-600 px-2 py-1 font-medium text-white hover:bg-blue-700"
-            >
-              {t("case.display.map_device_link")}
-            </button>
+      {!isCollapsed && (
+        <>
+          {device.model && (
+            <p className="mt-2 text-gray-500 dark:text-gray-400">
+              {t("case.display.map_device_model")}: {device.model}
+            </p>
           )}
-        </div>
+          <p className="mt-1 font-mono text-[11px] text-gray-500 dark:text-gray-400">
+            {t("case.display.map_device_id")}: {device.deviceId}
+          </p>
+          <p className="mt-1 text-gray-500 dark:text-gray-400">
+            {t("case.display.map_device_coordinates")}: {device.latitude.toFixed(5)},{" "}
+            {device.longitude.toFixed(5)}
+          </p>
+
+          {canLink && (
+            <div className="mt-2 border-t border-gray-200 pt-2 dark:border-gray-700">
+              {isLinked ? (
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium text-blue-700 dark:text-blue-300">
+                    {t("case.display.map_device_linked")}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={onUnlink}
+                    className="shrink-0 rounded border border-gray-300 px-2 py-0.5 text-gray-700 hover:bg-black/5 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-white/10"
+                  >
+                    {t("case.display.map_device_unlink")}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onLink}
+                  className="w-full rounded bg-blue-600 px-2 py-1 font-medium text-white hover:bg-blue-700"
+                >
+                  {t("case.display.map_device_link")}
+                </button>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -5,6 +5,7 @@ import { DEVICE_CATEGORIES } from "./deviceTypes";
 import {
   DEVICE_SYMBOL_TOKENS,
   createDeviceHaloSymbol,
+  createDeviceHitAreaSymbol,
   createDeviceSymbol,
   getDeviceCategoryLabelKey,
   getDeviceCategoryRgb,
@@ -71,5 +72,17 @@ describe("createDeviceHaloSymbol", () => {
     expect(halo.style).toBe("circle");
     expect(halo.size).toBe(DEVICE_SYMBOL_TOKENS.haloSize);
     expect(halo.color[3]).toBeLessThan(1);
+  });
+});
+
+describe("createDeviceHitAreaSymbol", () => {
+  it("is a fully transparent circle sized like the selection halo", () => {
+    const hitArea = createDeviceHitAreaSymbol();
+    expect(hitArea.type).toBe("simple-marker");
+    expect(hitArea.style).toBe("circle");
+    expect(hitArea.size).toBe(DEVICE_SYMBOL_TOKENS.haloSize);
+    expect(hitArea.color).toEqual([0, 0, 0, 0]);
+    expect(hitArea.outline.width).toBe(0);
+    expect(hitArea.outline.color).toEqual([0, 0, 0, 0]);
   });
 });

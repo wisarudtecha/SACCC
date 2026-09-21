@@ -16,7 +16,11 @@ import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer.js";
 import Point from "@arcgis/core/geometry/Point.js";
 import type esriMap from "@arcgis/core/Map.js";
 import type MapView from "@arcgis/core/views/MapView.js";
-import { createDeviceHaloSymbol, createDeviceSymbol } from "./deviceSymbols";
+import {
+  createDeviceHaloSymbol,
+  createDeviceHitAreaSymbol,
+  createDeviceSymbol
+} from "./deviceSymbols";
 import type { DeviceMarker } from "./deviceTypes";
 
 /** Minimal shape of the hitTest results we read - see the note in ArcgisAddressMap. */
@@ -61,6 +65,7 @@ export function useArcgisDeviceLayer({
 }: UseArcgisDeviceLayerOptions): UseArcgisDeviceLayerResult {
   const layerRef = useRef<GraphicsLayer | null>(null);
   const graphicsRef = useRef<Map<string, Graphic>>(new Map());
+  const hitAreaGraphicsRef = useRef<Map<string, Graphic>>(new Map());
   const haloRef = useRef<Graphic | null>(null);
 
   const devicesRef = useRef(devices);
@@ -84,6 +89,7 @@ export function useArcgisDeviceLayer({
     const markers = devicesRef.current;
     const selectedId = selectedDeviceIdRef.current;
     const graphics = graphicsRef.current;
+    const hitAreaGraphics = hitAreaGraphicsRef.current;
 
     const liveKeys = new Set(
       markers.filter((marker) => marker.category !== null).map((marker) => marker.deviceId)
@@ -92,6 +98,12 @@ export function useArcgisDeviceLayer({
       if (!liveKeys.has(id)) {
         layer.remove(graphic);
         graphics.delete(id);
+      }
+    });
+    hitAreaGraphics.forEach((graphic, id) => {
+      if (!liveKeys.has(id)) {
+        layer.remove(graphic);
+        hitAreaGraphics.delete(id);
       }
     });
 
@@ -108,18 +120,39 @@ export function useArcgisDeviceLayer({
         const graphic = new Graphic({
           geometry,
           symbol,
-          attributes: { deviceId: marker.deviceId }
+          attributes: { deviceId: marker.deviceId, isHitArea: false }
         });
         graphics.set(marker.deviceId, graphic);
         layer.add(graphic);
-        return;
       }
-      const point = existing.geometry as Point | null;
-      if (point?.latitude !== marker.latitude || point?.longitude !== marker.longitude) {
-        existing.geometry = geometry;
+      else {
+        const point = existing.geometry as Point | null;
+        if (point?.latitude !== marker.latitude || point?.longitude !== marker.longitude) {
+          existing.geometry = geometry;
+        }
+        existing.symbol = symbol;
+        existing.attributes = { deviceId: marker.deviceId, isHitArea: false };
       }
-      existing.symbol = symbol;
-      existing.attributes = { deviceId: marker.deviceId };
+
+      // Invisible, larger hit target underneath the glyph - see
+      // createDeviceHitAreaSymbol for why this exists.
+      const existingHitArea = hitAreaGraphics.get(marker.deviceId);
+      if (!existingHitArea) {
+        const hitAreaGraphic = new Graphic({
+          geometry,
+          symbol: createDeviceHitAreaSymbol(),
+          attributes: { deviceId: marker.deviceId, isHitArea: true }
+        });
+        hitAreaGraphics.set(marker.deviceId, hitAreaGraphic);
+        // Under the glyphs (index 0), so the visible icons stay on top.
+        layer.graphics.add(hitAreaGraphic, 0);
+      }
+      else {
+        const point = existingHitArea.geometry as Point | null;
+        if (point?.latitude !== marker.latitude || point?.longitude !== marker.longitude) {
+          existingHitArea.geometry = geometry;
+        }
+      }
     });
 
     // The selection halo, drawn beneath the markers so it reads as a spotlight
@@ -168,6 +201,7 @@ export function useArcgisDeviceLayer({
     map.add(layer);
 
     const graphics = graphicsRef.current;
+    const hitAreaGraphics = hitAreaGraphicsRef.current;
 
     return () => {
       map.remove(layer);
@@ -175,6 +209,7 @@ export function useArcgisDeviceLayer({
       layer.destroy();
       layerRef.current = null;
       graphics.clear();
+      hitAreaGraphics.clear();
       haloRef.current = null;
     };
   }, [isReady, mapRef]);
@@ -199,9 +234,15 @@ export function useArcgisDeviceLayer({
         { include: [layer] }
       )) as HitTestResponseLike;
 
-      const hit = (response?.results ?? [])
-        .filter((result) => result.type === "graphic")
-        .find((result) => result.graphic?.attributes?.deviceId);
+      const candidates = (response?.results ?? []).filter(
+        (result) =>
+          result.type === "graphic" && typeof result.graphic?.attributes?.deviceId === "string"
+      );
+      // An exact hit on the visible glyph always wins; only when the click
+      // landed outside every glyph's actual shape (e.g. the camera's lens) do
+      // we fall back to whichever invisible hit-area graphic was hit.
+      const exact = candidates.find((result) => !result.graphic?.attributes?.isHitArea);
+      const hit = exact ?? candidates[0] ?? null;
       const deviceId = hit?.graphic?.attributes?.deviceId;
       if (typeof deviceId !== "string") {
         return null;

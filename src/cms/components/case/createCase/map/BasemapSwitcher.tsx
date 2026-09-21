@@ -9,20 +9,19 @@
 //
 // This component knows nothing about ArcGIS - it just reports the chosen option.
 //
-// Theme and language sections read/write the SAME global contexts SuperTopbar's
-// own controls use (ThemeContext, LanguageContext via useTranslation) rather
-// than owning any map-scoped state. That is what the modal-covers-SuperTopbar
-// problem actually needed: the expanded map's MapView already applies theme and
-// language changes in place (see applyBasemap in ArcgisAddressMap and
-// useAdminBoundaryLayers), so once the global state is reachable from inside
-// the modal, the map catching up "for free" and staying in sync with SuperTopbar
-// (in both directions) comes along with it - no separate map-local setting, no
-// clearing-on-refresh logic, since it IS the same persisted preference.
+// Theme and language selection is fully controlled via props (`effectiveTheme`/
+// `onSelectTheme`, `effectiveLanguage`/`onSelectLanguage`) rather than reading/
+// writing ThemeContext/LanguageContext directly. The caller (see
+// AddressMapProps.mapTheme/onMapThemeChange) decides whether that write lands
+// in a map-local override or falls through to the global context - this
+// component has no opinion on scope. `useTranslation()` is still used for
+// `t()`/the UI label text and the `languages` list, which stay on the app's
+// real language regardless of the map's own override (this control's own
+// chrome, like the rest of the app's, follows global).
 import { memo, useCallback, useEffect, useState } from "react";
 import { Check, Layers } from "lucide-react";
 import { Dropdown } from "@/core/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/core/components/ui/dropdown/DropdownItem";
-import { useTheme } from "@/core/context/ThemeContext";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import type { Language } from "@/core/config/i18n";
 import { mapControlRevealClass } from "./mapControlStyles";
@@ -31,6 +30,12 @@ import { BASEMAP_OPTIONS, BasemapOptionId } from "./basemaps";
 interface BasemapSwitcherProps {
   value: BasemapOptionId;
   onChange: (id: BasemapOptionId) => void;
+  /** Currently effective theme for the map (override, or global if none). */
+  effectiveTheme: "light" | "dark";
+  onSelectTheme: (theme: "light" | "dark") => void;
+  /** Currently effective language for the map (override, or global if none). */
+  effectiveLanguage: Language;
+  onSelectLanguage: (language: Language) => void;
   /**
    * Icon-only until hovered or focused, for the small maps where a labelled
    * control covers the map it belongs to. The label also stays out while the
@@ -48,11 +53,14 @@ interface BasemapSwitcherProps {
 function BasemapSwitcherBase({
   value,
   onChange,
+  effectiveTheme,
+  onSelectTheme,
+  effectiveLanguage,
+  onSelectLanguage,
   compact = false,
   className = ""
 }: BasemapSwitcherProps) {
-  const { t, language, setLanguage, languages } = useTranslation();
-  const { theme, toggleTheme } = useTheme();
+  const { t, languages } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -82,25 +90,20 @@ function BasemapSwitcherBase({
     [onChange]
   );
 
-  // ThemeContext exposes only a toggle, not a setter - only flip it when the
-  // clicked option differs from the current theme, so re-picking the active
-  // one is a no-op rather than bouncing back to the other theme.
   const handleSelectTheme = useCallback(
     (nextTheme: "light" | "dark") => {
-      if (nextTheme !== theme) {
-        toggleTheme();
-      }
+      onSelectTheme(nextTheme);
       setIsOpen(false);
     },
-    [theme, toggleTheme]
+    [onSelectTheme]
   );
 
   const handleSelectLanguage = useCallback(
     (code: Language) => {
-      setLanguage(code);
+      onSelectLanguage(code);
       setIsOpen(false);
     },
-    [setLanguage]
+    [onSelectLanguage]
   );
 
   const label = t("case.display.map_basemap");
@@ -162,7 +165,7 @@ function BasemapSwitcherBase({
           {t("case.display.map_settings_theme")}
         </div>
         {(["light", "dark"] as const).map((option) => {
-          const isActive = option === theme;
+          const isActive = option === effectiveTheme;
           return (
             <DropdownItem
               key={option}
@@ -191,7 +194,7 @@ function BasemapSwitcherBase({
           {t("case.display.map_settings_language")}
         </div>
         {languages.map((lang) => {
-          const isActive = lang.code === language;
+          const isActive = lang.code === effectiveLanguage;
           return (
             <DropdownItem
               key={lang.code}

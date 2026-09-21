@@ -21,11 +21,14 @@ import type { IncidentRadiusOverlay } from "../mapTypes";
 import { incidentRadiusArcgisSymbol } from "./incidentRadiusSymbols";
 
 /**
- * Sits alongside the route layer (see ROUTE_DRAW_INDEX in useRouteGraphicsLayer):
- * above the three boundary layers, below the case marker / staff layers that
- * ArcgisAddressMap adds after the layer hooks run.
+ * A large, out-of-range index rather than a small fixed one: ArcGIS's
+ * `reorder` clamps an index beyond the collection's length to the top, so
+ * this guarantees the incident-radius layer stays above every boundary layer
+ * regardless of how many exist or when they finish loading (boundary layers
+ * build asynchronously and can be added to the map AFTER this layer - a fixed
+ * low index like the old `3` only worked by timing coincidence).
  */
-const INCIDENT_RADIUS_DRAW_INDEX = 3;
+const INCIDENT_RADIUS_DRAW_INDEX = 999;
 
 interface UseArcgisIncidentRadiusLayerOptions {
   mapRef: React.MutableRefObject<esriMap | null>;
@@ -90,11 +93,17 @@ export function useArcgisIncidentRadiusLayer({
   }, [isReady, mapRef]);
 
   // Data-driven redraw: reassign the single graphic, or drop it when there is
-  // no circle to show.
+  // no circle to show. Also re-asserts the top-of-stack position on every
+  // redraw (not just at creation) - boundary layers load asynchronously and
+  // can otherwise land on top after this effect last ran.
   useEffect(() => {
+    const map = mapRef.current;
     const layer = layerRef.current;
     if (!isReady || !layer) {
       return;
+    }
+    if (map) {
+      map.reorder(layer, INCIDENT_RADIUS_DRAW_INDEX);
     }
     if (!geometry) {
       if (graphicRef.current) {

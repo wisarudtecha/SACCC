@@ -26,20 +26,22 @@ import { useTranslation } from "@/core/hooks/useTranslation";
 import BasemapSwitcher from "../BasemapSwitcher";
 import { MAP_CONTROL_REVEAL_ON_GROUP } from "../mapControlStyles";
 import { BasemapOptionId, DEFAULT_BASEMAP_ID } from "../basemaps";
-import type { AddressMapProps, MapLatLon } from "../mapTypes";
+import type { AddressMapProps, MapLatLon, StaffConnector } from "../mapTypes";
 import type { StaffMarker } from "../staff/staffTypes";
 import type { PlaceMarker } from "../place/placeTypes";
 import type { DeviceMarker } from "../device/deviceTypes";
 import { maptilerGeocodeService, type PlaceCandidate } from "../services/maptilerGeocode";
 import { ensureMapTilerWorker } from "./maptilerSetup";
 import { mapTilerStyleFor, mapTilerStyleSignature } from "./maptilerBasemaps";
-import { createCaseMarkerElement } from "./maptilerSymbols";
+import { createCaseMarkerElement, setCaseMarkerClickable } from "./maptilerSymbols";
+import { useMapTilerFocusRequest } from "./useMapTilerFocusRequest";
 import MapTilerSearchBox from "./MapTilerSearchBox";
 import { useMapTilerBoundaryOverlays } from "./boundaries/useMapTilerBoundaryOverlays";
 import { useMapTilerStaffOverlays } from "./staff/useMapTilerStaffOverlays";
 import { useMapTilerPlaceOverlays } from "./place/useMapTilerPlaceOverlays";
 import { useMapTilerDeviceOverlays } from "./device/useMapTilerDeviceOverlays";
 import { useMapTilerRouteOverlay } from "./staff/useMapTilerRouteOverlay";
+import { useMapTilerStaffConnectorOverlay } from "./staff/useMapTilerStaffConnectorOverlay";
 import { useMapTilerBreadcrumbOverlay } from "./staff/useMapTilerBreadcrumbOverlay";
 import { useMapTilerSketchOverlay } from "./sketch/useMapTilerSketchOverlay";
 import { useMapTilerIncidentRadiusOverlay } from "./incidentRadius/useMapTilerIncidentRadiusOverlay";
@@ -52,6 +54,7 @@ const DEFAULT_ZOOM = 12;
 const EMPTY_STAFF: readonly StaffMarker[] = [];
 const EMPTY_PLACES: readonly PlaceMarker[] = [];
 const EMPTY_DEVICES: readonly DeviceMarker[] = [];
+const EMPTY_CONNECTORS: readonly StaffConnector[] = [];
 
 function MapTilerAddressMapBase({
   value,
@@ -77,6 +80,9 @@ function MapTilerAddressMapBase({
   showDevice = false,
   selectedDeviceId = null,
   onDeviceSelect,
+  onIncidentSelect,
+  focusRequest,
+  staffConnectors,
   onBoundsChange,
   route,
   showRoute = false,
@@ -85,7 +91,12 @@ function MapTilerAddressMapBase({
   boundaries,
   sketch,
   incidentRadius,
+  mapTheme,
+  onMapThemeChange,
+  mapLanguage,
+  onMapLanguageChange,
   overlaySlot,
+  bottomLeftSlot,
   toolbarSlot,
   onExpand,
   compactControls = false,
@@ -94,9 +105,27 @@ function MapTilerAddressMapBase({
   showLocationInfo = false,
   className = ""
 }: AddressMapProps) {
-  const { t, language } = useTranslation();
-  const { theme } = useTheme();
-  const isDarkTheme = theme === "dark";
+  const { t, language, setLanguage } = useTranslation();
+  const { theme, toggleTheme } = useTheme();
+  // See ArcgisAddressMap's identical comment: `effectiveTheme`/
+  // `effectiveLanguage` feed the map's own rendered style/language, while
+  // `theme`/`language` (unchanged) still drive this component's own UI text.
+  const effectiveTheme = mapTheme ?? theme;
+  const effectiveLanguage = mapLanguage ?? language;
+  const isDarkTheme = effectiveTheme === "dark";
+  const handleSelectTheme = useCallback(
+    (nextTheme: "light" | "dark") => {
+      if (onMapThemeChange) {
+        onMapThemeChange(nextTheme);
+        return;
+      }
+      if (nextTheme !== theme) {
+        toggleTheme();
+      }
+    },
+    [onMapThemeChange, theme, toggleTheme]
+  );
+  const handleSelectLanguage = onMapLanguageChange ?? setLanguage;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MlMap | null>(null);
@@ -129,13 +158,20 @@ function MapTilerAddressMapBase({
   const readOnlyRef = useRef(readOnly);
   const onBasemapChangeRef = useRef(onBasemapChange);
   const onBoundsChangeRef = useRef(onBoundsChange);
-  const languageRef = useRef(language);
+  const onIncidentSelectRef = useRef(onIncidentSelect);
+  const languageRef = useRef(effectiveLanguage);
+  // Only the dispatch map passes `onIncidentSelect`; everywhere else the pin stays
+  // transparent to the pointer and a click near it moves it, as before.
+  const isIncidentClickable = Boolean(onIncidentSelect);
+  const isIncidentClickableRef = useRef(isIncidentClickable);
   onSelectRef.current = onSelect;
   onErrorRef.current = onError;
   readOnlyRef.current = readOnly;
   onBasemapChangeRef.current = onBasemapChange;
   onBoundsChangeRef.current = onBoundsChange;
-  languageRef.current = language;
+  onIncidentSelectRef.current = onIncidentSelect;
+  isIncidentClickableRef.current = isIncidentClickable;
+  languageRef.current = effectiveLanguage;
 
   const reportError = useCallback((message: string, error?: unknown) => {
     console.error(message, error);
@@ -149,7 +185,7 @@ function MapTilerAddressMapBase({
     isReady,
     styleEpoch,
     boundaries,
-    language,
+    language: effectiveLanguage,
     isDarkTheme,
     zoom: settledZoom,
     suppressLabels: showStaff
@@ -190,6 +226,19 @@ function MapTilerAddressMapBase({
     selectedDeviceId,
     visible: showDevice,
     onSelect: onDeviceSelect
+  });
+
+  // Straight dashed lines from each staff member to the incident pin. Not a route:
+  // nothing is solved. Called BEFORE the route overlay, because layers added later
+  // draw on top and a solved route has to stay above these.
+  useMapTilerStaffConnectorOverlay({
+    mapRef,
+    isReady,
+    styleEpoch,
+    connectors: staffConnectors ?? EMPTY_CONNECTORS,
+    incident: value,
+    visible: showStaff,
+    isDarkTheme
   });
 
   // The solved officer -> case route. ORS returns geometry, so this draws the
@@ -235,17 +284,41 @@ function MapTilerAddressMapBase({
     isDarkTheme
   });
 
+  // "Focus" commands from the caller (e.g. centre on a responder).
+  useMapTilerFocusRequest({ mapRef, isReady, focusRequest });
+
   /** Draw (or move) the single selection marker. */
   const setMarker = useCallback((location: MapLatLon) => {
     const map = mapRef.current;
     if (!map) {
       return;
     }
-    const marker =
-      markerRef.current ??
-      (markerRef.current = new Marker({ element: createCaseMarkerElement(), anchor: "center" }));
-    marker.setLngLat([location.longitude, location.latitude]).addTo(map);
+    if (!markerRef.current) {
+      const element = createCaseMarkerElement();
+      setCaseMarkerClickable(element, isIncidentClickableRef.current);
+      // Same shape as the staff / place markers: the element owns its click and
+      // stopPropagation() keeps it off the map's own click (which would
+      // reverse-geocode). A no-op unless the caller passed `onIncidentSelect`.
+      element.addEventListener("click", (event) => {
+        if (!onIncidentSelectRef.current) {
+          return;
+        }
+        event.stopPropagation();
+        onIncidentSelectRef.current();
+      });
+      markerRef.current = new Marker({ element, anchor: "center" });
+    }
+    markerRef.current.setLngLat([location.longitude, location.latitude]).addTo(map);
   }, []);
+
+  // A pin that already exists when the callback appears or goes away (the marker
+  // is created lazily, so it can predate this flag changing).
+  useEffect(() => {
+    const element = markerRef.current?.getElement();
+    if (element) {
+      setCaseMarkerClickable(element, isIncidentClickable);
+    }
+  }, [isIncidentClickable, isReady]);
 
   /** Reverse geocode a location and report it. Shared by both click paths. */
   const resolveLocation = useCallback(
@@ -427,17 +500,17 @@ function MapTilerAddressMapBase({
     if (!isReady || !map) {
       return;
     }
-    const signature = mapTilerStyleSignature(basemapId, isDarkTheme, language);
+    const signature = mapTilerStyleSignature(basemapId, isDarkTheme, effectiveLanguage);
     if (appliedStyleRef.current === signature) {
       return;
     }
     appliedStyleRef.current = signature;
     try {
-      map.setStyle(mapTilerStyleFor(basemapId, isDarkTheme, language));
+      map.setStyle(mapTilerStyleFor(basemapId, isDarkTheme, effectiveLanguage));
     } catch (error: unknown) {
       reportError("Failed to switch the map style", error);
     }
-  }, [isReady, basemapId, isDarkTheme, language, reportError]);
+  }, [isReady, basemapId, isDarkTheme, effectiveLanguage, reportError]);
 
   // Re-centre + re-mark when a controlled `value` arrives after mount.
   useEffect(() => {
@@ -484,6 +557,10 @@ function MapTilerAddressMapBase({
             <BasemapSwitcher
               value={basemapId}
               onChange={handleBasemapChange}
+              effectiveTheme={effectiveTheme}
+              onSelectTheme={handleSelectTheme}
+              effectiveLanguage={effectiveLanguage}
+              onSelectLanguage={handleSelectLanguage}
               compact={compactControls}
             />
           )}
@@ -532,6 +609,7 @@ function MapTilerAddressMapBase({
             </div>
           )
         )}
+        {bottomLeftSlot}
       </div>
       {overlaySlot}
     </div>

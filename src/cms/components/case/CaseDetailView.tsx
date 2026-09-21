@@ -481,7 +481,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         setShowCancelUnitModal(true);
     }, []);
 
-    const handleConfirmCancelUnit = useCallback(async (unit: CaseSopUnit) => {
+    // Resolves true when the cancel went through. The two existing callers ignore
+    // the result; the map's undo popup needs it to know whether the officer is
+    // still assigned.
+    const handleConfirmCancelUnit = useCallback(async (unit: CaseSopUnit): Promise<boolean> => {
         const cancelUnitJson: CancelUnit = {
             caseId: initialCaseData!.caseId,
             unitId: unit.unitId,
@@ -496,9 +499,11 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 throw Error
             }
             addToast("success", t("case.display.toast.cancel_unit_success"));
+            return true;
         } catch (error) {
             addToast("error", t("case.display.toast.cancel_unit_fail") + ` ${error}`);
             setDisableButton(false);
+            return false;
         }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1003,6 +1008,14 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         [sopData?.data?.unitLists]
     );
 
+    // The same list whole, for the map's Case Panel: who was assigned, and by whom
+    // (`createdBy`). Memoised so an absent list is one stable [] rather than a new
+    // one every render, which would rebuild `staffOverlay` each time.
+    const assignedUnits = useMemo(
+        () => sopData?.data?.unitLists ?? [],
+        [sopData?.data?.unitLists]
+    );
+
     const handleRequestAssignFromMap = useCallback((marker: StaffMarker) => {
         setMapStaffAction({
             action: "assign",
@@ -1046,6 +1059,31 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         }
     }, [mapStaffAction, handleDispatch, handleConfirmCancelUnit]);
 
+    // Drag-and-drop assignment: the dispatcher's drop IS the decision, so there is
+    // no confirmation dialog. Unlike the dialog path this does not touch
+    // `submittingUnitId` - several officers can be in flight at once, and the map
+    // tracks each one's own pending state.
+    const handleAssignNowFromMap = useCallback(
+        (marker: StaffMarker) =>
+            // handleDispatch reads only unitId / username off the Unit.
+            handleDispatch({ unitId: marker.unitId, username: marker.username } as Unit),
+        [handleDispatch]
+    );
+
+    // Undo of a drag-and-drop assignment. Refetches on success because, unlike the
+    // dialog path, nothing else is going to make the staff panel drop its
+    // "assigned" state straight away.
+    const handleUndoAssignFromMap = useCallback(async (marker: StaffMarker) => {
+        const isCancelled = await handleConfirmCancelUnit(
+            { unitId: marker.unitId, username: marker.username } as CaseSopUnit
+        );
+        if (isCancelled) {
+            await refetch();
+        }
+        return isCancelled;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [handleConfirmCancelUnit, refetch]);
+
     // Turns on the map's staff layer. Same caseId the assign modal uses, since
     // both read /dispatch/{caseId}/units.
     const staffOverlay = useMemo(
@@ -1055,6 +1093,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                 assignment: {
                     caseLabel: caseState?.workOrderNummber || initialCaseData.caseId,
                     assignedUnitIds,
+                    assignedUnits,
                     assignedUnitStatusById,
                     // Same gate as the modal's `canDispatch`.
                     canAssign: sopData?.data?.dispatchStage?.data ? true : false,
@@ -1062,6 +1101,8 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                     submittingUnitId,
                     onRequestAssign: handleRequestAssignFromMap,
                     onRequestCancel: handleRequestCancelFromMap,
+                    onAssignNow: handleAssignNowFromMap,
+                    onUndoAssign: handleUndoAssignFromMap,
                     onRequestCaseDetails: handleRequestCaseDetails
                 }
             }
@@ -1070,12 +1111,15 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             initialCaseData?.caseId,
             caseState?.workOrderNummber,
             assignedUnitIds,
+            assignedUnits,
             assignedUnitStatusById,
             sopData?.data?.dispatchStage?.data,
             canCancelUnit,
             submittingUnitId,
             handleRequestAssignFromMap,
             handleRequestCancelFromMap,
+            handleAssignNowFromMap,
+            handleUndoAssignFromMap,
             handleRequestCaseDetails
         ]
     );

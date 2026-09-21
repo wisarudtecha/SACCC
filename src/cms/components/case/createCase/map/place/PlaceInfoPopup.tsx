@@ -8,9 +8,10 @@
 // Plain React rather than a provider popup: native map popups render in the
 // vendor's light theme, cannot reach the app's translation catalogues, and
 // swallow the next map click - all of which the staff layer avoids the same way.
-import { memo } from "react";
+import { memo, useState } from "react";
 import { X } from "lucide-react";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import PanelCollapseToggle from "../PanelCollapseToggle";
 import { getPlaceCategoryLabelKey, getPlaceCategoryRgb } from "./placeSymbols";
 import type { PlaceMarker } from "./placeTypes";
 
@@ -23,6 +24,8 @@ interface PlaceInfoPopupProps {
 
 function PlaceInfoPopupBase({ place, onClose, className = "" }: PlaceInfoPopupProps) {
   const { t } = useTranslation();
+  // Collapsed to name and category, to leave room when other panels are open.
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [r, g, b] = getPlaceCategoryRgb(place.category);
   const closeLabel = t("case.display.map_place_close");
 
@@ -42,19 +45,28 @@ function PlaceInfoPopupBase({ place, onClose, className = "" }: PlaceInfoPopupPr
             {t(getPlaceCategoryLabelKey(place.category))}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          title={closeLabel}
-          aria-label={closeLabel}
-          className="shrink-0 rounded p-0.5 text-gray-500 hover:bg-black/5 dark:text-gray-400 dark:hover:bg-white/10"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
+        <div className="flex shrink-0 items-center gap-0.5">
+          <PanelCollapseToggle
+            isCollapsed={isCollapsed}
+            onToggle={() => setIsCollapsed((value) => !value)}
+            isCompact
+          />
+          <button
+            type="button"
+            onClick={onClose}
+            title={closeLabel}
+            aria-label={closeLabel}
+            className="shrink-0 rounded p-0.5 text-gray-500 hover:bg-black/5 dark:text-gray-400 dark:hover:bg-white/10"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </div>
-      <p className="mt-2 text-gray-500 dark:text-gray-400">
-        {t("case.display.map_place_coordinates")}: {place.latitude.toFixed(5)}, {place.longitude.toFixed(5)}
-      </p>
+      {!isCollapsed && (
+        <p className="mt-2 text-gray-500 dark:text-gray-400">
+          {t("case.display.map_place_coordinates")}: {place.latitude.toFixed(5)}, {place.longitude.toFixed(5)}
+        </p>
+      )}
     </div>
   );
 }

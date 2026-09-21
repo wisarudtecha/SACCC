@@ -221,6 +221,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                                         authorizedDistrictIds={authorizedDistrictIds}
                                         autoShowDistrictCode={autoShowDistrictCode}
                                         assignment={staffOverlay.assignment}
+                                        caseData={caseData}
                                     />
                                 ) : (
                                     <BoundaryMapField

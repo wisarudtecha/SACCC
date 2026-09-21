@@ -14,8 +14,21 @@
 const MARKER_FILL = "rgb(37, 99, 235)";
 const MARKER_STROKE = "rgb(255, 255, 255)";
 
-/** ArcGIS draws the case marker at size 12 with a 2px outline. */
-const MARKER_DIAMETER = 16;
+/** ArcGIS draws the case marker at size 16 with a 2px outline. */
+const MARKER_DIAMETER = 20;
+
+/**
+ * Whether the case marker takes clicks itself.
+ *
+ * Off (the default) it is transparent to the pointer, so a click on or near it is
+ * just a click on the map - which on an editable map means "move the pin". On,
+ * the marker owns its clicks (the dispatch map opens the Case Panel from it) and
+ * shows a pointer cursor to say so.
+ */
+export function setCaseMarkerClickable(element: HTMLElement, isClickable: boolean): void {
+  element.style.pointerEvents = isClickable ? "auto" : "none";
+  element.style.cursor = isClickable ? "pointer" : "";
+}
 
 /** The DOM element for the single case-location marker. */
 export function createCaseMarkerElement(): HTMLDivElement {

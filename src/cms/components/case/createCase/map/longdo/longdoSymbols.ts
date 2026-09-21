@@ -11,8 +11,8 @@ import type { LongdoMarkerOptions } from "./longdoApi";
 const MARKER_FILL = "rgb(37, 99, 235)";
 const MARKER_STROKE = "rgb(255, 255, 255)";
 
-/** ArcGIS draws the case marker at size 12 with a 2px outline. */
-const MARKER_DIAMETER = 16;
+/** ArcGIS draws the case marker at size 16 with a 2px outline. */
+const MARKER_DIAMETER = 20;
 
 /**
  * The case location marker.
