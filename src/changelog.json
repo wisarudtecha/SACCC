@@ -1,4 +1,10 @@
 {
+  "0.81.0": {
+    "date": "2026-09-21",
+    "segment": "MINOR",
+    "notes": "feat(cms): richer case map for dispatchers\n- The case map now has a Case Details panel showing who assigned units to the case and who is responding, with a button to jump to any responder's position on the map.\n- Dispatchers can filter staff on the map, including by lowest workload, and see connecting lines between the incident and its assigned responders.\n- Available officers can be assigned by dragging them onto the incident pin, with an undo option right after the drop.\n- Clicking the incident pin focuses the map on it, and the map's side panels can now be collapsed to free up space.\n- The staff list on the assign-officer screen and the map now rank workload the same way.\n- changelog.json / package.json: bump version 0.80.2 -> 0.81.0",
+    "author": "Wisarud Techa"
+  },
   "0.80.2": {
     "date": "2026-09-18",
     "segment": "PATCH",
