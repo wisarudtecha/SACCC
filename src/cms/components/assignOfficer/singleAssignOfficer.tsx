@@ -18,6 +18,7 @@ import { ChevronDown, ChevronUp, Search, X } from "lucide-react"
 import { useState, useMemo, useEffect, useRef } from "react"
 import type { MapLatLon } from "@/cms/components/case/createCase/map/mapTypes"
 import { useUnitWorkloads } from "@/cms/components/assignOfficer/workload/useUnitWorkloads"
+import { compareWorkloadRank, getWorkloadRank } from "@/cms/components/assignOfficer/workload/workloadRank"
 import { useOfficerRouteSolves } from "@/cms/components/assignOfficer/workload/useOfficerRouteSolves"
 import { OfficerWorkloadCell } from "@/cms/components/assignOfficer/workload/OfficerWorkloadCell"
 import { OfficerAssignedCasesCell } from "@/cms/components/assignOfficer/workload/OfficerAssignedCasesCell"
@@ -304,21 +305,18 @@ export default function AssignOfficerModal({
   // already in hand, so toggling the view triggers no routing-provider calls.
   // Officers with no workload data yet (endpoint still loading, or it returned
   // nothing for that unit) sort last rather than jumping to the top on a 0.
+  //
+  // The ranking itself lives in workloadRank.ts, shared with the map's staff
+  // filter so the two cannot disagree about who is least loaded.
   const displayedOfficers = useMemo(() => {
     if (viewMode !== "recommend") return sortedOfficers
 
-    const rank = (unitId: string) => {
-      const entry = workloadByUnitId[unitId]
-      if (!entry) return { load: Number.POSITIVE_INFINITY, cases: Number.POSITIVE_INFINITY }
-      return { load: entry.activeCaseCount, cases: entry.cases.length }
-    }
-
-    return [...sortedOfficers].sort((a, b) => {
-      const rankA = rank(a.unitId)
-      const rankB = rank(b.unitId)
-      if (rankA.load !== rankB.load) return rankA.load - rankB.load
-      return rankA.cases - rankB.cases
-    })
+    return [...sortedOfficers].sort((a, b) =>
+      compareWorkloadRank(
+        getWorkloadRank(workloadByUnitId[a.unitId]),
+        getWorkloadRank(workloadByUnitId[b.unitId])
+      )
+    )
   }, [viewMode, sortedOfficers, workloadByUnitId])
 
   const handleSelectOfficer = (officerId: string) => {
