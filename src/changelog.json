@@ -1,4 +1,10 @@
 {
+  "0.82.0": {
+    "date": "2026-09-22",
+    "segment": "MINOR",
+    "notes": "feat(cms): drag-to-assign on every map style, admin list filters, nationwide boundary map\n- Assigning an officer by dragging them onto the incident pin now works no matter which map style is selected, with the same short undo window right after the drop.\n- The case map's people list is simpler: each responder's row now shows who assigned them, instead of a separate dispatcher list.\n- The Place and Device admin lists can now be filtered by category and device type, and both lists load the full result set instead of stopping at 100 records.\n- The case map's administrative boundary overlay now covers all of Thailand's provinces and districts instead of a placeholder area.\n- changelog.json / package.json: bump version 0.81.0 -> 0.82.0",
+    "author": "Wisarud Techa"
+  },
   "0.81.0": {
     "date": "2026-09-21",
     "segment": "MINOR",
