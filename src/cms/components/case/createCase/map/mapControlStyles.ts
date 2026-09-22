@@ -8,9 +8,20 @@
 // controls, boundary toggles, place button) sit in the same toolbar row and
 // have to look like one set.
 
+/**
+ * Hairline edge for every toolbar pill, on top of its `bg-white/90` fill.
+ *
+ * A semi-transparent white pill with only `shadow-sm` reads fine against
+ * ArcGIS's grayer canvas basemap and Longdo's more saturated street imagery,
+ * but nearly disappears against MapTiler's pale `streets-v2` light style. A
+ * border keeps every control legible regardless of what is under it. One
+ * constant so every toolbar control (and any new one) picks it up the same way.
+ */
+export const MAP_CONTROL_BORDER_CLASS = "border border-gray-200/80 dark:border-gray-700/80";
+
 /** Shell around a cluster of controls. */
 export const MAP_CONTROL_SHELL_CLASS =
-  "flex items-stretch overflow-hidden rounded-md bg-white/90 shadow-sm dark:bg-gray-800/90";
+  `flex items-stretch overflow-hidden rounded-md bg-white/90 shadow-sm dark:bg-gray-800/90 ${MAP_CONTROL_BORDER_CLASS}`;
 
 /** Button metrics, matching StaffMapControls and BasemapSwitcher. */
 export const MAP_CONTROL_SEGMENT_CLASS =

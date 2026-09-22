@@ -147,6 +147,14 @@ export interface MapSlotContext {
 
 export type MapSlot = (context: MapSlotContext) => ReactNode;
 
+/** Content anchored to a coordinate - see `anchoredOverlays`. */
+export interface MapAnchoredOverlay {
+  id: string;
+  latitude: number;
+  longitude: number;
+  content: ReactNode;
+}
+
 /**
  * Where the search box appears. "expanded-only" is for maps whose inline size
  * has no room to spare - the search box is nearly as wide as a 320px map.
@@ -224,6 +232,21 @@ export interface AddressMapProps {
   showStaff?: boolean;
   selectedStaffId?: string | null;
   onStaffSelect?: (selection: StaffSelection | null) => void;
+  /**
+   * Officers who may be dragged onto the incident pin to be assigned. Empty or
+   * omitted turns drag-to-assign off. The caller owns the eligibility rules (see
+   * staff/assign/dragEligibility.ts); the map only starts a drag from one of
+   * these ids, and only from an INDIVIDUAL marker - clustered officers never drag.
+   */
+  draggableStaffIds?: ReadonlySet<string>;
+  /** An officer was dropped on the incident pin. Never moves the pin itself. */
+  onStaffDropOnIncident?: (unitId: string) => void;
+  /**
+   * React content pinned to map coordinates and kept there as the view moves,
+   * e.g. the assign-undo popup. Rendered by the provider map, because only the
+   * map can project a coordinate to a pixel (a slot is evaluated above it).
+   */
+  anchoredOverlays?: readonly MapAnchoredOverlay[];
   /**
    * Optional straight dashed lines from each of these staff members to the
    * incident pin (the map's `value`). NOT a route: no road network, no solving -

@@ -18,10 +18,10 @@ import { ArrowLeft, ChevronDown, ChevronRight, MapPin, X } from "lucide-react";
 import { DateStringToAgoFormat } from "@/cms/components/date/DateToString";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import PanelCollapseToggle from "../PanelCollapseToggle";
+import PersonAvatar from "./PersonAvatar";
 import StaffActionButton from "./StaffActionButton";
 import {
   getCaseStatusName,
-  getStaffInitials,
   getUnitStatusName,
   readCaseStatuses,
   readUnitStatuses
@@ -115,13 +115,7 @@ function StaffDetailPanelBase({
           isCollapsed ? "" : "border-b border-gray-200"
         }`}
       >
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-200 text-xs font-semibold text-gray-700 dark:bg-gray-700 dark:text-gray-100">
-          {marker.photo ? (
-            <img src={marker.photo} alt="" className="h-full w-full object-cover" />
-          ) : (
-            getStaffInitials(marker.unitName)
-          )}
-        </div>
+        <PersonAvatar name={marker.unitName} photo={marker.photo} size="md" />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
             {marker.unitName}

@@ -228,6 +228,11 @@ export function useMapTilerStaffOverlays({
       const element = document.createElement("div");
       element.style.lineHeight = "0";
       element.innerHTML = spec.visual.html;
+      // Marks a SINGLE officer for drag-to-assign (see useMapTilerStaffDrag). Group
+      // circles are deliberately left unmarked, which is what keeps them undraggable.
+      if (spec.target.type === "staff") {
+        element.dataset.staffUnitId = spec.target.unitId;
+      }
       element.addEventListener("click", (event) => {
         event.stopPropagation();
         resolveClickRef.current(spec.target);

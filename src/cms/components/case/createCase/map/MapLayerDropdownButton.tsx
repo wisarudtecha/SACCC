@@ -11,7 +11,7 @@ import { memo, useCallback, useEffect, useState, type ReactNode } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { Dropdown } from "@/core/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/core/components/ui/dropdown/DropdownItem";
-import { mapControlRevealClass } from "./mapControlStyles";
+import { MAP_CONTROL_BORDER_CLASS, mapControlRevealClass } from "./mapControlStyles";
 
 export interface MapLayerCategoryOption<TCategory extends string> {
   value: TCategory;
@@ -102,7 +102,7 @@ function MapLayerDropdownButtonInner<TCategory extends string>({
           title={toggleLabel}
           aria-label={toggleLabel}
           aria-pressed={isActive}
-          className={`flex items-center gap-1 rounded-md px-2 py-1 text-xs shadow-sm transition-colors ${
+          className={`flex items-center gap-1 rounded-md px-2 py-1 text-xs shadow-sm transition-colors ${MAP_CONTROL_BORDER_CLASS} ${
             isActive
               ? "bg-blue-50 font-medium text-blue-700 dark:bg-blue-500/20 dark:text-blue-300"
               : "bg-white/90 text-gray-700 hover:bg-white dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800"
@@ -126,7 +126,7 @@ function MapLayerDropdownButtonInner<TCategory extends string>({
             aria-label={label}
             aria-haspopup="true"
             aria-expanded={isOpen}
-            className="dropdown-toggle flex items-center rounded-md bg-white/90 px-1.5 py-1 text-xs text-gray-700 shadow-sm transition-colors hover:bg-white dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800"
+            className={`dropdown-toggle flex items-center rounded-md bg-white/90 px-1.5 py-1 text-xs text-gray-700 shadow-sm transition-colors hover:bg-white dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800 ${MAP_CONTROL_BORDER_CLASS}`}
           >
             <ChevronDown className="h-3.5 w-3.5 shrink-0" />
           </button>

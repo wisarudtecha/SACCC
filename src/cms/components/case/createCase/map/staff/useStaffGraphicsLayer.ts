@@ -24,6 +24,7 @@ import Point from "@arcgis/core/geometry/Point.js";
 import * as reactiveUtils from "@arcgis/core/core/reactiveUtils.js";
 import type esriMap from "@arcgis/core/Map.js";
 import type MapView from "@arcgis/core/views/MapView.js";
+import { pickNearestStaff, type ScreenStaffCandidate } from "./assign/pickStaff";
 import {
   getSeparationZoom,
   groupStaffByProximity,
@@ -85,6 +86,15 @@ export interface UseStaffGraphicsLayerResult {
    * Stable across renders, so a handler registered once at mount can call it.
    */
   resolveStaffClick: (event: unknown) => Promise<StaffSelection | null>;
+  /**
+   * The allowed officer drawn under this container-relative pixel, or null.
+   *
+   * SYNCHRONOUS, unlike the click path: a drag handler has to call
+   * stopPropagation() in the same tick to stop the map panning, which an async
+   * hitTest cannot do. It reads the individually-drawn markers only, so an
+   * officer inside a group circle can never be picked. Stable across renders.
+   */
+  pickSingleStaffAt: (x: number, y: number, allowedUnitIds: ReadonlySet<string>) => string | null;
 }
 
 /** Graphic keys are namespaced so one Map can hold all three kinds. */
@@ -506,5 +516,23 @@ export function useStaffGraphicsLayer({
     };
   }, [isReady, viewRef, visible, hitTestStaff]);
 
-  return { resolveStaffClick };
+  const pickSingleStaffAt = useCallback(
+    (x: number, y: number, allowedUnitIds: ReadonlySet<string>): string | null => {
+      const view = viewRef.current;
+      if (!view || !layerRef.current?.visible) {
+        return null;
+      }
+      const candidates: ScreenStaffCandidate[] = [];
+      groupingRef.current.singles.forEach((marker) => {
+        const screenPoint = view.toScreen(toPoint(marker.latitude, marker.longitude));
+        if (screenPoint) {
+          candidates.push({ unitId: marker.unitId, x: screenPoint.x, y: screenPoint.y });
+        }
+      });
+      return pickNearestStaff({ x, y }, candidates, allowedUnitIds);
+    },
+    [viewRef]
+  );
+
+  return { resolveStaffClick, pickSingleStaffAt };
 }

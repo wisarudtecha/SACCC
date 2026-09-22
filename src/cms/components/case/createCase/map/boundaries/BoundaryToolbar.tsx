@@ -20,7 +20,11 @@ import { Dropdown } from "@/core/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/core/components/ui/dropdown/DropdownItem";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import MapControlGroup from "../MapControlGroup";
-import { MAP_CONTROL_SEGMENT_CLASS, mapControlRevealClass } from "../mapControlStyles";
+import {
+  MAP_CONTROL_BORDER_CLASS,
+  MAP_CONTROL_SEGMENT_CLASS,
+  mapControlRevealClass
+} from "../mapControlStyles";
 import { BOUNDARY_LEVELS } from "./boundaryLevels";
 import type { AdminLevel, BoundaryVisibility } from "./boundaryTypes";
 
@@ -110,7 +114,7 @@ function BoundaryToolbarBase({
           aria-label={groupLabel}
           aria-haspopup="true"
           aria-expanded={isOpen}
-          className={`dropdown-toggle flex items-center gap-1 rounded-md px-2 py-1 text-xs shadow-sm transition-colors ${
+          className={`dropdown-toggle flex items-center gap-1 rounded-md px-2 py-1 text-xs shadow-sm transition-colors ${MAP_CONTROL_BORDER_CLASS} ${
             isAnyLevelVisible
               ? "bg-blue-50 font-medium text-blue-700 dark:bg-blue-500/20 dark:text-blue-300"
               : "bg-white/90 text-gray-700 hover:bg-white dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800"

@@ -13,6 +13,7 @@ import { Check, ListFilter } from "lucide-react";
 import { Dropdown } from "@/core/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/core/components/ui/dropdown/DropdownItem";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import { MAP_CONTROL_BORDER_CLASS } from "../mapControlStyles";
 import type { StaffFilterMode } from "./staffFilter";
 
 interface StaffFilterMenuProps {
@@ -45,7 +46,7 @@ function StaffFilterMenuBase({ mode, onChange }: StaffFilterMenuProps) {
         aria-label={label}
         aria-haspopup="true"
         aria-expanded={isOpen}
-        className="dropdown-toggle flex items-center rounded-md bg-white/90 px-2 py-1 text-xs text-gray-700 shadow-sm transition-colors hover:bg-white dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800"
+        className={`dropdown-toggle flex items-center rounded-md bg-white/90 px-2 py-1 text-xs text-gray-700 shadow-sm transition-colors hover:bg-white dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800 ${MAP_CONTROL_BORDER_CLASS}`}
       >
         <ListFilter className="h-3.5 w-3.5 shrink-0" />
       </button>

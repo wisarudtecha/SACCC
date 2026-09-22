@@ -24,6 +24,7 @@ import AddressMapField from "./AddressMapField";
 import type {
   AddressResult,
   IncidentRadiusOverlay,
+  MapAnchoredOverlay,
   MapFocusRequest,
   MapLatLon,
   MapSlot,
@@ -70,6 +71,10 @@ interface BoundaryMapFieldProps {
   showStaff?: boolean;
   selectedStaffId?: string | null;
   onStaffSelect?: (selection: StaffSelection | null) => void;
+  /** Drag-to-assign and anchored popups, forwarded untouched for CaseStaffMapField. */
+  draggableStaffIds?: ReadonlySet<string>;
+  onStaffDropOnIncident?: (unitId: string) => void;
+  anchoredOverlays?: readonly MapAnchoredOverlay[];
   /** Route overlay, forwarded untouched for CaseStaffMapField. */
   route?: RouteOverlay | null;
   showRoute?: boolean;
@@ -135,6 +140,9 @@ function BoundaryMapFieldBase({
   showStaff = false,
   selectedStaffId = null,
   onStaffSelect,
+  draggableStaffIds,
+  onStaffDropOnIncident,
+  anchoredOverlays,
   route,
   showRoute = false,
   trail,
@@ -380,6 +388,9 @@ function BoundaryMapFieldBase({
       showStaff={showStaff}
       selectedStaffId={selectedStaffId}
       onStaffSelect={onStaffSelect}
+      draggableStaffIds={draggableStaffIds}
+      onStaffDropOnIncident={onStaffDropOnIncident}
+      anchoredOverlays={anchoredOverlays}
       places={placeMarkers}
       showPlace={isPlaceLayerOn}
       selectedPlaceId={selectedPlaceId}

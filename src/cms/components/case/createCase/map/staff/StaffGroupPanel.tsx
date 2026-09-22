@@ -11,10 +11,10 @@ import { memo, useMemo, useState } from "react";
 import { ChevronRight, Loader2, X } from "lucide-react";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import PanelCollapseToggle from "../PanelCollapseToggle";
+import PersonAvatar from "./PersonAvatar";
 import { formatDistanceKm, formatDriveTime, routeErrorKey } from "./routeFormat";
 import {
   getCaseStatusName,
-  getStaffInitials,
   getUnitStatusName,
   readCaseStatuses,
   readUnitStatuses
@@ -102,13 +102,7 @@ function StaffGroupPanelBase({
               onClick={() => onSelect(marker.unitId)}
               className="flex w-full items-center gap-2 border-b border-gray-200 px-3 py-2 text-left transition-colors last:border-b-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-white/5"
             >
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-200 text-[10px] font-semibold text-gray-700 dark:bg-gray-700 dark:text-gray-100">
-                {marker.photo ? (
-                  <img src={marker.photo} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  getStaffInitials(marker.unitName)
-                )}
-              </div>
+              <PersonAvatar name={marker.unitName} photo={marker.photo} size="sm" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-medium text-gray-900 dark:text-white">
                   {marker.unitName}

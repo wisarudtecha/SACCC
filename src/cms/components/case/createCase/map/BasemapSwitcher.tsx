@@ -24,7 +24,7 @@ import { Dropdown } from "@/core/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/core/components/ui/dropdown/DropdownItem";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import type { Language } from "@/core/config/i18n";
-import { mapControlRevealClass } from "./mapControlStyles";
+import { MAP_CONTROL_BORDER_CLASS, mapControlRevealClass } from "./mapControlStyles";
 import { BASEMAP_OPTIONS, BasemapOptionId } from "./basemaps";
 
 interface BasemapSwitcherProps {
@@ -126,7 +126,7 @@ function BasemapSwitcherBase({
         aria-label={label}
         aria-haspopup="true"
         aria-expanded={isOpen}
-        className="dropdown-toggle flex items-center gap-1 rounded-md bg-white/90 px-2 py-1 text-xs text-gray-700 shadow-sm transition-colors hover:bg-white dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800"
+        className={`dropdown-toggle flex items-center gap-1 rounded-md bg-white/90 px-2 py-1 text-xs text-gray-700 shadow-sm transition-colors hover:bg-white dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800 ${MAP_CONTROL_BORDER_CLASS}`}
       >
         <Layers className="h-3.5 w-3.5 shrink-0" />
         {compact ? (

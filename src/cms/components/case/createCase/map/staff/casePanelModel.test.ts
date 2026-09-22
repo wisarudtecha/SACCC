@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type { CaseSopUnit } from "@/cms/types/dispatch";
 import {
-  buildUserNameIndex,
+  buildUserInfoIndex,
   canFocusResponder,
   collectFramePoints,
   dedupeDispatchers,
   getResponderLabel,
   resolveFocusTarget,
-  resolveUserLabel
+  resolveUserLabel,
+  resolveUserPhoto
 } from "./casePanelModel";
 import type { StaffMarker } from "./staffTypes";
 
@@ -65,8 +66,8 @@ describe("dedupeDispatchers", () => {
 });
 
 describe("resolveUserLabel", () => {
-  const index = buildUserNameIndex([
-    { username: "a", displayName: "Alice A." },
+  const index = buildUserInfoIndex([
+    { username: "a", displayName: "Alice A.", photo: "https://example.com/a.png" },
     { username: "b", displayName: "", firstName: "Bob", lastName: "Brown" },
     { username: "c", displayName: "", firstName: "", lastName: "" }
   ]);
@@ -85,6 +86,30 @@ describe("resolveUserLabel", () => {
 
   it("falls back to the username when the user is unknown", () => {
     expect(resolveUserLabel("ghost", index)).toBe("ghost");
+  });
+});
+
+describe("resolveUserPhoto", () => {
+  const index = buildUserInfoIndex([
+    { username: "a", displayName: "Alice A.", photo: "https://example.com/a.png" },
+    { username: "b", displayName: "Bob B.", photo: "" },
+    { username: "c", displayName: "Cara C." }
+  ]);
+
+  it("returns the photo when the user has one", () => {
+    expect(resolveUserPhoto("a", index)).toBe("https://example.com/a.png");
+  });
+
+  it("returns null for a blank photo", () => {
+    expect(resolveUserPhoto("b", index)).toBeNull();
+  });
+
+  it("returns null when the user has no photo field at all", () => {
+    expect(resolveUserPhoto("c", index)).toBeNull();
+  });
+
+  it("returns null for an unknown user", () => {
+    expect(resolveUserPhoto("ghost", index)).toBeNull();
   });
 });
 

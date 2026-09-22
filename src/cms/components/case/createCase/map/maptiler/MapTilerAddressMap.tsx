@@ -24,9 +24,10 @@ import { Map as MlMap, Marker, NavigationControl, type MapMouseEvent } from "map
 import { useTheme } from "@/core/context/ThemeContext";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import BasemapSwitcher from "../BasemapSwitcher";
-import { MAP_CONTROL_REVEAL_ON_GROUP } from "../mapControlStyles";
+import { MAP_CONTROL_BORDER_CLASS, MAP_CONTROL_REVEAL_ON_GROUP } from "../mapControlStyles";
 import { BasemapOptionId, DEFAULT_BASEMAP_ID } from "../basemaps";
-import type { AddressMapProps, MapLatLon, StaffConnector } from "../mapTypes";
+import AnchoredOverlayLayer from "../AnchoredOverlayLayer";
+import type { AddressMapProps, MapAnchoredOverlay, MapLatLon, StaffConnector } from "../mapTypes";
 import type { StaffMarker } from "../staff/staffTypes";
 import type { PlaceMarker } from "../place/placeTypes";
 import type { DeviceMarker } from "../device/deviceTypes";
@@ -38,6 +39,8 @@ import { useMapTilerFocusRequest } from "./useMapTilerFocusRequest";
 import MapTilerSearchBox from "./MapTilerSearchBox";
 import { useMapTilerBoundaryOverlays } from "./boundaries/useMapTilerBoundaryOverlays";
 import { useMapTilerStaffOverlays } from "./staff/useMapTilerStaffOverlays";
+import { useMapTilerStaffDrag } from "./staff/useMapTilerStaffDrag";
+import { useMapTilerScreenProjector } from "./useMapTilerScreenProjector";
 import { useMapTilerPlaceOverlays } from "./place/useMapTilerPlaceOverlays";
 import { useMapTilerDeviceOverlays } from "./device/useMapTilerDeviceOverlays";
 import { useMapTilerRouteOverlay } from "./staff/useMapTilerRouteOverlay";
@@ -55,6 +58,8 @@ const EMPTY_STAFF: readonly StaffMarker[] = [];
 const EMPTY_PLACES: readonly PlaceMarker[] = [];
 const EMPTY_DEVICES: readonly DeviceMarker[] = [];
 const EMPTY_CONNECTORS: readonly StaffConnector[] = [];
+const EMPTY_DRAGGABLE_IDS: ReadonlySet<string> = new Set();
+const EMPTY_ANCHORED_OVERLAYS: readonly MapAnchoredOverlay[] = [];
 
 function MapTilerAddressMapBase({
   value,
@@ -69,6 +74,9 @@ function MapTilerAddressMapBase({
   onBasemapChange,
   showBasemapSwitcher = true,
   onStaffSelect,
+  draggableStaffIds = EMPTY_DRAGGABLE_IDS,
+  onStaffDropOnIncident,
+  anchoredOverlays = EMPTY_ANCHORED_OVERLAYS,
   staff,
   showStaff = false,
   selectedStaffId = null,
@@ -201,6 +209,25 @@ function MapTilerAddressMapBase({
     visible: showStaff,
     zoom: settledZoom,
     onSelect: onStaffSelect
+  });
+
+  // Drag an officer onto the case pin to assign them. Inert while
+  // `draggableStaffIds` is empty; never moves the pin or reports a location.
+  useMapTilerStaffDrag({
+    mapRef,
+    isReady,
+    draggableStaffIds,
+    staff: staff ?? EMPTY_STAFF,
+    caseLocation: value,
+    onDrop: onStaffDropOnIncident
+  });
+
+  // Anchored popups (e.g. assign-undo) follow the map as it moves; the "move"
+  // listener only runs while there is something anchored.
+  const { project: projectToScreen, revision: viewRevision } = useMapTilerScreenProjector({
+    mapRef,
+    isReady,
+    enabled: anchoredOverlays.length > 0
   });
 
   // Org-curated Place markers. DOM markers with their own click listener, so no
@@ -536,6 +563,14 @@ function MapTilerAddressMapBase({
     >
       <div ref={containerRef} className="h-full w-full" />
 
+      {anchoredOverlays.length > 0 && (
+        <AnchoredOverlayLayer
+          overlays={anchoredOverlays}
+          project={projectToScreen}
+          revision={viewRevision}
+        />
+      )}
+
       {isSearchEnabled && isReady && (
         // `z-20`, a step above the rest of the map's overlays (`z-10`): the
         // results list drops down the top-left column that the staff
@@ -570,7 +605,7 @@ function MapTilerAddressMapBase({
               onClick={onExpand}
               title={t("case.display.map_expand")}
               aria-label={t("case.display.map_expand")}
-              className="group flex items-center gap-1 rounded-md bg-white/90 px-2 py-1 text-xs text-gray-700 shadow-sm transition-colors hover:bg-white dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800"
+              className={`group flex items-center gap-1 rounded-md bg-white/90 px-2 py-1 text-xs text-gray-700 shadow-sm transition-colors hover:bg-white dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800 ${MAP_CONTROL_BORDER_CLASS}`}
             >
               <Maximize2 className="h-3.5 w-3.5 shrink-0" />
               {compactControls ? (
@@ -591,7 +626,7 @@ function MapTilerAddressMapBase({
         }`}
       >
         {showLocationInfo && value && (
-          <div className="max-w-xs rounded-md bg-white/90 px-2 py-1 text-xs text-gray-700 shadow-sm dark:bg-gray-800/90 dark:text-gray-200">
+          <div className={`max-w-xs rounded-md bg-white/90 px-2 py-1 text-xs text-gray-700 shadow-sm dark:bg-gray-800/90 dark:text-gray-200 ${MAP_CONTROL_BORDER_CLASS}`}>
             {address && <div className="truncate font-medium">{address}</div>}
             <div className="text-gray-500 dark:text-gray-400">
               {t("case.display.location_coordinates")}: {value.latitude}, {value.longitude}

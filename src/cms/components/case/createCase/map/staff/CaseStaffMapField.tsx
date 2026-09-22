@@ -20,18 +20,22 @@ import type { CaseDetails } from "@/cms/types/case";
 import { useUnitWorkloads } from "@/cms/components/assignOfficer/workload/useUnitWorkloads";
 import type { CaseSopUnit } from "@/cms/types/dispatch";
 import { PermissionGate } from "@/core/components/auth/PermissionGate";
+import { usePermissions } from "@/core/hooks/usePermissions";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import BoundaryMapField from "../BoundaryMapField";
 import { dockedCardsWidthPx } from "../frameBounds";
 import type {
   AddressResult,
   IncidentRadiusOverlay,
+  MapAnchoredOverlay,
   MapFocusRequest,
   MapLatLon,
   MapSlotContext,
   RouteOverlay,
   StaffConnector
 } from "../mapTypes";
+import AssignUndoPopup from "./assign/AssignUndoPopup";
+import { useAssignUndo } from "./assign/useAssignUndo";
 import CasePanel from "./CasePanel";
 import { collectFramePoints, resolveFocusTarget } from "./casePanelModel";
 import StaffDetailPanel from "./StaffDetailPanel";
@@ -247,6 +251,49 @@ function CaseStaffMapFieldBase({
       }),
     [staffFilterMode, staff, assignment.assignedUnitIds, workloadByUnitId, isWorkloadError]
   );
+
+  // Drag an officer onto the case pin to assign them at once, with a short undo
+  // window afterwards. Large map only, like the rest of the dispatch work, and
+  // the same permission as the rest of the staff layer. Eligibility is judged on
+  // the officers actually drawn, and the map only ever starts a drag from an id
+  // in `draggableStaffIds`.
+  const { hasPermission } = usePermissions();
+  const {
+    entries: undoEntries,
+    draggableStaffIds,
+    handleDrop: handleStaffDrop,
+    handleUndo: handleUndoAssign
+  } = useAssignUndo({
+    staff: displayedStaff,
+    isEnabled: isExpandedStaffLayerOn && hasPermission(STAFF_LAYER_PERMISSION),
+    assignedUnitIds: assignment.assignedUnitIds,
+    canAssign: assignment.canAssign,
+    onAssignNow: assignment.onAssignNow,
+    onUndoAssign: assignment.onUndoAssign
+  });
+
+  // One popup per officer with a live entry, pinned to where they are on the map.
+  // Hidden with the large map / staff layer: an "undo" floating over nothing
+  // would point at nothing. The entries keep their own clock either way.
+  const anchoredOverlays = useMemo<MapAnchoredOverlay[]>(() => {
+    if (!isExpandedStaffLayerOn) {
+      return [];
+    }
+    return undoEntries.flatMap((entry) => {
+      const marker = staff.find((item) => item.unitId === entry.unitId);
+      if (!marker) {
+        return [];
+      }
+      return [
+        {
+          id: entry.unitId,
+          latitude: marker.latitude,
+          longitude: marker.longitude,
+          content: <AssignUndoPopup entry={entry} onUndo={handleUndoAssign} />
+        }
+      ];
+    });
+  }, [isExpandedStaffLayerOn, undoEntries, staff, handleUndoAssign]);
 
   // A straight line from each assigned officer to the incident pin. Just the
   // staff end - the map draws to its own `value`. Not routes: nothing is solved.
@@ -658,6 +705,7 @@ function CaseStaffMapFieldBase({
           <div className={CARD_DOCK_CLASS}>
             {isCasePanelOpen && (
               <CasePanel
+                caseLabel={assignment.caseLabel}
                 caseData={caseData}
                 assignedUnits={assignment.assignedUnits}
                 staff={staff}
@@ -678,6 +726,7 @@ function CaseStaffMapFieldBase({
     },
     [
       assignment.assignedUnits,
+      assignment.caseLabel,
       assignment.onRequestCaseDetails,
       caseData,
       closeCasePanel,
@@ -716,6 +765,9 @@ function CaseStaffMapFieldBase({
       staffConnectors={staffConnectors}
       selectedStaffId={selectedStaffId}
       onStaffSelect={handleStaffSelect}
+      draggableStaffIds={draggableStaffIds}
+      onStaffDropOnIncident={handleStaffDrop}
+      anchoredOverlays={anchoredOverlays}
       // Same gating as the staff layer: large-map only, and only while a
       // result actually exists to draw - a selection change or a failed solve
       // already collapses `routeState` back to something with no result.

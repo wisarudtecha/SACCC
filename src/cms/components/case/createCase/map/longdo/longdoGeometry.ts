@@ -137,6 +137,46 @@ export function locationFromScreen(
   return { lon, lat };
 }
 
+/**
+ * Where a location sits on screen, in pixels from the map container's top-left.
+ *
+ * The exact inverse of `locationFromScreen`, and for the same reason: the SDK has
+ * no location -> pixel call of its own, so it is worked out from the view's
+ * current bound. Linear in longitude and in MERCATOR latitude, which is how the
+ * tiles are laid out. The same no-rotation, no-pitch assumption applies.
+ *
+ * A location outside the bound is NOT an error - it simply lands outside
+ * 0..width / 0..height, and it is the caller's business to treat that as
+ * off-screen. Null only when the bound or the box cannot define a mapping.
+ */
+export function screenFromLocation(
+  bound: LongdoBound,
+  size: { width: number; height: number },
+  location: LongdoLocation
+): { x: number; y: number } | null {
+  if (size.width <= 0 || size.height <= 0) {
+    return null;
+  }
+
+  const longitudeSpan = bound.maxLon - bound.minLon;
+  const topY = mercatorY(bound.maxLat);
+  const mercatorSpan = mercatorY(bound.minLat) - topY;
+  if (
+    !Number.isFinite(longitudeSpan) || longitudeSpan === 0 ||
+    !Number.isFinite(mercatorSpan) || mercatorSpan === 0
+  ) {
+    return null;
+  }
+
+  const x = ((location.lon - bound.minLon) / longitudeSpan) * size.width;
+  const y = ((mercatorY(location.lat) - topY) / mercatorSpan) * size.height;
+
+  if (!Number.isFinite(x) || !Number.isFinite(y)) {
+    return null;
+  }
+  return { x, y };
+}
+
 export interface WorldPixel {
   x: number;
   y: number;

@@ -28,11 +28,14 @@ import { useTranslation } from "@/core/hooks/useTranslation";
 import { initArcgis } from "./arcgisSetup";
 import { arcgisGeocodeService } from "./services/arcgisGeocode";
 import BasemapSwitcher from "./BasemapSwitcher";
-import { MAP_CONTROL_REVEAL_ON_GROUP } from "./mapControlStyles";
+import { MAP_CONTROL_BORDER_CLASS, MAP_CONTROL_REVEAL_ON_GROUP } from "./mapControlStyles";
 import { BasemapOptionId, DEFAULT_BASEMAP_ID } from "./basemaps";
 import { createBasemap, createFallbackBasemap, toEsriLanguage } from "./arcgisBasemaps";
 import { useStaffGraphicsLayer } from "./staff/useStaffGraphicsLayer";
+import { useArcgisStaffDrag } from "./staff/useArcgisStaffDrag";
 import type { StaffMarker } from "./staff/staffTypes";
+import AnchoredOverlayLayer from "./AnchoredOverlayLayer";
+import { useArcgisScreenProjector } from "./useArcgisScreenProjector";
 import { useRouteGraphicsLayer } from "./staff/useRouteGraphicsLayer";
 import { useBreadcrumbGraphicsLayer } from "./staff/useBreadcrumbGraphicsLayer";
 import { useAdminBoundaryLayers } from "./boundaries/useAdminBoundaryLayers";
@@ -45,7 +48,7 @@ import type { DeviceMarker } from "./device/deviceTypes";
 import { useArcgisIncidentClick } from "./incident/useArcgisIncidentClick";
 import { useArcgisFocusRequest } from "./useArcgisFocusRequest";
 import { useStaffConnectorLayer } from "./staff/useStaffConnectorLayer";
-import type { AddressMapProps, MapLatLon, StaffConnector } from "./mapTypes";
+import type { AddressMapProps, MapAnchoredOverlay, MapLatLon, StaffConnector } from "./mapTypes";
 
 const DEFAULT_CENTER: [number, number] = [100.5018, 13.7563]; // Bangkok
 const DEFAULT_ZOOM = 12;
@@ -63,6 +66,8 @@ const EMPTY_STAFF: readonly StaffMarker[] = [];
 const EMPTY_PLACES: readonly PlaceMarker[] = [];
 const EMPTY_DEVICES: readonly DeviceMarker[] = [];
 const EMPTY_CONNECTORS: readonly StaffConnector[] = [];
+const EMPTY_DRAGGABLE_IDS: ReadonlySet<string> = new Set();
+const EMPTY_ANCHORED_OVERLAYS: readonly MapAnchoredOverlay[] = [];
 
 // Minimal shapes for the only two event fields we read. The SDK's generated
 // event types aren't reliably importable across major versions, so we type just
@@ -123,6 +128,9 @@ function ArcgisAddressMapBase({
   showStaff = false,
   selectedStaffId = null,
   onStaffSelect,
+  draggableStaffIds = EMPTY_DRAGGABLE_IDS,
+  onStaffDropOnIncident,
+  anchoredOverlays = EMPTY_ANCHORED_OVERLAYS,
   places,
   showPlace = false,
   selectedPlaceId = null,
@@ -231,7 +239,7 @@ function ArcgisAddressMapBase({
 
   // Draws the staff markers and answers "did this click hit an officer?".
   // `resolveStaffClick` is stable, so the mount-time click handler can call it.
-  const { resolveStaffClick } = useStaffGraphicsLayer({
+  const { resolveStaffClick, pickSingleStaffAt } = useStaffGraphicsLayer({
     mapRef,
     viewRef,
     isReady,
@@ -241,6 +249,26 @@ function ArcgisAddressMapBase({
   });
   const resolveStaffClickRef = useRef(resolveStaffClick);
   resolveStaffClickRef.current = resolveStaffClick;
+
+  // Drag an officer onto the case pin to assign them. Inert while
+  // `draggableStaffIds` is empty; never moves the pin or reports a location.
+  useArcgisStaffDrag({
+    viewRef,
+    isReady,
+    draggableStaffIds,
+    staff: staff ?? EMPTY_STAFF,
+    caseLocation: value,
+    pickSingleStaffAt,
+    onDrop: onStaffDropOnIncident
+  });
+
+  // Anchored popups (e.g. assign-undo) follow the map as it moves; the extent
+  // watch only runs while there is something anchored.
+  const { project: projectToScreen, revision: viewRevision } = useArcgisScreenProjector({
+    viewRef,
+    isReady,
+    enabled: anchoredOverlays.length > 0
+  });
 
   // Draws the org-curated Place markers and answers "did this click hit one?".
   // Read-only: a hit opens the caller's info popup and nothing else (Q1).
@@ -684,6 +712,14 @@ function ArcgisAddressMapBase({
           interactions (search, click-to-geocode) are withheld. */}
       <div ref={containerRef} className="h-full w-full" />
 
+      {anchoredOverlays.length > 0 && (
+        <AnchoredOverlayLayer
+          overlays={anchoredOverlays}
+          project={projectToScreen}
+          revision={viewRevision}
+        />
+      )}
+
       {/* One toolbar row in the top-right corner. Children render left to right,
           so the last ones sit on the outside edge: reading inward from the right
           it is expand, map style, then the caller's own controls.
@@ -714,7 +750,7 @@ function ArcgisAddressMapBase({
               onClick={onExpand}
               title={t("case.display.map_expand")}
               aria-label={t("case.display.map_expand")}
-              className="group flex items-center gap-1 rounded-md bg-white/90 px-2 py-1 text-xs text-gray-700 shadow-sm transition-colors hover:bg-white dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800"
+              className={`group flex items-center gap-1 rounded-md bg-white/90 px-2 py-1 text-xs text-gray-700 shadow-sm transition-colors hover:bg-white dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800 ${MAP_CONTROL_BORDER_CLASS}`}
             >
               <Maximize2 className="h-3.5 w-3.5 shrink-0" />
               {compactControls ? (
@@ -745,7 +781,7 @@ function ArcgisAddressMapBase({
         }`}
       >
         {showLocationInfo && value && (
-          <div className="max-w-xs rounded-md bg-white/90 px-2 py-1 text-xs text-gray-700 shadow-sm dark:bg-gray-800/90 dark:text-gray-200">
+          <div className={`max-w-xs rounded-md bg-white/90 px-2 py-1 text-xs text-gray-700 shadow-sm dark:bg-gray-800/90 dark:text-gray-200 ${MAP_CONTROL_BORDER_CLASS}`}>
             {address && <div className="truncate font-medium">{address}</div>}
             <div className="text-gray-500 dark:text-gray-400">
               {t("case.display.location_coordinates")}: {value.latitude}, {value.longitude}

@@ -184,7 +184,8 @@ export function useLongdoStaffOverlays({
             {
               ...createStaffMarkerOptions(
                 { availability, isSelected, isStale, isLogin: marker.isLogin, bearing },
-                marker.unitName
+                marker.unitName,
+                marker.unitId
               ),
               weight: longdo.OverlayWeight.Top
             }

@@ -13,27 +13,43 @@ export interface UserNameSource {
   displayName?: string;
   firstName?: string;
   lastName?: string;
+  photo?: string | null;
+}
+
+/** What the panel shows for a user: their name, and an avatar photo if they have one. */
+export interface UserInfo {
+  label: string;
+  photo: string | null;
 }
 
 function joinName(firstName?: string, lastName?: string): string {
   return `${firstName ?? ""} ${lastName ?? ""}`.trim();
 }
 
-/** username -> best available display name. Users with no name at all are left out. */
-export function buildUserNameIndex(users: readonly UserNameSource[]): ReadonlyMap<string, string> {
-  const index = new Map<string, string>();
+/**
+ * username -> best available name + photo. Users with no name at all are left
+ * out - a bare username is still resolved through the fallback in
+ * resolveUserLabel, so omitting them here costs nothing.
+ */
+export function buildUserInfoIndex(users: readonly UserNameSource[]): ReadonlyMap<string, UserInfo> {
+  const index = new Map<string, UserInfo>();
   users.forEach((user) => {
     const label = user.displayName?.trim() || joinName(user.firstName, user.lastName);
     if (user.username && label) {
-      index.set(user.username, label);
+      index.set(user.username, { label, photo: user.photo?.trim() || null });
     }
   });
   return index;
 }
 
 /** A name when the user lookup knows one, otherwise the username itself. */
-export function resolveUserLabel(username: string, index: ReadonlyMap<string, string>): string {
-  return index.get(username) ?? username;
+export function resolveUserLabel(username: string, index: ReadonlyMap<string, UserInfo>): string {
+  return index.get(username)?.label ?? username;
+}
+
+/** An avatar photo when the user lookup has one, otherwise null (falls back to initials). */
+export function resolveUserPhoto(username: string, index: ReadonlyMap<string, UserInfo>): string | null {
+  return index.get(username)?.photo ?? null;
 }
 
 /**

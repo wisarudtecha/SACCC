@@ -4,11 +4,15 @@
 // as label/value rows sized for a 288px card. FormFieldValueDisplay is not reused
 // here: it is a two-column grid of padded cards built for a 4xl dialog, and it
 // can mount a map of its own.
+//
+// The work order number lives in the panel HEADER now, not here (see CasePanel),
+// so it is not repeated as a row. Schedule date, IoT alert date and phone number
+// were dropped by request - they duplicate what "View full case details" already
+// shows and were judged not worth the space in a 288px card.
 import { memo } from "react";
 import { mergeArea } from "@/cms/store/api/area";
 import type { CaseDetails } from "@/cms/types/case";
 import { useTranslation } from "@/core/hooks/useTranslation";
-import { formatDate } from "@/core/utils/crud";
 
 const EMPTY_VALUE = "-";
 
@@ -34,32 +38,15 @@ function CasePanelInfoSectionBase({ caseData }: CasePanelInfoSectionProps) {
   const { t, language } = useTranslation();
 
   const serviceCenter = caseData?.area ? mergeArea(caseData.area, language) : "";
-  const scheduleDate = caseData?.scheduleDate
-    ? formatDate(caseData.scheduleDate, { includeTime: false })
-    : "";
-  const iotDate = caseData?.iotDate ? formatDate(caseData.iotDate) : "";
 
   return (
     <dl className="space-y-2 border-b border-gray-200 p-3 dark:border-gray-700">
-      <CaseInfoRow
-        label={t("case.display.no")}
-        value={caseData?.workOrderNummber || EMPTY_VALUE}
-      />
       <CaseInfoRow
         label={t("case.display.types")}
         value={caseData?.caseType?.caseType || EMPTY_VALUE}
       />
       <CaseInfoRow label={t("case.display.service_center")} value={serviceCenter || EMPTY_VALUE} />
       <CaseInfoRow label={t("case.display.area")} value={caseData?.location || EMPTY_VALUE} />
-      <CaseInfoRow
-        label={t("case.display.request_schedule_date")}
-        value={scheduleDate || EMPTY_VALUE}
-      />
-      {iotDate && <CaseInfoRow label={t("case.display.iot_alert_date")} value={iotDate} />}
-      <CaseInfoRow
-        label={t("case.display.phone_number")}
-        value={caseData?.customerData?.mobileNo || EMPTY_VALUE}
-      />
     </dl>
   );
 }

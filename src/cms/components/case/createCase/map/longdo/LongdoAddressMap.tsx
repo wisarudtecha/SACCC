@@ -27,9 +27,10 @@ import { Maximize2 } from "lucide-react";
 import { useTheme } from "@/core/context/ThemeContext";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import BasemapSwitcher from "../BasemapSwitcher";
-import { MAP_CONTROL_REVEAL_ON_GROUP } from "../mapControlStyles";
+import { MAP_CONTROL_BORDER_CLASS, MAP_CONTROL_REVEAL_ON_GROUP } from "../mapControlStyles";
 import { BasemapOptionId, DEFAULT_BASEMAP_ID } from "../basemaps";
-import type { AddressMapProps, MapLatLon, StaffConnector } from "../mapTypes";
+import AnchoredOverlayLayer from "../AnchoredOverlayLayer";
+import type { AddressMapProps, MapAnchoredOverlay, MapLatLon, StaffConnector } from "../mapTypes";
 import type { StaffMarker } from "../staff/staffTypes";
 import type { PlaceMarker } from "../place/placeTypes";
 import type { DeviceMarker } from "../device/deviceTypes";
@@ -54,6 +55,8 @@ import {
   useLongdoDeviceOverlays,
   type DeviceOverlayClickResolver
 } from "./device/useLongdoDeviceOverlays";
+import { useLongdoStaffDrag } from "./staff/useLongdoStaffDrag";
+import { useLongdoScreenProjector } from "./useLongdoScreenProjector";
 import { useLongdoBreadcrumbOverlay } from "./staff/useLongdoBreadcrumbOverlay";
 import { useLongdoRouteOverlay } from "./staff/useLongdoRouteOverlay";
 import { useLongdoStaffConnectorOverlay } from "./staff/useLongdoStaffConnectorOverlay";
@@ -70,6 +73,8 @@ const EMPTY_STAFF: readonly StaffMarker[] = [];
 const EMPTY_PLACES: readonly PlaceMarker[] = [];
 const EMPTY_DEVICES: readonly DeviceMarker[] = [];
 const EMPTY_CONNECTORS: readonly StaffConnector[] = [];
+const EMPTY_DRAGGABLE_IDS: ReadonlySet<string> = new Set();
+const EMPTY_ANCHORED_OVERLAYS: readonly MapAnchoredOverlay[] = [];
 
 interface ScreenPosition {
   clientX: number;
@@ -93,6 +98,9 @@ function LongdoAddressMapBase({
   onBasemapChange,
   showBasemapSwitcher = true,
   onStaffSelect,
+  draggableStaffIds = EMPTY_DRAGGABLE_IDS,
+  onStaffDropOnIncident,
+  anchoredOverlays = EMPTY_ANCHORED_OVERLAYS,
   staff,
   showStaff = false,
   selectedStaffId = null,
@@ -252,6 +260,28 @@ function LongdoAddressMapBase({
     visible: showStaff,
     zoom: settledZoom,
     resolverRef: resolveOverlaySelectionRef
+  });
+
+  // Drag an officer onto the case pin to assign them. Inert while
+  // `draggableStaffIds` is empty; never moves the pin or reports a location.
+  useLongdoStaffDrag({
+    mapRef,
+    containerRef,
+    isReady,
+    draggableStaffIds,
+    staff: staff ?? EMPTY_STAFF,
+    caseLocation: value,
+    onDrop: onStaffDropOnIncident,
+    onSelect: onStaffSelect
+  });
+
+  // Anchored popups (e.g. assign-undo) follow the map as it moves; the per-frame
+  // bound watch only runs while there is something anchored.
+  const { project: projectToScreen, revision: viewRevision } = useLongdoScreenProjector({
+    mapRef,
+    containerRef,
+    isReady,
+    enabled: anchoredOverlays.length > 0
   });
 
   // Org-curated Place markers. Same resolver-slot pattern; read-only (Q1), so a
@@ -678,6 +708,14 @@ function LongdoAddressMapBase({
     >
       <div ref={containerRef} className="h-full w-full" />
 
+      {anchoredOverlays.length > 0 && (
+        <AnchoredOverlayLayer
+          overlays={anchoredOverlays}
+          project={projectToScreen}
+          revision={viewRevision}
+        />
+      )}
+
       {isSearchEnabled && isReady && (
         // `left-14`, not `left-2`: Longdo draws its own zoom / geolocation
         // buttons in the top-left corner, and at `left-2` the search box sits
@@ -723,7 +761,7 @@ function LongdoAddressMapBase({
               onClick={onExpand}
               title={t("case.display.map_expand")}
               aria-label={t("case.display.map_expand")}
-              className="group flex items-center gap-1 rounded-md bg-white/90 px-2 py-1 text-xs text-gray-700 shadow-sm transition-colors hover:bg-white dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800"
+              className={`group flex items-center gap-1 rounded-md bg-white/90 px-2 py-1 text-xs text-gray-700 shadow-sm transition-colors hover:bg-white dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800 ${MAP_CONTROL_BORDER_CLASS}`}
             >
               <Maximize2 className="h-3.5 w-3.5 shrink-0" />
               {compactControls ? (
@@ -748,7 +786,7 @@ function LongdoAddressMapBase({
         }`}
       >
         {showLocationInfo && value && (
-          <div className="max-w-xs rounded-md bg-white/90 px-2 py-1 text-xs text-gray-700 shadow-sm dark:bg-gray-800/90 dark:text-gray-200">
+          <div className={`max-w-xs rounded-md bg-white/90 px-2 py-1 text-xs text-gray-700 shadow-sm dark:bg-gray-800/90 dark:text-gray-200 ${MAP_CONTROL_BORDER_CLASS}`}>
             {address && <div className="truncate font-medium">{address}</div>}
             <div className="text-gray-500 dark:text-gray-400">
               {t("case.display.location_coordinates")}: {value.latitude}, {value.longitude}

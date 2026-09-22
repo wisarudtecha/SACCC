@@ -20,6 +20,7 @@ import { BasemapOptionId, readBasemapPreference, writeBasemapPreference } from "
 import type {
   AddressResult,
   IncidentRadiusOverlay,
+  MapAnchoredOverlay,
   MapBounds,
   MapFocusRequest,
   MapLatLon,
@@ -60,6 +61,10 @@ interface AddressMapFieldProps {
   showStaff?: boolean;
   selectedStaffId?: string | null;
   onStaffSelect?: (selection: StaffSelection | null) => void;
+  /** Drag-to-assign and anchored popups, forwarded verbatim - see AddressMapProps. */
+  draggableStaffIds?: ReadonlySet<string>;
+  onStaffDropOnIncident?: (unitId: string) => void;
+  anchoredOverlays?: readonly MapAnchoredOverlay[];
   /**
    * Place overlay (org-curated facilities), forwarded verbatim to both map
    * instances - same contract as `staff`. Read-only: `onPlaceSelect` drives the
@@ -172,6 +177,9 @@ function AddressMapFieldBase({
   showStaff = false,
   selectedStaffId = null,
   onStaffSelect,
+  draggableStaffIds,
+  onStaffDropOnIncident,
+  anchoredOverlays,
   places,
   showPlace = false,
   selectedPlaceId = null,
@@ -272,6 +280,9 @@ function AddressMapFieldBase({
         showStaff={showStaff}
         selectedStaffId={selectedStaffId}
         onStaffSelect={onStaffSelect}
+        draggableStaffIds={draggableStaffIds}
+        onStaffDropOnIncident={onStaffDropOnIncident}
+        anchoredOverlays={anchoredOverlays}
         places={places}
         showPlace={showPlace}
         selectedPlaceId={selectedPlaceId}
@@ -328,6 +339,9 @@ function AddressMapFieldBase({
             showStaff={showStaff}
             selectedStaffId={selectedStaffId}
             onStaffSelect={onStaffSelect}
+            draggableStaffIds={draggableStaffIds}
+            onStaffDropOnIncident={onStaffDropOnIncident}
+            anchoredOverlays={anchoredOverlays}
             places={places}
             showPlace={showPlace}
             selectedPlaceId={selectedPlaceId}

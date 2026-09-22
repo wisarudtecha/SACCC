@@ -41,6 +41,11 @@ function escapeXml(value: string): string {
     .replace(/>/g, "&gt;");
 }
 
+/** For a value placed inside a double-quoted attribute, where a `"` would end it. */
+function escapeAttribute(value: string): string {
+  return escapeXml(value).replace(/"/g, "&quot;");
+}
+
 /**
  * The icon wrapper.
  *
@@ -49,9 +54,13 @@ function escapeXml(value: string): string {
  * popup from `title`/`detail`, and a vendor popup opening on click would compete
  * with the app's StaffDetailPanel for the same gesture.
  */
-function svg(size: number, body: string, name: string): string {
+function svg(size: number, body: string, name: string, unitId?: string): string {
+  // Marks a SINGLE officer for drag-to-assign (see useLongdoStaffDrag): the icon is
+  // a real DOM node, so a press can be traced back to who it was on. Group circles
+  // pass no id, which is what keeps them undraggable.
+  const unitAttribute = unitId ? ` data-staff-unit-id="${escapeAttribute(unitId)}"` : "";
   return (
-    `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" ` +
+    `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"${unitAttribute} ` +
     `xmlns="http://www.w3.org/2000/svg" style="overflow:visible;cursor:pointer">` +
     (name ? `<title>${escapeXml(name)}</title>` : "") +
     `${body}</svg>`
@@ -124,7 +133,8 @@ export interface StaffMarkerIconState {
  */
 export function createStaffMarkerOptions(
   state: StaffMarkerIconState,
-  name: string
+  name: string,
+  unitId?: string
 ): LongdoMarkerOptions {
   const rgb = getAvailabilityRgb(state.availability);
   const isMuted = state.isStale || !state.isLogin;
@@ -138,7 +148,7 @@ export function createStaffMarkerOptions(
     // at its bottom centre.
     return {
       icon: {
-        html: svg(size, figure(size / 2, size, size, fill, outlineAlpha, strokeWidth), name),
+        html: svg(size, figure(size / 2, size, size, fill, outlineAlpha, strokeWidth), name, unitId),
         offset: { x: size / 2, y: size }
       }
     };
@@ -158,7 +168,7 @@ export function createStaffMarkerOptions(
 
   return {
     icon: {
-      html: svg(canvas, parts.join(""), name),
+      html: svg(canvas, parts.join(""), name, unitId),
       offset: { x: centre, y: centre }
     }
   };

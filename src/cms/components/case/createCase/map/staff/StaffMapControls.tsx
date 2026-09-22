@@ -16,7 +16,7 @@
 import { memo } from "react";
 import { RefreshCcw, Users } from "lucide-react";
 import { useTranslation } from "@/core/hooks/useTranslation";
-import { MAP_CONTROL_REVEAL_ON_GROUP } from "../mapControlStyles";
+import { MAP_CONTROL_REVEAL_ON_GROUP, MAP_CONTROL_SHELL_CLASS } from "../mapControlStyles";
 import StaffFilterMenu from "./StaffFilterMenu";
 import type { StaffFilterMode } from "./staffFilter";
 
@@ -72,7 +72,7 @@ function StaffMapControlsBase({
     <div className={`flex flex-col items-end gap-1 ${className}`}>
       <div className="flex items-start gap-1">
         {/* One segmented shell, so the two buttons read as a single staff control. */}
-        <div className="flex items-stretch overflow-hidden rounded-md bg-white/90 shadow-sm dark:bg-gray-800/90">
+        <div className={MAP_CONTROL_SHELL_CLASS}>
           <button
             type="button"
             onClick={onToggle}
