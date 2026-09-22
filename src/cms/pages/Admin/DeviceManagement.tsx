@@ -29,7 +29,7 @@ const DeviceManagementPage: React.FC = () => {
   // ===================================================================
   // API Data
   // ===================================================================
-  const { data: devicesData, isLoading, isError, refetch } = useGetDeviceIoTQuery({ start: 0, length: 100 });
+  const { data: devicesData, isLoading, isError, refetch } = useGetDeviceIoTQuery({ start: 0, length: 1000 });
   const devices = devicesData?.data as unknown as Device[] || [];
 
   return (

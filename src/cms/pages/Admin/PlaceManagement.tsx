@@ -27,7 +27,7 @@ const PlaceManagementPage: React.FC = () => {
   // ===================================================================
   // API Data
   // ===================================================================
-  const { data: placesData, isLoading, isError, refetch } = useGetPlacesQuery({ start: 0, length: 100 });
+  const { data: placesData, isLoading, isError, refetch } = useGetPlacesQuery({ start: 0, length: 1000 });
   const places = placesData?.data as unknown as Place[] || [];
 
   return (

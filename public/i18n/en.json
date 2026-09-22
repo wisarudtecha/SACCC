@@ -2774,6 +2774,9 @@
         "toolbar": {
           "search": {
             "placeholder": "Search places..."
+          },
+          "filter": {
+            "category": "Select category"
           }
         },
         "header": {
@@ -2871,6 +2874,9 @@
         "toolbar": {
           "search": {
             "placeholder": "Search devices..."
+          },
+          "filter": {
+            "deviceType": "Select device type"
           }
         },
         "header": {

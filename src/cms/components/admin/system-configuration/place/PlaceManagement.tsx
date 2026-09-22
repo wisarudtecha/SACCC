@@ -305,6 +305,15 @@ const PlaceManagementComponent: React.FC<PlaceManagementProps> = ({
         render: (placeItem: Place) => renderStatusBadge(placeItem.active)
       }
     ],
+    filters: [
+      {
+        key: "category",
+        label: t("crud.place.list.header.category"),
+        type: "select" as const,
+        options: categoryOptions,
+        placeholder: t("crud.place.list.toolbar.filter.category")
+      }
+    ],
     actions: [
       {
         key: "view",

@@ -2772,6 +2772,9 @@
         "toolbar": {
           "search": {
             "placeholder": "ค้นหาสถานที่..."
+          },
+          "filter": {
+            "category": "เลือกประเภท"
           }
         },
         "header": {
@@ -2869,6 +2872,9 @@
         "toolbar": {
           "search": {
             "placeholder": "ค้นหาอุปกรณ์..."
+          },
+          "filter": {
+            "deviceType": "เลือกประเภทอุปกรณ์"
           }
         },
         "header": {

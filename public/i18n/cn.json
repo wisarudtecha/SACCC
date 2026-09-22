@@ -2617,6 +2617,9 @@
         "toolbar": {
           "search": {
             "placeholder": "搜索地点..."
+          },
+          "filter": {
+            "category": "选择类别"
           }
         },
         "header": {
@@ -2714,6 +2717,9 @@
         "toolbar": {
           "search": {
             "placeholder": "搜索设备..."
+          },
+          "filter": {
+            "deviceType": "选择设备类型"
           }
         },
         "header": {

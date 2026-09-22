@@ -257,6 +257,14 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
     [devices, language]
   );
 
+  // deviceType has no backend enum (free text - see header comment), so the
+  // filter's options are the distinct values actually present in the data.
+  const deviceTypeOptions = useMemo(
+    () => Array.from(new Set(data.map(d => d.deviceType).filter(Boolean)))
+      .map(value => ({ value, label: value })),
+    [data]
+  );
+
   // ===================================================================
   // Metrics
   // ===================================================================
@@ -334,6 +342,15 @@ const DeviceManagementComponent: React.FC<DeviceManagementProps> = ({
         label: t("crud.device.list.header.status"),
         sortable: true,
         render: (deviceItem: Device) => renderStatusBadge(deviceItem.active !== false)
+      }
+    ],
+    filters: [
+      {
+        key: "deviceType",
+        label: t("crud.device.list.header.type"),
+        type: "select" as const,
+        options: deviceTypeOptions,
+        placeholder: t("crud.device.list.toolbar.filter.deviceType")
       }
     ],
     actions: [
