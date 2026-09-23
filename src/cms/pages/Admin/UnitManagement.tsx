@@ -33,12 +33,12 @@ const UnitManagementPage: React.FC = () => {
   // ===================================================================
   // API Data
   // ===================================================================
-  const { data: unitsData } = useGetUnitsQuery({ start: 0, length: 100 });
+  const { data: unitsData } = useGetUnitsQuery({ start: 0, length: 10000 });
   const units = unitsData?.data as unknown as Unit[] || [];
 
   // Master property list, needed by the preview's Properties tab to render the full
   // assignment matrix (the unit-scoped read only returns what is already assigned).
-  const { data: propertiesData } = useGetPropertiesQuery({ start: 0, length: 100 });
+  const { data: propertiesData } = useGetPropertiesQuery({ start: 0, length: 1000 });
   const properties = propertiesData?.data as unknown as Property[] || [];
 
   return (
