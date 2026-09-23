@@ -230,7 +230,14 @@ function buildFlatOrgAreas(trees: readonly AreaCountryTree[]): FlatOrgAreas {
         const node: OrgAreaNode = {
           code: `${provinceCode}_${districtNode.distId}`,
           parent: provinceCode,
-          rawId: districtNode.distId,
+          // The org's distId is the short intra-province position ("01" for
+          // Phra Nakhon), not the full TIS-1099 code the static geometry
+          // files key by ("1001" = province 10 + district 01 concatenated -
+          // confirmed against the raw source data build-thailand-boundaries.mjs
+          // was built from). padStart guards against an org response that
+          // omits the leading zero, since "10" + "1" would otherwise wrongly
+          // produce "101" instead of "1001".
+          rawId: `${provinceNode.provId}${districtNode.distId.padStart(2, "0")}`,
           en: districtNode.en,
           th: districtNode.th
         };
@@ -483,6 +490,54 @@ function buildOptions(
 }
 
 /**
+ * Country is special: the static dataset has exactly one country (Thailand,
+ * under a placeholder code - see scripts/build-thailand-boundaries.mjs's
+ * header comment), so there is nothing for the org's real countryId to
+ * match against. Every country-level node gets that one geometry/colour
+ * regardless of its own id, rather than the rawId lookup buildFeatures/
+ * buildOptions use for province/district, which can only ever fail here.
+ */
+function buildCountryFeatures(
+  nodes: readonly OrgAreaNode[],
+  geometryByRawId: ReadonlyMap<string, PolygonCoordinates>,
+  colorByRawId: ReadonlyMap<string, number>
+): OrgFeature[] {
+  const [geometry] = geometryByRawId.values();
+  if (!geometry) {
+    return [];
+  }
+  const [color] = colorByRawId.values();
+  return nodes.map((node, index) => ({
+    type: "Feature",
+    properties: {
+      OBJECTID: index + 1,
+      CODE: node.code,
+      PARENT: node.parent,
+      NAME_TH: node.th || node.en,
+      NAME_EN: node.en,
+      NAME_CN: node.en,
+      COLOR_IDX: color ?? 0
+    },
+    geometry: { type: "Polygon", coordinates: geometry }
+  }));
+}
+
+function buildCountryOptions(
+  nodes: readonly OrgAreaNode[],
+  colorByRawId: ReadonlyMap<string, number>
+): BoundaryOption[] {
+  const [color] = colorByRawId.values();
+  return nodes.map((node) => ({
+    code: node.code,
+    parent: node.parent,
+    th: node.th,
+    en: node.en,
+    cn: node.en,
+    color: color ?? 0
+  }));
+}
+
+/**
  * Blob URLs, cached per KEY - a plain level name for country/province (their
  * content never varies), or `district:<sorted provIds>` for district (its
  * content is exactly whichever provinces are currently selected).
@@ -534,7 +589,7 @@ export const orgAreaSource: BoundarySource = {
 
     if (level === "country") {
       const geometry = await loadCountryGeometry();
-      const features = buildFeatures(flat.country, geometry, colorMapFrom(staticIndex.country), "country");
+      const features = buildCountryFeatures(flat.country, geometry, colorMapFrom(staticIndex.country));
       return retainBlobUrl("country", { type: "FeatureCollection", features });
     }
 
@@ -591,7 +646,7 @@ export const orgAreaSource: BoundarySource = {
   async loadIndex() {
     const [flat, staticIndex] = await Promise.all([loadFlatOrgData(), loadStaticIndex()]);
     return {
-      country: buildOptions(flat.country, colorMapFrom(staticIndex.country), "country"),
+      country: buildCountryOptions(flat.country, colorMapFrom(staticIndex.country)),
       province: buildOptions(flat.province, colorMapFrom(staticIndex.province), "province"),
       district: buildOptions(flat.district, colorMapFrom(staticIndex.district), "district"),
       subdistrict: []

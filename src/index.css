@@ -4,7 +4,7 @@ layer(base);
 @import '@/core/styles/_variables.css';
 @import '@/core/styles/theme-integration.css';
 
-@import "tailwindcss";
+@import "tailwindcss" source(".");
 
 @custom-variant dark (&:is(.dark *));
 

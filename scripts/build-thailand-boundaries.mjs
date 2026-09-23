@@ -51,7 +51,13 @@ import { topology } from "topojson-server";
 import { merge } from "topojson-client";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const SOURCE_DIR = join(ROOT, "src", "cms", "mocks");
+// Deliberately NOT under src/: Tailwind v4's automatic content scanner walks
+// the whole project looking for class-name usage, and these two raw exports
+// (79MB combined) sat under src/cms/mocks/ for one debugging session - see
+// the "source(".")" restriction added to src/index.css's tailwindcss import,
+// which was the actual fix for the resulting hang. Keeping large non-source
+// data outside src/ avoids relying on that scoping alone.
+const SOURCE_DIR = join(ROOT, "boundary-source-data");
 const OUTPUT_DIR = join(ROOT, "public", "geo", "thailand");
 const DISTRICT_OUTPUT_DIR = join(OUTPUT_DIR, "district");
 
