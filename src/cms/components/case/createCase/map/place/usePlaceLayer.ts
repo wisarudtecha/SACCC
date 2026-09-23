@@ -16,7 +16,7 @@ import { useTranslation } from "@/core/hooks/useTranslation";
 import { useGetPlacesQuery } from "@/cms/store/api/placesApi";
 import { PLACE_CATEGORIES } from "@/cms/types/place";
 import type { PlaceCategory } from "@/cms/types/place";
-import { toPlaceMarkers, type PlaceMarker } from "./placeTypes";
+import { toPlaceMarkers, type PlaceMarker, type PlaceSelection } from "./placeTypes";
 
 // The dataset is small and org-curated; there is no viewport scoping for Place
 // (ticket Section 7 - "one shared fetch, like boundaries"). RTK Query dedupes
@@ -41,7 +41,24 @@ export interface UsePlaceLayerResult {
   selectedPlaceId: string | null;
   /** The selected marker, or null when nothing is selected / the layer is off / it was filtered out. */
   selectedPlace: PlaceMarker | null;
-  selectPlace: (place: PlaceMarker | null) => void;
+  /** The current selection - a single Place, an unseparable group, or none. */
+  selection: PlaceSelection | null;
+  /**
+   * The group's live members, re-resolved against `places` every render (so
+   * panning doesn't go stale), or null while no group is selected.
+   */
+  groupMarkers: PlaceMarker[] | null;
+  selectPlace: (selection: PlaceSelection | null) => void;
+  /**
+   * The group a Place was picked out of, or null when it was selected
+   * directly. Lets the info popup offer a "back to the group" button, mirroring
+   * CaseStaffMapField's groupOrigin.
+   */
+  groupOrigin: readonly string[] | null;
+  /** Pick a single Place out of the open group panel, remembering the group. */
+  pickFromGroup: (id: string) => void;
+  /** Return to the group a Place was picked out of. No-op if there is none. */
+  backToGroup: () => void;
   isLoading: boolean;
   isError: boolean;
   /** Localised status line for the toolbar (error / nothing to show), or undefined. */
@@ -58,7 +75,8 @@ export function usePlaceLayer(): UsePlaceLayerResult {
   const [showPlace, setShowPlace] = useState(false);
   const [categoryVisibility, setCategoryVisibility] =
     useState<CategoryVisibility>(ALL_CATEGORIES_HIDDEN);
-  const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
+  const [selection, setSelection] = useState<PlaceSelection | null>(null);
+  const [groupOrigin, setGroupOrigin] = useState<readonly string[] | null>(null);
 
   const allMarkers = useMemo(() => toPlaceMarkers(data?.data, language), [data, language]);
 
@@ -67,23 +85,58 @@ export function usePlaceLayer(): UsePlaceLayerResult {
     [allMarkers, categoryVisibility]
   );
 
+  const selectedPlaceId = selection?.type === "place" ? selection.id : null;
+
   const selectedPlace = useMemo(
     () => (showPlace ? places.find((marker) => marker.id === selectedPlaceId) ?? null : null),
     [showPlace, places, selectedPlaceId]
   );
 
+  // Re-resolved from live `places` every render, mirroring
+  // CaseStaffMapField's groupMarkers: the picker outlives the group that
+  // opened it, so panning must not close the card.
+  const groupMarkers = useMemo(
+    () =>
+      showPlace && selection?.type === "group"
+        ? places.filter((marker) => selection.placeIds.includes(marker.id))
+        : null,
+    [showPlace, selection, places]
+  );
+
   const toggleShowPlace = useCallback(() => {
     setShowPlace((on) => !on);
-    setSelectedPlaceId(null);
+    setSelection(null);
+    setGroupOrigin(null);
   }, []);
 
   const toggleCategory = useCallback((category: PlaceCategory) => {
     setCategoryVisibility((prev) => ({ ...prev, [category]: !prev[category] }));
   }, []);
 
-  const selectPlace = useCallback((place: PlaceMarker | null) => {
-    setSelectedPlaceId(place?.id ?? null);
+  // A direct click (map marker or group panel's close/re-selection) always
+  // starts a fresh journey - only pickFromGroup below sets groupOrigin.
+  const selectPlace = useCallback((next: PlaceSelection | null) => {
+    setSelection(next);
+    setGroupOrigin(null);
   }, []);
+
+  const pickFromGroup = useCallback(
+    (id: string) => {
+      if (selection?.type === "group") {
+        setGroupOrigin(selection.placeIds);
+      }
+      setSelection({ type: "place", id });
+    },
+    [selection]
+  );
+
+  const backToGroup = useCallback(() => {
+    if (!groupOrigin) {
+      return;
+    }
+    setSelection({ type: "group", placeIds: groupOrigin });
+    setGroupOrigin(null);
+  }, [groupOrigin]);
 
   const notice = useMemo(() => {
     if (isError) {
@@ -103,7 +156,12 @@ export function usePlaceLayer(): UsePlaceLayerResult {
     toggleCategory,
     selectedPlaceId,
     selectedPlace,
+    selection,
+    groupMarkers,
     selectPlace,
+    groupOrigin,
+    pickFromGroup,
+    backToGroup,
     isLoading,
     isError,
     notice

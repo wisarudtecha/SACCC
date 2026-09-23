@@ -9,7 +9,7 @@
 // vendor's light theme, cannot reach the app's translation catalogues, and
 // swallow the next map click - all of which the staff layer avoids the same way.
 import { memo, useState } from "react";
-import { X } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import PanelCollapseToggle from "../PanelCollapseToggle";
 import { getPlaceCategoryLabelKey, getPlaceCategoryRgb } from "./placeSymbols";
@@ -18,11 +18,15 @@ import type { PlaceMarker } from "./placeTypes";
 interface PlaceInfoPopupProps {
   place: PlaceMarker;
   onClose: () => void;
+  /** Set only when this Place was picked out of a cluster panel - shows a "back to the group" row. */
+  onBack?: () => void;
+  /** How many Places the group held, for the back row's label. */
+  backCount?: number;
   /** Positioning classes; the caller places the card over the map. */
   className?: string;
 }
 
-function PlaceInfoPopupBase({ place, onClose, className = "" }: PlaceInfoPopupProps) {
+function PlaceInfoPopupBase({ place, onClose, onBack, backCount, className = "" }: PlaceInfoPopupProps) {
   const { t } = useTranslation();
   // Collapsed to name and category, to leave room when other panels are open.
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -33,6 +37,21 @@ function PlaceInfoPopupBase({ place, onClose, className = "" }: PlaceInfoPopupPr
     <div
       className={`rounded-md bg-white/95 p-3 text-xs shadow-md dark:bg-gray-800/95 ${className}`}
     >
+      {/* Negative margins pull it flush with the card's own edges - this card
+          has no outer flex-col shell like StaffDetailPanel's to anchor a
+          full-width row against, so the row detaches itself instead. */}
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          className="-mx-3 -mt-3 mb-2 flex w-[calc(100%+1.5rem)] items-center gap-1 border-b border-gray-200 px-3 py-1.5 text-left text-[11px] text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-200"
+        >
+          <ArrowLeft className="h-3 w-3 shrink-0" />
+          <span className="truncate">
+            {t("case.display.map_place_group_back", { count: backCount ?? 0 })}
+          </span>
+        </button>
+      )}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate font-semibold text-gray-900 dark:text-white">{place.name}</p>

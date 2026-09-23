@@ -11,16 +11,22 @@
 // overlap at city zoom and do not overlap at street zoom, and the grouping has
 // to follow that.
 //
-// This module is deliberately pure. It takes a `toScreen` callback rather than a
-// MapView, so the maths stays testable and free of SDK types; the layer hook
-// supplies the projection.
+// This module is deliberately pure, and is now a thin staff-flavoured adapter
+// over shared/proximityClustering.ts: the union-find and separation-zoom maths
+// live there so Place and Device clustering can reuse them exactly, and the
+// only thing left here is staff-specific - attaching each group's best
+// availability, which drives the circle's colour.
+import {
+  getSeparationZoom as getSharedSeparationZoom,
+  groupByProximity,
+  DEFAULT_CLUSTER_RADIUS_PX,
+  type ProximityPoint,
+  type ScreenPoint
+} from "../shared/proximityClustering";
 import { getStaffAvailability, type StaffAvailability } from "./staffSymbols";
 import type { StaffMarker } from "./staffTypes";
 
-export interface ScreenPoint {
-  x: number;
-  y: number;
-}
+export type { ScreenPoint };
 
 export interface StaffGroup {
   /**
@@ -52,7 +58,7 @@ export interface StaffGrouping {
  * The person marker is 18px and the selection halo 34px, so anything much
  * tighter would let a halo swallow a neighbour it had not grouped with.
  */
-export const STAFF_CLUSTER_RADIUS_PX = 38;
+export const STAFF_CLUSTER_RADIUS_PX = DEFAULT_CLUSTER_RADIUS_PX;
 
 /** Lower is better. "Best" is the most dispatchable member of a group. */
 const AVAILABILITY_RANK: Record<StaffAvailability, number> = {
@@ -60,14 +66,6 @@ const AVAILABILITY_RANK: Record<StaffAvailability, number> = {
   engaged: 1,
   "off-duty": 2
 };
-
-function screenDistance(a: ScreenPoint, b: ScreenPoint): number {
-  return Math.hypot(a.x - b.x, a.y - b.y);
-}
-
-function isUsablePoint(point: ScreenPoint | null): point is ScreenPoint {
-  return point !== null && Number.isFinite(point.x) && Number.isFinite(point.y);
-}
 
 /**
  * A group takes its most dispatchable member's colour.
@@ -83,107 +81,47 @@ function bestAvailability(markers: readonly StaffMarker[]): StaffAvailability {
   }, "off-duty");
 }
 
+/** Adapts a StaffMarker to the shared clustering core's point shape. */
+interface StaffProximityPoint extends ProximityPoint {
+  marker: StaffMarker;
+}
+
 /**
- * Partition markers into those that stand alone on screen and those that overlap.
- *
- * Single-link: a chain of near neighbours becomes one group, which is what the
- * eye sees too. O(n^2) over a few dozen units per case is nothing, and it is far
- * easier to reason about than a spatial index nothing else here needs.
+ * Partition markers into those that stand alone on screen and those that overlap,
+ * via the shared union-find core (see shared/proximityClustering.ts).
  */
 export function groupStaffByProximity(
   markers: readonly StaffMarker[],
   toScreen: (marker: StaffMarker) => ScreenPoint | null,
   radiusPx: number = STAFF_CLUSTER_RADIUS_PX
 ): StaffGrouping {
-  const singles: StaffMarker[] = [];
-  const projected: { marker: StaffMarker; point: ScreenPoint }[] = [];
+  const points: StaffProximityPoint[] = markers.map((marker) => ({
+    id: marker.unitId,
+    lat: marker.latitude,
+    lon: marker.longitude,
+    marker
+  }));
 
-  markers.forEach((marker) => {
-    const point = toScreen(marker);
-    if (!isUsablePoint(point)) {
-      // Nothing to compare it against, so it can only stand alone.
-      singles.push(marker);
-      return;
-    }
-    projected.push({ marker, point });
-  });
+  const grouping = groupByProximity(
+    points,
+    (point) => toScreen(point.marker),
+    radiusPx
+  );
 
-  // Union-find over "within radiusPx of each other".
-  const parent = projected.map((_, index) => index);
-
-  const find = (index: number): number => {
-    let root = index;
-    while (parent[root] !== root) {
-      root = parent[root];
-    }
-    let node = index;
-    while (parent[node] !== root) {
-      const next = parent[node];
-      parent[node] = root;
-      node = next;
-    }
-    return root;
+  return {
+    singles: grouping.singles.map((point) => point.marker),
+    groups: grouping.groups.map((group) => {
+      const members = group.members.map((point) => point.marker);
+      return {
+        id: group.id,
+        unitIds: members.map((marker) => marker.unitId).sort(),
+        latitude: group.latitude,
+        longitude: group.longitude,
+        availability: bestAvailability(members),
+        minPairwisePx: group.minPairwisePx
+      };
+    })
   };
-
-  const union = (a: number, b: number): void => {
-    const rootA = find(a);
-    const rootB = find(b);
-    if (rootA !== rootB) {
-      parent[rootB] = rootA;
-    }
-  };
-
-  for (let i = 0; i < projected.length; i += 1) {
-    for (let j = i + 1; j < projected.length; j += 1) {
-      if (screenDistance(projected[i].point, projected[j].point) <= radiusPx) {
-        union(i, j);
-      }
-    }
-  }
-
-  const buckets = new Map<number, number[]>();
-  projected.forEach((_, index) => {
-    const root = find(index);
-    const bucket = buckets.get(root);
-    if (bucket) {
-      bucket.push(index);
-    }
-    else {
-      buckets.set(root, [index]);
-    }
-  });
-
-  const groups: StaffGroup[] = [];
-
-  buckets.forEach((indices) => {
-    if (indices.length === 1) {
-      singles.push(projected[indices[0]].marker);
-      return;
-    }
-
-    const members = indices.map((index) => projected[index].marker);
-    const points = indices.map((index) => projected[index].point);
-
-    let minPairwisePx = Number.POSITIVE_INFINITY;
-    for (let i = 0; i < points.length; i += 1) {
-      for (let j = i + 1; j < points.length; j += 1) {
-        minPairwisePx = Math.min(minPairwisePx, screenDistance(points[i], points[j]));
-      }
-    }
-
-    const unitIds = members.map((marker) => marker.unitId).sort();
-
-    groups.push({
-      id: unitIds.join("|"),
-      unitIds,
-      latitude: members.reduce((sum, marker) => sum + marker.latitude, 0) / members.length,
-      longitude: members.reduce((sum, marker) => sum + marker.longitude, 0) / members.length,
-      availability: bestAvailability(members),
-      minPairwisePx
-    });
-  });
-
-  return { singles, groups };
 }
 
 /**
@@ -206,26 +144,5 @@ export function getSeparationZoom(
   maxZoom: number,
   radiusPx: number = STAFF_CLUSTER_RADIUS_PX
 ): number | null {
-  if (!Number.isFinite(currentZoom) || !Number.isFinite(maxZoom)) {
-    return null;
-  }
-  if (group.minPairwisePx <= 0) {
-    return null;
-  }
-
-  const levelsNeeded = Math.log2(radiusPx / group.minPairwisePx);
-  if (levelsNeeded <= 0) {
-    // Already further apart than the merge radius - unreachable for a real
-    // group, since that is what put them together in the first place.
-    return null;
-  }
-
-  const exactZoom = currentZoom + levelsNeeded;
-  if (exactZoom > maxZoom) {
-    return null;
-  }
-
-  // Half a level of headroom so the closest pair lands clear of the radius
-  // rather than exactly on it, which would re-group them on arrival.
-  return Math.min(maxZoom, exactZoom + 0.5);
+  return getSharedSeparationZoom(group, currentZoom, maxZoom, radiusPx);
 }

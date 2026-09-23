@@ -71,6 +71,9 @@ function MapDeviceButtonBase({
       compact={compact}
       showCategoryDropdown={showCategoryDropdown}
       className={className}
+      // Amber-600 = rgb(217, 119, 6), the exact CLUSTER_RGB deviceSymbols.ts
+      // draws Device clusters with - the toolbar button matches the map.
+      activeColorClassName="bg-amber-50 font-medium text-amber-700 dark:bg-amber-500/20 dark:text-amber-300"
     />
   );
 }

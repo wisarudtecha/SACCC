@@ -73,6 +73,9 @@ function MapPlaceButtonBase({
       compact={compact}
       showCategoryDropdown={showCategoryDropdown}
       className={className}
+      // Violet-600 = rgb(124, 58, 237), the exact CLUSTER_RGB placeSymbols.ts
+      // draws Place clusters with - the toolbar button matches the map.
+      activeColorClassName="bg-violet-50 font-medium text-violet-700 dark:bg-violet-500/20 dark:text-violet-300"
     />
   );
 }

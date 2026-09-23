@@ -62,8 +62,34 @@ const HALO_SIZE = 36;
 const HALO_FILL_ALPHA = 0.22;
 const HALO_OUTLINE_ALPHA = 0.5;
 
+/**
+ * Cluster circle: base diameter, and how much each extra member adds. Same
+ * constants as staffSymbols.ts' group circle, for visual consistency across
+ * marker types.
+ */
+const GROUP_BASE_SIZE = 26;
+const GROUP_SIZE_PER_MEMBER = 1.6;
+const GROUP_MAX_SIZE = 40;
+const GROUP_FILL_ALPHA = 0.92;
+/** How far a selection halo extends past the group circle it sits under. */
+const GROUP_HALO_MARGIN = 12;
+
+/**
+ * Violet, deliberately outside CATEGORY_RGB - a cluster has no single category
+ * (it may mix Police/Hospital/Fire), so it gets a colour that reads as "this
+ * is a cluster" rather than being mistaken for a fourth category. Distinct
+ * from the Device cluster colour (amber, see deviceSymbols.ts) and from every
+ * staff availability colour (green/red/gray), so a dispatcher can tell the
+ * three kinds of cluster apart at a glance.
+ */
+const CLUSTER_RGB: Rgb = [124, 58, 237]; // violet-600
+
 function withAlpha(rgb: Rgb, alpha: number): Rgba {
   return [rgb[0], rgb[1], rgb[2], alpha];
+}
+
+export function getPlaceGroupSize(count: number): number {
+  return Math.min(GROUP_MAX_SIZE, GROUP_BASE_SIZE + count * GROUP_SIZE_PER_MEMBER);
 }
 
 /** The one place that maps a Place category to its marker colour. */
@@ -121,6 +147,51 @@ export function createPlaceHaloSymbol(category: PlaceCategory) {
   };
 }
 
+/** The circle drawn in place of Place markers that overlap on screen. */
+export function createPlaceGroupSymbol(count: number) {
+  return {
+    type: "simple-marker" as const,
+    style: "circle" as const,
+    color: withAlpha(CLUSTER_RGB, GROUP_FILL_ALPHA),
+    size: getPlaceGroupSize(count),
+    outline: {
+      color: [255, 255, 255, 1],
+      width: 2
+    }
+  };
+}
+
+/** The member count, drawn as a second graphic over the cluster circle. */
+export function createPlaceGroupLabelSymbol(count: number) {
+  return {
+    type: "text" as const,
+    text: String(count),
+    color: [255, 255, 255, 1],
+    haloColor: [17, 24, 39, 0.55],
+    haloSize: 1,
+    horizontalAlignment: "center" as const,
+    verticalAlignment: "middle" as const,
+    font: {
+      size: 11,
+      weight: "bold" as const
+    }
+  };
+}
+
+/** The same halo as createPlaceHaloSymbol, sized to sit OUTSIDE a group circle. */
+export function createPlaceGroupHaloSymbol(count: number) {
+  return {
+    type: "simple-marker" as const,
+    style: "circle" as const,
+    color: withAlpha(CLUSTER_RGB, HALO_FILL_ALPHA),
+    size: getPlaceGroupSize(count) + GROUP_HALO_MARGIN,
+    outline: {
+      color: withAlpha(CLUSTER_RGB, HALO_OUTLINE_ALPHA),
+      width: 1.5
+    }
+  };
+}
+
 /**
  * The measurements and path data behind the symbols above, for the providers
  * that draw from SVG (Longdo) or a GeoJSON-styled layer (MapTiler) instead of an
@@ -136,5 +207,8 @@ export const PLACE_SYMBOL_TOKENS = {
   fillAlpha: FILL_ALPHA,
   haloSize: HALO_SIZE,
   haloFillAlpha: HALO_FILL_ALPHA,
-  haloOutlineAlpha: HALO_OUTLINE_ALPHA
+  haloOutlineAlpha: HALO_OUTLINE_ALPHA,
+  clusterRgb: CLUSTER_RGB,
+  groupFillAlpha: GROUP_FILL_ALPHA,
+  groupHaloMargin: GROUP_HALO_MARGIN
 } as const;

@@ -9,7 +9,11 @@
 // ANCHORING: a device "stands on" its coordinate, so the glyph is anchored at
 // its bottom centre ("bottom"); a selection halo marks a spot on the ground, so
 // it is centred ("center").
-import { DEVICE_SYMBOL_TOKENS as TOKENS, getDeviceCategoryRgb } from "../../device/deviceSymbols";
+import {
+  DEVICE_SYMBOL_TOKENS as TOKENS,
+  getDeviceCategoryRgb,
+  getDeviceGroupSize
+} from "../../device/deviceSymbols";
 import type { DeviceCategory } from "../../device/deviceTypes";
 
 type Rgb = readonly [number, number, number];
@@ -83,4 +87,23 @@ export function createDeviceMarkerVisual(state: DeviceMarkerIconState, name: str
     figure(centre, centre, size, path, fill, strokeWidth)
   ];
   return { html: svg(canvas, parts.join(""), name), anchor: "center" };
+}
+
+/** Visual for a group of Devices that overlap on screen. Mirrors staff's group marker. */
+export function createDeviceGroupMarkerVisual(count: number, isSelected: boolean): DeviceMarkerVisual {
+  const rgb = TOKENS.clusterRgb;
+  const diameter = getDeviceGroupSize(count);
+  const haloDiameter = diameter + TOKENS.groupHaloMargin;
+  const canvas = isSelected ? haloDiameter : diameter;
+  const centre = canvas / 2;
+
+  const parts = [
+    isSelected ? halo(centre, centre, haloDiameter, rgb) : "",
+    `<circle cx="${centre}" cy="${centre}" r="${diameter / 2 - 1}" ` +
+      `fill="${rgba(rgb, TOKENS.groupFillAlpha)}" stroke="rgba(255, 255, 255, 1)" stroke-width="2" />`,
+    `<text x="${centre}" y="${centre}" text-anchor="middle" dominant-baseline="central" ` +
+      `font-family="system-ui, sans-serif" font-size="11" font-weight="bold" fill="#ffffff" ` +
+      `stroke="rgba(17, 24, 39, 0.55)" stroke-width="1" paint-order="stroke">${count}</text>`
+  ];
+  return { html: svg(canvas, parts.join(""), ""), anchor: "center" };
 }

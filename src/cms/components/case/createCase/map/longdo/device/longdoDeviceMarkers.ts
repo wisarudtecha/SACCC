@@ -11,7 +11,11 @@
 //
 // Each renderer keeps its own private `rgba` / `escapeXml` / `svg` copies - the
 // Place / staff renderers do too, there is no shared util.
-import { DEVICE_SYMBOL_TOKENS as TOKENS, getDeviceCategoryRgb } from "../../device/deviceSymbols";
+import {
+  DEVICE_SYMBOL_TOKENS as TOKENS,
+  getDeviceCategoryRgb,
+  getDeviceGroupSize
+} from "../../device/deviceSymbols";
 import type { DeviceCategory } from "../../device/deviceTypes";
 import type { LongdoMarkerOptions } from "../longdoApi";
 
@@ -101,6 +105,31 @@ export function createDeviceMarkerOptions(
   return {
     icon: {
       html: svg(canvas, parts.join(""), name),
+      offset: { x: centre, y: centre }
+    }
+  };
+}
+
+/** Marker options for a group of Devices that overlap on screen. Mirrors staff's group marker. */
+export function createDeviceGroupMarkerOptions(count: number, isSelected: boolean): LongdoMarkerOptions {
+  const rgb = TOKENS.clusterRgb;
+  const diameter = getDeviceGroupSize(count);
+  const haloDiameter = diameter + TOKENS.groupHaloMargin;
+  const canvas = isSelected ? haloDiameter : diameter;
+  const centre = canvas / 2;
+
+  const parts = [
+    isSelected ? halo(centre, centre, haloDiameter, rgb) : "",
+    `<circle cx="${centre}" cy="${centre}" r="${diameter / 2 - 1}" ` +
+      `fill="${rgba(rgb, TOKENS.groupFillAlpha)}" stroke="rgba(255, 255, 255, 1)" stroke-width="2" />`,
+    `<text x="${centre}" y="${centre}" text-anchor="middle" dominant-baseline="central" ` +
+      `font-family="system-ui, sans-serif" font-size="11" font-weight="bold" fill="#ffffff" ` +
+      `stroke="rgba(17, 24, 39, 0.55)" stroke-width="1" paint-order="stroke">${count}</text>`
+  ];
+
+  return {
+    icon: {
+      html: svg(canvas, parts.join(""), ""),
       offset: { x: centre, y: centre }
     }
   };

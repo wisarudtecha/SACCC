@@ -3867,6 +3867,7 @@
       "location_coordinates": "Coordinates",
       "geocode_failed": "Could not look up the address for that location",
       "map_expand": "View larger map",
+      "map_expand_close": "Close",
       "map_geocoding": "Looking up address…",
       "map_search_placeholder": "Search for a place",
       "map_search_clear": "Clear search",

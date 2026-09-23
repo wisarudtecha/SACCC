@@ -47,7 +47,17 @@ interface MapLayerDropdownButtonProps<TCategory extends string> {
   showCategoryDropdown?: boolean;
   /** Positioning classes; the caller places the control over the map. */
   className?: string;
+  /**
+   * Tailwind classes for the toggle button's ACTIVE state, so each layer can
+   * match its own marker colour on the map. Defaults to the original blue,
+   * used by callers (e.g. the Staff toggle's own component) that have no
+   * single marker colour to match.
+   */
+  activeColorClassName?: string;
 }
+
+const DEFAULT_ACTIVE_COLOR_CLASS =
+  "bg-blue-50 font-medium text-blue-700 dark:bg-blue-500/20 dark:text-blue-300";
 
 function MapLayerDropdownButtonInner<TCategory extends string>({
   icon,
@@ -61,7 +71,8 @@ function MapLayerDropdownButtonInner<TCategory extends string>({
   notice,
   compact = false,
   showCategoryDropdown = true,
-  className = ""
+  className = "",
+  activeColorClassName = DEFAULT_ACTIVE_COLOR_CLASS
 }: MapLayerDropdownButtonProps<TCategory>) {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -104,7 +115,7 @@ function MapLayerDropdownButtonInner<TCategory extends string>({
           aria-pressed={isActive}
           className={`flex items-center gap-1 rounded-md px-2 py-1 text-xs shadow-sm transition-colors ${MAP_CONTROL_BORDER_CLASS} ${
             isActive
-              ? "bg-blue-50 font-medium text-blue-700 dark:bg-blue-500/20 dark:text-blue-300"
+              ? activeColorClassName
               : "bg-white/90 text-gray-700 hover:bg-white dark:bg-gray-800/90 dark:text-gray-200 dark:hover:bg-gray-800"
           }`}
         >

@@ -239,6 +239,7 @@ function MapTilerAddressMapBase({
     places: places ?? EMPTY_PLACES,
     selectedPlaceId,
     visible: showPlace,
+    zoom: settledZoom,
     onSelect: onPlaceSelect
   });
 
@@ -252,6 +253,7 @@ function MapTilerAddressMapBase({
     devices: devices ?? EMPTY_DEVICES,
     selectedDeviceId,
     visible: showDevice,
+    zoom: settledZoom,
     onSelect: onDeviceSelect
   });
 

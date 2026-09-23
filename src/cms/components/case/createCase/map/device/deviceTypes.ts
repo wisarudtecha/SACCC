@@ -44,6 +44,14 @@ export interface DeviceMarker {
   longitude: number;
 }
 
+/**
+ * What a click on the Device layer resolved to. Mirrors PlaceSelection /
+ * StaffSelection - see placeTypes.ts for why this is a discriminated union.
+ */
+export type DeviceSelection =
+  | { type: "device"; deviceId: string }
+  | { type: "group"; deviceIds: readonly string[] };
+
 /** A finite number, or null. `Device` coordinates arrive from the API as strings. */
 function toFiniteNumber(value: unknown): number | null {
   const parsed = typeof value === "number" ? value : Number(value);

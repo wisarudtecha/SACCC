@@ -37,9 +37,11 @@ import BoundaryPickerPanel from "./boundaries/BoundaryPickerPanel";
 import BoundaryToolbar from "./boundaries/BoundaryToolbar";
 import { useBoundarySelection } from "./boundaries/useBoundarySelection";
 import PlaceInfoPopup from "./place/PlaceInfoPopup";
+import PlaceGroupPanel from "./place/PlaceGroupPanel";
 import { usePlaceLayer } from "./place/usePlaceLayer";
 import MapDeviceButton from "./device/MapDeviceButton";
 import DeviceInfoPopup from "./device/DeviceInfoPopup";
+import DeviceGroupPanel from "./device/DeviceGroupPanel";
 import { useDeviceLayer } from "./device/useDeviceLayer";
 import { useMapThemeOverride } from "./useMapThemeOverride";
 import type { StaffMarker, StaffSelection } from "./staff/staffTypes";
@@ -186,7 +188,12 @@ function BoundaryMapFieldBase({
     toggleCategory: togglePlaceCategory,
     selectedPlace,
     selectedPlaceId,
+    selection: placeSelection,
+    groupMarkers: placeGroupMarkers,
     selectPlace,
+    groupOrigin: placeGroupOrigin,
+    pickFromGroup: pickPlaceFromGroup,
+    backToGroup: backToPlaceGroup,
     notice: placeNotice
   } = usePlaceLayer();
   const isPlaceLayerOn = showPlaceButton && showPlace;
@@ -203,7 +210,12 @@ function BoundaryMapFieldBase({
     toggleCategory: toggleDeviceCategory,
     selectedDevice,
     selectedDeviceId: selectedDeviceMarkerId,
+    selection: deviceSelection,
+    groupMarkers: deviceGroupMarkers,
     selectDevice,
+    groupOrigin: deviceGroupOrigin,
+    pickFromGroup: pickDeviceFromGroup,
+    backToGroup: backToDeviceGroup,
     linkSelectedDevice,
     unlinkDevice,
     linkedDeviceId: currentLinkedDeviceId,
@@ -337,22 +349,42 @@ function BoundaryMapFieldBase({
             without covering the map's other controls. The click that
             selected it still highlights the marker on the small map - only
             the popup's render is deferred until the map is expanded. */}
+        {context.isExpanded && showPlaceButton && placeSelection?.type === "group" && placeGroupMarkers && (
+          <PlaceGroupPanel
+            markers={placeGroupMarkers}
+            onSelect={pickPlaceFromGroup}
+            onClose={() => selectPlace(null)}
+            className="z-20"
+          />
+        )}
         {context.isExpanded && showPlaceButton && selectedPlace && (
           <PlaceInfoPopup
             place={selectedPlace}
             onClose={() => selectPlace(null)}
+            onBack={placeGroupOrigin ? backToPlaceGroup : undefined}
+            backCount={placeGroupOrigin?.length}
             className="z-20 max-w-[16rem]"
           />
         )}
         {/* Both selected at once is a rare edge case; now that this is a flex
             child rather than an absolutely-positioned overlap, both simply
             stack instead of one hiding the other. */}
+        {context.isExpanded && showDeviceButton && deviceSelection?.type === "group" && deviceGroupMarkers && (
+          <DeviceGroupPanel
+            markers={deviceGroupMarkers}
+            onSelect={pickDeviceFromGroup}
+            onClose={() => selectDevice(null)}
+            className="z-20"
+          />
+        )}
         {context.isExpanded && showDeviceButton && selectedDevice && (
           <DeviceInfoPopup
             device={selectedDevice}
             canLink={Boolean(onDeviceSelect)}
             isLinked={selectedDevice.deviceId === currentLinkedDeviceId}
             onClose={() => selectDevice(null)}
+            onBack={deviceGroupOrigin ? backToDeviceGroup : undefined}
+            backCount={deviceGroupOrigin?.length}
             onLink={linkSelectedDevice}
             onUnlink={unlinkDevice}
             className="z-20 max-w-[16rem]"
@@ -362,13 +394,23 @@ function BoundaryMapFieldBase({
     ),
     [
       showPlaceButton,
+      placeSelection,
+      placeGroupMarkers,
       selectedPlace,
       selectPlace,
+      pickPlaceFromGroup,
+      placeGroupOrigin,
+      backToPlaceGroup,
       showDeviceButton,
       onDeviceSelect,
+      deviceSelection,
+      deviceGroupMarkers,
       selectedDevice,
       currentLinkedDeviceId,
       selectDevice,
+      pickDeviceFromGroup,
+      deviceGroupOrigin,
+      backToDeviceGroup,
       linkSelectedDevice,
       unlinkDevice
     ]

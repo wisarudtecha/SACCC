@@ -18,8 +18,8 @@ import type { BoundaryLayerConfig } from "./boundaries/boundaryTypes";
 import type { BoundarySketchConfig } from "./sketch/sketchTypes";
 import type { StaffMarker, StaffSelection } from "./staff/staffTypes";
 import type { TrailPoint } from "./staff/useStaffTrails";
-import type { PlaceMarker } from "./place/placeTypes";
-import type { DeviceMarker } from "./device/deviceTypes";
+import type { PlaceMarker, PlaceSelection } from "./place/placeTypes";
+import type { DeviceMarker, DeviceSelection } from "./device/deviceTypes";
 
 export type { MapProviderId };
 
@@ -307,7 +307,7 @@ export interface AddressMapProps {
   places?: readonly PlaceMarker[];
   showPlace?: boolean;
   selectedPlaceId?: string | null;
-  onPlaceSelect?: (place: PlaceMarker | null) => void;
+  onPlaceSelect?: (selection: PlaceSelection | null) => void;
   /**
    * Optional Device overlay: IoT device markers (Camera / Fire Hydrant / AED)
    * within the current map extent. Same contract as `staff`. Unlike Place, a
@@ -318,7 +318,7 @@ export interface AddressMapProps {
   devices?: readonly DeviceMarker[];
   showDevice?: boolean;
   selectedDeviceId?: string | null;
-  onDeviceSelect?: (device: DeviceMarker | null) => void;
+  onDeviceSelect?: (selection: DeviceSelection | null) => void;
   /**
    * Fires when the incident (case) pin itself is clicked. Staff, Place and Device
    * markers win a click that lands on them as well, so this only fires when none

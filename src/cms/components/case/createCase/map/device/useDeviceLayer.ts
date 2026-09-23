@@ -27,7 +27,7 @@ import {
   roundBounds,
   sameBounds
 } from "./deviceBounds";
-import { DEVICE_CATEGORIES, toDeviceMarkers, type DeviceMarker } from "./deviceTypes";
+import { DEVICE_CATEGORIES, toDeviceMarkers, type DeviceMarker, type DeviceSelection } from "./deviceTypes";
 import type { DeviceCategory } from "./deviceTypes";
 import type { MapBounds } from "../mapTypes";
 
@@ -63,8 +63,25 @@ export interface UseDeviceLayerResult {
   selectedDeviceId: string | null;
   /** The selected marker, or null when nothing is selected / the layer is off / it was filtered out. */
   selectedDevice: DeviceMarker | null;
+  /** The current selection - a single Device, an unseparable group, or none. */
+  selection: DeviceSelection | null;
+  /**
+   * The group's live members, re-resolved against `devices` every render (so
+   * panning doesn't go stale), or null while no group is selected.
+   */
+  groupMarkers: DeviceMarker[] | null;
   /** Open/close the info popup for a marker. Does NOT write to the case. */
-  selectDevice: (device: DeviceMarker | null) => void;
+  selectDevice: (selection: DeviceSelection | null) => void;
+  /**
+   * The group a Device was picked out of, or null when it was selected
+   * directly. Lets the info popup offer a "back to the group" button, mirroring
+   * CaseStaffMapField's groupOrigin.
+   */
+  groupOrigin: readonly string[] | null;
+  /** Pick a single Device out of the open group panel, remembering the group. */
+  pickFromGroup: (deviceId: string) => void;
+  /** Return to the group a Device was picked out of. No-op if there is none. */
+  backToGroup: () => void;
   /** Link the currently-selected device to the case (popup "Link" button). */
   linkSelectedDevice: () => void;
   /** Clear the case's linked device (popup "Unlink" button). */
@@ -89,7 +106,8 @@ export function useDeviceLayer({
   const [showDevice, setShowDevice] = useState(false);
   const [categoryVisibility, setCategoryVisibility] =
     useState<CategoryVisibility>(ALL_CATEGORIES_HIDDEN);
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+  const [selection, setSelection] = useState<DeviceSelection | null>(null);
+  const [groupOrigin, setGroupOrigin] = useState<readonly string[] | null>(null);
   const [bounds, setBounds] = useState<DeviceBoundsRequest | null>(null);
 
   // --- Debounced viewport reporting -----------------------------------------
@@ -155,6 +173,8 @@ export function useDeviceLayer({
     [allMarkers, categoryVisibility]
   );
 
+  const selectedDeviceId = selection?.type === "device" ? selection.deviceId : null;
+
   const selectedDevice = useMemo(
     () =>
       showDevice
@@ -163,19 +183,52 @@ export function useDeviceLayer({
     [showDevice, devices, selectedDeviceId]
   );
 
+  // Re-resolved from live `devices` every render, mirroring
+  // CaseStaffMapField's groupMarkers: the picker outlives the group that
+  // opened it, so a viewport refetch must not close the card.
+  const groupMarkers = useMemo(
+    () =>
+      showDevice && selection?.type === "group"
+        ? devices.filter((marker) => selection.deviceIds.includes(marker.deviceId))
+        : null,
+    [showDevice, selection, devices]
+  );
+
   // --- Actions -------------------------------------------------------------
   const toggleShowDevice = useCallback(() => {
     setShowDevice((on) => !on);
-    setSelectedDeviceId(null);
+    setSelection(null);
+    setGroupOrigin(null);
   }, []);
 
   const toggleCategory = useCallback((category: DeviceCategory) => {
     setCategoryVisibility((prev) => ({ ...prev, [category]: !prev[category] }));
   }, []);
 
-  const selectDevice = useCallback((device: DeviceMarker | null) => {
-    setSelectedDeviceId(device?.deviceId ?? null);
+  // A direct click (map marker or group panel's close/re-selection) always
+  // starts a fresh journey - only pickFromGroup below sets groupOrigin.
+  const selectDevice = useCallback((next: DeviceSelection | null) => {
+    setSelection(next);
+    setGroupOrigin(null);
   }, []);
+
+  const pickFromGroup = useCallback(
+    (deviceId: string) => {
+      if (selection?.type === "group") {
+        setGroupOrigin(selection.deviceIds);
+      }
+      setSelection({ type: "device", deviceId });
+    },
+    [selection]
+  );
+
+  const backToGroup = useCallback(() => {
+    if (!groupOrigin) {
+      return;
+    }
+    setSelection({ type: "group", deviceIds: groupOrigin });
+    setGroupOrigin(null);
+  }, [groupOrigin]);
 
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
@@ -209,7 +262,12 @@ export function useDeviceLayer({
     toggleCategory,
     selectedDeviceId,
     selectedDevice,
+    selection,
+    groupMarkers,
     selectDevice,
+    groupOrigin,
+    pickFromGroup,
+    backToGroup,
     linkSelectedDevice,
     unlinkDevice,
     linkedDeviceId,

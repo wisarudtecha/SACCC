@@ -9,6 +9,8 @@ interface ModalProps {
   closeButtonClassName?:string
   isFullscreen?: boolean; // Default to false for backwards compatibility
   disableBgColor?:boolean
+  /** Padding on the fullscreen outer wrapper. Only used when isFullscreen is true. */
+  fullscreenPadding?: string;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -19,7 +21,8 @@ export const Modal: React.FC<ModalProps> = ({
   showCloseButton = true, // Default to true for backwards compatibility
   isFullscreen = false,
   closeButtonClassName="",
-  disableBgColor=false
+  disableBgColor=false,
+  fullscreenPadding = "p-6"
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -60,7 +63,7 @@ export const Modal: React.FC<ModalProps> = ({
   return (
     <div
       // className="fixed inset-0 flex items-center justify-center overflow-y-auto modal z-99999"
-      className={`fixed inset-0 flex items-center justify-center overflow-y-auto modal z-99999 ${isFullscreen ? "p-6 bg-white dark:bg-gray-900" : ""}`}
+      className={`fixed inset-0 flex items-center justify-center overflow-y-auto modal z-99999 ${isFullscreen ? `${fullscreenPadding} bg-white dark:bg-gray-900` : ""}`}
     >
       {!isFullscreen && (
         <div
@@ -70,7 +73,7 @@ export const Modal: React.FC<ModalProps> = ({
       )}
       <div
         ref={modalRef}
-        className={`${contentClasses} ${className}`}
+        className={`${contentClasses} ${className ?? ""}`}
         onClick={(e) => e.stopPropagation()}
       >
         {showCloseButton && (

@@ -12,6 +12,7 @@
 // The modal renders a SECOND map instance. It only exists while open - Modal
 // returns null when closed - so there is no idle second map.
 import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { X } from "lucide-react";
 import type { TrailPoint } from "./staff/useStaffTrails";
 import { Modal } from "@/core/components/ui/modal";
 import { useTranslation } from "@/core/hooks/useTranslation";
@@ -32,8 +33,8 @@ import type {
 } from "./mapTypes";
 import type { Language } from "@/core/config/i18n";
 import type { StaffMarker, StaffSelection } from "./staff/staffTypes";
-import type { PlaceMarker } from "./place/placeTypes";
-import type { DeviceMarker } from "./device/deviceTypes";
+import type { PlaceMarker, PlaceSelection } from "./place/placeTypes";
+import type { DeviceMarker, DeviceSelection } from "./device/deviceTypes";
 import type { BoundaryLayerConfig } from "./boundaries/boundaryTypes";
 import type { BoundarySketchConfig } from "./sketch/sketchTypes";
 
@@ -73,7 +74,7 @@ interface AddressMapFieldProps {
   places?: readonly PlaceMarker[];
   showPlace?: boolean;
   selectedPlaceId?: string | null;
-  onPlaceSelect?: (place: PlaceMarker | null) => void;
+  onPlaceSelect?: (selection: PlaceSelection | null) => void;
   /**
    * Device overlay (viewport-scoped IoT devices), forwarded verbatim to both map
    * instances - same contract as `staff`. `onDeviceSelect` reports a marker
@@ -83,7 +84,7 @@ interface AddressMapFieldProps {
   devices?: readonly DeviceMarker[];
   showDevice?: boolean;
   selectedDeviceId?: string | null;
-  onDeviceSelect?: (device: DeviceMarker | null) => void;
+  onDeviceSelect?: (selection: DeviceSelection | null) => void;
   onBoundsChange?: (bounds: MapBounds) => void;
   /**
    * Incident-pin click and camera-focus command, forwarded verbatim to both map
@@ -162,8 +163,9 @@ interface AddressMapFieldProps {
   className?: string;
 }
 
-// Sized to sit inside the 85vh modal shell with room for its close button.
-const MODAL_MAP_HEIGHT = "calc(85vh - 5rem)";
+// Sized to sit inside the fullscreen modal shell (100vh, minus the outer
+// fullscreenPadding and the compact title/close row above the map).
+const MODAL_MAP_HEIGHT = "calc(100vh - 4rem)";
 
 function AddressMapFieldBase({
   value,
@@ -319,10 +321,23 @@ function AddressMapFieldBase({
       <Modal
         isOpen={isExpanded}
         onClose={closeExpanded}
-        className="w-[90vw] max-w-[90vw] h-[90vh] p-4"
+        isFullscreen
+        fullscreenPadding="p-2"
+        showCloseButton={false}
       >
-        <div className="pt-16">
-          <span className="absolute top-6 left-4 text-lg font-semibold text-gray-900 dark:text-gray-100">
+        {/* Icon-only close button: the shared Modal's default is a padded
+            circular chip, which this view wants stripped down to just the X. */}
+        <button
+          type="button"
+          onClick={closeExpanded}
+          title={t("case.display.map_expand_close")}
+          aria-label={t("case.display.map_expand_close")}
+          className="absolute right-3 top-3 z-[999] text-gray-500 transition-colors hover:text-gray-800 dark:text-gray-300 dark:hover:text-white"
+        >
+          <X className="h-5 w-5" />
+        </button>
+        <div className="pt-10">
+          <span className="absolute top-3 left-3 text-lg font-semibold text-gray-900 dark:text-gray-100">
             {t("case.display.map_expand")}
           </span>
           <AddressMap

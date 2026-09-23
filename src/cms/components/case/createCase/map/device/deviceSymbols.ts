@@ -44,6 +44,21 @@ const HALO_SIZE = 36;
 const HALO_FILL_ALPHA = 0.22;
 const HALO_OUTLINE_ALPHA = 0.5;
 
+/** Cluster circle: same base/step/max as staffSymbols.ts and placeSymbols.ts. */
+const GROUP_BASE_SIZE = 26;
+const GROUP_SIZE_PER_MEMBER = 1.6;
+const GROUP_MAX_SIZE = 40;
+const GROUP_FILL_ALPHA = 0.92;
+const GROUP_HALO_MARGIN = 12;
+
+/**
+ * Amber - distinct from the Place cluster colour (violet, see placeSymbols.ts)
+ * and from every staff availability colour (green/red/gray), so a dispatcher
+ * can tell the three kinds of cluster apart at a glance. Also distinct from
+ * every Device category colour (indigo/cyan/green).
+ */
+const CLUSTER_RGB: Rgb = [217, 119, 6]; // amber-600
+
 /**
  * TODO(deviceType): PROVISIONAL. Real `deviceType` values are not discoverable
  * anywhere in this repo - no device fixtures, no backend contract, no seed data,
@@ -79,6 +94,10 @@ export function resolveDeviceCategory(deviceType: string): DeviceCategory | null
 
 function withAlpha(rgb: Rgb, alpha: number): Rgba {
   return [rgb[0], rgb[1], rgb[2], alpha];
+}
+
+export function getDeviceGroupSize(count: number): number {
+  return Math.min(GROUP_MAX_SIZE, GROUP_BASE_SIZE + count * GROUP_SIZE_PER_MEMBER);
 }
 
 /** The one place that maps a Device category to its marker colour. */
@@ -156,6 +175,51 @@ export function createDeviceHaloSymbol(category: DeviceCategory) {
   };
 }
 
+/** The circle drawn in place of Device markers that overlap on screen. */
+export function createDeviceGroupSymbol(count: number) {
+  return {
+    type: "simple-marker" as const,
+    style: "circle" as const,
+    color: withAlpha(CLUSTER_RGB, GROUP_FILL_ALPHA),
+    size: getDeviceGroupSize(count),
+    outline: {
+      color: [255, 255, 255, 1],
+      width: 2
+    }
+  };
+}
+
+/** The member count, drawn as a second graphic over the cluster circle. */
+export function createDeviceGroupLabelSymbol(count: number) {
+  return {
+    type: "text" as const,
+    text: String(count),
+    color: [255, 255, 255, 1],
+    haloColor: [17, 24, 39, 0.55],
+    haloSize: 1,
+    horizontalAlignment: "center" as const,
+    verticalAlignment: "middle" as const,
+    font: {
+      size: 11,
+      weight: "bold" as const
+    }
+  };
+}
+
+/** The same halo as createDeviceHaloSymbol, sized to sit OUTSIDE a group circle. */
+export function createDeviceGroupHaloSymbol(count: number) {
+  return {
+    type: "simple-marker" as const,
+    style: "circle" as const,
+    color: withAlpha(CLUSTER_RGB, HALO_FILL_ALPHA),
+    size: getDeviceGroupSize(count) + GROUP_HALO_MARGIN,
+    outline: {
+      color: withAlpha(CLUSTER_RGB, HALO_OUTLINE_ALPHA),
+      width: 1.5
+    }
+  };
+}
+
 /**
  * Measurements and path data for the providers that draw from SVG (Longdo) or a
  * styled GeoJSON layer (MapTiler). See staffSymbols.ts' STAFF_SYMBOL_TOKENS.
@@ -169,5 +233,8 @@ export const DEVICE_SYMBOL_TOKENS = {
   fillAlpha: FILL_ALPHA,
   haloSize: HALO_SIZE,
   haloFillAlpha: HALO_FILL_ALPHA,
-  haloOutlineAlpha: HALO_OUTLINE_ALPHA
+  haloOutlineAlpha: HALO_OUTLINE_ALPHA,
+  clusterRgb: CLUSTER_RGB,
+  groupFillAlpha: GROUP_FILL_ALPHA,
+  groupHaloMargin: GROUP_HALO_MARGIN
 } as const;

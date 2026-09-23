@@ -293,6 +293,7 @@ function LongdoAddressMapBase({
     places: places ?? EMPTY_PLACES,
     selectedPlaceId,
     visible: showPlace,
+    zoom: settledZoom,
     resolverRef: resolvePlaceSelectionRef
   });
 
@@ -305,6 +306,7 @@ function LongdoAddressMapBase({
     devices: devices ?? EMPTY_DEVICES,
     selectedDeviceId,
     visible: showDevice,
+    zoom: settledZoom,
     resolverRef: resolveDeviceSelectionRef
   });
 
@@ -526,17 +528,23 @@ function LongdoAddressMapBase({
           // Place markers next, before the readOnly / sketch guard: a Place is
           // informational on every surface, so a hit opens the popup and never
           // drops a pin. Staff still wins a tie.
-          const placeHit = resolvePlaceSelectionRef.current?.(overlay) ?? null;
-          if (placeHit) {
-            onPlaceSelectRef.current?.(placeHit);
+          const placeOutcome = resolvePlaceSelectionRef.current?.(overlay) ?? null;
+          if (placeOutcome) {
+            // Ours either way. A null selection means the layer handled it by
+            // zooming into a cluster, and must not also drop a pin.
+            if (placeOutcome.selection) {
+              onPlaceSelectRef.current?.(placeOutcome.selection);
+            }
             return;
           }
 
           // Device markers next, same rule: informational-until-link on every
           // surface, so a hit opens the popup and never drops a pin.
-          const deviceHit = resolveDeviceSelectionRef.current?.(overlay) ?? null;
-          if (deviceHit) {
-            onDeviceSelectRef.current?.(deviceHit);
+          const deviceOutcome = resolveDeviceSelectionRef.current?.(overlay) ?? null;
+          if (deviceOutcome) {
+            if (deviceOutcome.selection) {
+              onDeviceSelectRef.current?.(deviceOutcome.selection);
+            }
             return;
           }
 

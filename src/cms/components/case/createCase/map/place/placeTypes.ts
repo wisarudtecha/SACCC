@@ -35,6 +35,18 @@ export interface PlaceMarker {
   longitude: number;
 }
 
+/**
+ * What a click on the Place layer resolved to.
+ *
+ * A discriminated union rather than a bare id because Places that overlap on
+ * screen are drawn as one group (see placeClusters.ts), and a click on that
+ * group has to be distinguishable from a click on one facility - it opens a
+ * picker rather than the info popup. Mirrors StaffSelection.
+ */
+export type PlaceSelection =
+  | { type: "place"; id: string }
+  | { type: "group"; placeIds: readonly string[] };
+
 /** A finite number, or null. `Place` coordinates arrive from the API as strings. */
 function toFiniteNumber(value: unknown): number | null {
   const parsed = typeof value === "number" ? value : Number(value);

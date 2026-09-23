@@ -1,5 +1,9 @@
-// Solves a distance/ETA summary for EVERY member of the currently open staff
-// cluster (StaffGroupPanel), automatically - no button, no drawn polyline.
+// Solves a distance/ETA summary for the first CLUSTER_ROUTE_AUTO_SOLVE_LIMIT
+// members of the currently open staff cluster (StaffGroupPanel), automatically
+// - no button, no drawn polyline. Members past that limit stay idle until
+// solveMember is called for them (StaffGroupPanel's per-row "Calculate"
+// button) - solving every member at once was overloading the routing service
+// under large staff counts.
 //
 // This is deliberately a SEPARATE hook from useCaseRoute.ts, with its own
 // cache, rather than sharing state: useCaseRoute is built around one officer,
@@ -13,7 +17,7 @@
 // NOT entitled on this key - confirmed via a live 403 against the World
 // ClosestFacility service. Each member is solved with the same World Route
 // service useCaseRoute.ts already uses.
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MapLatLon } from "../mapTypes";
 import { routeService } from "../services/routeService";
 import { buildRouteKey, type RouteResult, type RouteState } from "./routeTypes";
@@ -21,6 +25,15 @@ import { isMappableCoordinate, isStaleLocation, type StaffMarker } from "./staff
 
 /** Reopening the same cluster within this window reuses cached results. */
 const CLUSTER_ROUTE_TTL_MS = 90_000;
+
+/**
+ * Only the first N members (in `members` order) are solved automatically when
+ * a cluster panel opens. Testing with large staff counts showed solving every
+ * member at once overloads the routing service - each member is its own
+ * request (see the ClosestFacility note above). Members past this stay idle
+ * until the panel's per-row "Calculate" button solves them one at a time.
+ */
+export const CLUSTER_ROUTE_AUTO_SOLVE_LIMIT = 5;
 
 /** Oldest entry is evicted once the cache would grow past this. No cap on
  *  cluster size means this needs more headroom than the single-officer cache. */
@@ -45,6 +58,8 @@ export interface ClusterMemberRoute {
 export interface UseClusterRouteSummariesResult {
   /** One entry per member, in `members` order. */
   routes: readonly ClusterMemberRoute[];
+  /** Manually solve one member past the auto-solve limit. No-op if unknown. */
+  solveMember: (unitId: string) => void;
 }
 
 function cacheRoute(cache: Map<string, CacheEntry>, key: string, entry: CacheEntry): void {
@@ -122,6 +137,60 @@ export function useClusterRouteSummaries({
     [memberKeys]
   );
 
+  // The per-member solve body: cache check, then routeService.solve(), then a
+  // cache write and a state update. Shared between the capped auto-solve loop
+  // below and `solveMember` (the manual per-row trigger) so the promise/cache/
+  // error handling isn't duplicated between them.
+  const solveOne = useCallback(({ unitId, marker, caseLat, caseLon, key }: MemberKey, generation: number) => {
+    const cached = cacheRef.current.get(key);
+    if (cached && Date.now() - cached.solvedAtMs < CLUSTER_ROUTE_TTL_MS) {
+      setResultsByUnitId((previous) => ({
+        ...previous,
+        [unitId]: { status: "ready", result: cached.result }
+      }));
+      return;
+    }
+
+    const isFromStalePosition = isStaleLocation(marker);
+    setResultsByUnitId((previous) => ({ ...previous, [unitId]: { status: "solving" } }));
+
+    routeService
+      .solve(marker, { latitude: caseLat, longitude: caseLon })
+      .then((solution) => {
+        if (generationRef.current !== generation) {
+          return;
+        }
+
+        if (!solution) {
+          setResultsByUnitId((previous) => ({
+            ...previous,
+            [unitId]: { status: "error", reason: "no-metrics" }
+          }));
+          return;
+        }
+
+        const result: RouteResult = {
+          geometry: solution.path,
+          distanceKm: solution.distanceKm,
+          travelMinutes: solution.travelMinutes,
+          solvedAtMs: Date.now(),
+          isFromStalePosition
+        };
+        cacheRoute(cacheRef.current, key, { result, solvedAtMs: result.solvedAtMs });
+        setResultsByUnitId((previous) => ({ ...previous, [unitId]: { status: "ready", result } }));
+      })
+      .catch((error: unknown) => {
+        if (generationRef.current !== generation) {
+          return;
+        }
+        console.error("Failed to solve a cluster member's route", error);
+        setResultsByUnitId((previous) => ({
+          ...previous,
+          [unitId]: { status: "error", reason: "solve-failed" }
+        }));
+      });
+  }, []);
+
   useEffect(() => {
     const keys = memberKeysRef.current;
     if (keys.length === 0) {
@@ -131,56 +200,25 @@ export function useClusterRouteSummaries({
     generationRef.current += 1;
     const myGeneration = generationRef.current;
 
-    keys.forEach(({ unitId, marker, caseLat, caseLon, key }) => {
-      const cached = cacheRef.current.get(key);
-      if (cached && Date.now() - cached.solvedAtMs < CLUSTER_ROUTE_TTL_MS) {
-        setResultsByUnitId((previous) => ({
-          ...previous,
-          [unitId]: { status: "ready", result: cached.result }
-        }));
+    // Only the first N auto-solve; the rest stay "idle" until the panel's
+    // per-row Calculate button calls solveMember for them.
+    keys.slice(0, CLUSTER_ROUTE_AUTO_SOLVE_LIMIT).forEach((memberKey) => solveOne(memberKey, myGeneration));
+  }, [keysSignature, solveOne]);
+
+  // Manual per-row trigger for a member past the auto-solve limit. Uses the
+  // CURRENT generation (no bump of its own): a stale response is still
+  // dropped if a new cluster opens in between, but this call itself doesn't
+  // invalidate any other in-flight solve.
+  const solveMember = useCallback(
+    (unitId: string) => {
+      const memberKey = memberKeysRef.current.find((entry) => entry.unitId === unitId);
+      if (!memberKey) {
         return;
       }
-
-      const isFromStalePosition = isStaleLocation(marker);
-      setResultsByUnitId((previous) => ({ ...previous, [unitId]: { status: "solving" } }));
-
-      routeService
-        .solve(marker, { latitude: caseLat, longitude: caseLon })
-        .then((solution) => {
-          if (generationRef.current !== myGeneration) {
-            return;
-          }
-
-          if (!solution) {
-            setResultsByUnitId((previous) => ({
-              ...previous,
-              [unitId]: { status: "error", reason: "no-metrics" }
-            }));
-            return;
-          }
-
-          const result: RouteResult = {
-            geometry: solution.path,
-            distanceKm: solution.distanceKm,
-            travelMinutes: solution.travelMinutes,
-            solvedAtMs: Date.now(),
-            isFromStalePosition
-          };
-          cacheRoute(cacheRef.current, key, { result, solvedAtMs: result.solvedAtMs });
-          setResultsByUnitId((previous) => ({ ...previous, [unitId]: { status: "ready", result } }));
-        })
-        .catch((error: unknown) => {
-          if (generationRef.current !== myGeneration) {
-            return;
-          }
-          console.error("Failed to solve a cluster member's route", error);
-          setResultsByUnitId((previous) => ({
-            ...previous,
-            [unitId]: { status: "error", reason: "solve-failed" }
-          }));
-        });
-    });
-  }, [keysSignature]);
+      solveOne(memberKey, generationRef.current);
+    },
+    [solveOne]
+  );
 
   const routes = useMemo<readonly ClusterMemberRoute[]>(() => {
     if (!members) {
@@ -197,5 +235,5 @@ export function useClusterRouteSummaries({
     });
   }, [members, caseMappable, resultsByUnitId]);
 
-  return { routes };
+  return { routes, solveMember };
 }

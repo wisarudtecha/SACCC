@@ -21,7 +21,7 @@ import {
 } from "./staffDisplay";
 import { getStaffStatusDotClass } from "./staffSymbols";
 import type { StaffMarker } from "./staffTypes";
-import type { ClusterMemberRoute } from "./useClusterRouteSummaries";
+import { CLUSTER_ROUTE_AUTO_SOLVE_LIMIT, type ClusterMemberRoute } from "./useClusterRouteSummaries";
 
 interface StaffGroupPanelProps {
   /** The officers in the group, in the order they should be listed. */
@@ -32,6 +32,8 @@ interface StaffGroupPanelProps {
   assignedUnitStatusById: ReadonlyMap<string, string>;
   /** Distance/ETA per member, solved automatically - no button, no drawn line. */
   clusterRoutes: readonly ClusterMemberRoute[];
+  /** Manually solves one member past the auto-solve limit (see StaffGroupPanel's Calculate button). */
+  onSolveMember: (unitId: string) => void;
   /** Positioning classes - the caller places the card over the map. */
   className?: string;
 }
@@ -42,6 +44,7 @@ function StaffGroupPanelBase({
   onClose,
   assignedUnitStatusById,
   clusterRoutes,
+  onSolveMember,
   className = ""
 }: StaffGroupPanelProps) {
   const { t, language } = useTranslation();
@@ -93,8 +96,9 @@ function StaffGroupPanelBase({
       <div
         className={`min-h-0 flex-1 overflow-y-auto custom-scrollbar ${isCollapsed ? "hidden" : ""}`}
       >
-        {markers.map((marker) => {
+        {markers.map((marker, index) => {
           const routeState = routeByUnitId.get(marker.unitId);
+          const isAutoSolved = index < CLUSTER_ROUTE_AUTO_SOLVE_LIMIT;
           return (
             <button
               key={marker.unitId}
@@ -123,9 +127,33 @@ function StaffGroupPanelBase({
                     {getCaseStatusName(caseStatuses, assignedUnitStatusById.get(marker.unitId)!, language)}
                   </p>
                 )}
-                {/* Distance/ETA, solved automatically for every member - no
-                    button here, no drawn polyline; that stays the single-officer
-                    panel's job. */}
+                {/* Distance/ETA, solved automatically for the first
+                    CLUSTER_ROUTE_AUTO_SOLVE_LIMIT members - no button, no
+                    drawn polyline; that stays the single-officer panel's job.
+                    Rows past the limit get a manual trigger instead, so a
+                    large cluster doesn't fire N routing requests at once. */}
+                {/* A span, not a nested <button>: the whole row is already a
+                    button, and HTML forbids a button inside a button. */}
+                {!isAutoSolved && (!routeState || routeState.status === "idle") && (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onSolveMember(marker.unitId);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        onSolveMember(marker.unitId);
+                      }
+                    }}
+                    className="mt-0.5 inline-block text-[11px] text-blue-600 hover:underline dark:text-blue-300"
+                  >
+                    {t("case.display.map_staff_route_calculate")}
+                  </span>
+                )}
                 {routeState?.status === "solving" && (
                   <span className="mt-0.5 flex items-center gap-1 text-[11px] text-gray-400 dark:text-gray-500">
                     <Loader2 className="h-2.5 w-2.5 shrink-0 animate-spin" />

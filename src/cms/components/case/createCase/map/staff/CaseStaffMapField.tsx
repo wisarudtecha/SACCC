@@ -536,7 +536,7 @@ function CaseStaffMapFieldBase({
   // group panel opens - no button, no drawn polyline (see useClusterRouteSummaries.ts).
   // `null` rather than `[]` while no group is open, so the hook can tell
   // "closed" apart from "open with nobody in it".
-  const { routes: clusterRoutes } = useClusterRouteSummaries({
+  const { routes: clusterRoutes, solveMember: solveClusterMember } = useClusterRouteSummaries({
     members: selection?.type === "group" ? groupMarkers : null,
     caseLocation: value ?? null
   });
@@ -648,6 +648,7 @@ function CaseStaffMapFieldBase({
           onClose={clearSelection}
           assignedUnitStatusById={assignment.assignedUnitStatusById}
           clusterRoutes={clusterRoutes}
+          onSolveMember={solveClusterMember}
           className={CARD_CLASS}
         />
       );
@@ -673,6 +674,7 @@ function CaseStaffMapFieldBase({
     groupOrigin,
     handleBackToGroup,
     handlePickFromGroup,
+    solveClusterMember,
     sectionContext,
     selectedMarker,
     selection

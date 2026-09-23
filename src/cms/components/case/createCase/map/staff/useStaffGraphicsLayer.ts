@@ -59,7 +59,7 @@ interface HitTestResponseLike {
  * before the click policy decides whether a group should be zoomed into or
  * offered as a picker.
  */
-type StaffHit =
+export type StaffHit =
   | { type: "staff"; unitId: string }
   | { type: "group"; group: StaffGroup };
 
@@ -95,6 +95,12 @@ export interface UseStaffGraphicsLayerResult {
    * officer inside a group circle can never be picked. Stable across renders.
    */
   pickSingleStaffAt: (x: number, y: number, allowedUnitIds: ReadonlySet<string>) => string | null;
+  /**
+   * Pure hit-test: what is the pointer over - a staff marker, a group, or
+   * nothing? No navigation, no selection. Used by ArcgisAddressMap's
+   * centralized pointer-move cursor effect. Stable across renders.
+   */
+  hitTestStaff: (event: unknown) => Promise<StaffHit | null>;
 }
 
 /** Graphic keys are namespaced so one Map can hold all three kinds. */
@@ -370,6 +376,64 @@ export function useStaffGraphicsLayer({
     return () => handle.remove();
   }, [isReady, viewRef, syncGraphics]);
 
+  // Tracking flash: the selected officer's (or their group's) halo pulses so a
+  // dispatcher can tell at a glance which marker is currently tracked. ArcGIS
+  // graphics are canvas-drawn - there is no CSS to animate - so this is a
+  // setInterval directly reassigning the halo Graphic's symbol. Separate from
+  // syncGraphics, which keeps drawing the STATIC halo on every data/selection
+  // change; this is simply a second, faster writer to the same
+  // `Graphic.symbol`, consistent with the diff-in-place approach everywhere
+  // else in this file.
+  useEffect(() => {
+    if (!isReady || !selectedStaffId) {
+      return;
+    }
+
+    const FLASH_PERIOD_MS = 1200;
+    const FRAME_MS = 50;
+    const startedAt = Date.now();
+
+    const intervalId = window.setInterval(() => {
+      const halo = haloRef.current;
+      if (!halo) {
+        return;
+      }
+      // Guard against a stale halo: syncGraphics can reassign or remove it
+      // independently between ticks (deselect, selection moved into/out of a
+      // group, the officer left the list).
+      const haloUnitId = halo.attributes?.unitId;
+      const haloGroupId = halo.attributes?.groupId;
+      const selectedGroup =
+        typeof haloGroupId === "string"
+          ? groupingRef.current.groups.find(
+              (group) => group.id === haloGroupId && group.unitIds.includes(selectedStaffId)
+            )
+          : undefined;
+      if (haloUnitId !== selectedStaffId && !selectedGroup) {
+        return;
+      }
+
+      const phase = ((Date.now() - startedAt) % FLASH_PERIOD_MS) / FLASH_PERIOD_MS;
+
+      if (selectedGroup) {
+        halo.symbol = createStaffGroupHaloSymbol(
+          selectedGroup.availability,
+          selectedGroup.unitIds.length,
+          phase
+        );
+        return;
+      }
+
+      const marker = staffRef.current.find((item) => item.unitId === selectedStaffId);
+      if (!marker) {
+        return;
+      }
+      halo.symbol = createStaffHaloSymbol(marker.statusId, marker.isLogin, phase);
+    }, FRAME_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [isReady, selectedStaffId]);
+
   // Pure: no navigation, no selection. Both the click path and the cursor path
   // use it, and the cursor path must not move the map.
   const hitTestStaff = useCallback(async (event: unknown): Promise<StaffHit | null> => {
@@ -476,45 +540,12 @@ export function useStaffGraphicsLayer({
     });
   }, [isReady, selectedStaffId, staff, viewRef, visible]);
 
-  // A marker is clickable, so it has to look clickable. The same hit-test the
-  // click path uses answers "is the pointer over staff" - reusing it keeps one
-  // definition of what counts as a hit, and leaves ArcgisAddressMap generic.
-  useEffect(() => {
-    const view = viewRef.current;
-    if (!isReady || !view || !visible) {
-      return;
-    }
-
-    const setCursor = (cursor: string) => {
-      if (view.container) {
-        view.container.style.cursor = cursor;
-      }
-    };
-
-    // hitTest is async and pointer-move fires far faster than it resolves, so
-    // one outstanding test at a time is the throttle: dropped moves are covered
-    // by the next event, and the pointer cannot get ahead of its own cursor.
-    let isTesting = false;
-    // `unknown` rather than an Esri event type: it goes straight into
-    // hitTestStaff, which hands it to hitTest and reads nothing off it.
-    const handle = view.on("pointer-move", (event: unknown) => {
-      if (isTesting) {
-        return;
-      }
-      isTesting = true;
-      hitTestStaff(event)
-        .then((hit) => setCursor(hit ? "pointer" : ""))
-        .finally(() => {
-          isTesting = false;
-        });
-    });
-
-    return () => {
-      handle.remove();
-      // Back to Esri's own cursor CSS - it owns grab/grabbing while panning.
-      setCursor("");
-    };
-  }, [isReady, viewRef, visible, hitTestStaff]);
+  // No per-layer pointer-move cursor effect here any more: ArcgisAddressMap.tsx
+  // now owns ONE centralized pointer-move listener that hit-tests staff, Place
+  // and Device in priority order and sets the cursor once, using hitTestStaff
+  // exported below. Three independent effects each racing to write
+  // `view.container.style.cursor` would flicker between "pointer" and "" -
+  // see ArcgisAddressMap.tsx's own cursor effect for the single source of truth.
 
   const pickSingleStaffAt = useCallback(
     (x: number, y: number, allowedUnitIds: ReadonlySet<string>): string | null => {
@@ -534,5 +565,5 @@ export function useStaffGraphicsLayer({
     [viewRef]
   );
 
-  return { resolveStaffClick, pickSingleStaffAt };
+  return { resolveStaffClick, pickSingleStaffAt, hitTestStaff };
 }

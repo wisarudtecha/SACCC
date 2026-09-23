@@ -239,7 +239,7 @@ function ArcgisAddressMapBase({
 
   // Draws the staff markers and answers "did this click hit an officer?".
   // `resolveStaffClick` is stable, so the mount-time click handler can call it.
-  const { resolveStaffClick, pickSingleStaffAt } = useStaffGraphicsLayer({
+  const { resolveStaffClick, pickSingleStaffAt, hitTestStaff } = useStaffGraphicsLayer({
     mapRef,
     viewRef,
     isReady,
@@ -272,7 +272,7 @@ function ArcgisAddressMapBase({
 
   // Draws the org-curated Place markers and answers "did this click hit one?".
   // Read-only: a hit opens the caller's info popup and nothing else (Q1).
-  const { resolvePlaceClick } = useArcgisPlaceLayer({
+  const { resolvePlaceClick, hitTestPlace } = useArcgisPlaceLayer({
     mapRef,
     viewRef,
     isReady,
@@ -286,7 +286,7 @@ function ArcgisAddressMapBase({
   // Draws the viewport-scoped IoT device markers and answers "did this click hit
   // one?". A hit opens the caller's info popup; the case write ("link") happens
   // only from that popup's button (stakeholder decision Q2).
-  const { resolveDeviceClick } = useArcgisDeviceLayer({
+  const { resolveDeviceClick, hitTestDevice } = useArcgisDeviceLayer({
     mapRef,
     viewRef,
     isReady,
@@ -296,6 +296,64 @@ function ArcgisAddressMapBase({
   });
   const resolveDeviceClickRef = useRef(resolveDeviceClick);
   resolveDeviceClickRef.current = resolveDeviceClick;
+
+  // Centralized pointer-move cursor effect: ONE hit-test chain per move event,
+  // tried in the same staff -> Place -> Device priority order as the click
+  // handler below, so ArcGIS's canvas-drawn markers get a pointer cursor like
+  // every other clickable thing on the map. Kept in one place rather than one
+  // effect per layer hook, so hit-test chains can never race each other over
+  // `view.container.style.cursor` - the flicker risk that previously kept
+  // Place/Device from getting a cursor effect of their own.
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!isReady || !view) {
+      return;
+    }
+
+    const setCursor = (cursor: string) => {
+      if (view.container) {
+        view.container.style.cursor = cursor;
+      }
+    };
+
+    // hitTest is async and pointer-move fires far faster than it resolves, so
+    // one outstanding chain at a time is the throttle: dropped moves are
+    // covered by the next event, and the pointer cannot get ahead of its own
+    // cursor.
+    let isTesting = false;
+    const handle = view.on("pointer-move", (event: unknown) => {
+      if (isTesting) {
+        return;
+      }
+      isTesting = true;
+      (async () => {
+        try {
+          if (showStaff && (await hitTestStaff(event))) {
+            setCursor("pointer");
+            return;
+          }
+          if (showPlace && (await hitTestPlace(event))) {
+            setCursor("pointer");
+            return;
+          }
+          if (showDevice && (await hitTestDevice(event))) {
+            setCursor("pointer");
+            return;
+          }
+          setCursor("");
+        }
+        finally {
+          isTesting = false;
+        }
+      })();
+    });
+
+    return () => {
+      handle.remove();
+      // Back to Esri's own cursor CSS - it owns grab/grabbing while panning.
+      setCursor("");
+    };
+  }, [isReady, viewRef, showStaff, showPlace, showDevice, hitTestStaff, hitTestPlace, hitTestDevice]);
 
   // Answers "did this click hit the incident pin?". Only switched on when the
   // caller wants pin clicks (the dispatch map) - everywhere else a click near the

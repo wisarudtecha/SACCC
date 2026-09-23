@@ -11,7 +11,7 @@
 // PlaceInfoPopup: native map popups render in the vendor's light theme, cannot
 // reach the app's translation catalogues, and swallow the next map click.
 import { memo, useState } from "react";
-import { X } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import PanelCollapseToggle from "../PanelCollapseToggle";
 import { getDeviceCategoryLabelKey, getDeviceCategoryRgb } from "./deviceSymbols";
@@ -24,6 +24,10 @@ interface DeviceInfoPopupProps {
   /** Whether this device is the one currently linked to the case. */
   isLinked: boolean;
   onClose: () => void;
+  /** Set only when this Device was picked out of a cluster panel - shows a "back to the group" row. */
+  onBack?: () => void;
+  /** How many Devices the group held, for the back row's label. */
+  backCount?: number;
   onLink: () => void;
   onUnlink: () => void;
   /** Positioning classes; the caller places the card over the map. */
@@ -35,6 +39,8 @@ function DeviceInfoPopupBase({
   canLink,
   isLinked,
   onClose,
+  onBack,
+  backCount,
   onLink,
   onUnlink,
   className = ""
@@ -53,6 +59,19 @@ function DeviceInfoPopupBase({
     <div
       className={`rounded-md bg-white/95 p-3 text-xs shadow-md dark:bg-gray-800/95 ${className}`}
     >
+      {/* See PlaceInfoPopup.tsx for why negative margins rather than an outer shell. */}
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          className="-mx-3 -mt-3 mb-2 flex w-[calc(100%+1.5rem)] items-center gap-1 border-b border-gray-200 px-3 py-1.5 text-left text-[11px] text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-200"
+        >
+          <ArrowLeft className="h-3 w-3 shrink-0" />
+          <span className="truncate">
+            {t("case.display.map_device_group_back", { count: backCount ?? 0 })}
+          </span>
+        </button>
+      )}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate font-semibold text-gray-900 dark:text-white">

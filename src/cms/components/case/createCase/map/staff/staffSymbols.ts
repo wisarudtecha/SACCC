@@ -56,6 +56,16 @@ const HALO_FILL_ALPHA = 0.22;
 const HALO_OUTLINE_ALPHA = 0.45;
 
 /**
+ * The "tracking flash" swing: the selected officer's halo pulses between these
+ * bounds instead of sitting at the static HALO_FILL_ALPHA/HALO_SIZE, so a
+ * dispatcher can tell at a glance which marker is currently tracked. See
+ * useStaffGraphicsLayer's pulse interval, which drives `pulsePhase`.
+ */
+const FLASH_MIN_ALPHA = 0.12;
+const FLASH_MAX_ALPHA = 0.4;
+const FLASH_SIZE_GROWTH = 10;
+
+/**
  * Direction-of-travel chevron, drawn ON the selection halo's ring.
  *
  * A chevron authored pointing UP on a 24x24 box, so `angle` can be set straight
@@ -158,8 +168,14 @@ export function createStaffSymbol(statusId: string, state: StaffSymbolState) {
  * lifted by `size / 2` so it stands on its coordinate, and an unshifted circle
  * therefore lands at the officer's feet, like a spotlight on the ground.
  */
-export function createStaffHaloSymbol(statusId: string, isLogin: boolean) {
-  return createHalo(getStaffAvailability(statusId, isLogin), HALO_SIZE);
+/**
+ * @param pulsePhase When provided (0..1, typically driven by a slow interval -
+ * see useStaffGraphicsLayer's tracking-flash effect), the halo's alpha and
+ * size sine-ease around the static values instead of sitting fixed, so the
+ * tracked officer's marker visibly flashes rather than just sitting selected.
+ */
+export function createStaffHaloSymbol(statusId: string, isLogin: boolean, pulsePhase?: number) {
+  return createHalo(getStaffAvailability(statusId, isLogin), HALO_SIZE, pulsePhase);
 }
 
 /**
@@ -169,18 +185,41 @@ export function createStaffHaloSymbol(statusId: string, isLogin: boolean) {
  * has to stay visible, and a 34px halo under a circle of up to 40px would simply
  * disappear beneath it.
  */
-export function createStaffGroupHaloSymbol(availability: StaffAvailability, count: number) {
-  return createHalo(availability, getGroupSize(count) + GROUP_HALO_MARGIN);
+export function createStaffGroupHaloSymbol(
+  availability: StaffAvailability,
+  count: number,
+  pulsePhase?: number
+) {
+  return createHalo(availability, getGroupSize(count) + GROUP_HALO_MARGIN, pulsePhase);
 }
 
-function createHalo(availability: StaffAvailability, size: number) {
+function createHalo(availability: StaffAvailability, size: number, pulsePhase?: number) {
   const rgb = getAvailabilityRgb(availability);
+
+  if (pulsePhase === undefined) {
+    return {
+      type: "simple-marker" as const,
+      style: "circle" as const,
+      color: withAlpha(rgb, HALO_FILL_ALPHA),
+      size,
+      outline: {
+        color: withAlpha(rgb, HALO_OUTLINE_ALPHA),
+        width: 1.5
+      }
+    };
+  }
+
+  // Sine-eased 0..1 so the pulse accelerates/decelerates at the ends rather
+  // than snapping - a linear ramp reads as a flicker at 20fps.
+  const eased = (Math.sin(pulsePhase * 2 * Math.PI) + 1) / 2;
+  const alpha = FLASH_MIN_ALPHA + eased * (FLASH_MAX_ALPHA - FLASH_MIN_ALPHA);
+  const flashSize = size + eased * FLASH_SIZE_GROWTH;
 
   return {
     type: "simple-marker" as const,
     style: "circle" as const,
-    color: withAlpha(rgb, HALO_FILL_ALPHA),
-    size,
+    color: withAlpha(rgb, alpha),
+    size: flashSize,
     outline: {
       color: withAlpha(rgb, HALO_OUTLINE_ALPHA),
       width: 1.5
