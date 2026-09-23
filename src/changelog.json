@@ -1,4 +1,10 @@
 {
+  "0.83.0": {
+    "date": "2026-09-23",
+    "segment": "MINOR",
+    "notes": "feat(cms): map marker clustering, boundary matching fixes, and list-loading fix\n- Place and Device markers that sit close together on the case map now group into a single cluster showing a count instead of overlapping, the same way staff markers already worked; clicking a cluster opens a short list to pick the exact one. Works the same across all three map styles.\n- The map's \"view larger map\" option now expands to fill the whole screen, with a simpler close button.\n- Fixed several districts on the case map's administrative boundary layer being matched to the wrong shape, and fixed the country-level boundary not appearing at all.\n- Fixed the Unit Management screen only loading the first 100 units and properties, hiding the rest when an organization had more.\n- changelog.json / package.json: bump version 0.82.0 -> 0.83.0",
+    "author": "Wisarud Techa"
+  },
   "0.82.0": {
     "date": "2026-09-22",
     "segment": "MINOR",
