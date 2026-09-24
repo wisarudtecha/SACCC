@@ -35,6 +35,7 @@ import { BOUNDARY_LEVELS, type BoundaryLevelConfig } from "../../boundaries/boun
 import { boundarySource } from "../../boundaries/boundarySource";
 import {
   EMPTY_BOUNDARY_SELECTION,
+  type AdminLevel,
   type BoundaryLayerConfig
 } from "../../boundaries/boundaryTypes";
 import type { LongdoGlobal, LongdoMap, LongdoOverlay } from "../longdoApi";
@@ -73,8 +74,13 @@ export interface UseLongdoBoundaryOverlaysResult {
   isError: boolean;
 }
 
-/** Parsed geometry per level, in the order of BOUNDARY_LEVELS. */
-type FeaturesByLevel = readonly (readonly BoundaryFeature[])[];
+/**
+ * Parsed geometry, keyed by level rather than positioned by array index - lets
+ * two independent fetch effects (build-once vs. district, which is
+ * selection-scoped - see boundarySource.ts) each own their own levels without
+ * one effect clobbering the other's slot.
+ */
+type FeaturesByLevel = Partial<Record<AdminLevel, readonly BoundaryFeature[]>>;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -135,6 +141,16 @@ function labelMinZoom(config: BoundaryLevelConfig): number {
   return zoomForScale(config.labelMinScale);
 }
 
+/** Every level except "district" - fetched once, never re-fetched. */
+const BUILD_ONCE_LEVELS: readonly BoundaryLevelConfig[] = BOUNDARY_LEVELS.filter(
+  (config) => config.level !== "district"
+);
+
+/** Undefined only if a future level table drops "district" entirely. */
+const DISTRICT_CONFIG: BoundaryLevelConfig | undefined = BOUNDARY_LEVELS.find(
+  (config) => config.level === "district"
+);
+
 export function useLongdoBoundaryOverlays({
   longdoRef,
   mapRef,
@@ -146,13 +162,17 @@ export function useLongdoBoundaryOverlays({
   suppressLabels
 }: UseLongdoBoundaryOverlaysOptions): UseLongdoBoundaryOverlaysResult {
   const overlaysRef = useRef<LongdoOverlay[]>([]);
-  const featuresRef = useRef<FeaturesByLevel>([]);
+  const featuresRef = useRef<FeaturesByLevel>({});
   const [dataVersion, setDataVersion] = useState(0);
   const [isError, setIsError] = useState(false);
 
   const isEnabled = Boolean(boundaries);
   const selection = boundaries?.selection;
   const visibility = boundaries?.visibility;
+  // The set of selected provinces, as a stable primitive - selection.province
+  // is a new array on every apply, so an effect keyed on the array itself
+  // would refetch whenever ANY level's selection changed, not just province's.
+  const districtProvinceKey = selection?.province.join(",") ?? "";
 
   /**
    * Which levels are labelled at this zoom, as one string.
@@ -167,7 +187,11 @@ export function useLongdoBoundaryOverlays({
     [zoom]
   );
 
-  // Fetch each level's geometry once, then hand the URLs straight back.
+  // Fetch country + province once, then hand the URLs straight back. These
+  // two levels always return their whole dataset regardless of selection
+  // (see boundarySource.ts), so a selection change filters what is drawn
+  // without refetching anything - unlike district, which is genuinely
+  // selection-scoped and gets its own effect below.
   //
   // Released as soon as the body is parsed rather than at teardown: the org
   // source serves a blob: URL holding a whole FeatureCollection, and once the
@@ -183,13 +207,13 @@ export function useLongdoBoundaryOverlays({
 
     const load = async () => {
       const results = await Promise.all(
-        BOUNDARY_LEVELS.map(async (config) => {
+        BUILD_ONCE_LEVELS.map(async (config) => {
           const url = await boundarySource.getLayerUrl(
             config.level,
             selection ?? EMPTY_BOUNDARY_SELECTION
           );
           try {
-            return await fetchFeatures(url);
+            return [config.level, await fetchFeatures(url)] as const;
           } finally {
             boundarySource.releaseLayerUrl(url);
           }
@@ -199,7 +223,9 @@ export function useLongdoBoundaryOverlays({
       if (isCancelled) {
         return;
       }
-      featuresRef.current = results;
+      results.forEach(([level, features]) => {
+        featuresRef.current = { ...featuresRef.current, [level]: features };
+      });
       setDataVersion((version) => version + 1);
     };
 
@@ -214,11 +240,58 @@ export function useLongdoBoundaryOverlays({
     return () => {
       isCancelled = true;
     };
-    // Deliberately does NOT depend on `selection`: neither source scopes its
-    // request by it (see boundarySource.ts), so a selection change filters
-    // what is drawn without refetching anything.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReady, isEnabled]);
+
+  // District: genuinely selection-scoped under orgAreaSource (see
+  // boundarySource.ts) - getLayerUrl("district", selection) returns only the
+  // selected provinces' districts, empty when none are selected yet. Refetches
+  // whenever the set of selected PROVINCES changes; a change to which
+  // districts are checked within an already-fetched province is still just a
+  // draw-time filter, same as country/province.
+  useEffect(() => {
+    if (!isReady || !isEnabled || !DISTRICT_CONFIG) {
+      return;
+    }
+
+    let isCancelled = false;
+    const config = DISTRICT_CONFIG;
+
+    const load = async () => {
+      const url = await boundarySource.getLayerUrl(
+        config.level,
+        selection ?? EMPTY_BOUNDARY_SELECTION
+      );
+      let features: readonly BoundaryFeature[];
+      try {
+        features = await fetchFeatures(url);
+      } finally {
+        boundarySource.releaseLayerUrl(url);
+      }
+
+      if (isCancelled) {
+        return;
+      }
+      featuresRef.current = { ...featuresRef.current, [config.level]: features };
+      setDataVersion((version) => version + 1);
+    };
+
+    load().catch((error: unknown) => {
+      if (isCancelled) {
+        return;
+      }
+      console.error("Failed to load the district boundary geometry", error);
+      setIsError(true);
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+    // districtProvinceKey (not selection itself) is the dependency: a change
+    // to which districts are checked within an already-selected province must
+    // not refetch - only a change to the set of selected provinces should.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isReady, isEnabled, districtProvinceKey]);
 
   // Draw. Runs on the data arriving and on anything that changes what the
   // polygons should look like; never touches the network.
@@ -235,7 +308,7 @@ export function useLongdoBoundaryOverlays({
     overlaysRef.current.forEach((overlay) => map.Overlays.remove(overlay));
     overlaysRef.current = [];
 
-    if (!isEnabled || featuresRef.current.length === 0) {
+    if (!isEnabled || Object.keys(featuresRef.current).length === 0) {
       return;
     }
 
@@ -264,7 +337,7 @@ export function useLongdoBoundaryOverlays({
       const nameField =
         config.nameFieldByLanguage[language] ?? config.nameFieldByLanguage.en;
       const style = config.style;
-      const features = featuresRef.current[index] ?? [];
+      const features = featuresRef.current[config.level] ?? [];
 
       features.forEach((feature) => {
         const code = readString(feature.properties, config.idField);
