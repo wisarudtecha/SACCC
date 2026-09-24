@@ -49,3 +49,34 @@ export function mapControlRevealClass(isOpen: boolean): string {
 export const MAP_CONTROL_REVEAL_ON_GROUP =
   "inline-flex overflow-hidden whitespace-nowrap max-w-0 opacity-0 transition-all duration-200 ease-out " +
   "group-hover:max-w-[12rem] group-hover:opacity-100 group-focus-within:max-w-[12rem] group-focus-within:opacity-100";
+
+/**
+ * Reserved strip height at the map's bottom-left, kept clear by
+ * CaseStaffMapField's CARD_DOCK_CLASS so it never grows into the space
+ * mapBottomLeftRowClass below anchors to. One shared token so the dock and
+ * the row can't drift out of sync with each other.
+ */
+export const MAP_BOTTOM_LEFT_CLEARANCE_CLASS = "bottom-16";
+
+/**
+ * Bottom-left row for the Coordinates/Place/Device group. Horizontal, not
+ * stacked, so its height is bounded by the TALLEST single card instead of
+ * the sum of all three - the actual fix for the Case/Staff dock (see
+ * CaseStaffMapField's CARD_DOCK_CLASS, whose bottom edge is reserved via
+ * MAP_BOTTOM_LEFT_CLEARANCE_CLASS to stay clear of this row).
+ *
+ * `flex-wrap-reverse` makes any overflow wrap to a new line ABOVE the first,
+ * keeping the bottom-most line pinned at bottom-2/bottom-8 - the same
+ * "grows upward" behavior a bottom-anchored stack needs.
+ *
+ * `items-start`, not `items-end`: `flex-wrap-reverse` swaps the cross-axis
+ * start/end per the flexbox spec, so under it `items-start` is what actually
+ * renders as bottom-flush (verified - `items-end` here renders every card's
+ * TOP flush instead, which is the wrong edge). Don't "fix" this back to
+ * `items-end` without re-testing; it looks backwards but isn't.
+ */
+export function mapBottomLeftRowClass(showLocationInfo: boolean): string {
+  return `absolute left-2 z-10 flex flex-row flex-wrap-reverse items-start gap-2 max-w-[calc(100%-1rem)] ${
+    showLocationInfo ? "bottom-8" : "bottom-2"
+  }`;
+}

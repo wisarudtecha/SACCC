@@ -24,7 +24,11 @@ import { Map as MlMap, Marker, NavigationControl, type MapMouseEvent } from "map
 import { useTheme } from "@/core/context/ThemeContext";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import BasemapSwitcher from "../BasemapSwitcher";
-import { MAP_CONTROL_BORDER_CLASS, MAP_CONTROL_REVEAL_ON_GROUP } from "../mapControlStyles";
+import {
+  MAP_CONTROL_BORDER_CLASS,
+  MAP_CONTROL_REVEAL_ON_GROUP,
+  mapBottomLeftRowClass
+} from "../mapControlStyles";
 import { BasemapOptionId, DEFAULT_BASEMAP_ID } from "../basemaps";
 import AnchoredOverlayLayer from "../AnchoredOverlayLayer";
 import type { AddressMapProps, MapAnchoredOverlay, MapLatLon, StaffConnector } from "../mapTypes";
@@ -622,11 +626,13 @@ function MapTilerAddressMapBase({
         </div>
       )}
 
-      <div
-        className={`absolute left-2 z-10 flex flex-col gap-1 ${
-          showLocationInfo ? "bottom-8" : "bottom-2"
-        }`}
-      >
+      {/* Bottom-left row: address/coordinates card, one status line, then any
+          Place/Device group or info popup (bottomLeftSlot) - left-to-right,
+          not stacked, so the group's height stays bounded by its tallest
+          single card. CaseStaffMapField's CARD_DOCK_CLASS reserves
+          MAP_BOTTOM_LEFT_CLEARANCE_CLASS of clearance at the very bottom so
+          an open Case/Staff card can't grow down into this row. */}
+      <div className={mapBottomLeftRowClass(showLocationInfo)}>
         {showLocationInfo && value && (
           <div className={`max-w-xs rounded-md bg-white/90 px-2 py-1 text-xs text-gray-700 shadow-sm dark:bg-gray-800/90 dark:text-gray-200 ${MAP_CONTROL_BORDER_CLASS}`}>
             {address && <div className="truncate font-medium">{address}</div>}

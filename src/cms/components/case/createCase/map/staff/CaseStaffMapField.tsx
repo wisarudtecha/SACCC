@@ -24,6 +24,7 @@ import { usePermissions } from "@/core/hooks/usePermissions";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import BoundaryMapField from "../BoundaryMapField";
 import { dockedCardsWidthPx } from "../frameBounds";
+import { MAP_BOTTOM_LEFT_CLEARANCE_CLASS } from "../mapControlStyles";
 import type {
   AddressResult,
   IncidentRadiusOverlay,
@@ -154,9 +155,17 @@ const FRAME_BOTTOM_INSET_PX = 64;
  * max-height, so a card's own `max-h-full` has something to resolve against.
  * `pointer-events-none` keeps the empty strip between and beside the cards
  * clickable as map; each card turns them back on.
+ *
+ * Bottom edge stops at MAP_BOTTOM_LEFT_CLEARANCE_CLASS rather than the map's
+ * true bottom edge - that reserved strip belongs to the Coordinates/Place/
+ * Device row the address-map providers render (see mapBottomLeftRowClass in
+ * mapControlStyles.ts), so an open Case/Staff card can never grow down and
+ * cover it. A simultaneous very-tall card here AND an open Place/Device
+ * popup is an acknowledged rare edge case, same spirit as the "Both selected
+ * at once" comment in BoundaryMapField.tsx.
  */
 const CARD_DOCK_CLASS =
-  "pointer-events-none absolute bottom-2 left-2 top-16 z-10 flex items-start gap-2";
+  `pointer-events-none absolute left-2 top-16 z-10 flex items-start gap-2 ${MAP_BOTTOM_LEFT_CLEARANCE_CLASS}`;
 const CARD_CLASS = "pointer-events-auto max-h-full";
 
 function CaseStaffMapFieldBase({

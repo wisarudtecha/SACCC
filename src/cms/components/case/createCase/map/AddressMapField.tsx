@@ -163,9 +163,14 @@ interface AddressMapFieldProps {
   className?: string;
 }
 
-// Sized to sit inside the fullscreen modal shell (100vh, minus the outer
-// fullscreenPadding and the compact title/close row above the map).
-const MODAL_MAP_HEIGHT = "calc(100vh - 4rem)";
+// Modal's `fullscreenPadding="p-2"` below reserves 1rem of vertical space
+// (0.5rem top + 0.5rem bottom) outside this content box. `h-full` can't be
+// used on the flex column that holds the map + Legend: Modal wraps whatever
+// this component renders in a plain, unstyled `<div>{children}</div>` (see
+// src/core/components/ui/modal/index.tsx), so a percentage height there
+// resolves against an auto-height ancestor and collapses to nothing. An
+// explicit viewport-relative height sidesteps that entirely.
+const MODAL_CONTENT_HEIGHT = "calc(100vh - 1rem)";
 
 function AddressMapFieldBase({
   value,
@@ -336,7 +341,7 @@ function AddressMapFieldBase({
         >
           <X className="h-5 w-5" />
         </button>
-        <div className="pt-10">
+        <div className="relative pt-10" style={{ height: MODAL_CONTENT_HEIGHT }}>
           <span className="absolute top-3 left-3 text-lg font-semibold text-gray-900 dark:text-gray-100">
             {t("case.display.map_expand")}
           </span>
@@ -347,7 +352,7 @@ function AddressMapFieldBase({
             onError={onError}
             readOnly={readOnly}
             showSearch={showSearchExpanded}
-            height={MODAL_MAP_HEIGHT}
+            height="100%"
             basemapId={basemapId}
             onBasemapChange={handleBasemapChange}
             staff={staff}
