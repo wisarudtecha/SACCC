@@ -488,14 +488,27 @@ function LongdoAddressMapBase({
           language: toLongdoLanguage(languageRef.current)
         });
         mapRef.current = map;
+        // A stable non-null reference for the `ready` closures below - `map`
+        // stays a `let` (it's reassigned to `null` in this effect's cleanup),
+        // so its non-null narrowing here would not otherwise survive into a
+        // nested function under strictNullChecks.
+        const readyMap = map;
 
         // Drop the native controls the app replaces (map-style selector,
         // fullscreen button). Registers a `ready` handler - v3 wires map.Ui
         // only then; see longdoUi.ts for why each control has to go.
         hideRedundantLongdoUi(map);
 
-        applyLongdoBasemap(longdo, map, basemapId, isDarkTheme);
-        appliedBasemapRef.current = `${basemapId}:${isDarkTheme ? "dark" : "light"}`;
+        // Longdo Map v3 is async-init (see hideRedundantLongdoUi's comment
+        // above): map.Layers is not wired until `ready` fires, so applying a
+        // basemap immediately after construction crashes inside the SDK's
+        // own internals ("Cannot read properties of undefined (reading
+        // 'once')"). Deferred to `ready`, the same pattern already proven
+        // just above.
+        readyMap.Event.bind("ready", () => {
+          applyLongdoBasemap(longdo, readyMap, basemapId, isDarkTheme);
+          appliedBasemapRef.current = `${basemapId}:${isDarkTheme ? "dark" : "light"}`;
+        });
 
         // A click that reached the map: the SDK reports where.
         map.Event.bind("click", (event: unknown) => {
@@ -621,21 +634,31 @@ function LongdoAddressMapBase({
           }
         });
 
-        if (value) {
-          setMarker(toLongdoLocation(value));
-        }
-        setIsReady(true);
+        // Deferred to `ready` alongside the basemap above: `isReady` is what
+        // every overlay hook (staff/boundary/place/device/etc.) gates on to
+        // decide the map is safe to touch, so setting it before the SDK's own
+        // `ready` event let those hooks call into map.Overlays/map.Layers
+        // before the SDK had wired them - the second crash reported
+        // ("Cannot read properties of undefined (reading 'setProps')" from
+        // useLongdoStaffConnectorOverlay's map.Overlays.add) was this same
+        // root cause at a different call site, not a separate bug.
+        readyMap.Event.bind("ready", () => {
+          if (value) {
+            setMarker(toLongdoLocation(value));
+          }
+          setIsReady(true);
 
-        // Kick off the first Device fetch for the initial viewport.
-        if (onBoundsChangeRef.current) {
-          const b = map.bound();
-          onBoundsChangeRef.current({
-            minLat: b.minLat,
-            minLon: b.minLon,
-            maxLat: b.maxLat,
-            maxLon: b.maxLon
-          });
-        }
+          // Kick off the first Device fetch for the initial viewport.
+          if (onBoundsChangeRef.current) {
+            const b = readyMap.bound();
+            onBoundsChangeRef.current({
+              minLat: b.minLat,
+              minLon: b.minLon,
+              maxLat: b.maxLat,
+              maxLon: b.maxLon
+            });
+          }
+        });
       })
       .catch((error: unknown) => {
         if (isCancelled) {
