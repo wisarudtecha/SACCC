@@ -7,6 +7,7 @@ import KmsApp from "@/kms/App";
 // import Dashboard from "@/core/components/dashboard/Dashboard";
 import SuperLayout from "@/core/layout/SuperLayout";
 import CustomDashboard from "@/core/pages/Dashboard/CustomDashboard";
+import { EntitlementGate } from "@/core/components/entitlements/EntitlementGate";
 import { ProtectedRoute } from "@/core/components/auth/ProtectedRoute";
 import AuditLog from "@/core/pages/Admin/AuditLog";
 import OrganizationManagementPage from "@/core/pages/Admin/OrganizationManagement";
@@ -40,9 +41,25 @@ export default function App() {
         <Route path="/ai/*" element={<AiApp />} />
         <Route path="/cc/*" element={<CcApp />} />
         <Route path="/cms/*" element={<CmsApp />} />
-        <Route path="/kms/*" element={<KmsApp />} />
+        <Route
+          path="/kms/*"
+          element={
+            // Tenant-level KB entitlement gate — renders the lock page
+            // instead of KmsApp when the tenant has not purchased CC-KB.
+            <EntitlementGate feature="entitlement.kb" fullPage>
+              <KmsApp />
+            </EntitlementGate>
+          }
+        />
         <Route path="/alerts" element={<Alerts />} />
-        <Route path="/auditlog" element={<AuditLog />} />
+        <Route
+          path="/auditlog"
+          element={
+            <ProtectedRoute requiredFeature="entitlement.audit">
+              <AuditLog />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/avatars" element={<Avatars />} />
         <Route path="/badge" element={<Badges />} />
         <Route path="/bar-chart" element={<BarChart />} />

@@ -1,0 +1,19 @@
+{
+  "orgId": "SKY-AI",
+  "plan": "essential",
+  "skus": ["CC-CORE", "CC-AGENT", "CC-KB"],
+  "features": [
+    "entitlement.core",
+    "entitlement.agent.desktop",
+    "entitlement.kb"
+  ],
+  "limits": {
+    "maxAgents": 50,
+    "maxStorageGB": 25,
+    "maxCasesPerMonth": 10000,
+    "maxAPICallsPerDay": 20000
+  },
+  "seats": { "used": 25, "max": 50 },
+  "renewedAt": "2026-09-01T00:00:00Z",
+  "expiresAt": "2027-09-01T00:00:00Z"
+}

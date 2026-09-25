@@ -3,7 +3,8 @@
     "title": "Organization Settings",
     "section": {
       "map": "Map Settings",
-      "assignment_rules": "Assignment Rules"
+      "assignment_rules": "Assignment Rules",
+      "subscription": "Subscription & Entitlements"
     },
     "actions": {
       "save": "Save",
@@ -187,6 +188,68 @@
           "success": "Assignment rules saved."
         }
       }
+    }
+  },
+  "entitlement": {
+    "plan": {
+      "essential": "Essential",
+      "professional": "Professional",
+      "enterprise": "Enterprise"
+    },
+    "locked": {
+      "title": "Feature not included in your package",
+      "subtitle": "This feature is available from the",
+      "cta": "View plans"
+    },
+    "upgrade": {
+      "title": "Upgrade your package",
+      "required_tier": "Required package",
+      "current_plan": "Current package",
+      "unknown_plan": "Unknown",
+      "per_agent_month": "/ Agent / Month",
+      "view_plans": "View subscription details",
+      "close": "Close"
+    },
+    "subscription": {
+      "title": "Subscription & Entitlements",
+      "plan_summary": "Current Package",
+      "price_per_agent": "Price per agent / month",
+      "renewed_at": "Renewed",
+      "expires_at": "Expires",
+      "seats": "Agent Seats",
+      "seats_used": "used",
+      "skus": "Active SKUs",
+      "features": "Feature Entitlements",
+      "feature": "Feature",
+      "status": "Status",
+      "required_tier": "Required Package",
+      "entitled": "Included",
+      "locked": "Locked",
+      "readonly_note": "Subscription details are managed by the platform provider. Contact your account manager to change your package."
+    },
+    "sku": {
+      "cc_core": { "label": "CC-Core (CMS, CRM, Customer Contact)", "description": "Core platform: case management, CRM, and customer contact." },
+      "cc_agent": { "label": "CC-Agent (Agent Seats)", "description": "Agent, supervisor, admin, and report-user seats." },
+      "cc_kb": { "label": "CC-KB (Knowledge Base)", "description": "Article management, approval, and search." },
+      "cc_chat": { "label": "CC-Chat (Live Chat)", "description": "Live chat with SLA, assignment, and dashboards." },
+      "cc_bot": { "label": "CC-Bot (Chatbot Intent)", "description": "Intent flows, self-service, and human handoff." },
+      "cc_gis": { "label": "CC-GIS (Maps & Spatial)", "description": "Map providers, geocoding, and spatial analysis." },
+      "cc_cad": { "label": "CC-CAD (Dispatch)", "description": "Computer-aided dispatch for coordinators and supervisors." },
+      "cc_channel": { "label": "CC-Channel (Social Channels)", "description": "LINE, Facebook, WeChat, and other channel integrations." },
+      "cc_service": { "label": "CC-Service (Professional Services)", "description": "Implementation, integration, migration, training, and support." }
+    },
+    "feature": {
+      "core": { "label": "Core Platform (CMS / CRM / Contact)" },
+      "agent_desktop": { "label": "Agent Desktop" },
+      "kb": { "label": "Knowledge Base" },
+      "kb_semantic_search": { "label": "KB Semantic Search" },
+      "chat": { "label": "Live Chat" },
+      "bot": { "label": "Chatbot Intent" },
+      "gis": { "label": "GIS / Maps" },
+      "cad": { "label": "CAD Dispatch" },
+      "channel_social": { "label": "Social Channels" },
+      "audit": { "label": "Audit Logs" },
+      "rbac_advanced": { "label": "Advanced RBAC" }
     }
   },
   "common": {

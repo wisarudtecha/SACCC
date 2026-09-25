@@ -1,4 +1,6 @@
 // /src/types/auth.ts
+import type { EntitlementFeature } from "@/core/types/entitlement";
+
 export interface User {
   id: string;
   username: string;
@@ -126,6 +128,8 @@ export interface ProtectedRouteProps {
   requireAnyPermission?: string[];
   module?: string; // e.g., "dispatch", "user" - checks for view permission
   action?: "view" | "create" | "update" | "delete"; // specific action permission
+  /** Entitlement feature the tenant must hold; no system-admin bypass. */
+  requiredFeature?: EntitlementFeature;
   fallback?: React.ComponentType;
 }
 

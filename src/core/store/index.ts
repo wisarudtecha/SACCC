@@ -20,6 +20,7 @@ import authSlice from "@/core/store/slices/authSlice";
 import notificationSlice from "@/core/store/slices/notificationSlice";
 import uiSlice from "@/core/store/slices/uiSlice";
 import realtimeSlice from "@/core/store/slices/realtimeSlice";
+import entitlementSlice from "@/core/store/slices/entitlementSlice";
 
 export const store = configureStore({
   reducer: {
@@ -34,6 +35,7 @@ export const store = configureStore({
     notifications: notificationSlice,
     realtime: realtimeSlice,
     ui: uiSlice,
+    entitlements: entitlementSlice,
     // Add other slices here
   },
   middleware: getDefaultMiddleware => getDefaultMiddleware({

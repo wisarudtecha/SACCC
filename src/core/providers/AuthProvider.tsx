@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useReducer } from "react";
 import { AuthContext } from "@/core/context/AuthContext";
 import { authReducer } from "@/core/hooks/useAuthContext";
 import { useHardSessionCap } from "@/core/hooks/useHardSessionCap";
+import { EntitlementsBootstrap } from "@/core/components/entitlements/EntitlementsBootstrap";
 import { useSessionExpiry } from "@/core/hooks/useSessionExpiry";
 import { store } from "@/core/store";
 import { authGqlEndpoints } from "@/core/store/api/graphql/authGqlApi";
@@ -205,12 +206,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // the state terminateSession leaves behind after the absolute cap fires.
       sessionStorage.removeItem(AUTH_LOCK_KEY);
 
+      // The BFF may not echo `organization` in the user payload — backfill it
+      // from the login form's explicit tenant selection, which is authoritative
+      // for entitlement lookup (fixtures are keyed by this value). Copy rather
+      // than mutate: `response` may be an RTK Query cached object.
+      const loggedInUser =
+        response.user && !response.user.organization
+          ? { ...response.user, organization: credentials.organization }
+          : response.user;
+
       TokenManager.setTokens(
         response.accessToken,
         response.refreshToken || response.accessToken,
         // credentials.rememberMe,
         true,
-        response.user,
+        loggedInUser,
         credentials?.language || ""
       );
 
@@ -226,10 +236,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // sessionStorage.removeItem("sso_takeover_active");
 
-      dispatch({ 
-        type: "LOGIN_SUCCESS", 
-        payload: { 
-          user: response.user, 
+      dispatch({
+        type: "LOGIN_SUCCESS",
+        payload: {
+          user: loggedInUser,
           token: response.accessToken,
           refreshToken: response.refreshToken
         }
@@ -390,6 +400,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider value={contextValue}>
+      {/* Loads (and on logout, clears) the tenant's entitlement set. Must live
+          inside the provider: it consumes useAuth(). */}
+      <EntitlementsBootstrap />
       {children}
     </AuthContext.Provider>
   );

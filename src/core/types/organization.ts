@@ -488,6 +488,8 @@ export interface OrganizationProfile {
     dataRetention: RetentionPolicy;
     auditSettings: AuditConfiguration;
   };
+  // Superseded by @/core/types/entitlement (TenantEntitlements) — kept for
+  // org-profile compatibility; do not build new entitlement logic on this stub.
   subscription: {
     plan: "basic" | "professional" | "enterprise";
     features: string[];

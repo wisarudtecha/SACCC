@@ -1,0 +1,36 @@
+{
+  "orgId": "BMA",
+  "plan": "enterprise",
+  "skus": [
+    "CC-CORE",
+    "CC-AGENT",
+    "CC-KB",
+    "CC-CHAT",
+    "CC-CHANNEL",
+    "CC-GIS",
+    "CC-CAD",
+    "CC-BOT"
+  ],
+  "features": [
+    "entitlement.core",
+    "entitlement.agent.desktop",
+    "entitlement.kb",
+    "entitlement.kb.semantic_search",
+    "entitlement.chat",
+    "entitlement.bot",
+    "entitlement.gis",
+    "entitlement.cad",
+    "entitlement.channel.social",
+    "entitlement.audit",
+    "entitlement.rbac.advanced"
+  ],
+  "limits": {
+    "maxAgents": 500,
+    "maxStorageGB": 500,
+    "maxCasesPerMonth": 250000,
+    "maxAPICallsPerDay": 1000000
+  },
+  "seats": { "used": 320, "max": 500 },
+  "renewedAt": "2026-09-01T00:00:00Z",
+  "expiresAt": "2027-09-01T00:00:00Z"
+}

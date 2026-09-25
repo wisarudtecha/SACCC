@@ -1,0 +1,21 @@
+{
+  "orgId": "SIH",
+  "plan": "professional",
+  "skus": ["CC-CORE", "CC-AGENT", "CC-KB", "CC-CHAT", "CC-CHANNEL"],
+  "features": [
+    "entitlement.core",
+    "entitlement.agent.desktop",
+    "entitlement.kb",
+    "entitlement.chat",
+    "entitlement.channel.social"
+  ],
+  "limits": {
+    "maxAgents": 250,
+    "maxStorageGB": 100,
+    "maxCasesPerMonth": 50000,
+    "maxAPICallsPerDay": 100000
+  },
+  "seats": { "used": 80, "max": 250 },
+  "renewedAt": "2026-09-01T00:00:00Z",
+  "expiresAt": "2027-09-01T00:00:00Z"
+}

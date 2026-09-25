@@ -11,6 +11,7 @@
 // means the unused implementation is never even requested.
 import { Suspense, lazy, memo } from "react";
 import { API_CONFIG } from "@/core/config/api";
+import { EntitlementGate } from "@/core/components/entitlements/EntitlementGate";
 import type { AddressMapProps } from "./mapTypes";
 
 const ProviderMap =
@@ -38,9 +39,16 @@ function MapPlaceholder({ height }: { height: number | string }) {
 
 function AddressMapBase(props: AddressMapProps) {
   return (
-    <Suspense fallback={<MapPlaceholder height={props.height ?? 360} />}>
-      <ProviderMap {...props} />
-    </Suspense>
+    // GIS is an Enterprise add-on (CC-GIS): unentitled tenants get the lock
+    // panel, and the lazy map SDK chunk is never requested for them.
+    <EntitlementGate
+      feature="entitlement.gis"
+      loadingFallback={<MapPlaceholder height={props.height ?? 360} />}
+    >
+      <Suspense fallback={<MapPlaceholder height={props.height ?? 360} />}>
+        <ProviderMap {...props} />
+      </Suspense>
+    </EntitlementGate>
   );
 }
 

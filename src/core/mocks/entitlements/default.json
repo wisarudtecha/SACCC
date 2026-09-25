@@ -1,0 +1,17 @@
+{
+  "orgId": "default",
+  "plan": "essential",
+  "skus": ["CC-CORE", "CC-AGENT", "CC-KB"],
+  "features": [
+    "entitlement.core",
+    "entitlement.agent.desktop",
+    "entitlement.kb"
+  ],
+  "limits": {
+    "maxAgents": 20,
+    "maxStorageGB": 10,
+    "maxCasesPerMonth": 5000,
+    "maxAPICallsPerDay": 10000
+  },
+  "seats": { "used": 0, "max": 20 }
+}

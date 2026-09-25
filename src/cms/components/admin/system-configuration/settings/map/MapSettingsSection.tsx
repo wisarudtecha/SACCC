@@ -4,6 +4,7 @@
 // error banner, and the Staff "Advanced" disclosure open state.
 import { useEffect, useMemo, useState } from "react";
 import { CloseIcon } from "@/core/icons";
+import { EntitlementGate } from "@/core/components/entitlements/EntitlementGate";
 import Button from "@/core/components/ui/button/Button";
 import { ToastContainer } from "@/core/components/crud/ToastContainer";
 import { useToast } from "@/core/hooks/useToast";
@@ -108,7 +109,10 @@ export function MapSettingsSection() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    // Map/GIS configuration is part of the CC-GIS add-on: unentitled tenants
+    // see the lock panel instead of the settings form.
+    <EntitlementGate feature="entitlement.gis">
+      <div className="flex flex-col gap-5">
       <ToastContainer toasts={toasts} onRemove={removeToast} />
 
       {saveFailed && (
@@ -162,5 +166,6 @@ export function MapSettingsSection() {
         </Button>
       </div>
     </div>
+    </EntitlementGate>
   );
 }

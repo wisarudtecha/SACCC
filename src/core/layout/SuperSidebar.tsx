@@ -21,12 +21,16 @@ import {
   Users,
   // BoxesIcon,
   Bell,
-  ListIcon
+  ListIcon,
+  Lock
 } from "lucide-react";
 import { useSidebar } from "@/core/context/SidebarContext";
 import { Modal } from "@/core/components/ui/modal";
 import { usePermissions } from "@/core/hooks/usePermissions";
+import { useEntitlements } from "@/core/hooks/useEntitlements";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import { useUpgradePrompt } from "@/core/components/entitlements/useUpgradePrompt";
+import type { EntitlementFeature } from "@/core/types/entitlement";
 import changelog from "@/changelog.json";
 import { KbPermission } from "@/kms/common/utils/enumHelper"
 
@@ -44,11 +48,14 @@ export type NavItem = {
   icon: React.ReactNode;
   path?: string;
   permission?: boolean;
+  /** Entitlement feature the tenant must hold; locked items show an upsell prompt. */
+  feature?: EntitlementFeature;
   subItems?: {
     name: string;
     icon?: React.ReactNode;
     path: string;
     permission?: boolean;
+    feature?: EntitlementFeature;
   }[];
 };
 
@@ -56,7 +63,19 @@ const SuperSidebar = (
   { collapsed, displayed }: Props
 ) => {
   const permissions = usePermissions();
+  const { isLocked } = useEntitlements();
+  const { promptFor, modal: upgradeModal } = useUpgradePrompt();
   const { t } = useTranslation();
+
+  // Locked nav entries stay visible (upsell motion) but their navigation is
+  // intercepted with an upgrade prompt instead.
+  const handleLockedClick = (
+    event: React.MouseEvent,
+    feature: EntitlementFeature
+  ) => {
+    event.preventDefault();
+    promptFor(feature);
+  };
 
   const workspaceItems: NavItem[] = useMemo(() => [
     {
@@ -75,12 +94,14 @@ const SuperSidebar = (
           icon: <Inbox />,
           name: t("navigation.super_app.sidebar.workspace.menu.chat.sub_menu.lobby"),
           path: "/cc/lobby-incoming",
+          feature: "entitlement.chat",
           // permission: permissions.hasPermission("workspace.chat.lobby")
         },
         {
           icon: <History />,
           name: t("navigation.super_app.sidebar.workspace.menu.chat.sub_menu.history"),
           path: "/cc/chat-history",
+          feature: "entitlement.chat",
           // permission: permissions.hasPermission("workspace.chat.history")
         }
       ]
@@ -233,6 +254,7 @@ const SuperSidebar = (
       icon: <ChartColumn />,
       name: t("navigation.super_app.sidebar.knowledge.menu.dashboard"),
       path: "/kms/dashboard",
+      feature: "entitlement.kb",
       permission: permissions.hasAnyPermission([
         KbPermission.KB_DASHBOARD_VIEW
       ])
@@ -241,12 +263,14 @@ const SuperSidebar = (
       icon: <Bell />,
       name: t("navigation.super_app.topbar.more.menu.knowledge.sub_menu.boardcastlog"),
       path: "/kms/broadcast-log",
+      feature: "entitlement.kb",
       permission: permissions.hasPermission(KbPermission.KB_BROADCAST_VIEW)
     },
     {
       icon: <ListIcon />,
       name: t("navigation.super_app.sidebar.knowledge.menu.category-articles"),
       path: "/kms/categorys-articles",
+      feature: "entitlement.kb",
       permission: permissions.hasPermission(KbPermission.KB_ARTICLE_VIEW)
     },
     // {
@@ -408,9 +432,19 @@ const SuperSidebar = (
                 {!isIconOnly && (
                   <span className="menu-item-text whitespace-nowrap">{nav.name}</span>
                 )}
+                {/* Aggregate badge: at least one locked sub-item, so the lock
+                    is visible even while the submenu is collapsed. */}
+                {!isIconOnly &&
+                  nav.subItems?.some((sub) => sub.feature && isLocked(sub.feature)) && (
+                    <Lock className="ml-auto h-3.5 w-3.5 shrink-0" />
+                  )}
                 {!isIconOnly && (
                   <ChevronDown
-                    className={`ml-auto w-5 h-5 transition-transform duration-200 ${
+                    className={`${
+                      nav.subItems?.some((sub) => sub.feature && isLocked(sub.feature))
+                        ? ""
+                        : "ml-auto"
+                    } w-5 h-5 transition-transform duration-200 ${
                       openSubmenu?.type === menuType &&
                       openSubmenu?.index === index
                         ? "rotate-180 text-gray-300"
@@ -423,6 +457,11 @@ const SuperSidebar = (
               nav.path && (
                 <Link
                   to={nav.path}
+                  onClick={
+                    nav.feature && isLocked(nav.feature)
+                      ? (event) => handleLockedClick(event, nav.feature as EntitlementFeature)
+                      : undefined
+                  }
                   className={`menu-item group ${
                     isActive(nav.path) ?
                       "menu-item-active text-gray-300 bg-gray-700 dark:bg-gray-800 hover:bg-gray-700"
@@ -430,11 +469,22 @@ const SuperSidebar = (
                       "menu-item-inactive text-[#9CA3AF] bg-[#1E293B] hover:bg-[#1E293B] dark:bg-gray-900"
                   } ${
                     isIconOnly ? "justify-center" : "justify-start"
-                  } hover:text-gray-300 dark:text-[#9CA3AF] dark:hover:text-gray-300`}
+                  } hover:text-gray-300 dark:text-[#9CA3AF] dark:hover:text-gray-300 ${
+                    nav.feature && isLocked(nav.feature) ? "opacity-60" : ""
+                  }`}
                 >
-                  <span>{nav.icon}</span>
+                  <span className="relative">
+                    {nav.icon}
+                    {/* Rail mode: no room for the trailing badge, overlay the icon. */}
+                    {isIconOnly && nav.feature && isLocked(nav.feature) && (
+                      <Lock className="absolute -top-1 -right-1 h-3 w-3 text-[#9CA3AF]" />
+                    )}
+                  </span>
                   {!isIconOnly && (
                     <span className="menu-item-text whitespace-nowrap">{nav.name}</span>
+                  )}
+                  {!isIconOnly && nav.feature && isLocked(nav.feature) && (
+                    <Lock className="ml-auto h-3.5 w-3.5 shrink-0" />
                   )}
                 </Link>
               )
@@ -463,14 +513,24 @@ const SuperSidebar = (
                         subItem.path && (
                           <Link
                             to={subItem.path}
+                            onClick={
+                              subItem.feature && isLocked(subItem.feature)
+                                ? (event) => handleLockedClick(event, subItem.feature as EntitlementFeature)
+                                : undefined
+                            }
                             className={`menu-dropdown-item ${
                               isActive(subItem.path) ?
                                 "menu-dropdown-item-active text-gray-300 bg-gray-700 dark:bg-gray-800 hover:bg-gray-700"
                                   :
                                 "menu-dropdown-item-inactive text-[#9CA3AF] bg-[#1E293B] hover:bg-[#1E293B] dark:bg-gray-900"
-                            } hover:text-gray-300 dark:text-[#9CA3AF] dark:hover:text-gray-300`}
+                            } hover:text-gray-300 dark:text-[#9CA3AF] dark:hover:text-gray-300 ${
+                              subItem.feature && isLocked(subItem.feature) ? "opacity-60" : ""
+                            }`}
                           >
-                            {subItem.name}
+                            <span className="whitespace-nowrap">{subItem.name}</span>
+                            {subItem.feature && isLocked(subItem.feature) && (
+                              <Lock className="ml-auto h-3.5 w-3.5 shrink-0" />
+                            )}
                           </Link>
                         )
                       )}
@@ -563,6 +623,8 @@ const SuperSidebar = (
             )}
         </nav>
       </aside>
+
+      {upgradeModal}
 
       <Modal isOpen={openVersion} onClose={() => setOpenVersion(false)} className="max-w-4xl p-6 max-h-[80vh] overflow-y-auto">
         <div className="mb-6">

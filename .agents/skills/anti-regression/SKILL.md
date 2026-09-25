@@ -558,3 +558,73 @@ new lesson and update this file when the lesson is generalizable.
     permission: permissions.hasPermission("dashboard.view")
   }
   ```
+
+### Never call a context-consumer hook inside the component that provides that context
+- **Date:** 2026-09-25
+- **Mistake:** `useEntitlementsBootstrap()` was invoked directly in `AuthProvider`'s component
+  body (`src/core/providers/AuthProvider.tsx`). The hook calls `useAuth()`, which reads
+  `AuthContext` — a context only available *below* `<AuthContext.Provider>`. The app crashed on
+  first render with `Uncaught Error: useAuth must be used within an AuthProvider`.
+- **Root Cause:** A React component cannot consume the context it provides: the
+  `<AuthContext.Provider>` element only exists in the component's returned JSX, so any hook in
+  its own body runs *outside* the provider's scope. Mounting a hook "where the lifecycle lives"
+  feels co-located but is exactly the wrong place when the hook reads that same context.
+- **Correct Behavior:** Mount context-consuming bootstrap/effect hooks in a child component
+  rendered inside the provider — here, a render-null `<EntitlementsBootstrap />` placed inside
+  `<AuthContext.Provider>` in AuthProvider's JSX. Redux hooks (`useAppDispatch`/`useAppSelector`)
+  are unaffected because `<Provider store>` wraps `AuthProvider` in `main.tsx`, but any hook
+  reading `AuthContext` must sit below it in the tree.
+- **Prevention Rule:** Before calling a custom hook inside a provider component, check every
+  context hook it (transitively) calls. If any of those contexts is the one the component
+  provides, extract a child component and mount it inside the provider's JSX instead. Verify
+  with a runtime smoke check (dev server / first render), not just `tsc` — this class of bug
+  type-checks perfectly and only fails at render time.
+- **Example:**
+  ```tsx
+  // WRONG — crashes at render: useAuth() runs outside AuthContext.Provider
+  export const AuthProvider = ({ children }) => {
+    useEntitlementsBootstrap(); // calls useAuth() internally
+    return <AuthContext.Provider value={v}>{children}</AuthContext.Provider>;
+  };
+
+  // RIGHT — the hook runs in a child, below the provider
+  export const AuthProvider = ({ children }) => (
+    <AuthContext.Provider value={v}>
+      <EntitlementsBootstrap /> {/* calls useEntitlementsBootstrap(), returns null */}
+      {children}
+    </AuthContext.Provider>
+  );
+  ```
+
+### Server-provided user fields typed as required are not guaranteed — backfill at the trust boundary
+- **Date:** 2026-09-25
+- **Mistake:** The entitlement bootstrap keyed fixture lookup off `user.organization`, typed as a
+  *required* string in `src/core/types/auth.ts`. The frontend stores the BFF login response's
+  `user` object verbatim (no `transformResponse`, no mapping), so if the backend omits the field,
+  the lookup key was silently `undefined`, `loadEntitlements` never dispatched, and every
+  entitlement gate silently reported "not locked" — no error, no badge, no way to notice from the
+  UI.
+- **Root Cause:** TypeScript's static guarantee (`organization: string`) was treated as a runtime
+  guarantee. The BFF response shape is server-defined and unverified; a required-field type on an
+  unmapped server payload masks exactly the failure it claims to prevent. Fail-closed-by-design
+  UI (`isLocked` returns false until data is ready) then made the absence invisible.
+- **Correct Behavior:** At the login trust boundary, backfill from authoritative client-side
+  input: `AuthProvider.login` now fills `user.organization` from the login form's explicit tenant
+  selection when the BFF omits it (copying, not mutating, the RTK-cached response). Lookup keys
+  derived from server strings are matched tolerantly (`resolveFixture` is now trim +
+  case-insensitive).
+- **Prevention Rule:** Any value read from an unmapped server payload must be treated as
+  potentially absent regardless of its TS type — validate or backfill it at the boundary where it
+  enters the app, and make downstream lookups tolerant of casing/whitespace. When a feature gate
+  "never triggers," check the data-loading path in Redux DevTools *before* touching the gate's
+  rendering logic; and verify gating features against real backend responses, not only fixtures.
+- **Example:**
+  ```ts
+  // WRONG — trusts the server to populate a field the type declares required
+  const orgKey = state.user?.organization; // undefined at runtime, silently
+
+  // RIGHT — backfill at the login boundary from the user's explicit selection
+  const loggedInUser = response.user && !response.user.organization
+    ? { ...response.user, organization: credentials.organization }
+    : response.user;
+  ```

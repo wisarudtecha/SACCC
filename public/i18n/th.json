@@ -3,7 +3,8 @@
     "title": "การตั้งค่าองค์กร",
     "section": {
       "map": "การตั้งค่าแผนที่",
-      "assignment_rules": "กฎการมอบหมายงาน"
+      "assignment_rules": "กฎการมอบหมายงาน",
+      "subscription": "การสมัครสมาชิกและสิทธิ์การใช้งาน"
     },
     "actions": {
       "save": "บันทึก",
@@ -187,6 +188,68 @@
           "success": "บันทึกกฎการมอบหมายงานแล้ว"
         }
       }
+    }
+  },
+  "entitlement": {
+    "plan": {
+      "essential": "Essential",
+      "professional": "Professional",
+      "enterprise": "Enterprise"
+    },
+    "locked": {
+      "title": "ฟีเจอร์นี้ไม่ได้อยู่ในแพ็กเกจของคุณ",
+      "subtitle": "ฟีเจอร์นี้พร้อมใช้งานตั้งแต่แพ็กเกจ",
+      "cta": "ดูแพ็กเกจ"
+    },
+    "upgrade": {
+      "title": "อัปเกรดแพ็กเกจของคุณ",
+      "required_tier": "แพ็กเกจที่ต้องการ",
+      "current_plan": "แพ็กเกจปัจจุบัน",
+      "unknown_plan": "ไม่ทราบ",
+      "per_agent_month": "/ เอเจนต์ / เดือน",
+      "view_plans": "ดูรายละเอียดการสมัครสมาชิก",
+      "close": "ปิด"
+    },
+    "subscription": {
+      "title": "การสมัครสมาชิกและสิทธิ์การใช้งาน",
+      "plan_summary": "แพ็กเกจปัจจุบัน",
+      "price_per_agent": "ราคาต่อเอเจนต์ / เดือน",
+      "renewed_at": "ต่ออายุเมื่อ",
+      "expires_at": "หมดอายุ",
+      "seats": "จำนวนเอเจนต์",
+      "seats_used": "ใช้งานแล้ว",
+      "skus": "SKU ที่ใช้งาน",
+      "features": "สิทธิ์การใช้งานฟีเจอร์",
+      "feature": "ฟีเจอร์",
+      "status": "สถานะ",
+      "required_tier": "แพ็กเกจที่ต้องการ",
+      "entitled": "รวมอยู่ในแพ็กเกจ",
+      "locked": "ถูกล็อก",
+      "readonly_note": "รายละเอียดการสมัครสมาชิกจัดการโดยผู้ให้บริการแพลตฟอร์ม ติดต่อผู้ดูแลบัญชีของคุณเพื่อเปลี่ยนแพ็กเกจ"
+    },
+    "sku": {
+      "cc_core": { "label": "CC-Core (CMS, CRM, Customer Contact)", "description": "แพลตฟอร์มหลัก: จัดการเคส, CRM และการติดต่อลูกค้า" },
+      "cc_agent": { "label": "CC-Agent (จำนวนเอเจนต์)", "description": "ที่นั่งสำหรับเอเจนต์ ผู้ควบคุม ผู้ดูแล และผู้ใช้รายงาน" },
+      "cc_kb": { "label": "CC-KB (คลังความรู้)", "description": "จัดการบทความ อนุมัติ และค้นหา" },
+      "cc_chat": { "label": "CC-Chat (แชทสด)", "description": "แชทสดพร้อม SLA การมอบหมาย และแดชบอร์ด" },
+      "cc_bot": { "label": "CC-Bot (แชทบอท Intent)", "description": "Intent flow, บริการตนเอง และส่งต่อให้เจ้าหน้าที่" },
+      "cc_gis": { "label": "CC-GIS (แผนที่และภูมิสารสนเทศ)", "description": "ผู้ให้บริการแผนที่ Geocoding และการวิเคราะห์เชิงพื้นที่" },
+      "cc_cad": { "label": "CC-CAD (ระบบสั่งการ)", "description": "Computer-aided dispatch สำหรับผู้ประสานงานและผู้ควบคุม" },
+      "cc_channel": { "label": "CC-Channel (ช่องทางโซเชียล)", "description": "LINE, Facebook, WeChat และช่องทางอื่น ๆ" },
+      "cc_service": { "label": "CC-Service (บริการมืออาชีพ)", "description": "ติดตั้งระบบ เชื่อมต่อ ย้ายข้อมูล ฝึกอบรม และสนับสนุน" }
+    },
+    "feature": {
+      "core": { "label": "แพลตฟอร์มหลัก (CMS / CRM / การติดต่อ)" },
+      "agent_desktop": { "label": "หน้าจอเอเจนต์" },
+      "kb": { "label": "คลังความรู้" },
+      "kb_semantic_search": { "label": "ค้นหาเชิงความหมายในคลังความรู้" },
+      "chat": { "label": "แชทสด" },
+      "bot": { "label": "แชทบอท Intent" },
+      "gis": { "label": "GIS / แผนที่" },
+      "cad": { "label": "ระบบสั่งการ CAD" },
+      "channel_social": { "label": "ช่องทางโซเชียล" },
+      "audit": { "label": "บันทึกการตรวจสอบ (Audit)" },
+      "rbac_advanced": { "label": "RBAC ขั้นสูง" }
     }
   },
   "common": {

@@ -6,6 +6,7 @@ import { isSSOAvailable } from "@/core/config/api";
 import { useAuth } from "@/core/hooks/useAuth";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import { Autocomplete } from "@/core/components/form/form-elements/Autocomplete";
+import { FIXTURE_TENANT_NAMES } from "@/core/mocks/entitlements";
 import type { LoginCredentials } from "@/core/types/auth";
 import changelog from "@/changelog.json";
 import { DevLoginBypassButton } from "@/core/components/auth/DevLoginBypassButton";
@@ -341,7 +342,9 @@ export const LoginForm: React.FC = () => {
                         placeholder={t("auth.signin.organization.placeholder")}
                         disabled={state.isLoading || (state.isLocked && !ssoToken) || state.networkStatus === "offline"}
                         required
-                        suggestions={["BMA", "SKY-AI"]}
+                        // Tenant list mirrors the entitlement fixtures until
+                        // the platform console's tenant API exists.
+                        suggestions={FIXTURE_TENANT_NAMES}
                       />
                     </div>
                     {validationErrors.organization && (

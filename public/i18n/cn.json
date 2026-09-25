@@ -3,7 +3,8 @@
     "title": "组织设置",
     "section": {
       "map": "地图设置",
-      "assignment_rules": "分派规则"
+      "assignment_rules": "分派规则",
+      "subscription": "订阅与授权"
     },
     "actions": {
       "save": "保存",
@@ -187,6 +188,68 @@
           "success": "分派规则已保存。"
         }
       }
+    }
+  },
+  "entitlement": {
+    "plan": {
+      "essential": "Essential",
+      "professional": "Professional",
+      "enterprise": "Enterprise"
+    },
+    "locked": {
+      "title": "该功能未包含在您的套餐中",
+      "subtitle": "此功能自以下套餐起可用：",
+      "cta": "查看套餐"
+    },
+    "upgrade": {
+      "title": "升级您的套餐",
+      "required_tier": "所需套餐",
+      "current_plan": "当前套餐",
+      "unknown_plan": "未知",
+      "per_agent_month": "/ 坐席 / 月",
+      "view_plans": "查看订阅详情",
+      "close": "关闭"
+    },
+    "subscription": {
+      "title": "订阅与授权",
+      "plan_summary": "当前套餐",
+      "price_per_agent": "每坐席每月价格",
+      "renewed_at": "续订日期",
+      "expires_at": "到期日期",
+      "seats": "坐席数",
+      "seats_used": "已使用",
+      "skus": "已启用 SKU",
+      "features": "功能授权",
+      "feature": "功能",
+      "status": "状态",
+      "required_tier": "所需套餐",
+      "entitled": "已包含",
+      "locked": "已锁定",
+      "readonly_note": "订阅详情由平台服务商管理。如需更改套餐，请联系您的客户经理。"
+    },
+    "sku": {
+      "cc_core": { "label": "CC-Core (CMS, CRM, 客户联络)", "description": "核心平台：工单管理、CRM 与客户联络。" },
+      "cc_agent": { "label": "CC-Agent (坐席)", "description": "坐席、主管、管理员与报表用户席位。" },
+      "cc_kb": { "label": "CC-KB (知识库)", "description": "文章管理、审批与搜索。" },
+      "cc_chat": { "label": "CC-Chat (在线客服)", "description": "在线客服，含 SLA、分配与仪表盘。" },
+      "cc_bot": { "label": "CC-Bot (聊天机器人意图)", "description": "意图流程、自助服务与人工转接。" },
+      "cc_gis": { "label": "CC-GIS (地图与空间分析)", "description": "地图服务商、地理编码与空间分析。" },
+      "cc_cad": { "label": "CC-CAD (调度)", "description": "面向协调员与主管的计算机辅助调度。" },
+      "cc_channel": { "label": "CC-Channel (社交渠道)", "description": "LINE、Facebook、WeChat 等渠道集成。" },
+      "cc_service": { "label": "CC-Service (专业服务)", "description": "实施、集成、迁移、培训与支持。" }
+    },
+    "feature": {
+      "core": { "label": "核心平台 (CMS / CRM / 联络)" },
+      "agent_desktop": { "label": "坐席工作台" },
+      "kb": { "label": "知识库" },
+      "kb_semantic_search": { "label": "知识库语义搜索" },
+      "chat": { "label": "在线客服" },
+      "bot": { "label": "聊天机器人意图" },
+      "gis": { "label": "GIS / 地图" },
+      "cad": { "label": "CAD 调度" },
+      "channel_social": { "label": "社交渠道" },
+      "audit": { "label": "审计日志" },
+      "rbac_advanced": { "label": "高级 RBAC" }
     }
   },
   "common": {

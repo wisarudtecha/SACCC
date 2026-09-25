@@ -16,7 +16,9 @@ import {
 } from "@/core/config/api";
 import { useAuth } from "@/core/hooks/useAuth";
 import { useAuthMode } from "@/core/hooks/useAuthMode";
+import { useEntitlements } from "@/core/hooks/useEntitlements";
 import { useIsSystemAdmin } from "@/core/hooks/useIsSystemAdmin";
+import { EntitlementLockedPage } from "@/core/components/entitlements/EntitlementLockedPage";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import { AlertIcon } from "@/core/icons";
 // import { AuthService } from "@/cms/utils/authService";
@@ -34,10 +36,12 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // requireAnyPermission = [],
   module,
   action = "view",
+  requiredFeature,
   fallback: Fallback
 }) => {
   const { state, login, logout } = useAuth();
   const { language, t } = useTranslation();
+  const { isLoading: entitlementsLoading, isLocked: isFeatureLocked } = useEntitlements();
 
   const authMode = useAuthMode();
   const isSystemAdmin = useIsSystemAdmin();
@@ -364,6 +368,27 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   //     );
   //   }
   // }
+
+  /* ------------------------ Entitlement Check ------------------------ */
+
+  // Secondary gate: "did this tenant buy this feature", layered on top of the
+  // RBAC checks above. Deliberately NO isSystemAdmin exemption here —
+  // entitlements are tenant-scoped; a tenant's system admin only sees what
+  // the tenant purchased. The RBAC bypass above is unchanged.
+  if (requiredFeature) {
+    // Hold at a neutral loading state so unentitled tenants never see the
+    // protected content flash before entitlements resolve.
+    if (entitlementsLoading) {
+      return null;
+    }
+    if (isFeatureLocked(requiredFeature)) {
+      return Fallback ? (
+        <Fallback />
+      ) : (
+        <EntitlementLockedPage feature={requiredFeature} />
+      );
+    }
+  }
 
   return (
     <>
