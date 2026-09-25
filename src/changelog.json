@@ -1,4 +1,10 @@
 {
+  "0.85.0": {
+    "date": "2026-09-25",
+    "segment": "MINOR",
+    "notes": "feat(core): package-based feature access control\n- The app now supports different subscription packages (Essential, Professional, Enterprise), so features like Maps, Live Chat, and Knowledge Base can be turned on or off per organization based on what they've purchased.\n- Menu items for features not included in an organization's current package now show a lock icon and offer an \"Upgrade your package\" prompt instead of just disappearing, so teams can see what's available on other tiers.\n- A new Subscription & Entitlements section in Organization Settings shows the organization's current package, agent seat usage, active add-ons, and which features are included or locked.\n- changelog.json / package.json: bump version 0.84.0 -> 0.85.0",
+    "author": "Wisarud Techa"
+  },
   "0.84.0": {
     "date": "2026-09-24",
     "segment": "MINOR",
