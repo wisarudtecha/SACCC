@@ -252,6 +252,14 @@
       "rbac_advanced": { "label": "Advanced RBAC" }
     }
   },
+  "cc": {
+    "chat": {
+      "lobby_title": "Chat Lobby",
+      "history_title": "Chat History",
+      "coming_soon_title": "Live Chat is coming soon",
+      "coming_soon_body": "The live chat workspace is included in your package and is currently under development. Agent assignment, SLA, and chat dashboards will be available in an upcoming release."
+    }
+  },
   "common": {
     "welcome": "Welcome",
     "hello": "Hello",

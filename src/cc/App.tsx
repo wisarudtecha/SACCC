@@ -10,6 +10,8 @@ import NotFound from "@/core/pages/OtherPage/NotFound";
 
 import CallCenterDashboardPage from "@/cc/pages/Dashboard/CallCenterDashboard";
 import EmailPage from "@/cc/pages/Workspace/Email";
+import LobbyIncomingPage from "@/cc/pages/Workspace/LobbyIncoming";
+import ChatHistoryPage from "@/cc/pages/Workspace/ChatHistory";
 
 import AppointmentPage from "@/cms/pages/Appointment/Appointment";
 import AppointmentTypeManagementPage from "@/cms/pages/Admin/AppointmentTypeManagement";
@@ -23,6 +25,26 @@ export default function CcApp() {
         <Route path="*" element={<NotFound />} />
         <Route path="/dashboard" element={<CallCenterDashboardPage />} />
         <Route path="/email" element={<EmailPage />} />
+
+        {/* Live Chat (CC-CHAT, Professional+). Route-level entitlement gate
+            backs the sidebar lock badges — placeholder pages until the chat
+            functionality ships. */}
+        <Route
+          path="/lobby-incoming"
+          element={
+            <ProtectedRoute requiredFeature="entitlement.chat">
+              <LobbyIncomingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chat-history"
+          element={
+            <ProtectedRoute requiredFeature="entitlement.chat">
+              <ChatHistoryPage />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/appointment"

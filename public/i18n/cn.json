@@ -252,6 +252,14 @@
       "rbac_advanced": { "label": "高级 RBAC" }
     }
   },
+  "cc": {
+    "chat": {
+      "lobby_title": "聊天大厅",
+      "history_title": "聊天记录",
+      "coming_soon_title": "在线客服即将推出",
+      "coming_soon_body": "在线客服工作台已包含在您的套餐中，目前正在开发中。坐席分配、SLA 和聊天仪表盘将在后续版本中提供。"
+    }
+  },
   "common": {
     "line": "LINE",
     "facebook": "Facebook",
