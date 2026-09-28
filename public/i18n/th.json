@@ -4756,6 +4756,12 @@
     }
   },
   "knowledge": {
+    "search": {
+      "mode": "โหมดการค้นหา",
+      "keyword": "คำค้น",
+      "semantic": "เชิงความหมาย",
+      "semantic_coming_soon": "เร็ว ๆ นี้"
+    },
     "dashboard": {
       "page": {
         "title": "แดชบอร์ดคลังความรู้",

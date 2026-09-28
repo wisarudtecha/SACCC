@@ -4727,6 +4727,12 @@
     }
   },
   "knowledge": {
+    "search": {
+      "mode": "Search mode",
+      "keyword": "Keyword",
+      "semantic": "Semantic",
+      "semantic_coming_soon": "Coming soon"
+    },
     "dashboard": {
       "page": {
         "title": "Knowledge Base Dashboard",

@@ -4115,6 +4115,12 @@
     }
   },
   "knowledge": {
+    "search": {
+      "mode": "搜索模式",
+      "keyword": "关键词",
+      "semantic": "语义搜索",
+      "semantic_coming_soon": "即将推出"
+    },
     "dashboard": {
       "page": {
         "title": "知识库仪表板",

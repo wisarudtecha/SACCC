@@ -11,6 +11,7 @@ import {
   ArticleStatus,
 } from "@/kms/articles/dtos/articles.dto";
 import ArticleCategoryModal from "@/kms/components/articles/ArticleCategoryModal";
+import { SemanticSearchToggle } from "./SemanticSearchToggle";
 import {
   useArticleStatusData,
   useArticlePriorityData,
@@ -225,6 +226,7 @@ const ArticleFilterBar: React.FC<ArticleFilterBarProps> = ({
               allowClear
               style={sharedStyle}
             />
+            <SemanticSearchToggle />
           </div>
 
           {/* หมวดหมู่ — opens tree modal */}
