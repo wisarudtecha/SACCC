@@ -777,6 +777,13 @@
                 "organization_settings": "Organization Settings"
               }
             },
+            "map_management": {
+              "title": "Map Management",
+              "sub_menu": {
+                "place": "Place Management",
+                "device": "Device Management"
+              }
+            },
             "user_mgmt": {
               "title": "User Management",
               "sub_menu": {

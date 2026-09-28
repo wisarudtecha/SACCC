@@ -648,6 +648,13 @@
                 "organization_settings": "组织设置"
               }
             },
+            "map_management": {
+              "title": "地图管理",
+              "sub_menu": {
+                "place": "地点管理",
+                "device": "设备管理"
+              }
+            },
             "user_mgmt": {
               "title": "用户管理",
               "sub_menu": {

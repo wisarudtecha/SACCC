@@ -387,18 +387,6 @@ const SuperTopbar = (
           permission: permissions.hasPermission("unit.view")
         },
         {
-          icon: <MapPin />,
-          name: t("navigation.super_app.topbar.more.menu.system_config.sub_menu.place"),
-          path: "/cms/place",
-          permission: permissions.hasPermission("organization_settings.manage")
-        },
-        {
-          icon: <Server />,
-          name: t("navigation.super_app.topbar.more.menu.system_config.sub_menu.device"),
-          path: "/cms/device",
-          permission: permissions.hasPermission("organization_settings.manage")
-        },
-        {
           icon: <Wrench />,
           name: t("navigation.super_app.topbar.more.menu.system_config.sub_menu.skill"),
           path: "/cms/skill",
@@ -426,6 +414,25 @@ const SuperTopbar = (
           icon: <Settings />,
           name: t("navigation.super_app.topbar.more.menu.system_config.sub_menu.organization_settings"),
           path: "/cms/settings/organization",
+          permission: permissions.hasPermission("organization_settings.manage")
+        }
+      ]
+    },
+    {
+      icon: <Map />,
+      name: t("navigation.super_app.topbar.more.menu.map_management.title"),
+      permission: permissions.hasPermission("organization_settings.manage"),
+      subItems: [
+        {
+          icon: <MapPin />,
+          name: t("navigation.super_app.topbar.more.menu.map_management.sub_menu.place"),
+          path: "/cms/place",
+          permission: permissions.hasPermission("organization_settings.manage")
+        },
+        {
+          icon: <Server />,
+          name: t("navigation.super_app.topbar.more.menu.map_management.sub_menu.device"),
+          path: "/cms/device",
           permission: permissions.hasPermission("organization_settings.manage")
         }
       ]

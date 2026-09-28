@@ -777,6 +777,13 @@
                 "organization_settings": "การตั้งค่าองค์กร"
               }
             },
+            "map_management": {
+              "title": "การจัดการแผนที่",
+              "sub_menu": {
+                "place": "การจัดการสถานที่",
+                "device": "การจัดการอุปกรณ์"
+              }
+            },
             "user_mgmt": {
               "title": "การจัดการผู้ใช้",
               "sub_menu": {
