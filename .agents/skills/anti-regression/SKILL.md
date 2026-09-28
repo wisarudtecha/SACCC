@@ -628,3 +628,34 @@ new lesson and update this file when the lesson is generalizable.
     ? { ...response.user, organization: credentials.organization }
     : response.user;
   ```
+
+### Never ship a lock badge or gate that upsells a route with nothing behind it
+- **Date:** 2026-09-25
+- **Mistake:** The live-chat sidebar entries (`/cc/lobby-incoming`, `/cc/chat-history`) were given
+  `entitlement.chat` lock badges while no such routes existed — an *entitled* tenant (Professional/
+  Enterprise) clicking through landed on the generic 404. The upsell worked; the entitlement
+  delivered nothing.
+- **Root Cause:** Gating was designed from the menu outward ("which nav items need locks")
+  instead of from the entitlement contract outward ("what does an entitled tenant get when the
+  gate opens"). Every gate has two sides, and only the locked side was built.
+- **Correct Behavior:** Every entitlement gate must have a route-level answer for BOTH sides:
+  locked tenants get the lock/upsell UI; entitled tenants get a real page — even if only a
+  "coming soon" placeholder (`ProtectedRoute requiredFeature` + placeholder page). Sidebar badges
+  alone are not a gate.
+- **Prevention Rule:** When adding `feature` to a nav item or `requiredFeature` to a route,
+  first confirm the target route exists and renders something for entitled users. If it doesn't,
+  ship the placeholder page in the same change. Check both directions by logging in as a locked
+  fixture tenant AND an entitled one (SKY-AI vs SIH/BMA fixtures).
+- **Example:**
+  ```tsx
+  // WRONG — badge upsells a route that 404s for paying tenants
+  { name: "Lobby", path: "/cc/lobby-incoming", feature: "entitlement.chat" }
+  // (no /cc/lobby-incoming route registered)
+
+  // RIGHT — placeholder page + route gate ship together with the badge
+  <Route path="/lobby-incoming" element={
+    <ProtectedRoute requiredFeature="entitlement.chat">
+      <LobbyIncomingPage />  {/* "coming soon" placeholder */}
+    </ProtectedRoute>
+  } />
+  ```

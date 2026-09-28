@@ -127,3 +127,11 @@ When `VITE_MOCK_API=true` (checked in `src/core/utils/constants.ts` / `src/cms/u
 - Vite `manualChunks` puts most of `node_modules` into a single `vendor` chunk, but deliberately leaves `@arcgis`/`@esri`/`@amcharts`/`@vaadin`/`@zip.js` and `maplibre-gl` (+ its transitive deps) unassigned so Rollup keeps them in their own lazy-loaded async chunks instead of dragging the ~12MB ArcGIS SDK or the MapTiler stack into the eager bundle — see the comment block above `manualChunks` in `vite.config.ts` before changing it. `maplibre-gl` is also excluded from `optimizeDeps` (its Web Worker breaks if pre-bundled). There's further commented-out per-library chunking left in the file if more bundle-size work is needed later.
 - Docker build (`Dockerfile`) is a two-stage build: `npm run build -- --mode ${ENVIRONMENT}` then served via nginx (`nginx.conf`).
 - Dev server proxies `/api` and `/ws` to `VITE_BASE_URL`/`VITE_WEBSOCKET_BASE_URL` to avoid CORS in local dev.
+
+## Anti-Regression
+
+Every mistake or correction must become a reusable rule in
+`.agents/skills/anti-regression/SKILL.md`.
+
+Fix → Learn → Document → Check before repeating similar work.
+Never repeat a documented mistake.
