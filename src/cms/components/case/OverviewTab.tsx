@@ -1,5 +1,5 @@
 // /src/components/case/OverviewTab.tsx
-import React, { memo, useMemo } from "react";
+import React, { lazy, memo, Suspense, useMemo } from "react";
 import {
   Building,
   ChartColumnStacked,
@@ -33,6 +33,16 @@ import ProgressStepPreview from "@/cms/components/case/activityTimeline/caseActi
 import ProgressStepPreviewUnit from "@/cms/components/case/activityTimeline/officerActivityTimeline";
 import ProgressSummary from "@/cms/components/case/activityTimeline/sumaryUnitProgress";
 import { formatDate } from "@/core/utils/crud";
+import Loading from "@/core/components/common/Loading";
+import { useServiceCenterMatch } from "./formFields";
+
+// Heavy @arcgis/core SDK - lazy-loaded so it stays out of the initial bundle.
+// BoundaryMapField rather than the bare map: read-only location pin for the
+// overview tab, with the same boundary controls as the Case Preview map.
+const BoundaryMapField = lazy(() => import("./createCase/map/BoundaryMapField"));
+
+// Read-only map never emits a selection, but the prop is required upstream.
+const noopSelect = () => { };
 
 interface Props {
   caseItem: CaseEntity;
@@ -111,6 +121,27 @@ const OverviewTab: React.FC<Props> = ({ caseItem, areas, caseTitle }) => {
 
   const contactMethod =
     source.find(s => s.id === sopData?.source) ?? { name: "-" };
+
+  // Only show the map once real coordinates exist - cases saved before the map
+  // feature have empty caseLat/caseLon, and an unmarked default-centred map
+  // would imply a location the case doesn't actually have.
+  const mapValue = useMemo(() => {
+    const lat = parseFloat(caseItem.caseLat ?? "");
+    const lon = parseFloat(caseItem.caseLon ?? "");
+    if (Number.isFinite(lat) && Number.isFinite(lon)) {
+      return { latitude: lat, longitude: lon };
+    }
+    return null;
+  }, [caseItem.caseLat, caseItem.caseLon]);
+
+  // Read-only Service Center match, purely to draw the no-match fallback circle
+  // (same pattern as CaseDisplay). The matched area is NOT applied anywhere -
+  // this view has no editable Service Center field.
+  const serviceCenterMatch = useServiceCenterMatch({
+    incident: mapValue,
+    areaList: areas,
+    enabled: !!mapValue,
+  });
 
   /* ==============================
      AREA DISPLAY
@@ -294,6 +325,26 @@ const OverviewTab: React.FC<Props> = ({ caseItem, areas, caseTitle }) => {
                 </div>
               </div>
             </div>
+
+            {/* Read-only location map - view only, so it has no search box
+                and clicking it can't change the case location. */}
+            {mapValue && (
+              <div className="mt-3">
+                <Suspense fallback={<Loading />}>
+                  <BoundaryMapField
+                    value={mapValue}
+                    onSelect={noopSelect}
+                    address={caseItem.caselocAddrDecs || caseItem.caselocAddr || caseItem.caseLocAddr}
+                    readOnly
+                    height={320}
+                    incidentRadius={serviceCenterMatch.incidentRadius}
+                  />
+                </Suspense>
+                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  {t("case.display.location_coordinates")}: {caseItem.caseLat}, {caseItem.caseLon}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Contact */}
