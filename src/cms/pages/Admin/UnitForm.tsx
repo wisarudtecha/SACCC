@@ -90,11 +90,11 @@ const UnitFormPage: React.FC = () => {
       if (permissions.hasAnyPermission(["unit.create", "unit.update"])) {
         if (id) {
           const {
-            orgId: _orgId,
-            createdAt: _createdAt,
-            updatedAt: _updatedAt,
-            createdBy: _createdBy,
-            updatedBy: _updatedBy,
+            // orgId: _orgId,
+            // createdAt: _createdAt,
+            // updatedAt: _updatedAt,
+            // createdBy: _createdBy,
+            // updatedBy: _updatedBy,
             ...cleanData
           } = data as UnitFormData & Partial<Pick<Unit, "orgId" | "createdAt" | "updatedAt" | "createdBy" | "updatedBy">>;
           response = await updateUnits({
@@ -149,7 +149,7 @@ const UnitFormPage: React.FC = () => {
   const { data: unitTypesData } = useGetUnitTypesQuery({ start: 0, length: 100 });
   const unitTypes = unitTypesData?.data as unknown as UnitType[] || [];
 
-  const { data: usersData } = useGetUsersQuery({ start: 0, length: 1000 });
+  const { data: usersData } = useGetUsersQuery({ start: 0, length: 10000 });
   const users = usersData?.data as unknown as UserProfile[] || [];
 
   const { data: departmentsData } = useGetDepartmentsQuery({ start: 0, length: 100 });
