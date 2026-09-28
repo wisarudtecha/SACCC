@@ -1,4 +1,10 @@
 {
+  "0.86.0": {
+    "date": "2026-09-28",
+    "segment": "MINOR",
+    "notes": "feat: entitlement-aware placeholders, Map Management menu, and case overview location map\n- Organizations whose package includes Live Chat now see a proper Chat Lobby and Chat History page explaining that live chat is part of their package and is on the way, instead of landing on a \"page not found\" error.\n- The Knowledge Base article list now shows a search-mode selector: keyword search for everyone, with Semantic Search presented as an Enterprise add-on - organizations without it see the upgrade prompt, and Enterprise organizations see it marked as coming soon until it becomes available.\n- Place and Device settings have moved out of System Configuration into a new \"Map Management\" group in the More menu, keeping all map-related settings together.\n- The case overview now shows the case's saved location on a read-only map, so its position can be confirmed at a glance without opening the edit screen; cases saved before locations were recorded are unaffected.\n- Saving changes to a unit now keeps its organization and activity-tracking information intact, and the form's person selectors show the full user list instead of only the first 1,000 users.\n- changelog.json / package.json: bump version 0.85.0 -> 0.86.0",
+    "author": "Wisarud Techa"
+  },
   "0.85.0": {
     "date": "2026-09-25",
     "segment": "MINOR",
