@@ -122,17 +122,23 @@ const OverviewTab: React.FC<Props> = ({ caseItem, areas, caseTitle }) => {
   const contactMethod =
     source.find(s => s.id === sopData?.source) ?? { name: "-" };
 
+  // Coordinates come from the SOP record, not the list row: GetListCase's
+  // GraphQL field list (caseQueries.ts) omits caseLat/caseLon, so under
+  // VITE_USE_GRAPHQL=true every list row arrives without them. The SOPCase
+  // query passes `data` through opaque, so its coordinates survive.
   // Only show the map once real coordinates exist - cases saved before the map
   // feature have empty caseLat/caseLon, and an unmarked default-centred map
   // would imply a location the case doesn't actually have.
+  const caseLat = sopData?.caseLat ?? caseItem.caseLat;
+  const caseLon = sopData?.caseLon ?? caseItem.caseLon;
   const mapValue = useMemo(() => {
-    const lat = parseFloat(caseItem.caseLat ?? "");
-    const lon = parseFloat(caseItem.caseLon ?? "");
+    const lat = parseFloat(caseLat ?? "");
+    const lon = parseFloat(caseLon ?? "");
     if (Number.isFinite(lat) && Number.isFinite(lon)) {
       return { latitude: lat, longitude: lon };
     }
     return null;
-  }, [caseItem.caseLat, caseItem.caseLon]);
+  }, [caseLat, caseLon]);
 
   // Read-only Service Center match, purely to draw the no-match fallback circle
   // (same pattern as CaseDisplay). The matched area is NOT applied anywhere -
@@ -341,7 +347,7 @@ const OverviewTab: React.FC<Props> = ({ caseItem, areas, caseTitle }) => {
                   />
                 </Suspense>
                 <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                  {t("case.display.location_coordinates")}: {caseItem.caseLat}, {caseItem.caseLon}
+                  {t("case.display.location_coordinates")}: {caseLat}, {caseLon}
                 </p>
               </div>
             )}
