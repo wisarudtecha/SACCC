@@ -113,6 +113,7 @@ export const {
     useGetDepartmentQuery,
     useGetStationsQuery,
     useGetCaseSopQuery,
+    useLazyGetCaseSopQuery,
     useGetUnitQuery,
     usePostDispacthQuery,
     usePostDispacthMutationMutation,

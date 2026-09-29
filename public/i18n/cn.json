@@ -4082,7 +4082,16 @@
       "device_model": "型号",
       "service_history": "服务历史记录",
       "details_panel": "查看详情面板",
-      "unlink_confirm_description": "此操作将取消该客户与此案例的关联。案例的联系电话将予以保留。"
+      "unlink_confirm_description": "此操作将取消该客户与此案例的关联。案例的联系电话将予以保留。",
+      "linked_cases": "关联案例",
+      "link_case": "关联案例",
+      "link_case_search_placeholder": "按编号或详情搜索案例",
+      "link_case_success": "案例关联成功",
+      "link_case_error": "更新案例关联失败",
+      "unlink_case_confirm": "此操作将取消这些案例之间的关联。两个案例都将保留。",
+      "unlink_case_success": "案例取消关联成功",
+      "parent_case": "父案例",
+      "no_linked_cases": "暂无关联案例"
     }
   },
   "productDashboard": {

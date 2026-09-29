@@ -12,18 +12,18 @@ import { CustomerPreviewData } from "@/cms/components/customer/CustomerPreview";
 import { ProductCard, ServiceCard } from "@/cms/components/customer/CustomerView";
 import { getTodayDate } from "@/cms/components/date/DateToString";
 import DatePickerLocal from "@/core/components/form/input/DatepicketLocal";
-import { getPriorityBorderColorClass, getPriorityColorClass } from "@/cms/components/function/Prioriy";
-import { idbStorage } from "@/cms/components/idb/idb";
+import { LinkedCaseCard } from "@/cms/components/case/linkedCases/LinkedCaseCard";
+import { LinkExistingCaseDialog } from "@/cms/components/case/linkedCases/LinkExistingCaseDialog";
+import { useCaseReferLink } from "@/cms/components/case/linkedCases/useCaseReferLink";
 import { SearchableSelectApi } from "@/cms/components/SearchInput/SearchSelectInput";
 import Avatar from "@/core/components/ui/avatar/Avatar";
 import Badge from "@/core/components/ui/badge/Badge";
 import Button from "@/core/components/ui/button/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/core/components/ui/dialog/dialog";
-import { statusIdToStatusTitle } from "@/cms/components/ui/status/status";
 import Tabs, { TabItem } from "@/core/components/ui/tab/Tab";
 import { useInsertAppointmentMutationMutation, useGetAppointmentByCustomerIdQuery, useGetAppointmentStatusCountQuery } from "@/cms/store/api/appointment";
 import { useGetAppointmentTypeQuery } from "@/cms/store/api/appointmentType";
-import { Case, useGetListCaseByCustomerIdQuery, usePatchUpdateCaseCustomerMutation } from "@/cms/store/api/caseApi";
+import { Case, useGetCaseByIdMutationMutation, useGetListCaseByCustomerIdQuery, usePatchUpdateCaseCustomerMutation } from "@/cms/store/api/caseApi";
 import { useGetCustomerProductQuery } from "@/cms/store/api/customerProduct";
 import { useGetCustomerServiceQuery } from "@/cms/store/api/customerService";
 import {
@@ -41,6 +41,7 @@ import Loading from "@/core/components/common/Loading";
 import { ToastContainer } from "@/core/components/crud/ToastContainer";
 import { useToastContext } from "@/core/components/crud/ToastGlobal";
 import { useToast } from "@/core/hooks";
+import { usePermissions } from "@/core/hooks/usePermissions";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import { usePiiMasker } from "@/core/hooks/useMaskedValue";
 import { formatDate } from "@/core/utils/crud";
@@ -857,68 +858,151 @@ const CustomerInfoTab: React.FC<{
     </div>
 }
 
-const SubCaseTab: React.FC<{ referCaseList?: string[]; }> = ({ referCaseList }) => {
-    const [referCase, setReferCase] = useState<CaseEntity[]>([]);
-    const navigate = useNavigate()
+interface SubCaseTabProps {
+    referCaseList?: string[];
+    currentCaseId?: string;
+    parentCaseId?: string | null;
+    refetchSop?: () => Promise<unknown> | void;
+}
+
+/**
+ * Linked cases (parent-child): the case's own parent (referCaseId) plus its
+ * children (referCaseLists, server-derived). Fetches each case from the API -
+ * never from the idb caseList cache, which only holds cases the websocket
+ * happened to sync and silently drops everything else.
+ */
+const SubCaseTab: React.FC<SubCaseTabProps> = ({ referCaseList, currentCaseId, parentCaseId, refetchSop }) => {
+    const { t } = useTranslation();
+    const { addToast } = useToastContext();
+    const { hasPermission } = usePermissions();
+    const { setReferCase } = useCaseReferLink();
+    const [getCaseById] = useGetCaseByIdMutationMutation();
+
+    const [linkedCases, setLinkedCases] = useState<Case[]>([]);
+    const [parentCase, setParentCase] = useState<Case | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [showLinkDialog, setShowLinkDialog] = useState<boolean>(false);
+    const [unlinkTarget, setUnlinkTarget] = useState<Case | null>(null);
+    const [isUnlinking, setIsUnlinking] = useState<boolean>(false);
+
+    const childIds = referCaseList ?? [];
+    const childIdsKey = childIds.join(",");
 
     useEffect(() => {
-        if (!referCaseList) return;
-
-        const fetchData = async () => {
+        let cancelled = false;
+        const fetchLinked = async () => {
+            if (childIds.length === 0) {
+                setLinkedCases([]);
+                return;
+            }
+            setIsLoading(true);
             try {
-                const caseList = await idbStorage.getItem("caseList");
-                if (caseList) {
-                    setReferCase(
-                        (caseList as CaseEntity[]).filter((caseItem: CaseEntity) =>
-                            referCaseList.includes(caseItem.caseId)
-                        )
-                    );
+                const results = await Promise.all(
+                    childIds.map((caseId) => getCaseById({ caseId }).unwrap())
+                );
+                if (!cancelled) {
+                    setLinkedCases(results.map((res) => res.data).filter((c): c is Case => !!c));
                 }
             } catch (error) {
-                console.error("Failed to get caseList:", error);
+                console.error("Failed to fetch linked cases:", error);
+            } finally {
+                if (!cancelled) setIsLoading(false);
             }
         };
+        fetchLinked();
+        return () => { cancelled = true; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [childIdsKey]);
 
-        fetchData();
-    }, [referCaseList]);
+    useEffect(() => {
+        let cancelled = false;
+        const fetchParent = async () => {
+            if (!parentCaseId) {
+                setParentCase(null);
+                return;
+            }
+            try {
+                const res = await getCaseById({ caseId: parentCaseId }).unwrap();
+                if (!cancelled) setParentCase(res.data ?? null);
+            } catch (error) {
+                console.error("Failed to fetch parent case:", error);
+            }
+        };
+        fetchParent();
+        return () => { cancelled = true; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [parentCaseId]);
 
-    return <div className="space-y-3">
-        {referCase.length > 0 ? (
-            referCase.map((SupCase) => (
-                <div
-                    key={SupCase.caseId}
-                    onClick={() => navigate(`/case/${SupCase.caseId}`)}
-                    className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-3 hover:bg-gray-200 dark:hover:bg-gray-750 transition-colors cursor-pointer border-l-4 ${getPriorityBorderColorClass(SupCase.priority)} group`}
-                >
-                    <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-2 mb-2">
-                                <div className={`w-2 h-2 ${getPriorityColorClass(SupCase.priority)} rounded-full shrink-0`}></div>
-                                <span className="text-xs text-gray-600 dark:text-gray-500 font-mono">#{SupCase.caseId}</span>
-                                <span className="text-xs text-gray-600 dark:text-gray-500">
-                                    {new Date(SupCase.createdDate).toLocaleDateString()}
-                                </span>
-                            </div>
-                            <h4 className="text-sm font-medium text-gray-900 dark:text-white leading-tight mb-2 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">
-                                {SupCase.caseDetail || 'No details available'}
-                            </h4>
-                            <div className="flex items-center justify-between">
-                                <Badge>
-                                    {statusIdToStatusTitle(SupCase.statusId)}
-                                </Badge>
-                                <span className="text-xs text-gray-600 dark:text-gray-400">
-                                    {SupCase.createdBy}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+    const canLink = hasPermission("case.update") && !!currentCaseId && !!refetchSop;
+
+    const handleUnlink = async () => {
+        if (!unlinkTarget || isUnlinking) return;
+        setIsUnlinking(true);
+        try {
+            await setReferCase(unlinkTarget.caseId, "");
+            setLinkedCases((prev) => prev.filter((c) => c.caseId !== unlinkTarget.caseId));
+            await refetchSop?.();
+            addToast("success", t("case.panel.unlink_case_success"));
+        } catch (error) {
+            console.error("Failed to unlink case:", error);
+            addToast("error", t("case.panel.link_case_error"));
+        } finally {
+            setIsUnlinking(false);
+            setUnlinkTarget(null);
+        }
+    };
+
+    return <div className="space-y-3 p-3">
+        {canLink && (
+            <div className="flex justify-end">
+                <Button size="sm" variant="outline" onClick={() => setShowLinkDialog(true)}>
+                    <Plus className="w-4 h-4 mr-1" />
+                    {t("case.panel.link_case")}
+                </Button>
+            </div>
+        )}
+
+        {parentCase && (
+            <div>
+                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">
+                    {t("case.panel.parent_case")}
                 </div>
+                <LinkedCaseCard caseItem={parentCase} />
+            </div>
+        )}
+
+        {isLoading ? (
+            <Loading />
+        ) : linkedCases.length > 0 ? (
+            linkedCases.map((linkedCase) => (
+                <LinkedCaseCard
+                    key={linkedCase.caseId}
+                    caseItem={linkedCase}
+                    onUnlink={canLink ? setUnlinkTarget : undefined}
+                />
             ))
         ) : (
             <div className="text-center text-gray-500 py-4">
-                No subcases found
+                {t("case.panel.no_linked_cases")}
             </div>
         )}
+
+        <LinkExistingCaseDialog
+            open={showLinkDialog}
+            onOpenChange={setShowLinkDialog}
+            parentCaseId={currentCaseId || ""}
+            excludeIds={[currentCaseId, parentCaseId, ...childIds].filter((id): id is string => !!id)}
+            onLinked={async () => { await refetchSop?.(); }}
+        />
+
+        <ConfirmationModal
+            isOpen={!!unlinkTarget}
+            onClose={() => setUnlinkTarget(null)}
+            onConfirm={handleUnlink}
+            title={`${t("common.unlink")} #${unlinkTarget?.caseId || ""}`}
+            description={t("case.panel.unlink_case_confirm")}
+            confirmButtonVariant="error"
+        />
     </div>
 }
 
@@ -1017,13 +1101,15 @@ interface PanelProps {
     setCaseState?: React.Dispatch<React.SetStateAction<CaseDetails | undefined>>;
     hideCustomerLinkActions?: boolean;
     isCreate?: boolean;
+    /** Refetch the case SOP (referCaseLists) after link/unlink; absent in create flows. */
+    refetchSop?: () => Promise<unknown> | void;
 }
 
 const Panel: React.FC<PanelProps> = ({
     referCaseList, caseData,
     caseWorkOrderNumber, deviceMetaData, iotDevice, className,
     customerId, customerNumber, defaultTab = "customer-info", disabledTabs,
-    setCaseState, hideCustomerLinkActions, isCreate
+    setCaseState, hideCustomerLinkActions, isCreate, refetchSop
 }) => {
 
 
@@ -1100,7 +1186,7 @@ const Panel: React.FC<PanelProps> = ({
                 />
         },
         { id: "Device info", label: t("case.panel.device_info"), content: <DeviceInfoTab deviceMetaData={deviceMetaData} /> },
-        { id: "SubCase", label: t("common.subcase"), content: <SubCaseTab referCaseList={referCaseList} /> },
+        { id: "SubCase", label: t("common.subcase"), content: <SubCaseTab referCaseList={referCaseList} currentCaseId={caseData?.caseId} parentCaseId={caseData?.referCaseId} refetchSop={refetchSop} /> },
         {
             id: "Copilot", label: "Copilot", content: <></>, icons: <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M13.447 8.97458C13.2919 8.97458 13.1447 9.03927 13.0397 9.15215L8.05192 7.322L11.8225 6.92387C11.9087 7.06008 12.0564 7.14082 12.2204 7.14082C12.4805 7.14082 12.6919 6.93117 12.6919 6.67333C12.6919 6.4155 12.4805 6.20585 12.2204 6.20585C12.0215 6.20585 11.8455 6.328 11.7781 6.51181L8.03419 6.90731L12.6037 4.13808C12.6988 4.20694 12.8141 4.24473 12.9306 4.24473C13.235 4.24473 13.483 3.99881 13.483 3.69699C13.483 3.39516 13.2355 3.14925 12.9306 3.14925C12.6257 3.14925 12.3781 3.39516 12.3781 3.69699C12.3781 3.7265 12.3807 3.75549 12.3855 3.78449L7.81486 6.55427L9.84608 3.45626C9.8644 3.45833 9.88318 3.45936 9.90144 3.45936C10.1615 3.45936 10.373 3.24969 10.373 2.99186C10.373 2.73404 10.1615 2.52437 9.90144 2.52437C9.64139 2.52437 9.42993 2.73404 9.42993 2.99186C9.42993 3.07574 9.45292 3.15753 9.49626 3.23001L7.45506 6.34305L8.11195 1.07633C8.35322 1.01265 8.51976 0.797796 8.51976 0.547741C8.51976 0.245914 8.27225 0 7.96734 0C7.66237 0 7.41487 0.245914 7.41487 0.547741C7.41487 0.747577 7.52243 0.929297 7.69737 1.02507L7.0441 6.26226L5.86822 2.83862C5.95589 2.75113 6.00553 2.63205 6.00553 2.50884C6.00553 2.25102 5.79404 2.04135 5.534 2.04135C5.27396 2.04135 5.06248 2.25102 5.06248 2.50884C5.06248 2.74181 5.24106 2.94216 5.47238 2.97219L6.65146 6.40564L2.99258 2.69263C3.02234 2.62429 3.03801 2.54922 3.03801 2.47467C3.03801 2.17284 2.78997 1.92693 2.48555 1.92693C2.18112 1.92693 1.93308 2.17284 1.93308 2.47467C1.93308 2.7765 2.18112 3.02241 2.48555 3.02241C2.55604 3.02241 2.62758 3.00843 2.69337 2.98203L6.35851 6.70075L2.95446 5.45152C2.92991 5.21544 2.72679 5.03269 2.48555 5.03269C2.2255 5.03269 2.01402 5.24236 2.01402 5.50019C2.01402 5.75801 2.2255 5.96767 2.48555 5.96767C2.60721 5.96767 2.72157 5.92212 2.80929 5.83981L6.2363 7.09736L1.0386 7.64662C0.943046 7.46853 0.758199 7.35875 0.55246 7.35875C0.248033 7.35875 0 7.60416 0 7.9065C0 8.20884 0.24751 8.45425 0.55246 8.45425C0.801016 8.45425 1.01667 8.29272 1.08299 8.05875L6.23216 7.51462L3.14662 9.38461C3.07142 9.33695 2.98475 9.3121 2.89493 9.3121C2.63489 9.3121 2.42341 9.52181 2.42341 9.77958C2.42341 10.0374 2.63489 10.2471 2.89493 10.2471C3.15498 10.2471 3.36645 10.0374 3.36645 9.77958C3.36645 9.76564 3.36593 9.75164 3.36436 9.73764L6.46036 7.86147L3.58002 12.2543C3.54608 12.2475 3.51109 12.2445 3.47663 12.2445C3.17221 12.2445 2.92417 12.4903 2.92417 12.7921C2.92417 13.094 3.17221 13.3399 3.47663 13.3399C3.78106 13.3399 4.02909 13.094 4.02909 12.7921C4.02909 12.6824 3.99411 12.5722 3.9304 12.4805L6.81905 8.07532L6.36113 11.7479C6.17155 11.8127 6.0452 11.9877 6.0452 12.189C6.0452 12.4469 6.25666 12.6565 6.51671 12.6565C6.77676 12.6565 6.98828 12.4469 6.98828 12.189C6.98828 12.0296 6.90941 11.8851 6.77571 11.7987L7.23631 8.10477L8.93124 13.0397C8.81014 13.1437 8.74119 13.2934 8.74119 13.4523C8.74119 13.7541 8.98922 14 9.29367 14C9.59805 14 9.84608 13.7541 9.84608 13.4523C9.84608 13.2934 9.77614 13.1421 9.65446 13.0381C9.56311 12.9599 9.44714 12.9133 9.32657 12.9061L7.64254 8.00333L10.2247 10.6235C10.2069 10.6732 10.1981 10.726 10.1981 10.7782C10.1981 11.0361 10.4095 11.2458 10.6696 11.2458C10.9296 11.2458 11.1411 11.0361 11.1411 10.7782C11.1411 10.5205 10.9296 10.3108 10.6696 10.3108C10.6205 10.3108 10.5709 10.3185 10.5239 10.3341L7.95585 7.72841L12.8956 9.54094C12.9056 9.83447 13.1494 10.07 13.4475 10.07C13.7457 10.07 14 9.82415 14 9.52227C14 9.22046 13.752 8.97458 13.447 8.97458Z" fill="#667085" />
@@ -1122,7 +1208,6 @@ const Panel: React.FC<PanelProps> = ({
     ].filter((tab) => {
         if (tab.id === "customer-info" && import.meta.env.VITE_SHOW_CASE_CONTRACT !== "true") return false;
         if (tab.id === "Appointment" && !caseWorkOrderNumber) return false;
-        if (tab.id === "SubCase" && !!referCaseList) return false;
         if (disabledTabs?.includes(tab.id as PanelTabId)) return false;
         return true;
     }) as Tab[];

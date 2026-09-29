@@ -1320,6 +1320,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                             referCaseList={sopData?.data?.referCaseLists}
                             caseData={sopData?.data}
                             setCaseState={setCaseState}
+                            refetchSop={refetch}
                         />
 
 

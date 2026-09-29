@@ -376,6 +376,7 @@ export const {
     useGetCaseHistoryQuery,
     usePostAddCaseHistoryMutation,
     useGetListCaseMutationMutation,
+    useGetCaseByIdMutationMutation,
     usePatchEditCaseHistoryMutation,
     useGetListCaseByCustomerIdQuery
 } = caseApi;

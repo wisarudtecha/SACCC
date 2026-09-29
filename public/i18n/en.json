@@ -4278,7 +4278,16 @@
       "customer_search": "Search customer.",
       "appointmentType_search": "Search Appointment Type.",
       "serviceType_search": "Search Service Type.",
-      "unlink_confirm_description": "This will remove the customer link from this case. The case's contact number will be kept."
+      "unlink_confirm_description": "This will remove the customer link from this case. The case's contact number will be kept.",
+      "linked_cases": "Linked Cases",
+      "link_case": "Link case",
+      "link_case_search_placeholder": "Search case by ID or detail",
+      "link_case_success": "Case linked successfully",
+      "link_case_error": "Failed to update case link",
+      "unlink_case_confirm": "This will remove the link between these cases. Both cases will be kept.",
+      "unlink_case_success": "Case unlinked successfully",
+      "parent_case": "Parent Case",
+      "no_linked_cases": "No linked cases"
     }
   },
   "time": {
