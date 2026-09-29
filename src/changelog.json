@@ -1,4 +1,10 @@
 {
+  "0.87.0": {
+    "date": "2026-09-29",
+    "segment": "MINOR",
+    "notes": "feat(cms): linked-case management and case overview map fix\n- The case detail screen's Sub Case tab is now a full Linked Cases view: link an existing case to the current one by searching for it, see the parent case a case was linked from, and unlink any linked case with a confirmation step. Previously this tab only showed data that happened to already be loaded on the device, so linked cases could be missing depending on which device or session was used - it now always shows the complete, up-to-date list, and the tab itself no longer disappears for cases that actually have linked cases.\n- Fixed the case overview's location map not appearing for some organizations even though the case had a saved location.\n- changelog.json / package.json: bump version 0.86.0 -> 0.87.0",
+    "author": "Wisarud Techa"
+  },
   "0.86.0": {
     "date": "2026-09-28",
     "segment": "MINOR",
