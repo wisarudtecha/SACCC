@@ -659,3 +659,100 @@ new lesson and update this file when the lesson is generalizable.
     </ProtectedRoute>
   } />
   ```
+
+### Under VITE_USE_GRAPHQL=true, a list row only has the fields the GQL_MAP entry requests — check the field list before reading anything else off it
+- **Date:** 2026-09-29
+- **Mistake:** The OverviewTab read-only location map parsed `caseLat`/`caseLon` off the
+  case-history list row (`CaseEntity`) and never rendered. The type declares those fields as
+  required strings, and REST returns them — but the list runs through `hybridBaseQuery` with
+  `VITE_USE_GRAPHQL="true"`, and `GET_LIST_CASE_QUERY.fields` in
+  `src/cms/store/api/graphql/caseQueries.ts` requests only a handful of columns. GraphQL returns
+  exactly what was asked for, so every row arrived with coordinates `undefined` and the
+  `Number.isFinite` guard (correctly) hid the map. No error anywhere — the feature just silently
+  didn't appear.
+- **Root Cause:** The `CaseEntity` interface describes the REST/DB record, not the GraphQL
+  projection. In GraphQL mode the runtime shape of a list row is the `fields` string in the
+  matching `graphql/*Queries.ts` entry, full stop. Trusting the TS type over the query's field
+  list masked the gap. (Same family as "server-provided fields typed as required are not
+  guaranteed", but here the truncation happens in OUR query definition, not the server.)
+- **Correct Behavior:** OverviewTab now sources coordinates from the already-fetched
+  `CaseSop` record (`useGetCaseSopQuery` → `sopData.caseLat/caseLon`), whose GraphQL mapping
+  uses the opaque `data desc` shape that passes the full object through, with the list-row
+  fields as fallback only.
+- **Prevention Rule:** Before reading a field off any list/detail row fetched through the
+  hybrid base query, check the corresponding `fields` string in `src/**/store/api/graphql/
+  *Queries.ts` — if the field isn't listed, it is `undefined` at runtime regardless of what
+  the TS interface says. When adding a feature that needs a field missing from the projection,
+  either source it from an opaque-`data` query already in flight (preferred) or extend the
+  `fields` list after confirming the BFF schema exposes it — remember there is no REST fallback
+  in GraphQL mode, so a bad field name breaks the whole endpoint, not just your feature.
+- **Example:**
+  ```ts
+  // WRONG — assumes the list row carries every CaseEntity field
+  const lat = parseFloat(caseItem.caseLat ?? ""); // always undefined in GraphQL mode
+
+  // RIGHT — take it from a query whose mapping passes `data` through whole
+  const caseLat = sopData?.caseLat ?? caseItem.caseLat;
+  ```
+
+### A tab hidden on truthiness of its own data never shows that data
+- **Date:** 2026-09-29
+- **Mistake:** `CasePanel.tsx`'s tab filter read `if (tab.id === "SubCase" && !!referCaseList) return false;`
+  — it removed the SubCase tab exactly when `referCaseList` was truthy, i.e. exactly when there
+  were sub-cases to display. The feature was fully built (SubCaseTab, create-sub-case modal,
+  server-maintained `referCaseLists`) and invisible to every user who had data.
+- **Root Cause:** The intended condition was "hide when EMPTY" (`!referCaseList`), written as its
+  negation. `!!x` and `!x` read almost identically in a filter callback, and nothing fails to
+  compile when a display condition is inverted — the only evidence is a feature that "doesn't
+  exist" for users with data and appears (brokenly) for users without.
+- **Correct Behavior:** The condition was removed entirely (the tab now always shows; an empty
+  state and the Link action live inside it). When a hide-condition is genuinely needed, write it
+  as a positive "show when" expression and read it back as English before committing:
+  "this hides the tab when the list HAS items" is obviously wrong said aloud.
+- **Prevention Rule:** Whenever a filter/conditional decides VISIBILITY of UI based on the very
+  data that UI displays, test both branches mentally: data present → visible? data absent →
+  hidden? An inverted truthiness check passes `tsc`, passes lint, and deletes a feature. Grep for
+  the pattern when a supposedly-built feature is reported missing: `!!<collection>` near
+  `return false` / `&&` short-circuits in tab or section filters.
+
+### The idb `caseList` cache is a websocket sync artifact, not a display datasource
+- **Date:** 2026-09-29
+- **Mistake:** The old `SubCaseTab` resolved the parent's `referCaseLists` (an array of caseIds
+  from the server) by reading `idbStorage.getItem("caseList")` and filtering it client-side.
+  Linked cases that the websocket had never pushed into the local cache silently did not render —
+  no error, no loading state, just missing rows that varied by device and session history.
+- **Root Cause:** IndexedDB `caseList` is populated opportunistically by websocket messages and
+  list-page visits (see `WebSocketProvider` / `idbStorage`), so its contents are "whatever this
+  browser happened to sync", not "the cases that exist". Treating it as a queryable store made
+  correctness depend on cache warmth. The server had already handed over the authoritative id
+  list; the lookup of each id should have gone to the API.
+- **Correct Behavior:** The reworked tab fetches each id via `useGetCaseByIdMutationMutation`
+  (`GET /case/caseId/:id`) with `Promise.all` — id lists from the server are always resolved
+  against the server. The localStorage/idb caches are write-through conveniences
+  (`updateCaseInLocalStorage` after a PATCH) for offline/websocket freshness, never read sources
+  for rendering a specific known set of ids.
+- **Prevention Rule:** Never use `idbStorage` / `localStorage` case caches as the read side of a
+  feature that knows WHICH records it needs.   If you hold server-provided ids, fetch them by id
+  from the API. Cache reads are acceptable only for genuinely offline-first surfaces — and even
+  then the UI must say the data may be incomplete, which a silent `.filter()` never does.
+
+### `CaseSop` does not cast to `CreateCase` — map `formData`, never invent the rest
+- **Date:** 2026-09-29
+- **Mistake:** `useCaseReferLink` built the link/unlink PATCH body as
+  `{ ...childSop.data, caseId, referCaseId } as CreateCase`. `tsc -b` rejected it (TS2352):
+  the spread is missing `formData`, `caseSla`, `nodeId`, `deptId`, `commId`, `stnId`, so neither
+  type sufficiently overlaps the other for a single `as`.
+- **Root Cause:** `CreateCase` is a write DTO whose required fields are sourced from UI state in
+  the normal save flow, not a subset of the `CaseSop` read model. A bare spread of the read model
+  is therefore not even *cast-compatible* with it — and "fixing" the cast by filling the missing
+  fields with `""`/`undefined` literals would have invented values that a replace-semantics PATCH
+  could persist over real data.
+- **Correct Behavior:** Add only the field that has a faithful source — `formData:
+  childSop.data.formAnswer`, the same mapping `CaseDetailView`'s save uses — and cast
+  `as unknown as CreateCase`, leaving fields the SOP doesn't carry (caseSla, station ids, nodeId)
+  absent rather than blanked. The BFF already tolerates the full CaseSop-shaped body because the
+  existing save spreads it too.
+- **Prevention Rule:** When reusing a read model as a write payload, if `as T` fails with
+  "neither type sufficiently overlaps", do not silence it by fabricating the missing required
+  fields — each fabricated value is a potential data wipe on the server. Map what has a real
+  source, omit the rest, and use `as unknown as T` with a comment saying why the gap is safe.
