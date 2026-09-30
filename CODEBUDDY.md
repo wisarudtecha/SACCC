@@ -12,14 +12,24 @@ Cloud Contact Center — a React/TypeScript enterprise web app for case manageme
 - Break down components to make them smaller and easier to read.
 - Write readable code rather than overly short code.
 - Do not delete existing code if you don't understand its function.
-- Every mistake or correction must become a reusable rule in `.agents/skills/anti-regression/SKILL.md`. Fix → Learn → Document → Check before repeating similar work.
+- Every time you make a mistake, write that lesson down so it isn't repeated (see Anti-Regression below).
+
+## Workflow
+
+Before creating or modifying code:
+
+- Read the relevant files first.
+- Briefly explain your plan for creating or modifying the code.
+- Create or modify only the necessary files.
+- Check that the change doesn't affect other parts of the code.
+- Summarize what you created or modified after you're finished.
 
 ## Tech Stack
 
 - **Framework**: React 19 + TypeScript, built with Vite 6
 - **Styling**: Tailwind CSS v4 (`@tailwindcss/postcss`)
 - **Routing**: React Router v7 (nested `<Routes>` per module, see Module architecture)
-- **State**: Redux Toolkit + RTK Query (server state/API); no separate local-state library — component state is plain React `useState`/`useReducer`
+- **State**: Redux Toolkit + RTK Query (server state/API); no separate local-state library — component state is plain React `useState`/`useReducer` (e.g. `src/core/hooks/useDashboard.ts`)
 - **Data viz**: ApexCharts / react-apexcharts, Recharts
 - **Drag & drop**: `@dnd-kit/*`, `react-dnd`, `@hello-pangea/dnd` (different features use different DnD libraries — check the surrounding component before picking one)
 - **Calendar/scheduling**: FullCalendar
@@ -38,12 +48,14 @@ pnpm dev              # start Vite dev server on :5173
 pnpm build            # tsc -b && cross-env NODE_OPTIONS=--max-old-space-size=8192 vite build
 pnpm lint             # eslint .
 pnpm test             # vitest run (unit tests only)
+pnpm test:watch       # vitest in watch mode
 pnpm preview          # preview a production build
 pnpm prod             # build then preview
 ```
 
+- Run a single test: `pnpm vitest run <path-to-test-file>` (e.g. `pnpm vitest run src/cms/utils/pointInPolygon.test.ts`) or filter by name with `-t "<name pattern>"`.
 - Mode-specific builds: `vite build --mode <env>` where `<env>` matches one of `.env.dev`, `.env.qa`, `.env.sit`, `.env.staging`, `.env.production` (see Dockerfile `ARG ENVIRONMENT`).
-- Test runner is **Vitest** (`pnpm test` / `pnpm test:watch`), added 2026-09 for the case-map Place/Device work. Config is a `test` block in `vite.config.ts` (`environment: "node"`, `include: ["src/**/*.test.{ts,tsx}"]`). Coverage is thin and pure-logic only — a handful of `*.test.ts` files (`src/cms/utils/pointInPolygon.test.ts`, `.../incidentRadius.test.ts`, `src/cms/components/case/formFields/serviceCenterMatch.test.ts`, `src/cms/components/case/createCase/map/device/*.test.ts`). No component/DOM tests, no jsdom, no E2E. `*.test.ts(x)` is excluded from `tsconfig.app.json`, so `tsc -b` / `pnpm build` ignore tests. To run a single test file: `pnpm test src/path/to/file.test.ts`.
+- Test runner is **Vitest**. Config is a `test` block in `vite.config.ts` (`environment: "node"`, `include: ["src/**/*.test.{ts,tsx}"]`). Coverage is thin and pure-logic only — a handful of `*.test.ts` files (`src/cms/utils/pointInPolygon.test.ts`, `.../incidentRadius.test.ts`, `src/cms/components/case/formFields/serviceCenterMatch.test.ts`, `src/cms/components/case/createCase/map/device/*.test.ts`). No component/DOM tests, no jsdom, no E2E. `*.test.ts(x)` is excluded from `tsconfig.app.json`, so `tsc -b` / `pnpm build` ignore tests.
 - `depcheck`, `ts-prune`, and `unimported` are devDependencies for manual dead-code audits; run via `npx` (no npm scripts wire them up).
 - No ESLint/type-check filtering for a single file is scripted — run `pnpm lint` or `tsc -b` directly, or point ESLint/tsc at a specific path.
 
@@ -131,7 +143,13 @@ When `VITE_MOCK_API=true` (checked in `src/core/utils/constants.ts` / `src/cms/u
 ## Anti-Regression
 
 Every mistake or correction must become a reusable rule in
-`.agents/skills/anti-regression/SKILL.md`.
+`.codebuddy/skills/anti-regression/SKILL.md`.
 
 Fix → Learn → Document → Check before repeating similar work.
 Never repeat a documented mistake.
+
+## Project rules and agent definitions
+
+- `.codebuddy/rules/*.mdc` — checked-in project rules (code review, coding style, git workflow, security, testing, performance). These are automatically applied; follow them.
+- `.codebuddy/agents/` — agent definitions (e.g. `security-reviewer.md`) used by this project's agent-delegation workflow.
+- `CLAUDE.md` — the parallel guidance file for Claude Code; it covers the same ground as this file. When you update architecture knowledge, keep both files in sync.

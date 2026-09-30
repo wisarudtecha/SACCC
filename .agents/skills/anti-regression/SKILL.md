@@ -1,59 +1,236 @@
-# Anti-Regression Skill
+---
+name: anti-regression
+description: Persistent anti-regression discipline — identify mistakes, trace root causes, extract generalizable lessons, convert them into enforceable rules, and review those rules before similar work. Trigger on every correction, identified mistake, requirement violation, incorrect implementation, or rejected result, and proactively before any task that may overlap with previously documented lessons.
+---
 
-## Purpose
+# Anti-Regression
 
-Prevent the AI from repeating mistakes that have already been
-identified and documented.
+Persistent discipline for preventing previously identified mistakes from recurring. Review relevant lessons before acting, learn from every meaningful correction, and convert generalizable mistakes into enforceable behavioral constraints.
 
-## Mandatory Rule
+## Before Every Task
 
-Whenever the AI makes a mistake, violates a requirement, produces
-an incorrect implementation, or receives corrective feedback:
+Review the accumulated lessons before starting work.
 
-1. Identify exactly what went wrong.
-2. Determine the root cause.
-3. Extract a generalizable lesson.
-4. Convert the lesson into a concrete rule or constraint.
-5. Write the lesson into this SKILL.md file.
-6. Before performing similar work in the future, review the
-   accumulated rules in this file.
-7. Never repeat a documented mistake unless the current context
-   explicitly requires a different behavior.
+1. Identify lessons relevant to the current task.
+2. Apply their Prevention Rules during analysis and implementation.
+3. Check that the planned behavior does not conflict with any documented rule.
+4. Do not repeat a documented mistake unless the current context explicitly requires different behavior.
 
-## Learning Format
+If no lesson is relevant, proceed normally.
 
-Every new lesson must contain:
+---
 
-### [Lesson]
-- Date:
+## 1. Identify the mistake
+
+When a mistake, incorrect implementation, requirement violation, or correction occurs, determine exactly what went wrong.
+
+Capture:
+
+- What the AI produced or did
+- What was expected instead
+- Which requirement, assumption, or behavior was incorrect
+- Whether the issue is a symptom or a broader failure pattern
+
+Do not immediately write a lesson from the surface symptom.
+
+Bad:
+
+> I forgot to add validation.
+
+Good:
+
+> External input was passed directly into business logic without a boundary validation step.
+
+The second statement describes a reusable failure pattern.
+
+---
+
+## 2. Find the root cause
+
+Determine why the mistake happened.
+
+Separate the root cause from the symptom.
+
+Ask:
+
+- What assumption was wrong?
+- What requirement was missed or misunderstood?
+- What information was ignored?
+- What process or reasoning step was missing?
+- Was an existing rule not reviewed or not applied?
+- Is the failure caused by a broader decision-making pattern?
+
+Do not document a lesson until the underlying cause is understood well enough to prevent recurrence.
+
+---
+
+## 3. Extract the generalizable lesson
+
+Convert the specific incident into a reusable lesson.
+
+The lesson must apply to future tasks beyond the original incident.
+
+Avoid overly specific rules tied only to:
+
+- One ticket
+- One file
+- One component
+- One API
+- One bug
+- One user correction
+
+Prefer rules describing a class of behavior.
+
+Bad:
+
+> Remember to check the Customer API response in this feature.
+
+Good:
+
+> When integrating with an external API, verify the actual response contract before implementing dependent frontend behavior.
+
+---
+
+## 4. Create an enforceable rule
+
+Convert the lesson into a concrete Prevention Rule.
+
+A good Prevention Rule is:
+
+- Specific
+- Actionable
+- Generalizable
+- Easy to verify
+- Applicable before or during implementation
+- Strong enough to prevent the same class of mistake
+
+The Prevention Rule is the most important part of every lesson.
+
+Example:
+
+> Whenever accepting external input, validate it at the system boundary before passing it to internal business logic.
+
+The rule must describe what the AI should do, not merely what it should remember.
+
+---
+
+## 5. Check for existing lessons
+
+Before adding a new lesson:
+
+1. Search existing lessons for the same or related root cause.
+2. If an existing lesson already covers the behavior, update or strengthen it instead of creating a duplicate.
+3. If the new lesson represents a genuinely different failure pattern, add it.
+4. Do not create multiple rules that express the same constraint in different words.
+
+Keep the lesson set compact and actionable.
+
+---
+
+## 6. Record the lesson
+
+Every new lesson must use exactly this structure:
+
+### [Lesson Title]
+
+- Date: `YYYY-MM-DD`
 - Mistake:
 - Root Cause:
 - Correct Behavior:
 - Prevention Rule:
 - Example:
 
-## Important
+### Recording requirements
 
-Do not merely record the symptom.
+**Date**
 
-The lesson must be written as a reusable rule that can prevent
-the same class of mistake in future tasks.
+Date when the lesson was identified.
 
-Bad:
-> I forgot to add validation.
+**Mistake**
 
-Good:
-> Whenever accepting external input, validate it at the boundary
-> before passing it to internal business logic.
+Describe the incorrect behavior or result.
 
-## Before Every Task
+**Root Cause**
 
-Check the rules in this file for lessons relevant to the current task.
+Explain why the mistake happened.
 
-## After Every Correction
+**Correct Behavior**
 
-If the user corrects the AI, treat the correction as a potential
-new lesson and update this file when the lesson is generalizable.
+Describe what should have happened instead.
+
+**Prevention Rule**
+
+Define the reusable rule that prevents recurrence.
+
+**Example**
+
+Provide a short example demonstrating the rule in practice.
+
+---
+
+## 7. Apply lessons to future work
+
+A documented lesson is an active constraint, not historical documentation.
+
+Before similar work:
+
+1. Review applicable lessons.
+2. Translate their Prevention Rules into implementation constraints.
+3. Check the solution against those constraints.
+4. Verify that the previous failure pattern has not been reintroduced.
+
+If a documented rule conflicts with a new explicit requirement, follow the current requirement and recognize that the existing rule may need to be updated.
+
+---
+
+## 8. Handle corrections
+
+Every meaningful correction is a potential learning event.
+
+When the user corrects the AI:
+
+1. Determine what was wrong.
+2. Determine why it happened.
+3. Check whether the cause is generalizable.
+4. Check existing lessons.
+5. Add a new lesson or strengthen an existing lesson when appropriate.
+6. Apply the resulting rule to future similar work.
+
+Do not record purely contextual corrections that cannot reasonably prevent future mistakes.
+
+---
+
+## 9. Preserve rule integrity
+
+Existing lessons must not be silently removed, weakened, or contradicted.
+
+Change an existing rule only when:
+
+- The rule is incorrect.
+- The rule is too broad or too narrow.
+- A new requirement explicitly supersedes it.
+- A better general rule replaces it.
+
+When a rule is superseded, update the lesson deliberately rather than silently deleting its history.
+
+---
+
+## Operating Rules
+
+- Review relevant lessons **before** every task.
+- Treat every meaningful correction as a potential new lesson.
+- Identify the **root cause**, not merely the symptom.
+- Generalize lessons beyond the original incident.
+- Convert lessons into **concrete Prevention Rules**.
+- Check for duplicate or overlapping lessons before adding new ones.
+- A Prevention Rule is an active constraint for future work.
+- Do not repeat a documented mistake unless the current context explicitly requires different behavior.
+- Do not create lessons for purely contextual or non-generalizable corrections.
+- Do not weaken an existing rule merely because applying it is inconvenient.
+- If an existing rule conflicts with a newer explicit requirement, follow the newer requirement and update the rule accordingly.
+- Keep the lesson set concise, reusable, and actionable.
+
+If you catch yourself repeating a documented mistake, stop, identify which Prevention Rule should have prevented it, and correct the process before continuing.
 
 ---
 
@@ -756,3 +933,96 @@ new lesson and update this file when the lesson is generalizable.
   "neither type sufficiently overlaps", do not silence it by fabricating the missing required
   fields — each fabricated value is a potential data wipe on the server. Map what has a real
   source, omit the rest, and use `as unknown as T` with a comment saying why the gap is safe.
+
+### A read model that type-checks as a mutation body can still fail GraphQL input validation
+- **Date:** 2026-09-29
+- **Mistake:** `useCaseReferLink` PATCHed `{ ...childSop.data, referCaseId } as unknown as
+  CreateCase`. `tsc -b` passed; the BFF rejected it with two `BAD_USER_INPUT` errors:
+  `caseSla` arrived as the number `97` (the SOP read model computes it — the TS interface
+  doesn't even declare it, but the spread carries it) while `CaseUpdateInput.caseSla` is
+  `String`, and `customerId` is **not a field of `CaseUpdateInput` at all** (customer linking
+  has its own `CaseCustomerInput`/`UpdateCaseCustomer` mutation).
+- **Root Cause:** GraphQL input types are curated server-side subsets of the record, not the
+  REST write DTO and not the read model. `buildGraphQLQuery` passes the request body through
+  verbatim as `variables.input` (only stripping `undefined`/`null`/`""`), so every key the
+  spread carries must exist in the input type with a compatible scalar. Two spreads hid the
+  mismatch from the compiler: the `as unknown as CreateCase` cast, and runtime fields the
+  TS interface never declares.
+- **Correct Behavior:** Fields the target input type does not define are dropped at the
+  mapping layer, not per call site: `GqlMapConfig.omitInputFields` (honored in
+  `buildGraphQLQuery`) removes them for every caller of that endpoint at once, and REST
+  bodies stay untouched. `UPDATE_CASE_MUTATION` carries `omitInputFields: ["customerId"]`.
+  Type coercions stay at the call site (`body.caseSla = String(...)` in
+  `useCaseReferLink`) because the mapper omits, it does not convert. When the server
+  reports input-coercion errors, remember it collects ALL of them in one pass — the
+  reported fields are the complete violation list, so a minimal targeted fix is safe.
+- **Prevention Rule:** Spreading a GET response into a mutation body is a cross-boundary
+  transfer, not a copy. Before sending, diff the spread's runtime keys against what the target
+  GraphQL input type accepts (the server's `BAD_USER_INPUT` message names both unknown fields
+  and scalar mismatches — read the whole `errors` array), and never assume the TS interface
+  enumerates the runtime fields. Same family as "A hidden input is not write protection" and
+  "server-provided fields typed as required are not guaranteed": the type system does not
+  model this boundary.
+- **Related mapper behaviour:** `gqlMapper`'s input cleaning strips `""` — which silently
+  turned case UNLINK (`referCaseId: ""`) into a no-op in GraphQL mode. `referCaseId` is now
+  exempt from the strip (see the `v5.1` comment in `gqlMapper.ts`). Any future "clear a field
+  by sending empty string" flow in GraphQL mode hits the same wall: check the strip list
+  before assuming the value reaches the server.
+
+### GraphQL input types are strict at EVERY nesting level — and the read model keeps growing
+- **Date:** 2026-09-30
+- **Mistake:** After `customerId` was fixed, the close-case save failed again with seven more
+  `BAD_USER_INPUT` errors: top-level `docId` (a server-side read-model field the frontend
+  never declares — it appeared when the BFF's record grew), and six fields nested inside
+  `attachments[*]` (`orgId`, `caseId`, `createdAt`, `updatedAt`, `createdBy`, `updatedBy`),
+  because `AttachmentInput` accepts only `id`/`type`/`attId`/`attName`/`attUrl`. The
+  top-level `omitInputFields` mechanism couldn't reach the nested violations.
+- **Root Cause:** Two compounding truths. (1) Input-type strictness applies recursively —
+  passing validation at the top level says nothing about nested input types. (2) The BFF's
+  read model is ALIVE: it gains fields (`docId` showed up between one error report and the
+  next) without any frontend change, and every spread-echo caller inherits each new field as
+  a fresh validation failure. The mapper's empty-strip also does not recurse, so nested
+  `orgId: ""` placeholders survive cleaning and still fail the schema.
+- **Correct Behavior:** `omitInputFields` now supports dotted paths applied recursively
+  through arrays (`attachments.orgId` strips orgId from every item) — see the `v5.2`
+  comment and `omitAtPath` in `gqlMapper.ts`, and the full violation list on
+  `UPDATE_CASE_MUTATION` in `caseQueries.ts`. The place to encode "what the server's input
+  type accepts" is that ONE config entry, shared by all four `patchUpdateCase` call sites
+  (main save, schedule save, create-follow-up, linked-cases link/unlink).
+- **Prevention Rule:** A `BAD_USER_INPUT` "Field X is not defined by type Y" error means:
+  add X to the endpoint's `omitInputFields` in `graphql/*Queries.ts` (dotted if nested) —
+  never patch a call site, and never assume a previously-clean payload is still clean after
+  a BFF deploy. When choosing between omit-list and pick-list for a curated input type:
+  without the authoritative schema in-repo, a PICK list fails SILENTLY (drops valid fields,
+  data loss) while an OMIT list fails LOUDLY (a validation error naming the exact field).
+  Prefer loud. `gqlMapper.test.ts` covers the case-update sanitizing contract — extend the
+  fixture there when adding paths.
+- **Watch item:** `CREATE_CASE_MUTATION` (`CaseInsertInput`) receives the same style of
+  spread body plus `UploadFileRes`-shaped attachments but has reported no violations so far;
+  if it errors, the same `omitInputFields` mechanism applies — do not "pre-fix" it blindly,
+  because omitting a field the insert input DOES accept would silently stop persisting it.
+
+### One rejected fetch in Promise.all blanks the whole list — and not every endpoint serves every record state
+- **Date:** 2026-09-30
+- **Mistake:** Linking a CANCELLED case succeeded, but the linked-cases list rendered empty,
+  exactly as if the link had failed. The tab fanned the server's id list out with
+  `Promise.all(childIds.map(id => getCaseById(id).unwrap()))`: the `/case/caseId/:id`
+  lookup rejects (or returns no data) for terminal-state cases, one rejection fails the
+  entire `Promise.all`, the catch left the list empty — every card gone, not just the
+  cancelled one.
+- **Root Cause:** Two stacked assumptions. `Promise.all` is fail-fast: the successful
+  fetches are discarded with the first rejection. And endpoint choice was made by
+  convenience (`getCaseByIdMutation` existed) without checking which case states it
+  serves — `/dispatch/:caseId/SOP` demonstrably loads cancelled/closed cases (it powers
+  their detail pages), `/case/caseId/:id` does not.
+- **Correct Behavior:** SubCaseTab now fetches per id via `useLazyGetCaseSopQuery` with
+  `Promise.allSettled`, partitions results (`partitionLinkedCaseResults` in
+  `linkedCaseUtils.ts`), and renders any id whose details failed as a reduced "details
+  unavailable" card that is still clickable and unlinkable. A server-provided id is proof
+  the link exists; the UI must never silently drop it because a secondary lookup failed.
+- **Prevention Rule:** When fanning a server-provided id list out into per-id fetches:
+  (1) `Promise.allSettled`, never `Promise.all` — one bad record must not take the list
+  down; (2) render failures explicitly (placeholder row), never filter them out silently;
+  (3) pick the lookup endpoint by which RECORD STATES it serves, not by which hook is
+  already imported — if the detail page can display the record, use the detail page's
+  endpoint for lookups of that record.
