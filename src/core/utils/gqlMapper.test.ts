@@ -146,3 +146,75 @@ describe("buildGraphQLQuery - Device", () => {
     expect(result!.variables.input).not.toHaveProperty("deviceId");
   });
 });
+
+// Guards the CaseUpdateInput sanitizing contract: callers PATCH /case/:id with a
+// body spread from the SOP read model, which carries fields the GraphQL input
+// type does not define (top-level AND nested inside attachments). Regression here
+// resurfaces as BAD_USER_INPUT "Field X is not defined by type ..." for the whole
+// save flow - see UPDATE_CASE_MUTATION.omitInputFields in caseQueries.ts.
+describe("buildGraphQLQuery - Case update input sanitizing", () => {
+  const body = {
+    caseId: "D260929-00003",
+    caseDetail: "....",
+    statusId: "S007",
+    referCaseId: "D260929-00002",
+    caseSla: "97",
+    customerId: 2,
+    docId: "0004/2569",
+    attachments: [
+      {
+        id: 0,
+        orgId: "",
+        caseId: "",
+        type: "close",
+        attId: "062ed148-ecf3-4a32-b264-0150144e0226",
+        attName: "062ed148-ecf3-4a32-b264-0150144e0226.jpg",
+        attUrl: "https://storage.example/cms-stg/close/062ed148.jpg",
+        createdAt: "2026-09-29T10:36:29.759136Z",
+        updatedAt: "2026-09-29T10:36:29.759136Z",
+        createdBy: "",
+        updatedBy: "",
+      },
+    ],
+  };
+
+  test("PATCH /case/{id} strips top-level fields CaseUpdateInput does not define", () => {
+    const result = buildGraphQLQuery({ url: "/case/D260929-00003", method: "PATCH", body });
+
+    expect(result).not.toBeNull();
+    expect(result!.query).toContain("UpdateCase");
+    expect(result!.variables.input).not.toHaveProperty("customerId");
+    expect(result!.variables.input).not.toHaveProperty("docId");
+  });
+
+  test("PATCH /case/{id} strips AttachmentInput audit fields but keeps attachment content", () => {
+    const result = buildGraphQLQuery({ url: "/case/D260929-00003", method: "PATCH", body });
+
+    expect(result).not.toBeNull();
+    const attachments = (result!.variables.input as { attachments: Record<string, unknown>[] }).attachments;
+    expect(attachments).toHaveLength(1);
+    expect(attachments[0]).toEqual({
+      id: 0,
+      type: "close",
+      attId: "062ed148-ecf3-4a32-b264-0150144e0226",
+      attName: "062ed148-ecf3-4a32-b264-0150144e0226.jpg",
+      attUrl: "https://storage.example/cms-stg/close/062ed148.jpg",
+    });
+  });
+
+  test("PATCH /case/{id} keeps writable fields and preserves referCaseId (including empty-string unlink)", () => {
+    const result = buildGraphQLQuery({
+      url: "/case/D260929-00003",
+      method: "PATCH",
+      body: { ...body, referCaseId: "" },
+    });
+
+    expect(result).not.toBeNull();
+    const input = result!.variables.input as Record<string, unknown>;
+    expect(input.caseDetail).toBe("....");
+    expect(input.statusId).toBe("S007");
+    expect(input.caseSla).toBe("97");
+    // Unlink is expressed as referCaseId: "" and must survive the empty-string strip.
+    expect(input).toHaveProperty("referCaseId", "");
+  });
+});

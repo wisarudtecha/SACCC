@@ -47,7 +47,23 @@ const UPDATE_CASE_MUTATION = {
   root: "Case",
   inputType: "CaseUpdateInput!",
   fields: `status msg data desc`,
-  mutation: true
+  mutation: true,
+  // CaseUpdateInput is a curated subset of the case record; the SOP read model that
+  // callers spread into the body carries fields it does not define:
+  // - customerId: customer linking goes through UpdateCaseCustomer ("/case/:id/customer")
+  // - docId: server-assigned document number, not writable via this mutation
+  // - attachments.*: AttachmentInput accepts only id/type/attId/attName/attUrl -
+  //   the read model's audit fields (orgId, caseId, createdAt/By, updatedAt/By) fail it.
+  omitInputFields: [
+    "customerId",
+    "docId",
+    "attachments.orgId",
+    "attachments.caseId",
+    "attachments.createdAt",
+    "attachments.updatedAt",
+    "attachments.createdBy",
+    "attachments.updatedBy"
+  ]
 };
 
 const UPDATE_CASE_CUSTOMER_MUTATION = {

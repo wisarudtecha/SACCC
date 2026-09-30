@@ -177,6 +177,29 @@ const matchUrl = (url: string, method: string) => {
 //   return match ? GQL_MAP[match] : null;
 // };
 
+// v5.2 - Drop the key at the END of a dotted path, descending through arrays, so
+// nested input types (e.g. AttachmentInput inside CaseUpdateInput) can be given the
+// same curated-subset treatment as the top level without touching call sites.
+const omitAtPath = (value: unknown, segments: string[]): unknown => {
+  if (segments.length === 0 || value === null || typeof value !== "object") {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => omitAtPath(item, segments));
+  }
+  const [head, ...rest] = segments;
+  const record = value as Record<string, unknown>;
+  if (!(head in record)) {
+    return value;
+  }
+  if (rest.length === 0) {
+    const remaining = { ...record };
+    delete remaining[head];
+    return remaining;
+  }
+  return { ...record, [head]: omitAtPath(record[head], rest) };
+};
+
 /**
  * Helper to build a GraphQL query from REST-style FetchArgs
  * This is a placeholder implementation that should be expanded based on your schema
@@ -296,13 +319,26 @@ export const buildGraphQLQuery = (args: FetchArgs) => {
 
   // Remove empty values
   // v5.0 - Clean input by removing undefined, null, and empty string values
-  const cleanedInput = normalizeObject(
+  // v5.1 - EXCEPT referCaseId: clearing a parent-case link is expressed as
+  // referCaseId: "" (REST parity - the REST transport passes it through). Stripping
+  // it here silently turned a case unlink into a no-op in GraphQL mode.
+  // v5.2 - config.omitInputFields drops keys the target GraphQL input type does not
+  // define (e.g. customerId on CaseUpdateInput - customer linking has its own
+  // UpdateCaseCustomer mutation). Without this, any caller whose body spreads a
+  // read model fails BAD_USER_INPUT validation for the whole request. Dotted paths
+  // ("attachments.orgId") are applied recursively after the top-level pass.
+  const omitTopLevel = new Set((config.omitInputFields ?? []).filter((f) => !f.includes(".")));
+  const omitNested = (config.omitInputFields ?? []).filter((f) => f.includes("."));
+  let cleanedInput = normalizeObject(
     Object.fromEntries(
       Object.entries(inputSource).filter(
-        ([, v]) => v !== undefined && v !== null && v !== ""
+        ([k, v]) => !omitTopLevel.has(k) && v !== undefined && v !== null && (v !== "" || k === "referCaseId")
       )
     )
   , isMutation);
+  for (const path of omitNested) {
+    cleanedInput = omitAtPath(cleanedInput, path.split(".")) as Record<string, unknown>;
+  }
 
   // const hasFiles = containsFile(cleanedInput);
 

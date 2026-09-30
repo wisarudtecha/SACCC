@@ -20,13 +20,24 @@ export const useCaseReferLink = () => {
         if (!childSop.data) {
             throw new Error(`Case ${childCaseId} not found`);
         }
+
+        // The SOP read model is not a valid CaseUpdateInput (GraphQL):
+        // - customerId is dropped by the mapper (omitInputFields on
+        //   UPDATE_CASE_MUTATION) - it belongs to UpdateCaseCustomer.
+        // - caseSla arrives as a computed number; the input types it String.
+        //   Coerce it here - the mapper only omits, it does not convert.
+        const body: Record<string, unknown> = { ...childSop.data };
+        if (body.caseSla !== undefined && body.caseSla !== null) {
+            body.caseSla = String(body.caseSla);
+        }
+
         // Mirror the case-detail save: full SOP payload back, with formAnswer
         // re-exposed under the formData key the BFF expects. Fields CaseSop does
-        // not carry (caseSla, deptId/commId/stnId, nodeId) are left absent -
-        // never invent values for them. CaseSop is not cast-compatible with
-        // CreateCase, hence the double cast.
+        // not carry (deptId/commId/stnId, nodeId) are left absent - never invent
+        // values for them. CaseSop is not cast-compatible with CreateCase, hence
+        // the double cast.
         const updateJson = {
-            ...childSop.data,
+            ...body,
             caseId: childCaseId,
             referCaseId: parentCaseId,
             formData: childSop.data.formAnswer,
