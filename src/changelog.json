@@ -1,4 +1,10 @@
 {
+  "0.87.1": {
+    "date": "2026-09-30",
+    "segment": "PATCH",
+    "notes": "fix(cms): linked-case list resilience and case-save fixes\n- Fixed linked cases vanishing from the Linked Cases tab when one of them had been cancelled or closed: every linked case now stays listed, and a linked case whose details can't be shown is still clearly marked as linked, can be opened, and can be unlinked.\n- Fixed saving case changes failing with a generic error for some organizations, including when closing a case that has attachments.\n- Fixed unlinking a linked case silently doing nothing for those same organizations - the link is now removed as expected.\n- changelog.json / package.json: bump version 0.87.0 -> 0.87.1",
+    "author": "Wisarud Techa"
+  },
   "0.87.0": {
     "date": "2026-09-29",
     "segment": "MINOR",
