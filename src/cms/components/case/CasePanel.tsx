@@ -15,6 +15,7 @@ import DatePickerLocal from "@/core/components/form/input/DatepicketLocal";
 import { LinkedCaseCard } from "@/cms/components/case/linkedCases/LinkedCaseCard";
 import { LinkExistingCaseDialog } from "@/cms/components/case/linkedCases/LinkExistingCaseDialog";
 import { useCaseReferLink } from "@/cms/components/case/linkedCases/useCaseReferLink";
+import { caseSopToSummary, partitionLinkedCaseResults, type LinkedCaseSummary } from "@/cms/components/case/linkedCases/linkedCaseUtils";
 import { SearchableSelectApi } from "@/cms/components/SearchInput/SearchSelectInput";
 import Avatar from "@/core/components/ui/avatar/Avatar";
 import Badge from "@/core/components/ui/badge/Badge";
@@ -23,7 +24,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/core/compone
 import Tabs, { TabItem } from "@/core/components/ui/tab/Tab";
 import { useInsertAppointmentMutationMutation, useGetAppointmentByCustomerIdQuery, useGetAppointmentStatusCountQuery } from "@/cms/store/api/appointment";
 import { useGetAppointmentTypeQuery } from "@/cms/store/api/appointmentType";
-import { Case, useGetCaseByIdMutationMutation, useGetListCaseByCustomerIdQuery, usePatchUpdateCaseCustomerMutation } from "@/cms/store/api/caseApi";
+import { Case, useGetListCaseByCustomerIdQuery, usePatchUpdateCaseCustomerMutation } from "@/cms/store/api/caseApi";
+import { useLazyGetCaseSopQuery } from "@/cms/store/api/dispatch";
 import { useGetCustomerProductQuery } from "@/cms/store/api/customerProduct";
 import { useGetCustomerServiceQuery } from "@/cms/store/api/customerService";
 import {
@@ -867,22 +869,26 @@ interface SubCaseTabProps {
 
 /**
  * Linked cases (parent-child): the case's own parent (referCaseId) plus its
- * children (referCaseLists, server-derived). Fetches each case from the API -
- * never from the idb caseList cache, which only holds cases the websocket
- * happened to sync and silently drops everything else.
+ * children (referCaseLists, server-derived). Details are fetched per id from the
+ * SOP endpoint - NOT /case/caseId/:id, which does not serve terminal-state
+ * (cancelled/closed) cases and used to blank the whole list via Promise.all.
+ * Any id whose fetch still fails renders a reduced card: the link exists (the id
+ * came from the server), so it must never silently disappear.
  */
 const SubCaseTab: React.FC<SubCaseTabProps> = ({ referCaseList, currentCaseId, parentCaseId, refetchSop }) => {
     const { t } = useTranslation();
     const { addToast } = useToastContext();
     const { hasPermission } = usePermissions();
     const { setReferCase } = useCaseReferLink();
-    const [getCaseById] = useGetCaseByIdMutationMutation();
+    const [fetchCaseSop] = useLazyGetCaseSopQuery();
 
-    const [linkedCases, setLinkedCases] = useState<Case[]>([]);
-    const [parentCase, setParentCase] = useState<Case | null>(null);
+    const [linkedCases, setLinkedCases] = useState<LinkedCaseSummary[]>([]);
+    const [unavailableIds, setUnavailableIds] = useState<string[]>([]);
+    const [parentCase, setParentCase] = useState<LinkedCaseSummary | null>(null);
+    const [parentUnavailable, setParentUnavailable] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [showLinkDialog, setShowLinkDialog] = useState<boolean>(false);
-    const [unlinkTarget, setUnlinkTarget] = useState<Case | null>(null);
+    const [unlinkTarget, setUnlinkTarget] = useState<LinkedCaseSummary | null>(null);
     const [isUnlinking, setIsUnlinking] = useState<boolean>(false);
 
     const childIds = referCaseList ?? [];
@@ -893,18 +899,19 @@ const SubCaseTab: React.FC<SubCaseTabProps> = ({ referCaseList, currentCaseId, p
         const fetchLinked = async () => {
             if (childIds.length === 0) {
                 setLinkedCases([]);
+                setUnavailableIds([]);
                 return;
             }
             setIsLoading(true);
             try {
-                const results = await Promise.all(
-                    childIds.map((caseId) => getCaseById({ caseId }).unwrap())
+                const results = await Promise.allSettled(
+                    childIds.map((caseId) => fetchCaseSop({ caseId }).unwrap())
                 );
                 if (!cancelled) {
-                    setLinkedCases(results.map((res) => res.data).filter((c): c is Case => !!c));
+                    const { loaded, failedIds } = partitionLinkedCaseResults(childIds, results);
+                    setLinkedCases(loaded);
+                    setUnavailableIds(failedIds);
                 }
-            } catch (error) {
-                console.error("Failed to fetch linked cases:", error);
             } finally {
                 if (!cancelled) setIsLoading(false);
             }
@@ -919,13 +926,21 @@ const SubCaseTab: React.FC<SubCaseTabProps> = ({ referCaseList, currentCaseId, p
         const fetchParent = async () => {
             if (!parentCaseId) {
                 setParentCase(null);
+                setParentUnavailable(false);
                 return;
             }
             try {
-                const res = await getCaseById({ caseId: parentCaseId }).unwrap();
-                if (!cancelled) setParentCase(res.data ?? null);
+                const res = await fetchCaseSop({ caseId: parentCaseId }).unwrap();
+                if (!cancelled) {
+                    setParentCase(res.data ? caseSopToSummary(res.data) : null);
+                    setParentUnavailable(!res.data);
+                }
             } catch (error) {
                 console.error("Failed to fetch parent case:", error);
+                if (!cancelled) {
+                    setParentCase({ caseId: parentCaseId, caseDetail: null, statusId: "", priority: 0, createdDate: "", createdBy: "" });
+                    setParentUnavailable(true);
+                }
             }
         };
         fetchParent();
@@ -941,6 +956,7 @@ const SubCaseTab: React.FC<SubCaseTabProps> = ({ referCaseList, currentCaseId, p
         try {
             await setReferCase(unlinkTarget.caseId, "");
             setLinkedCases((prev) => prev.filter((c) => c.caseId !== unlinkTarget.caseId));
+            setUnavailableIds((prev) => prev.filter((id) => id !== unlinkTarget.caseId));
             await refetchSop?.();
             addToast("success", t("case.panel.unlink_case_success"));
         } catch (error) {
@@ -951,6 +967,8 @@ const SubCaseTab: React.FC<SubCaseTabProps> = ({ referCaseList, currentCaseId, p
             setUnlinkTarget(null);
         }
     };
+
+    const hasLinkedCases = linkedCases.length > 0 || unavailableIds.length > 0;
 
     return <div className="space-y-3 p-3">
         {canLink && (
@@ -967,20 +985,30 @@ const SubCaseTab: React.FC<SubCaseTabProps> = ({ referCaseList, currentCaseId, p
                 <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">
                     {t("case.panel.parent_case")}
                 </div>
-                <LinkedCaseCard caseItem={parentCase} />
+                <LinkedCaseCard caseItem={parentCase} detailsUnavailable={parentUnavailable} />
             </div>
         )}
 
         {isLoading ? (
             <Loading />
-        ) : linkedCases.length > 0 ? (
-            linkedCases.map((linkedCase) => (
-                <LinkedCaseCard
-                    key={linkedCase.caseId}
-                    caseItem={linkedCase}
-                    onUnlink={canLink ? setUnlinkTarget : undefined}
-                />
-            ))
+        ) : hasLinkedCases ? (
+            <>
+                {linkedCases.map((linkedCase) => (
+                    <LinkedCaseCard
+                        key={linkedCase.caseId}
+                        caseItem={linkedCase}
+                        onUnlink={canLink ? setUnlinkTarget : undefined}
+                    />
+                ))}
+                {unavailableIds.map((caseId) => (
+                    <LinkedCaseCard
+                        key={caseId}
+                        caseItem={{ caseId, caseDetail: null, statusId: "", priority: 0, createdDate: "", createdBy: "" }}
+                        detailsUnavailable={true}
+                        onUnlink={canLink ? setUnlinkTarget : undefined}
+                    />
+                ))}
+            </>
         ) : (
             <div className="text-center text-gray-500 py-4">
                 {t("case.panel.no_linked_cases")}

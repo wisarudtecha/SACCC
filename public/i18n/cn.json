@@ -4091,7 +4091,8 @@
       "unlink_case_confirm": "此操作将取消这些案例之间的关联。两个案例都将保留。",
       "unlink_case_success": "案例取消关联成功",
       "parent_case": "父案例",
-      "no_linked_cases": "暂无关联案例"
+      "no_linked_cases": "暂无关联案例",
+      "linked_case_unavailable": "已关联案例（无法加载详情）"
     }
   },
   "productDashboard": {
