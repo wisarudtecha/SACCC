@@ -4,7 +4,8 @@
     "section": {
       "map": "地图设置",
       "assignment_rules": "分派规则",
-      "subscription": "订阅与授权"
+      "subscription": "订阅与授权",
+      "escalation_rules": "升级规则"
     },
     "actions": {
       "save": "保存",
@@ -188,6 +189,63 @@
           "success": "分派规则已保存。"
         }
       }
+    },
+    "escalation": {
+      "group": {
+        "escalation_rules": "SLA 升级规则",
+        "help": "当案件接近或超过 SLA 目标时，通知相应负责角色。仅为配置项——在后端上线前，升级引擎暂不会运行。"
+      },
+      "field": {
+        "enabled": {
+          "label": "启用"
+        },
+        "warning_threshold": {
+          "label": "预警阈值 (%)",
+          "help": "SLA 时间窗口已流逝的百分比达到该值时发送预警（1–99）。"
+        },
+        "target_role": {
+          "label": "接收角色",
+          "help": "接收该策略预警和超时通知的角色。"
+        }
+      },
+      "role": {
+        "supervisor": "主管",
+        "org_admin": "组织管理员",
+        "dispatcher": "调度员"
+      },
+      "banner": {
+        "not_saved": {
+          "title": "未保存到服务器",
+          "body": "升级规则的后端尚不可用，因此您的更改未被保存。在您离开此页面前，您的编辑将保留在此处。",
+          "dismiss": "关闭"
+        }
+      },
+      "action": {
+        "save": {
+          "success": "升级规则已保存。"
+        }
+      }
+    }
+  },
+  "sla": {
+    "escalations_title": "SLA 升级记录",
+    "warning": "SLA 预警",
+    "breached": "SLA 超时",
+    "notified_role": "已通知 {{role}}",
+    "due_at": "SLA 截止时间 {{time}}",
+    "acknowledged_by_at": "{{user}} 于 {{time}} 确认",
+    "acknowledge": "确认",
+    "acknowledging": "确认中…",
+    "notification": {
+      "warning_message": "即将达到 SLA 目标",
+      "breach_message": "已超过 SLA 目标"
+    },
+    "monitor": {
+      "compliance": "SLA 合规率",
+      "on_time": "按时",
+      "warning_count": "预警",
+      "breach_count": "超时",
+      "avg_response": "平均响应时间"
     }
   },
   "entitlement": {

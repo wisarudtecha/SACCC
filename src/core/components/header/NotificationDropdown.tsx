@@ -13,10 +13,21 @@ import { useTranslation } from "@/core/hooks/useTranslation";
 import { useGetNotificationByIdQuery } from "@/core/store/api/notificationApi";
 // import { useGetNotificationByIdQuery as UseGetNotificationByIdQuery } from "@/core/store/api/notificationApi";
 // import { APP_CONFIG, POPUP_AUTO_DISMISS_MS, POPUP_GROUP_AUTO_CLOSE_MS, POPUP_TRANSITION_MS } from "@/core/utils/constants";
-import { POPUP_AUTO_DISMISS_MS, POPUP_GROUP_AUTO_CLOSE_MS, POPUP_TRANSITION_MS } from "@/core/utils/constants";
+import { DEV_CONFIG, POPUP_AUTO_DISMISS_MS, POPUP_GROUP_AUTO_CLOSE_MS, POPUP_TRANSITION_MS } from "@/core/utils/constants";
 import { isValidImageUrl } from "@/core/utils/resourceValidators";
 import { formatLastNotification } from "@/core/utils/utils";
 import type { Notification, PopupItem } from "@/core/types/notification";
+import { isSlaEscalationEvent, type SlaEscalationEvent } from "@/cms/types/escalation";
+import {
+  MOCK_ESCALATION_CASE_IDS,
+  readOpenEscalationEventsStub,
+  SLA_ESCALATION_WS_EVENT,
+  startMockEscalationEmitter,
+} from "@/cms/components/escalation/mockEscalationEvents";
+import {
+  buildEscalationNotification,
+  escalationAlertKey,
+} from "@/cms/components/escalation/slaEscalationNotification";
 // import type { Notification, NotificationEvent, PopupItem } from "@/core/types/notification";
 
 const NotificationDropdown = () => {
@@ -32,6 +43,10 @@ const NotificationDropdown = () => {
   const closeAllTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const hasInitialized = useRef(false);
+  const alertedEscalationKeysRef = useRef<Set<string>>(new Set());
+  const handleEscalationEventRef = useRef<(event: SlaEscalationEvent) => void>(() => undefined);
+  const hasEverConnectedRef = useRef(false);
+  const wasConnectedRef = useRef(false);
   const itemTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const textRefs = useRef<{ [key: string]: HTMLParagraphElement | null }>({});
   const visibleIdsRef = useRef<Set<string>>(new Set());
@@ -188,6 +203,48 @@ const NotificationDropdown = () => {
       closeAllPopups();
     }, POPUP_GROUP_AUTO_CLOSE_MS);
   };
+
+  // ===================================================================
+  // SLA breach escalation (CAD-FE-SLA-Breach-Escalation)
+  // ===================================================================
+  // One in-app alert per (caseId, level, type): the dedupe set survives
+  // reconnect replays and multi-tab sessions.
+  const handleEscalationEvent = (event: SlaEscalationEvent) => {
+    const alertKey = escalationAlertKey(event);
+    if (alertedEscalationKeysRef.current.has(alertKey)) {
+      return;
+    }
+    alertedEscalationKeysRef.current.add(alertKey);
+
+    const noti = buildEscalationNotification(event, {
+      warningMessage: t("sla.notification.warning_message"),
+      breachMessage: t("sla.notification.breach_message"),
+    });
+
+    const prefs = getPreferences();
+    setNotifications(prev => (prev.some(n => n.id === noti.id) ? prev : [noti, ...prev]));
+
+    if (prefs.popupEnabled) {
+      enqueuePopup(noti);
+    }
+
+    setNotifying(true);
+    setTimeout(() => setNotifying(false), 3000);
+
+    if (prefs.soundEnabled && audioRef.current) {
+      const soundFile = `/sounds/${prefs.sound}.mp3`;
+      audioRef.current.src = soundFile;
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+    }
+  };
+
+  // Latest-handler ref: the subscribe/emitter/reconnect effects below have
+  // intentionally narrow dep arrays, so they call the handler through this
+  // ref instead of capturing a stale mount-time closure (and its stale `t`).
+  useEffect(() => {
+    handleEscalationEventRef.current = handleEscalationEvent;
+  });
 
   const toggleDropdown = () => {
     setIsOpen(prev => {
@@ -351,6 +408,16 @@ const NotificationDropdown = () => {
     // Subscribe to WebSocket messages
     const unsubscribe = onMessage(message => {
       try {
+        // SLA escalation events arrive in the EVENT envelope, not the
+        // notification shape — route them before the generic path.
+        if (message.data?.EVENT === SLA_ESCALATION_WS_EVENT) {
+          const event = message.data?.additionalJson;
+          if (isSlaEscalationEvent(event)) {
+            handleEscalationEventRef.current(event);
+          }
+          return;
+        }
+
         const data: Notification = message.data;
         const prefs = getPreferences();
 
@@ -432,6 +499,43 @@ const NotificationDropdown = () => {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.username, profile?.orgId, onMessage, websocket, connectionState, isOpen]);
+
+  // Mock-mode escalation wiring (VITE_MOCK_API + dev only): the emitter
+  // replays deterministic warning/breach events so the alert path is demoable
+  // without the backend scheduler.
+  useEffect(() => {
+    if (!import.meta.env.DEV || !DEV_CONFIG.MOCK_API) {
+      return;
+    }
+    const stopEmitter = startMockEscalationEmitter(MOCK_ESCALATION_CASE_IDS, message => {
+      const event = message.data?.additionalJson;
+      if (isSlaEscalationEvent(event)) {
+        handleEscalationEventRef.current(event);
+      }
+    });
+    return stopEmitter;
+  }, []);
+
+  // Reconnect refetch: when the socket comes back after a drop, replay the
+  // org's open escalations so nothing fired while offline is silently missed.
+  // The (caseId, level, type) dedupe in handleEscalationEvent prevents
+  // re-alerts for events already seen. Mock-backed until the BE list endpoint
+  // ships; then only the data source swaps.
+  useEffect(() => {
+    if (!DEV_CONFIG.MOCK_API) {
+      return;
+    }
+    const isReconnect = isConnected && !wasConnectedRef.current && hasEverConnectedRef.current;
+    if (isReconnect) {
+      readOpenEscalationEventsStub(MOCK_ESCALATION_CASE_IDS).forEach((event) =>
+        handleEscalationEventRef.current(event)
+      );
+    }
+    if (isConnected) {
+      hasEverConnectedRef.current = true;
+    }
+    wasConnectedRef.current = isConnected;
+  }, [isConnected]);
 
   const { data: getNotificationById } = useGetNotificationByIdQuery(profile.username, {
     skip: !profile.username,

@@ -4,9 +4,20 @@ import Badge from "@/core/components/ui/badge/Badge";
 import { CheckCircle, Circle } from "lucide-react";
 import { getTimeDifference } from "../case/sopStepTranForm";
 import { useFormatDuration } from "./formatSlaDuration";
+import { deriveSlaState } from "@/cms/utils/slaEscalation";
 
 
-export const SLACountdownBadgeAssignment = ({ createDate, sla }: { createDate: string, sla: number }) => {
+export const SLACountdownBadgeAssignment = ({ createDate, sla, warningThresholdPct }: {
+    createDate: string,
+    sla: number,
+    /**
+     * Optional rule-driven warning threshold (percent of the SLA window, e.g. 80).
+     * When provided, the warning badge is driven by `deriveSlaState`; when
+     * omitted the legacy env-based VITE_CASE_ASSIGNMENT_WARING_SLA /
+     * VITE_CASE_ASSIGNMENT_ALERT_SLA thresholds apply (backward compatible).
+     */
+    warningThresholdPct?: number,
+}) => {
     const [timeRemaining, setTimeRemaining] = useState<{
         isOverdue: boolean;
         days: number;
@@ -18,11 +29,13 @@ export const SLACountdownBadgeAssignment = ({ createDate, sla }: { createDate: s
     const { t } = useTranslation();
     const waring = parseInt(import.meta.env.VITE_CASE_ASSIGNMENT_WARING_SLA || "7200", 10);
     const alert = parseInt(import.meta.env.VITE_CASE_ASSIGNMENT_ALERT_SLA || "3600", 10);
-    if (sla === null) {
-        return null;
-    }
+    const hasSlaData = sla !== null;
 
     useEffect(() => {
+        if (!hasSlaData) {
+            setTimeRemaining(null);
+            return;
+        }
         const calculateTimeRemaining = () => {
             const createdDate = new Date(createDate);
             const slaDeadline = new Date(createdDate.getTime() + (sla * 60 * 1000));
@@ -68,9 +81,9 @@ export const SLACountdownBadgeAssignment = ({ createDate, sla }: { createDate: s
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [createDate, sla]);
+    }, [createDate, sla, hasSlaData]);
 
-    if (!timeRemaining) {
+    if (!hasSlaData || !timeRemaining) {
         return null;
     }
 
@@ -109,6 +122,24 @@ export const SLACountdownBadgeAssignment = ({ createDate, sla }: { createDate: s
                 {t("progress.overdue_by")} {formatOverdueTime()}
             </Badge>
         );
+    }
+
+    if (warningThresholdPct !== undefined) {
+        // Rule-driven warning state (CAD decision 4); normal renders nothing,
+        // matching the current "hide when healthy" behaviour.
+        if (deriveSlaState(createDate, sla, warningThresholdPct) === "warning") {
+            return (
+                <Badge
+                    variant="outline"
+                    color="warning"
+                    size="xs"
+                    className="text-center"
+                >
+                    {t("time.TIMEREMAINING")} {formatRemainingTime()}
+                </Badge>
+            );
+        }
+        return null;
     }
 
     if (timeRemaining.totalSeconds <= alert) {

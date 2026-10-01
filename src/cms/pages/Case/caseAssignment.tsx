@@ -26,6 +26,7 @@ import { CaseEntity } from "@/cms/types/case"
 import { useNavigate } from "react-router-dom"
 import { useTranslation } from "@/core/hooks/useTranslation"
 import { SLACountdownBadgeAssignment } from "@/cms/components/Sla/Sla"
+import { DEFAULT_WARNING_THRESHOLD_PCT } from "@/cms/utils/escalationRules"
 import { Area, mergeArea } from "@/cms/store/api/area"
 import { useGetUsersQuery } from "@/core/store/api/userApi"
 import { UserProfile } from "@/core/types/user"
@@ -680,7 +681,7 @@ export default function CasesView() {
               <span className="text-sm text-gray-800 dark:text-gray-100">{caseItem.createdBy}</span>
             </div>
           ) : <div></div>}
-          <SLACountdownBadgeAssignment createDate={caseItem.createdDate as string} sla={caseItem.caseSla} />
+          <SLACountdownBadgeAssignment createDate={caseItem.createdDate as string} sla={caseItem.caseSla} warningThresholdPct={DEFAULT_WARNING_THRESHOLD_PCT} />
         </div>
         <div className="flex items-center justify-between pt-2 text-sm">
           <span className="text-xs text-gray-500 font-medium ">{DateStringToAgoFormat(caseItem.createdDate as string, language)}</span>
@@ -884,7 +885,7 @@ export default function CasesView() {
                 </div>
 
                 <div className="col-span-2 flex items-center">
-                  <SLACountdownBadgeAssignment createDate={caseItem.createdDate as string} sla={caseItem.caseSla} />
+                  <SLACountdownBadgeAssignment createDate={caseItem.createdDate as string} sla={caseItem.caseSla} warningThresholdPct={DEFAULT_WARNING_THRESHOLD_PCT} />
                 </div>
 
                 <div className="col-span-2 flex items-center">

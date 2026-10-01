@@ -5,10 +5,11 @@
 // permission, or shell change is required. The first version shipped one section
 // (Map Settings).
 import { useState, type ComponentType } from "react";
-import { CreditCard, Map as MapIcon, Waypoints, type LucideIcon } from "lucide-react";
+import { CreditCard, Map as MapIcon, Siren, Waypoints, type LucideIcon } from "lucide-react";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import { MapSettingsSection } from "./map/MapSettingsSection";
 import { AssignmentRulesSection } from "./assignment/AssignmentRulesSection";
+import { EscalationRulesSection } from "./escalation/EscalationRulesSection";
 import { SubscriptionEntitlementsSection } from "./subscription/SubscriptionEntitlementsSection";
 
 interface SettingsSectionDef {
@@ -31,6 +32,12 @@ const SETTINGS_SECTIONS: SettingsSectionDef[] = [
     labelKey: "settings.section.subscription",
     icon: CreditCard,
     Component: SubscriptionEntitlementsSection,
+  },
+  {
+    id: "escalation-rules",
+    labelKey: "settings.section.escalation_rules",
+    icon: Siren,
+    Component: EscalationRulesSection,
   },
 ];
 

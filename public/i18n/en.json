@@ -4,7 +4,8 @@
     "section": {
       "map": "Map Settings",
       "assignment_rules": "Assignment Rules",
-      "subscription": "Subscription & Entitlements"
+      "subscription": "Subscription & Entitlements",
+      "escalation_rules": "Escalation Rules"
     },
     "actions": {
       "save": "Save",
@@ -188,6 +189,63 @@
           "success": "Assignment rules saved."
         }
       }
+    },
+    "escalation": {
+      "group": {
+        "escalation_rules": "SLA Escalation Rules",
+        "help": "When a case approaches or misses its SLA target, notify a responsible role. Configuration only — no escalation engine runs yet; these values apply once the backend ships."
+      },
+      "field": {
+        "enabled": {
+          "label": "Enabled"
+        },
+        "warning_threshold": {
+          "label": "Warning threshold (%)",
+          "help": "Percent of the SLA window elapsed before a pre-breach warning is sent (1–99)."
+        },
+        "target_role": {
+          "label": "Recipient role",
+          "help": "Role that receives the warning and breach notifications for this policy."
+        }
+      },
+      "role": {
+        "supervisor": "Supervisor",
+        "org_admin": "Org Admin",
+        "dispatcher": "Dispatcher"
+      },
+      "banner": {
+        "not_saved": {
+          "title": "Not saved to the server",
+          "body": "The Escalation Rules backend is not available yet, so your changes were not saved. Your edits are kept here until you leave the page.",
+          "dismiss": "Dismiss"
+        }
+      },
+      "action": {
+        "save": {
+          "success": "Escalation rules saved."
+        }
+      }
+    }
+  },
+  "sla": {
+    "escalations_title": "SLA Escalations",
+    "warning": "SLA warning",
+    "breached": "SLA breached",
+    "notified_role": "notified {{role}}",
+    "due_at": "SLA due {{time}}",
+    "acknowledged_by_at": "acknowledged by {{user}} at {{time}}",
+    "acknowledge": "Acknowledge",
+    "acknowledging": "Acknowledging…",
+    "notification": {
+      "warning_message": "is approaching its SLA target",
+      "breach_message": "has breached its SLA target"
+    },
+    "monitor": {
+      "compliance": "SLA Compliance",
+      "on_time": "On Time",
+      "warning_count": "Warning",
+      "breach_count": "Breach",
+      "avg_response": "Avg Response Time"
     }
   },
   "entitlement": {

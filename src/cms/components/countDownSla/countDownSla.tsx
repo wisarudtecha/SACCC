@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Badge from '@/core/components/ui/badge/Badge';
 import { useTranslation } from '@/core/hooks/useTranslation';
+import { deriveSlaState, slaStateToBadgeColor } from '@/cms/utils/slaEscalation';
 
 interface CountdownTimerProps {
   targetTime?: number;
@@ -9,13 +10,20 @@ interface CountdownTimerProps {
   className?: string;
   size?: "xs" | "sm" | "md" | "lg";
   showLabel?: boolean;
+  /**
+   * Optional rule-driven warning threshold (percent of the SLA window, e.g. 80).
+   * When provided, the badge colour comes from `deriveSlaState`; when omitted
+   * the legacy hardcoded 3h/1h thresholds apply (backward compatible).
+   */
+  warningThresholdPct?: number;
 }
 
-export const CompactCountdownTimer: React.FC<CountdownTimerProps> = ({ 
-  createdAt, 
+export const CompactCountdownTimer: React.FC<CountdownTimerProps> = ({
+  createdAt,
   className = "",
   sla,
-  size = "xs" 
+  size = "xs",
+  warningThresholdPct
 }) => {
   const [timeRemaining, setTimeRemaining] = useState<{
     isOverdue: boolean;
@@ -29,12 +37,14 @@ export const CompactCountdownTimer: React.FC<CountdownTimerProps> = ({
   } | null>(null);
   const { t } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
-  if ((sla !== undefined && (sla === null))||!createdAt || sla === undefined) {
-    return null;
-  }
+  const hasSlaData = !((sla !== undefined && (sla === null)) || !createdAt || sla === undefined);
+  const targetTime = hasSlaData ? new Date(createdAt).getTime() + (sla * 60 * 1000) : 0;
 
-  const targetTime = new Date(createdAt).getTime() + (sla * 60 * 1000);
   useEffect(() => {
+    if (!hasSlaData) {
+      setTimeRemaining(null);
+      return;
+    }
     const calculateTimeRemaining = () => {
       const now = Date.now();
       const diffMs = targetTime - now;
@@ -74,9 +84,9 @@ export const CompactCountdownTimer: React.FC<CountdownTimerProps> = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [targetTime]);
+  }, [targetTime, hasSlaData]);
 
-  if (!timeRemaining) {
+  if (!hasSlaData || !timeRemaining) {
     return null
   }
 
@@ -131,6 +141,10 @@ export const CompactCountdownTimer: React.FC<CountdownTimerProps> = ({
   };
 
   const getCompactColor = () => {
+    if (warningThresholdPct !== undefined) {
+      // Rule-driven states; the breached branch above already renders overdue.
+      return slaStateToBadgeColor(deriveSlaState(createdAt, sla, warningThresholdPct));
+    }
     if (timeRemaining.totalSeconds <= 3600) return "error";
     if (timeRemaining.totalSeconds <= 10800) return "warning";
     return "primary";

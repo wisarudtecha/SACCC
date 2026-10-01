@@ -2,6 +2,7 @@ import { createAvatarFromString } from "../avatar/createAvatarFromString";
 import { DateStringToAgoFormat } from "../date/DateToString";
 import { getPriorityBorderColorClass } from "../function/Prioriy";
 import { SLACountdownBadgeAssignment } from "../Sla/Sla";
+import { DEFAULT_WARNING_THRESHOLD_PCT } from "@/cms/utils/escalationRules";
 import Badge from "@/core/components/ui/badge/Badge";
 import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubType";
 import { CaseStatusInterface } from "../ui/status/status";
@@ -50,7 +51,7 @@ export const CaseCard = ({
                             <span className="text-sm text-gray-800 dark:text-gray-100">{caseItem.createdBy}</span>
                         </div>
                     ) : <div></div>}
-                    <SLACountdownBadgeAssignment createDate={caseItem.createdDate as string} sla={caseItem.caseSla} />
+                    <SLACountdownBadgeAssignment createDate={caseItem.createdDate as string} sla={caseItem.caseSla} warningThresholdPct={DEFAULT_WARNING_THRESHOLD_PCT} />
                 </div>
                 <div className="flex items-center justify-between pt-2 text-sm">
                     <span className="text-xs text-gray-500 font-medium ">{DateStringToAgoFormat(caseItem.createdDate as string, language)}</span>
