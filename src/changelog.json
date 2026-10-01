@@ -1,4 +1,10 @@
 {
+  "0.88.0": {
+    "date": "2026-10-01",
+    "segment": "MINOR",
+    "notes": "feat(cms): service-level breach alerts and escalation tracking\n- Cases approaching their service-level target now show an amber warning badge in the case assignment list and on the kanban board, and breached cases keep their pulsing red overdue badge, so at-risk work stands out at a glance.\n- Supervisors now receive an in-app notification when a case is about to miss its service-level target, and again when it misses it. Each notification opens the case directly, and the same case never alerts twice - even after reconnecting or opening a second tab.\n- The case's Activity tab now shows a service-level escalation history: who was notified and when. Authorized users can acknowledge an escalation right from the case, with a record of who acknowledged it and when.\n- Organization Settings gains a new Escalation Rules section: turn escalation on or off per service-level policy, set how early the warning fires (default 80% of the target window), and choose which role gets notified.\n- The SLA Monitor dashboard widget now shows live warning and breach counts instead of sample figures.\n- Note: breach notifications and acknowledgements run against a preview integration until the backend service becomes available; on-screen behavior may differ once the live service is connected.\n- changelog.json / package.json: bump version 0.87.1 -> 0.88.0",
+    "author": "Wisarud Techa"
+  },
   "0.87.1": {
     "date": "2026-09-30",
     "segment": "PATCH",
