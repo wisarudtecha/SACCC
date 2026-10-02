@@ -1,4 +1,10 @@
 {
+  "0.89.0": {
+    "date": "2026-10-02",
+    "segment": "MINOR",
+    "notes": "feat(cc): incoming call screen pop with caller context\n- When a customer calls in, agents now see an incoming-call pop-up card showing the caller's number, and when that number matches a known customer, the customer's name, phone and email, plus their most recent cases - no lookup needed.\n- Caller numbers are recognized in all common Thai formats (with or without the country code, with spaces or dashes), so the match works regardless of how the phone system delivers the number.\n- From the pop-up, an agent can open one of the caller's recent cases directly, or start a new case with the caller's phone number and customer details already filled in.\n- When several calls arrive at once, the cards stack with a count badge, and cards that are not acted on close on their own after 30 seconds.\n- Note: the pop-up runs against a preview integration until the telephony (3CX) backend service becomes available; on-screen behavior may differ once the live service is connected.\n- changelog.json / package.json: bump version 0.88.0 -> 0.89.0",
+    "author": "Wisarud Techa"
+  },
   "0.88.0": {
     "date": "2026-10-01",
     "segment": "MINOR",
