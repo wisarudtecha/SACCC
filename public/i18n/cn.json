@@ -316,6 +316,22 @@
       "history_title": "聊天记录",
       "coming_soon_title": "在线客服即将推出",
       "coming_soon_body": "在线客服工作台已包含在您的套餐中，目前正在开发中。坐席分配、SLA 和聊天仪表盘将在后续版本中提供。"
+    },
+    "screenpop": {
+      "title": "来电",
+      "caller_id": "来电号码",
+      "looking_up": "正在查询来电客户…",
+      "unknown_caller": "未知号码",
+      "customer": "客户",
+      "no_customer": "该号码未关联客户",
+      "lookup_error": "查询来电客户失败",
+      "open_cases": "最近案件",
+      "no_cases": "暂无最近案件",
+      "cases_error": "案件加载失败",
+      "linked_case": "关联案件",
+      "action_create_case": "创建案件",
+      "action_dismiss": "关闭",
+      "incoming_call_announcement": "来电来自 {{number}}"
     }
   },
   "common": {

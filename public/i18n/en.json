@@ -316,6 +316,22 @@
       "history_title": "Chat History",
       "coming_soon_title": "Live Chat is coming soon",
       "coming_soon_body": "The live chat workspace is included in your package and is currently under development. Agent assignment, SLA, and chat dashboards will be available in an upcoming release."
+    },
+    "screenpop": {
+      "title": "Incoming Call",
+      "caller_id": "Caller",
+      "looking_up": "Looking up caller…",
+      "unknown_caller": "Unknown number",
+      "customer": "Customer",
+      "no_customer": "No customer linked to this number",
+      "lookup_error": "Could not look up the caller",
+      "open_cases": "Recent cases",
+      "no_cases": "No recent cases",
+      "cases_error": "Could not load cases",
+      "linked_case": "Linked case",
+      "action_create_case": "Create Case",
+      "action_dismiss": "Dismiss",
+      "incoming_call_announcement": "Incoming call from {{number}}"
     }
   },
   "common": {

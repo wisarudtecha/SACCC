@@ -1,12 +1,13 @@
 import { CaseDetails, FileItem } from "@/cms/types/case";
-import { memo, useCallback, useState } from "react";
+import type { Custommer } from "@/cms/types";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { CaseFormFields } from "../caseFormFields";
-import { Customer, useLazyGetCustommerByPhoneNoQuery } from "@/cms/store/api/custommerApi";
+import { Customer, useLazyGetCustommerByPhoneNoQuery, useLazyGetCustomerQuery } from "@/cms/store/api/custommerApi";
 import Button from "@/core/components/ui/button/Button";
 import { ArrowLeft, FileText } from "lucide-react";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import { CreateCase, usePatchUpdateCaseMutation, usePostCreateCaseMutation } from "@/cms/store/api/caseApi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import PreviewDataBeforeSubmit from "../PreviewCaseData";
 import { TodayDate, TodayLocalDate } from "@/cms/components/date/DateToString";
 import { exampleCaseState } from "../constants/exampleData";
@@ -59,12 +60,28 @@ const CaseHeader = memo(({ disablePageMeta, onBack, onOpenCustomerPanel, t }: {
 ));
 CaseHeader.displayName = 'CaseHeader';
 
+/**
+ * Query-param prefill from the incoming-call screen pop
+ * (`/cms/case/creation?phoneNo=…&customerId=…`): accept digits only, capped
+ * at the E.164 maximum, so a stray param can never seed garbage into the
+ * customer phone field. Deliberately inline (not the cc ANI util) to avoid
+ * introducing a cms → cc import edge.
+ */
+function readPrefillPhoneParam(value: string | null): string {
+    const digits = (value ?? "").replace(/\D/g, "");
+    return digits.slice(0, 15);
+}
+
 export default function CaseCreation() {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const prefillPhoneNo = readPrefillPhoneParam(searchParams.get("phoneNo"));
+    const prefillCustomerId = (searchParams.get("customerId") ?? "").trim();
     const [createCase] = usePostCreateCaseMutation();
     const [updateCase] = usePatchUpdateCaseMutation();
     const [getCustomerByPhone] = useLazyGetCustommerByPhoneNoQuery();
+    const [getCustomerById] = useLazyGetCustomerQuery();
     const profile = JSON.parse(localStorage.getItem("profile") ?? "{}");
     const { addToast } = useToastContext();
     const [caseState, setCaseState] = useState<CaseDetails | undefined>({
@@ -77,7 +94,10 @@ export default function CaseCreation() {
         status: "",
         iotDate: TodayLocalDate(),
         scheduleDate: "",
-        customerData: {} as Customer,
+        // Instant prefill from the screen pop's phone param; the save path
+        // below already resolves mobileNo → customerId, so phone-only popups
+        // need nothing else.
+        customerData: ({ mobileNo: prefillPhoneNo } as Customer),
         attachFile: [] as FileItem[], // Changed to FileItem[]
         attachFileResult: [] as File[]
     } as CaseDetails);
@@ -102,6 +122,55 @@ export default function CaseCreation() {
     const updateCaseState = useCallback((updates: Partial<CaseDetails>) => {
         setCaseState(prev => prev ? { ...prev, ...updates } : prev);
     }, []);
+
+    // Screen-pop customer prefill: when the popup already resolved the caller
+    // (customerId param), pull the full profile into the customer data once.
+    // Best-effort — a failed fetch leaves the agent on the manual path, it
+    // never blocks case creation. The ref guard makes StrictMode's
+    // double-invoked effect fire the lookup only once.
+    const customerPrefillStartedRef = useRef(false);
+    useEffect(() => {
+        if (!prefillCustomerId || customerPrefillStartedRef.current) {
+            return;
+        }
+        customerPrefillStartedRef.current = true;
+        let cancelled = false;
+        getCustomerById(prefillCustomerId)
+            .unwrap()
+            .then((envelope) => {
+                if (cancelled) {
+                    return;
+                }
+                const customer = envelope?.data;
+                if (
+                    customer &&
+                    typeof customer === "object" &&
+                    !Array.isArray(customer) &&
+                    typeof customer.id === "string" &&
+                    customer.id.length > 0
+                ) {
+                    setCaseState(prev => prev ? {
+                        ...prev,
+                        // Same merge rule as "Link existing customer": in the
+                        // create flow the phone field is user-owned, so the
+                        // instantly-prefilled number wins over the fetched
+                        // profile's; `name` is the Custommer display name.
+                        customerData: {
+                            ...prev.customerData,
+                            ...(customer as unknown as Custommer),
+                            name: customer.displayName || "",
+                            mobileNo: prev.customerData?.mobileNo || customer.mobileNo
+                        }
+                    } : prev);
+                }
+            })
+            .catch((error) => {
+                console.warn("Failed to fetch prefill customer:", error);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [prefillCustomerId, getCustomerById]);
 
 
 

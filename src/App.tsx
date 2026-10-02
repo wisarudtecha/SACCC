@@ -32,10 +32,16 @@ import UserProfiles from "@/core/pages/UserProfiles";
 import ErrorBoundary from "@/core/components/security/ErrorBoundary";
 import LoadingSystem from "@/core/components/ui/loading/LoadingSystem";
 import SecurityAlerts from "@/core/components/security/SecurityAlerts";
+// Global incoming-call screen pop (3CX CALL_INCOMING events) — a Routes
+// sibling so it overlays every module while living inside the
+// WebSocketProvider/router/auth providers mounted in main.tsx.
+import IncomingCallScreenPop from "@/cc/components/incomingCall/IncomingCallScreenPop";
 
 export default function App() {
   return (
-    <Routes>
+    <>
+      <IncomingCallScreenPop />
+      <Routes>
       <Route element={<SuperLayout />}>
         <Route path="/" element={<Navigate to="/cms" />} />
         <Route path="/ai/*" element={<AiApp />} />
@@ -95,5 +101,6 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
+    </>
   );
 }
