@@ -1,4 +1,10 @@
 {
+  "0.90.0": {
+    "date": "2026-10-05",
+    "segment": "MINOR",
+    "notes": "feat: softphone workspace, call-center dashboard, and dashboard export\n- Agents now have a Softphone workspace that shows the active call, telephony controls (hold, resume, mute, transfer, hang up), the agent's current telephony state, and a short summary when a call ends. The call-control buttons reflect live call events only — they stay disabled until the telephony (3CX) backend service is connected, but agents can already watch a live demo of the call flow via the dev mock. The workspace is reachable at the Softphone route and will appear in the sidebar once the backend provisions the menu key.\n- The Call Center Dashboard now shows real call-center statistics instead of sample figures: total calls, answered, average duration and customer satisfaction for a selectable month, with daily call volume, call-type distribution and agent-performance charts. The whole dashboard can be exported to PDF or PNG. Statistics come from a local sample set in mock mode until the backend KPI service is available.\n- The Dispatch Dashboard gained an Export Report button, so its incident heatmap, officer status and recent events can be saved as a PDF or PNG image.\n- Dashboard export now shows a clear error message when the image cannot be captured — for example, when the map provider blocks image capture — instead of silently doing nothing, and the hidden toolbar is reliably restored afterwards.\n- Incoming-call pop-ups can no longer be brought back after they have expired or been dismissed, even if the telephony system redelivers the same call event. A case started from an incoming call also keeps its link to the call leg ready for when the telephony backend can persist it.\n- Fixed the Organization Management and Role & Privilege screens so their saving and disabled indicators actually show while a save is in flight, instead of the button appearing clickable the whole time.\n- changelog.json / package.json: bump version 0.89.0 -> 0.90.0",
+    "author": "Wisarud Techa"
+  },
   "0.89.0": {
     "date": "2026-10-02",
     "segment": "MINOR",
