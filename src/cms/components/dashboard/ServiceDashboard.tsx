@@ -1,5 +1,5 @@
 // src/components/ServiceDashboard.tsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import {
@@ -15,6 +15,7 @@ import { LoadingSpinner, ProgressBar, Skeleton } from "@/core/components/ui/load
 import { useWebSocket } from "@/core/components/websocket/websocket";
 import { useRealtimeDateTime } from "@/core/hooks/useRealtimeDateTime";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import { useDashboardExport } from "@/core/hooks/useDashboardExport";
 import ExportReportModal from "@/cms/components/crm/products/ExportReportModal";
 
 type JSONValue = string | number | boolean | null | JSONArray | JSONObject;
@@ -272,43 +273,13 @@ const ServiceDashboard: React.FC = () => {
   const { connectionState, isConnected, onMessage, send } = useWebSocket();
   const [isMounted, setIsMounted] = useState(false);
 
-  const exportRef = useRef<HTMLDivElement>(null);
-  const exportBtnRef = useRef<HTMLButtonElement>(null);
+  // Shared capture-to-PNG/PDF export (src/core/hooks/useDashboardExport.ts).
+  // Extracted from this component's former inline implementation; the hook
+  // additionally restores the hidden button in a `finally` and catches export
+  // failures instead of letting them reject through the modal's onExport.
+  const { captureRef, hideDuringCaptureRef, isExporting, exportDashboard } =
+    useDashboardExport({ filename: "service-dashboard" });
   const [showExportModal, setShowExportModal] = useState(false);
-
-  const handleExport = async (type: "pdf" | "image") => {
-    setShowExportModal(false);
-
-    // Hide export button so it doesn't appear in the capture
-    if (exportBtnRef.current) exportBtnRef.current.style.visibility = "hidden";
-    await new Promise(resolve => setTimeout(resolve, 350));
-
-    const element = exportRef.current;
-    if (!element) return;
-
-    const { toPng } = await import("html-to-image");
-    const dataUrl = await toPng(element, { pixelRatio: 2, backgroundColor: "#ffffff" });
-
-    // Restore export button
-    if (exportBtnRef.current) exportBtnRef.current.style.visibility = "visible";
-
-    if (type === "image") {
-      const link = document.createElement("a");
-      link.download = "service-dashboard.png";
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } else {
-      const { jsPDF } = await import("jspdf");
-      const img = new Image();
-      img.src = dataUrl;
-      await new Promise(resolve => { img.onload = resolve; });
-      const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [img.width / 2, img.height / 2] });
-      pdf.addImage(dataUrl, "PNG", 0, 0, img.width / 2, img.height / 2);
-      pdf.save("service-dashboard.pdf");
-    }
-  };
 
   // ===================================================================
   // Mockup State Management
@@ -998,11 +969,16 @@ const ServiceDashboard: React.FC = () => {
   });
 
   return (
-    <div ref={exportRef} className="bg-gray-50 dark:bg-gray-900 cursor-default">
+    <div ref={captureRef} className="bg-gray-50 dark:bg-gray-900 cursor-default">
       <ExportReportModal
         isOpen={showExportModal}
         onClose={() => setShowExportModal(false)}
-        onExport={handleExport}
+        onExport={async (type) => {
+          // The modal doesn't self-close after an export — keep the original
+          // close-on-export behavior of the inline implementation.
+          setShowExportModal(false);
+          await exportDashboard(type);
+        }}
       />
 
       {/* Header */}
@@ -1047,13 +1023,18 @@ const ServiceDashboard: React.FC = () => {
             {language === "th" ? "รายวัน" : "Daily"}
           </button>
 
-          <button
-            ref={exportBtnRef}
-            onClick={() => setShowExportModal(true)}
-            className="px-3 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors"
-          >
-            {language === "th" ? "ส่งออกรายงาน" : "Export Report"}
-          </button>
+          {/* Hidden (visibility, not display) during export captures so the
+              exported image shows data only — same behavior as the former
+              exportBtnRef on the button itself. */}
+          <div ref={hideDuringCaptureRef}>
+            <button
+              onClick={() => setShowExportModal(true)}
+              disabled={isExporting}
+              className="px-3 py-1 rounded bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium transition-colors"
+            >
+              {language === "th" ? "ส่งออกรายงาน" : "Export Report"}
+            </button>
+          </div>
         </div>
       </div>
 

@@ -1,8 +1,11 @@
 // src/cms/components/dashboard/DispatchDashboard.tsx
-import React from "react";
+import React, { useState } from "react";
+import { FileDown } from "lucide-react";
 import { DashboardSourceProvider } from "@/core/components/custom-dashboard/sources/DashboardSourceProvider";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import { useDashboardExport } from "@/core/hooks/useDashboardExport";
 import { Skeleton } from "@/core/components/ui/loading/LoadingSystem";
+import ExportReportModal from "@/cms/components/crm/products/ExportReportModal";
 import { DispatchKpiRow } from "@/cms/components/dashboard/dispatch/DispatchKpiRow";
 import { DispatchEventsList } from "@/cms/components/dashboard/dispatch/DispatchEventsList";
 import { OfficerStatusPanel } from "@/cms/components/dashboard/dispatch/OfficerStatusPanel";
@@ -15,8 +18,40 @@ const DispatchDashboardContent: React.FC = () => {
   const { events, isLoading: isEventsLoading } = useDispatchEventsFeed();
   const { cases: heatmapCases, isLoading: isHeatmapLoading } = useDispatchHeatmapCases();
 
+  const [showExportModal, setShowExportModal] = useState(false);
+  const { captureRef, hideDuringCaptureRef, isExporting, exportDashboard } =
+    // Map-specific failure message: the heatmap's provider canvas is the
+    // likely failure point (CORS-blocked map tiles break html-to-image).
+    useDashboardExport({
+      filename: "dispatch-dashboard",
+      failureMessageKey: "dashboard.dispatch.export_failed",
+    });
+
   return (
-    <div className="space-y-4">
+    // captureRef spans the whole dashboard (title included) so the exported
+    // image stands alone. NOTE: the heatmap renders into the active map
+    // provider's canvas — if a provider's tiles are served without CORS
+    // headers, html-to-image's capture will fail (caught + logged by the
+    // hook) rather than produce a tainted image.
+    <div ref={captureRef} className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+          {t("dashboard.dispatch.title")}
+        </h1>
+        {/* Hidden (visibility, not display) during export captures. */}
+        <div ref={hideDuringCaptureRef}>
+          <button
+            type="button"
+            disabled={isExporting}
+            onClick={() => setShowExportModal(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 px-3 py-1.5 text-xs font-medium text-white transition-colors"
+          >
+            <FileDown className="h-4 w-4" aria-hidden="true" />
+            {t("dashboard.dispatch.export")}
+          </button>
+        </div>
+      </div>
+
       <DispatchKpiRow />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
@@ -54,6 +89,12 @@ const DispatchDashboardContent: React.FC = () => {
         </h3>
         <DispatchEventsList events={events} isLoading={isEventsLoading} />
       </div>
+
+      <ExportReportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        onExport={exportDashboard}
+      />
     </div>
   );
 };
