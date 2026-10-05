@@ -57,7 +57,12 @@ const commonTagTypes = [
   "AppointmentType",
   "ServiceType",
   "Appointment",
-  "Product"
+  "Product",
+  // callCenterDashboardApi's /call-center/dashboard aggregate - same reason as
+  // "Place" above: a tag not in this list is silently ignored. Distinct from
+  // "Dashboard" (layout CRUD) so the KPI invalidation ping (contract §7)
+  // doesn't refetch layouts.
+  "CallCenterDashboard"
 ];
 
 // v1.0 - Initial version with simple baseQuery

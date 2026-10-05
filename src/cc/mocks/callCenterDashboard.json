@@ -1,0 +1,32 @@
+{
+  "period": "2026-10",
+  "summary": {
+    "totalCalls": 331,
+    "answeredCalls": 315,
+    "answeredRatePct": 95.2,
+    "avgDurationSeconds": 754,
+    "satisfactionPct": 91,
+    "totalCallsDeltaPct": 5.0
+  },
+  "dailyVolume": [
+    { "date": "2026-10-05", "totalCalls": 45, "answeredCalls": 42 },
+    { "date": "2026-10-06", "totalCalls": 52, "answeredCalls": 50 },
+    { "date": "2026-10-07", "totalCalls": 48, "answeredCalls": 46 },
+    { "date": "2026-10-08", "totalCalls": 61, "answeredCalls": 58 },
+    { "date": "2026-10-09", "totalCalls": 55, "answeredCalls": 53 },
+    { "date": "2026-10-10", "totalCalls": 38, "answeredCalls": 36 },
+    { "date": "2026-10-11", "totalCalls": 32, "answeredCalls": 30 }
+  ],
+  "callTypeDistribution": [
+    { "typeKey": "technical_support", "label": "Technical Support", "count": 35 },
+    { "typeKey": "billing_inquiry", "label": "Billing Inquiry", "count": 25 },
+    { "typeKey": "service_request", "label": "Service Request", "count": 30 },
+    { "typeKey": "other", "label": "Other", "count": 10 }
+  ],
+  "agentPerformance": [
+    { "agentId": "agent-101", "agentName": "John Smith", "callsHandled": 125, "efficiencyPct": 88, "satisfactionPct": 92 },
+    { "agentId": "agent-102", "agentName": "Jane Doe", "callsHandled": 118, "efficiencyPct": 91, "satisfactionPct": 95 },
+    { "agentId": "agent-103", "agentName": "Mike Johnson", "callsHandled": 98, "efficiencyPct": 85, "satisfactionPct": 87 },
+    { "agentId": "agent-104", "agentName": "Sarah Williams", "callsHandled": 132, "efficiencyPct": 89, "satisfactionPct": 90 }
+  ]
+}
