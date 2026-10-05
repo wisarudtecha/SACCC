@@ -1,0 +1,206 @@
+// Pure call-state machine for the softphone (`/cc/softphone`).
+//
+// Everything state-shaped lives here so it stays unit-testable in the repo's
+// node-environment Vitest setup — no React, no websocket provider imports.
+// Side effects (WS subscription, mock wiring) live in `useSoftphone.ts`.
+//
+// Semantics follow docs/CALL-Lifecycle-Websocket-Event-Contract.md §6:
+//   - upsert per callId — the softphone must not depend on having seen the
+//     CALL_INCOMING ring (or any earlier lifecycle event) for the leg;
+//   - `ended` is sticky/terminal — a late hold/resume/answer for the same
+//     callId is ignored, never resurrects the session;
+//   - repeated events are safe to re-apply (idempotent state assertion).
+import {
+  AGENT_STATE_CHANGED_WS_EVENT,
+  CALL_ANSWERED_WS_EVENT,
+  CALL_ENDED_WS_EVENT,
+  CALL_ON_HOLD_WS_EVENT,
+  CALL_RESUMED_WS_EVENT,
+  CALL_TRANSFERRED_WS_EVENT,
+  type CallLifecycleEvent,
+} from "../../types/callEvents";
+
+/** Lifecycle events scoped to a call leg (everything except agent state). */
+export type CallScopedLifecycleEvent = Exclude<
+  CallLifecycleEvent,
+  { event: typeof AGENT_STATE_CHANGED_WS_EVENT }
+>;
+
+/** Status of one call leg as tracked by the softphone. */
+export type CallSessionStatus = "active" | "on_hold" | "transferred" | "ended";
+
+/** One tracked call leg, keyed by `callId`. */
+export interface CallSession {
+  callId: string;
+  status: CallSessionStatus;
+  agentId?: string;
+  customerId?: string;
+  caseId?: string;
+  /** `toAgentId` of the last CALL_TRANSFERRED event, when transferred. */
+  transferredTo?: string;
+  /** `endReason` of the terminal CALL_ENDED event, when ended. */
+  endReason?: string;
+  /** Whole seconds reported by CALL_ENDED, when the adapter supplied it. */
+  durationSeconds?: number;
+  /** `timestamp` of the last applied event — drives "most recent" ordering. */
+  lastTimestamp: string;
+}
+
+/** All tracked sessions, keyed by callId. */
+export type SoftphoneCalls = Record<string, CallSession>;
+
+export type SoftphoneCallAction =
+  | { type: "apply"; event: CallScopedLifecycleEvent }
+  | { type: "clearEnded"; callId: string };
+
+/** Upper bound on tracked sessions — prunes oldest-ended first. */
+export const MAX_TRACKED_CALLS = 20;
+
+function baseSession(
+  payload: { callId: string; agentId?: string; timestamp: string },
+  existing?: CallSession
+): Omit<CallSession, "status" | "transferredTo" | "endReason" | "durationSeconds"> {
+  return {
+    callId: payload.callId,
+    agentId: payload.agentId ?? existing?.agentId,
+    customerId: existing?.customerId,
+    caseId: existing?.caseId,
+    lastTimestamp: payload.timestamp,
+  };
+}
+
+function applyEvent(
+  calls: SoftphoneCalls,
+  event: CallScopedLifecycleEvent
+): SoftphoneCalls {
+  const { payload, event: kind } = event;
+  const existing = calls[payload.callId];
+
+  // Terminal-sticky (contract §6.4): a non-terminal event for an ended leg
+  // never resurrects or mutates the session. ENDED itself may re-assert.
+  if (existing?.status === "ended" && kind !== CALL_ENDED_WS_EVENT) {
+    return calls;
+  }
+
+  let session: CallSession;
+  switch (kind) {
+    case CALL_ANSWERED_WS_EVENT:
+      session = {
+        ...baseSession(payload, existing),
+        customerId: payload.customerId ?? existing?.customerId,
+        caseId: payload.caseId ?? existing?.caseId,
+        status: "active",
+      };
+      break;
+    case CALL_ON_HOLD_WS_EVENT:
+      session = { ...baseSession(payload, existing), status: "on_hold" };
+      break;
+    case CALL_RESUMED_WS_EVENT:
+      session = { ...baseSession(payload, existing), status: "active" };
+      break;
+    case CALL_TRANSFERRED_WS_EVENT:
+      session = {
+        ...baseSession(payload, existing),
+        status: "transferred",
+        transferredTo: payload.toAgentId ?? existing?.transferredTo,
+      };
+      break;
+    case CALL_ENDED_WS_EVENT:
+      session = {
+        ...baseSession(payload, existing),
+        status: "ended",
+        endReason: payload.endReason,
+        durationSeconds: payload.durationSeconds,
+      };
+      break;
+  }
+
+  return prune({ ...calls, [payload.callId]: session });
+}
+
+function prune(calls: SoftphoneCalls): SoftphoneCalls {
+  const ids = Object.keys(calls);
+  if (ids.length <= MAX_TRACKED_CALLS) {
+    return calls;
+  }
+  const next = { ...calls };
+  const byAge = [...ids].sort((a, b) =>
+    calls[a].lastTimestamp.localeCompare(calls[b].lastTimestamp)
+  );
+  let excess = ids.length - MAX_TRACKED_CALLS;
+  // Oldest ended sessions go first; active/held/transferred legs are only
+  // dropped when there is nothing ended left to prune.
+  for (const id of byAge) {
+    if (excess <= 0) break;
+    if (next[id]?.status === "ended") {
+      delete next[id];
+      excess -= 1;
+    }
+  }
+  for (const id of byAge) {
+    if (excess <= 0) break;
+    if (id in next) {
+      delete next[id];
+      excess -= 1;
+    }
+  }
+  return next;
+}
+
+/** Applies lifecycle events and ended-call dismissal to the tracked sessions. */
+export function softphoneCallsReducer(
+  calls: SoftphoneCalls,
+  action: SoftphoneCallAction
+): SoftphoneCalls {
+  switch (action.type) {
+    case "apply":
+      return applyEvent(calls, action.event);
+    case "clearEnded": {
+      if (!(action.callId in calls)) {
+        return calls;
+      }
+      const next = { ...calls };
+      delete next[action.callId];
+      return next;
+    }
+  }
+}
+
+function newestOf(sessions: CallSession[]): CallSession | null {
+  return sessions.reduce<CallSession | null>(
+    (newest, session) =>
+      newest === null ||
+      session.lastTimestamp.localeCompare(newest.lastTimestamp) > 0
+        ? session
+        : newest,
+    null
+  );
+}
+
+/** The most recent session that is not over, or null when none exists. */
+export function selectActiveCall(calls: SoftphoneCalls): CallSession | null {
+  return newestOf(
+    Object.values(calls).filter((session) => session.status !== "ended")
+  );
+}
+
+/** The most recently ended session, or null when none exists. */
+export function selectLatestEndedCall(calls: SoftphoneCalls): CallSession | null {
+  return newestOf(
+    Object.values(calls).filter((session) => session.status === "ended")
+  );
+}
+
+/** Renders a whole-second duration as e.g. "4m 05s" / "1h 02m 03s". */
+export function formatCallDuration(totalSeconds: number): string {
+  if (!Number.isFinite(totalSeconds) || totalSeconds < 0) {
+    return "";
+  }
+  const seconds = Math.floor(totalSeconds);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const rest = seconds % 60;
+  const mm = minutes.toString().padStart(2, "0");
+  const ss = rest.toString().padStart(2, "0");
+  return hours > 0 ? `${hours}h ${mm}m ${ss}s` : `${minutes}m ${ss}s`;
+}

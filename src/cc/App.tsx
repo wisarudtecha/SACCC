@@ -9,6 +9,7 @@ import { ProtectedRoute } from "@/core/components/auth/ProtectedRoute";
 import NotFound from "@/core/pages/OtherPage/NotFound";
 
 import CallCenterDashboardPage from "@/cc/pages/Dashboard/CallCenterDashboard";
+import SoftphonePage from "@/cc/pages/Softphone/Softphone";
 import EmailPage from "@/cc/pages/Workspace/Email";
 import LobbyIncomingPage from "@/cc/pages/Workspace/LobbyIncoming";
 import ChatHistoryPage from "@/cc/pages/Workspace/ChatHistory";
@@ -24,6 +25,10 @@ export default function CcApp() {
       <Routes>
         <Route path="*" element={<NotFound />} />
         <Route path="/dashboard" element={<CallCenterDashboardPage />} />
+        {/* Softphone — no permission gate yet, mirroring /cc/dashboard: the
+            sidebar's "workspace.softphone" key is commented out until the
+            backend provisions it. */}
+        <Route path="/softphone" element={<SoftphonePage />} />
         <Route path="/email" element={<EmailPage />} />
 
         {/* Live Chat (CC-CHAT, Professional+). Route-level entitlement gate
