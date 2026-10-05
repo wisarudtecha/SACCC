@@ -253,13 +253,22 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(version)
   },
 
-  // Unit tests (Vitest). The suite is pure logic only - SDK-free utilities and
-  // normalizers - so the default "node" environment is enough; no jsdom, no
-  // setup file. `*.test.ts(x)` is excluded from tsconfig.app.json, so `tsc -b`
-  // ignores these while Vitest transpiles them itself. The `@/` aliases above
-  // are reused automatically.
+  // Unit tests (Vitest). `*.test.ts(x)` is excluded from tsconfig.app.json, so
+  // `tsc -b` ignores these while Vitest transpiles them itself. The `@/`
+  // aliases above are reused automatically. Most of the suite is pure logic
+  // (SDK-free utilities and normalizers) on the default "node" environment;
+  // DOM-environment tests opt in per file via a `@vitest-environment jsdom`
+  // docblock (see useDashboardExport.test.tsx).
   test: {
     environment: "node",
-    include: ["src/**/*.test.{ts,tsx}"]
+    include: ["src/**/*.test.{ts,tsx}"],
+    // On this Windows/pnpm setup, vitest 5's default `forks` pool (and
+    // `threads`) fails to inject the runner state into `.tsx` test files and
+    // into any non-node environment — the file dies at its first `describe()`
+    // with "Cannot read properties of undefined (reading 'config')".
+    // `vmThreads` runs each file in a VM context in-thread and works for
+    // both. Verified: the whole suite passes under vmThreads; plain `.ts`
+    // node-env tests pass under every pool.
+    pool: "vmThreads"
   }
 });
