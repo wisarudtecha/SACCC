@@ -38,6 +38,7 @@ import {
   type IncomingCallPopupAction,
   type IncomingCallPopupItem,
 } from "./incomingCallPopupState";
+import { createSeenCallIds } from "./callIdDedupe";
 
 /**
  * Interim permission keys until the backend provisions a precise screen-pop
@@ -53,9 +54,6 @@ const SCREENPOP_PERMISSION_KEYS: readonly string[] = [
 
 /** Cases fetched per customer so recent-first sorting has material. */
 const CASES_FETCH_LENGTH = 10;
-
-/** Seen-callId memory cap — bounds the dedupe set in long-lived sessions. */
-const CALL_ID_DEDUPE_MAX = 100;
 
 export interface IncomingCallPopupsApi {
   items: IncomingCallPopupItem[];
@@ -77,7 +75,10 @@ export function useIncomingCallPopups(): IncomingCallPopupsApi {
 
   const permissionRef = useRef(hasPermission);
   permissionRef.current = hasPermission;
-  const seenRef = useRef<Set<string>>(new Set());
+  // Session-spanning callId memory — bounds redelivery-after-reconnect
+  // resurrections; eviction semantics live in (and are tested by)
+  // `callIdDedupe.ts`.
+  const seenRef = useRef(createSeenCallIds());
   const inFlightRef = useRef<Set<string>>(new Set());
 
   const dispatch = useCallback((action: IncomingCallPopupAction) => {
@@ -98,15 +99,10 @@ export function useIncomingCallPopups(): IncomingCallPopupsApi {
         return;
       }
       // Dedupe spans the whole session (not just active cards) so a websocket
-      // redelivery cannot resurrect a card the agent already dismissed.
+      // redelivery cannot resurrect a card the agent already dismissed. The
+      // cap/eviction rules live in the SeenCallIds helper.
       if (seenRef.current.has(event.callId)) {
         return;
-      }
-      if (seenRef.current.size >= CALL_ID_DEDUPE_MAX) {
-        const oldest = seenRef.current.values().next().value;
-        if (oldest !== undefined) {
-          seenRef.current.delete(oldest);
-        }
       }
       seenRef.current.add(event.callId);
 
@@ -232,6 +228,16 @@ export function useIncomingCallPopups(): IncomingCallPopupsApi {
       }
       if (item.customer?.id) {
         params.set("customerId", item.customer.id);
+      }
+      // Call↔case linkage: the create form captures these into its case
+      // state (callLinkage) so the link to the call leg is ready when the
+      // backend adapter contract adds the persistence field.
+      params.set("callId", item.call.callId);
+      if (item.call.ani) {
+        params.set("ani", item.call.ani);
+      }
+      if (item.call.timestamp) {
+        params.set("callTimestamp", item.call.timestamp);
       }
       const query = params.toString();
       navigate(`/case/creation${query ? `?${query}` : ""}`);

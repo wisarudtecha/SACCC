@@ -20,6 +20,7 @@ import { useToastContext } from "@/core/components/crud/ToastGlobal";
 import { UploadFileRes } from "@/core/types/file";
 import { useDeleteFileMutationMutation, usePostUploadFileMutationMutation } from "@/core/store/api/file";
 import { handleFileChanges, uploadFileToServer } from "./createCaseFunction";
+import { readCallLinkagePrefill } from "./callLinkagePrefill";
 import { useCustomerSocials } from "@/cms/hooks/useCustomerSocials";
 
 const CaseHeader = memo(({ disablePageMeta, onBack, onOpenCustomerPanel, t }: {
@@ -78,6 +79,10 @@ export default function CaseCreation() {
     const [searchParams] = useSearchParams();
     const prefillPhoneNo = readPrefillPhoneParam(searchParams.get("phoneNo"));
     const prefillCustomerId = (searchParams.get("customerId") ?? "").trim();
+    // Call-linkage prefill (callId/ani/callTimestamp) — captured into
+    // caseState.callLinkage so it survives to submit time; see the payload
+    // note in saveCase for why it is not sent yet.
+    const prefillCallLinkage = readCallLinkagePrefill(searchParams);
     const [createCase] = usePostCreateCaseMutation();
     const [updateCase] = usePatchUpdateCaseMutation();
     const [getCustomerByPhone] = useLazyGetCustommerByPhoneNoQuery();
@@ -98,6 +103,9 @@ export default function CaseCreation() {
         // below already resolves mobileNo → customerId, so phone-only popups
         // need nothing else.
         customerData: ({ mobileNo: prefillPhoneNo } as Customer),
+        // Call↔case linkage from the screen pop, when the case was created
+        // from a call (null when opened without prefill params).
+        callLinkage: prefillCallLinkage ?? undefined,
         attachFile: [] as FileItem[], // Changed to FileItem[]
         attachFileResult: [] as File[]
     } as CaseDetails);
@@ -222,6 +230,10 @@ export default function CaseCreation() {
             }
 
             const casePayload: CreateCase = {
+                // NOTE (call linkage): when the case was created from a call,
+                // `caseState.callLinkage` (callId/ani/callTimestamp) is ready
+                // to attach here — pending a CreateCase field from the backend
+                // 3CX adapter contract (capability matrix §5 "call logging").
                 formData: caseState?.caseType?.formField,
                 // customerName: caseState?.customerData?.name,
                 customerId: customerId ? parseInt(customerId, 10) : null,

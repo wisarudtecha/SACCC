@@ -383,6 +383,25 @@ export interface TypeAnalytics {
 
 export type FileItem = File | Attachment;
 
+/**
+ * Call-linkage prefill from the incoming-call screen pop
+ * (`/cms/case/creation?callId=…&ani=…&callTimestamp=…`).
+ *
+ * Captured so a case created from a call keeps its link to the call leg. Not
+ * sent with the case payload yet — `CreateCase` has no field for it until the
+ * backend 3CX adapter contract adds one (see
+ * `docs/3CX-Integration-Capability-Matrix.md` §5 "call logging"). Mirrors the
+ * `socialIdentity` precedent below.
+ */
+export interface CallLinkagePrefill {
+  /** The call leg id — the same `callId` the CALL_INCOMING/lifecycle events carry. */
+  callId: string
+  /** Raw ANI exactly as the trunk delivered it (informational; may be absent for anonymous callers). */
+  ani?: string
+  /** ISO timestamp of the call event (server clock). */
+  callTimestamp?: string
+}
+
 export interface CaseDetails {
   status: string
   priority: number
@@ -425,6 +444,13 @@ export interface CaseDetails {
    * case belongs to, and as the prefill when linking one.
    */
   socialIdentity?: DraftCustomerSocial
+  /**
+   * The call leg this case was created from, when the screen pop prefilled it
+   * (`callId`/`ani`/`callTimestamp` query params). Held for the payload the
+   * same way `socialIdentity` is: not sent until `CreateCase` gains a field
+   * for it from the backend adapter contract.
+   */
+  callLinkage?: CallLinkagePrefill
 }
 
 export interface caseResults {

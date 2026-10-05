@@ -172,9 +172,103 @@ describe("incomingCallPopupReducer — resolution transitions", () => {
   });
 });
 
+describe("incomingCallPopupReducer — hardening (expiry vs. in-flight work)", () => {
+  const CUSTOMER: CustomerSummary = {
+    id: "cust-42",
+    displayName: "Jane W.",
+    firstName: "Jane",
+    lastName: "Wong",
+    mobileNo: "0811223344",
+    email: "jane@example.com",
+    photo: "",
+  };
+
+  it("starts at resolving when the backend already resolved the customer", () => {
+    const event = { ...call("call-1"), customerId: "42" };
+    const state = incomingCallPopupReducer([], {
+      type: "enqueue",
+      call: event,
+      ani: ANI,
+      now: NOW,
+    });
+    expect(state[0]?.lookup).toBe("resolving");
+  });
+
+  it("expires a card even while its lookup is in flight (disconnect mid-lookup)", () => {
+    let state = enqueue([], "call-1");
+    state = incomingCallPopupReducer(state, { type: "resolutionStarted", callId: "call-1" });
+    const expired = incomingCallPopupReducer(state, {
+      type: "expire",
+      now: NOW + INCOMING_CALL_AUTO_DISMISS_MS,
+    });
+    expect(expired).toHaveLength(0);
+  });
+
+  it("a resolution completing after expiry cannot resurrect the card", () => {
+    let state = enqueue([], "call-1");
+    state = incomingCallPopupReducer(state, { type: "resolutionStarted", callId: "call-1" });
+    state = incomingCallPopupReducer(state, {
+      type: "expire",
+      now: NOW + INCOMING_CALL_AUTO_DISMISS_MS,
+    });
+    const late = incomingCallPopupReducer(state, {
+      type: "customerResolved",
+      callId: "call-1",
+      customer: CUSTOMER,
+    });
+    expect(late).toHaveLength(0);
+    expect(late).toBe(state);
+  });
+
+  it("a late case-list result for a dismissed card is ignored", () => {
+    let state = enqueue([], "call-1");
+    state = incomingCallPopupReducer(state, { type: "dismiss", callId: "call-1" });
+    const late = incomingCallPopupReducer(state, {
+      type: "casesLoaded",
+      callId: "call-1",
+      cases: [],
+    });
+    expect(late).toHaveLength(0);
+    expect(late).toBe(state);
+  });
+
+  it("dismissing a card frees capacity for the next call after an overflow drop", () => {
+    let state: IncomingCallPopupItem[] = [];
+    for (let index = 1; index <= INCOMING_CALL_MAX_ACTIVE; index += 1) {
+      state = enqueue(state, `call-${index}`);
+    }
+    const overflow = enqueue(state, "call-overflow");
+    expect(overflow).toHaveLength(INCOMING_CALL_MAX_ACTIVE);
+    expect(overflow.some((item) => item.call.callId === "call-overflow")).toBe(false);
+
+    state = incomingCallPopupReducer(overflow, { type: "dismiss", callId: "call-1" });
+    state = enqueue(state, "call-next");
+    expect(state).toHaveLength(INCOMING_CALL_MAX_ACTIVE);
+    expect(state.some((item) => item.call.callId === "call-next")).toBe(true);
+  });
+
+  it("expire sweeps every due card in one pass and keeps not-yet-due cards", () => {
+    let state = enqueue([], "call-1", NOW);
+    state = enqueue(state, "call-2", NOW + 5_000);
+    state = enqueue(state, "call-3", NOW + 60_000);
+    // call-1 expires at NOW+30s, call-2 at NOW+35s — one tick past both
+    // removes them together; call-3 (expires NOW+90s) survives.
+    const swept = incomingCallPopupReducer(state, {
+      type: "expire",
+      now: NOW + INCOMING_CALL_AUTO_DISMISS_MS + 5_001,
+    });
+    expect(swept.map((item) => item.call.callId)).toEqual(["call-3"]);
+  });
+
+  it("a quiet expiry tick returns the identical array reference", () => {
+    const state = enqueue([], "call-1");
+    const quiet = incomingCallPopupReducer(state, { type: "expire", now: NOW + 1_000 });
+    expect(quiet).toBe(state);
+  });
+});
+
 describe("incomingCallPopupReducer — immutability", () => {
-  it("never mutates the previous state array or its items", () => {
-    const initial = enqueue([], "call-1");
+  it("never mutates the previous state array or its items", () => {    const initial = enqueue([], "call-1");
     const snapshot = initial.map((item) => ({ ...item }));
     const originalSnapshot = JSON.parse(JSON.stringify(initial));
 
