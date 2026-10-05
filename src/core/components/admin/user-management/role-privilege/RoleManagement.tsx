@@ -16,6 +16,7 @@ import { ToastContainer } from "@/core/components/crud/ToastContainer";
 import { Modal } from "@/core/components/ui/modal";
 import { useIsSystemAdmin } from "@/core/hooks/useIsSystemAdmin";
 import { usePermissions } from "@/core/hooks/usePermissions";
+import { useCrudToastRunner } from "@/core/hooks/useCrudToastRunner";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import { useToast } from "@/core/hooks/useToast";
 import {
@@ -116,7 +117,10 @@ const RoleManagementComponent: React.FC<{
   //   roleDelete: false
   // });
 
-  const [loading, setLoading] = useState(false);
+  // Shared CRUD runner (src/core/hooks/useCrudToastRunner.ts) — replaces the
+  // former local `loading` state, which only these two mutation handlers
+  // ever set. The child's `loading` prop now reflects real in-flight state.
+  const { run: runCrud, isLoading: loading } = useCrudToastRunner({ addToast });
 
   const isDeleteAvailable = (roleItem: Role) => {
     const canDelete = permissions.hasPermission("role.delete") || isSystemAdmin;
@@ -490,10 +494,40 @@ const RoleManagementComponent: React.FC<{
     }));
   }, []);
 
+  // Historical note: the original implementation fell back to creating role
+  // permissions per-role when a role had none (see git history / the block
+  // below) before the bulk updateUserRolesPermissions call replaced it.
+  // for (const [, rl] of roleList.entries()) {
+  //   trigger(rl.id);
+  //   const { data: rpsData } = await trigger(rl.id);
+  //   const rps = rpsData as unknown as RolePermission[] || [];
+  //   if (rps.length === 0) {
+  //     const ps = (rl.permissions || []).map(p => {
+  //       return { permId: p, active: true };
+  //     });
+  //     const payload: RolePermissionsCreateData = {
+  //       roleId: rl.id,
+  //       permissions: ps,
+  //     };
+  //     try {
+  //       const response = await createRolePermissions(payload).unwrap();
+  //       console.log("Created role permissions:", response);
+  //     }
+  //     catch (err) {
+  //       console.error("Error creating role permissions:", err);
+  //     }
+  //   }
+  // };
   const handlePermissionSave = async () => {
-    try {
-      if (permissions.hasAnyPermission(["role.update"])) {
-        setLoading(true);
+    await runCrud(
+      {
+        hasPermission: permissions.hasAnyPermission(["role.update"]),
+        permissionDeniedMessage: t("crud.common.permission_denied"),
+        unknownApiMessage: t("errors.unknownApi"),
+        successMessage: t("crud.role_privilege.action.privilege.update.success"),
+        errorPrefix: t("crud.role_privilege.action.privilege.update.error"),
+      },
+      async () => {
         const payload: RolesPermissionsUpdateData = {
           body: (roleList).map(rl => {
             return {
@@ -503,53 +537,10 @@ const RoleManagementComponent: React.FC<{
               })
             };
           }
-        )};
-        const response = await updateUserRolesPermissions(payload).unwrap();
-
-        // setUpdateUserRolesPermissionsResponse(response);
-
-        if (response?.status) {
-          // addToast("success", `Roles Permissions Management: ${response?.desc || response?.msg || "Update successfully"}`);
-          addToast("success", t("crud.role_privilege.action.privilege.update.success"));
-        }
-        else {
-          // throw new Error(response?.desc || response?.msg || "Unknown error");
-          throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
-        }
-
-        // for (const [, rl] of roleList.entries()) {
-        //   trigger(rl.id);
-        //   const { data: rpsData } = await trigger(rl.id);
-        //   const rps = rpsData as unknown as RolePermission[] || [];
-        //   if (rps.length === 0) {
-        //     const ps = (rl.permissions || []).map(p => {
-        //       return { permId: p, active: true };
-        //     });
-        //     const payload: RolePermissionsCreateData = {
-        //       roleId: rl.id,
-        //       permissions: ps,
-        //     };
-        //     try {
-        //       const response = await createRolePermissions(payload).unwrap();
-        //       console.log("Created role permissions:", response);
-        //     }
-        //     catch (err) {
-        //       console.error("Error creating role permissions:", err);
-        //     }
-        //   }
-        // };
+          )};
+        return updateUserRolesPermissions(payload).unwrap();
       }
-      else {
-        throw new Error(t("crud.common.permission_denied"));
-      }
-    }
-    catch (error) {
-      // addToast("error", `Roles Permissions Management: ${error}`);
-      addToast("error", `${t("crud.role_privilege.action.privilege.update.error")}: ${error}`);
-    }
-    finally {
-      setLoading(false);
-    }
+    );
   };
 
   // const handlePermissionToggle = useCallback(( roleId: string, permId: string ) => {
@@ -740,43 +731,31 @@ const RoleManagementComponent: React.FC<{
       active: true,
       roleName: roleName,
     };
-    try {
-      setLoading(true);
-      let response;
-      if (permissions.hasAnyPermission(["role.create", "role.update"])) {
-        if (roleId) {
-          response = await updateUserRoles({
-            id: roleId, data: roleData
-          }).unwrap();
-        }
-        else {
-          response = await createUserRoles(roleData).unwrap();
-        }
-      }
-      else {
-        throw new Error(t("crud.common.permission_denied"));
-      }
-      if (response?.status) {
-        // addToast("success", `Role & Privilege Management: ${response?.desc || response?.msg || "Save successfully"}`);
-        addToast("success", roleId && t("crud.role_privilege.action.role.update.success") || t("crud.role_privilege.action.role.create.success"));
-        setTimeout(() => {
-          window.location.replace(`/role-privilege`);
-        }, 1000);
-      }
-      else {
-        // throw new Error(response?.desc || response?.msg || "Unknown error");
-        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
-      }
-    }
-    catch (error) {
-      // addToast("error", `Role & Privilege Management: ${error}`);
-      addToast("error", `${roleId && t("crud.role_privilege.action.role.update.error") || t("crud.role_privilege.action.role.create.error")}: ${error}`);
-    }
-    finally {
-      setRoleSaveOpen(false);
-      setLoading(false);
-    }
-  }, [roleId, roleName, permissions, addToast, createUserRoles, t, updateUserRoles, validateRole]);
+    await runCrud(
+      {
+        hasPermission: permissions.hasAnyPermission(["role.create", "role.update"]),
+        permissionDeniedMessage: t("crud.common.permission_denied"),
+        unknownApiMessage: t("errors.unknownApi"),
+        successMessage: roleId
+          ? t("crud.role_privilege.action.role.update.success")
+          : t("crud.role_privilege.action.role.create.success"),
+        errorPrefix: roleId
+          ? t("crud.role_privilege.action.role.update.error")
+          : t("crud.role_privilege.action.role.create.error"),
+        onSuccess: () => {
+          setTimeout(() => {
+            window.location.replace(`/role-privilege`);
+          }, 1000);
+        },
+        onSettled: () => setRoleSaveOpen(false),
+      },
+      () =>
+        (roleId
+          ? updateUserRoles({ id: roleId, data: roleData })
+          : createUserRoles(roleData)
+        ).unwrap()
+    );
+  }, [roleId, roleName, permissions, runCrud, createUserRoles, t, updateUserRoles, validateRole]);
 
   // ===================================================================
   // Custom Rendering

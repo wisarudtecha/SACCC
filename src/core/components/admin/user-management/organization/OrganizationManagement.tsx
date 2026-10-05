@@ -17,6 +17,7 @@ import {
 import { ToastContainer } from "@/core/components/crud/ToastContainer";
 import { Modal } from "@/core/components/ui/modal";
 import { usePermissions } from "@/core/hooks/usePermissions";
+import { useCrudToastRunner } from "@/core/hooks/useCrudToastRunner";
 import { useToast } from "@/core/hooks/useToast";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import {
@@ -91,10 +92,14 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
   const [stationEn, setStationEn] = useState("");
   const [stnValidateErrors, setStnValidateErrors] = useState({ deptId: "", commId: "", stationTh: "", stationEn: "" });
 
-  const [isLoading, ] = useState(false);
+  // Shared CRUD runner (src/core/hooks/useCrudToastRunner.ts): permission
+  // gate, envelope check, toasts and loading for every handler below. This
+  // replaces the former `isLoading`/`setLoading` pair, whose two halves were
+  // each wired to a *different* useState — the render read a flag nothing
+  // ever set, so the saving/disabled states never showed.
+  const { run: runCrud, isLoading } = useCrudToastRunner({ addToast });
   // const [isOpen, setIsOpen] = useState(false);
   // const [loading, setLoading] = useState(false);
-  const [, setLoading] = useState(false);
   // const [organization, setOrganization] = useState<Organization[]>(organizations || []);
   const [, setOrganization] = useState<Organization[]>(organizations || []);
   const [searchQuery, setSearchQuery] = useState("");
@@ -376,41 +381,23 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
   // Delete Department
   const handleDepartmentDelete = useCallback(async (id: number) => {
     if (!id) {
-      // throw new Error("Department ID not found");
-      return; // Don"t save if there are validation errors
+      return;
     }
-    try {
-      // console.log("🚀 ~ OrganizationManagementComponent ~ handleDepartmentDelete - id:", id);
-      // throw new Error("");
-
-      setLoading(true);
-      let response;
-      if (permissions.hasAnyPermission(["organization.update"])) {
-        response = await deleteDepartment(id).unwrap();
-      }
-      else {
-        throw new Error(t("crud.common.permission_denied"));
-      }
-      if (response?.status) {
-        // addToast("success", `Organization Management - Department: ${response?.desc || response?.msg || "Delete successfully"}`);
-        addToast("success", t("crud.organization.action.dept.delete.success"));
+    await runCrud(
+      {
+        hasPermission: permissions.hasAnyPermission(["organization.update"]),
+        permissionDeniedMessage: t("crud.common.permission_denied"),
+        unknownApiMessage: t("errors.unknownApi"),
+        successMessage: t("crud.organization.action.dept.delete.success"),
+        errorPrefix: t("crud.organization.action.dept.delete.error"),
         // The lists refresh themselves now that the mutations invalidate the
         // "Organization" tag; reloading the page here was what threw away which
         // rows the user had expanded.
-        setFocusTarget(null);
-      }
-      else {
-        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
-      }
-    }
-    catch (error) {
-      // addToast("error", `Organization Management - Department: ${error}`);
-      addToast("error", `${t("crud.organization.action.dept.delete.error")}: ${error}`);
-    }
-    finally {
-      setLoading(false);
-    }
-  }, [permissions, addToast, deleteDepartment, t]);
+        onSuccess: () => setFocusTarget(null),
+      },
+      () => deleteDepartment(id).unwrap()
+    );
+  }, [permissions, runCrud, deleteDepartment, t]);
 
   // Reset Department
   const handleDepartmentReset = () => {
@@ -432,46 +419,32 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
       th: deptTh,
       en: deptEn,
     };
-    try {
-      // console.log("🚀 ~ OrganizationManagementComponent ~ handleDepartmentSave - id:", deptId, "data:", departmentData);
-      // throw new Error("");
-
-      setLoading(true);
-      let response;
-      if (permissions.hasAnyPermission(["organization.update"])) {
-        if (deptId) {
-          response = await updateDepartment({
-            id: deptId, data: departmentData
-          }).unwrap();
-        }
-        else {
-          response = await createDepartment(departmentData).unwrap();
-        }
-      }
-      else {
-        throw new Error(t("crud.common.permission_denied"));
-      }
-      if (response?.status) {
-        // addToast("success", `Organization Management - Department: ${response?.desc || response?.msg || "Save successfully"}`);
-        addToast("success", deptId && t("crud.organization.action.dept.update.success") || t("crud.organization.action.dept.create.success"));
+    await runCrud(
+      {
+        hasPermission: permissions.hasAnyPermission(["organization.update"]),
+        permissionDeniedMessage: t("crud.common.permission_denied"),
+        unknownApiMessage: t("errors.unknownApi"),
+        successMessage: deptId
+          ? t("crud.organization.action.dept.update.success")
+          : t("crud.organization.action.dept.create.success"),
+        errorPrefix: deptId
+          ? t("crud.organization.action.dept.update.error")
+          : t("crud.organization.action.dept.create.error"),
         // An edit knows its row id; a create is matched by name once the
         // invalidated lists come back - see OrganizationFocusTarget.
-        setFocusTarget({ level: "department", id: deptId || undefined, en: deptEn });
-        handleDepartmentReset();
-      }
-      else {
-        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
-      }
-    }
-    catch (error) {
-      // addToast("error", `Organization Management - Department: ${error}`);
-      addToast("error", `${deptId && t("crud.organization.action.dept.update.success") || t("crud.organization.action.dept.create.success")}: ${error}`);
-    }
-    finally {
-      setDeptIsOpen(false);
-      setLoading(false);
-    }
-  }, [deptEn, deptId, deptTh, permissions, addToast, createDepartment, t, updateDepartment, validateDepartment]);
+        onSuccess: () => {
+          setFocusTarget({ level: "department", id: deptId || undefined, en: deptEn });
+          handleDepartmentReset();
+        },
+        onSettled: () => setDeptIsOpen(false),
+      },
+      () =>
+        (deptId
+          ? updateDepartment({ id: deptId, data: departmentData })
+          : createDepartment(departmentData)
+        ).unwrap()
+    );
+  }, [deptEn, deptId, deptTh, permissions, runCrud, createDepartment, t, updateDepartment, validateDepartment]);
 
   // ===================================================================
   // Command CRUD
@@ -480,38 +453,20 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
   // Delete Command
   const handleCommandDelete = useCallback(async (id: number) => {
     if (!id) {
-      // throw new Error("Command ID not found");
-      return; // Don"t save if there are validation errors
+      return;
     }
-    try {
-      // console.log("🚀 ~ OrganizationManagementComponent ~ handleCommandDelete - id:", id);
-      // throw new Error("");
-
-      setLoading(true);
-      let response;
-      if (permissions.hasAnyPermission(["organization.update"])) {
-        response = await deleteCommand(id).unwrap();
-      }
-      else {
-        throw new Error(t("crud.common.permission_denied"));
-      }
-      if (response?.status) {
-        // addToast("success", `Organization Management - Command: ${response?.desc || response?.msg || "Delete successfully"}`);
-        addToast("success", t("crud.organization.action.comm.delete.success"));
-        setFocusTarget(null);
-      }
-      else {
-        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
-      }
-    }
-    catch (error) {
-      // addToast("error", `Organization Management - Command: ${error}`);
-      addToast("error", `${t("crud.organization.action.comm.delete.error")}: ${error}`);
-    }
-    finally {
-      setLoading(false);
-    }
-  }, [permissions, addToast, deleteCommand, t]);
+    await runCrud(
+      {
+        hasPermission: permissions.hasAnyPermission(["organization.update"]),
+        permissionDeniedMessage: t("crud.common.permission_denied"),
+        unknownApiMessage: t("errors.unknownApi"),
+        successMessage: t("crud.organization.action.comm.delete.success"),
+        errorPrefix: t("crud.organization.action.comm.delete.error"),
+        onSuccess: () => setFocusTarget(null),
+      },
+      () => deleteCommand(id).unwrap()
+    );
+  }, [permissions, runCrud, deleteCommand, t]);
 
   // Reset Command
   const handleCommandReset = () => {
@@ -535,44 +490,30 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
       th: commandTh,
       en: commandEn,
     };
-    try {
-      // console.log("🚀 ~ OrganizationManagementComponent ~ handleCommandSave - id:", commId, "data:", commandData);
-      // throw new Error("");
-
-      setLoading(true);
-      let response;
-      if (permissions.hasAnyPermission(["organization.update"])) {
-        if (commId) {
-          response = await updateCommand({
-            id: commId, data: commandData
-          }).unwrap();
-        }
-        else {
-          response = await createCommand(commandData).unwrap();
-        }
-      }
-      else {
-        throw new Error(t("crud.common.permission_denied"));
-      }
-      if (response?.status) {
-        // addToast("success", `Organization Management - Command: ${response?.desc || response?.msg || "Save successfully"}`);
-        addToast("success", commId && t("crud.organization.action.comm.update.success") || t("crud.organization.action.comm.create.success"));
-        setFocusTarget({ level: "command", id: commId || undefined, en: commandEn });
-        handleCommandReset();
-      }
-      else {
-        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
-      }
-    }
-    catch (error) {
-      // addToast("error", `Organization Management - Command: ${error}`);
-      addToast("error", `${commId && t("crud.organization.action.comm.update.success") || t("crud.organization.action.comm.create.success")}: ${error}`);
-    }
-    finally {
-      setCommIsOpen(false);
-      setLoading(false);
-    }
-  }, [commDeptId, commandEn, commandTh, commId, permissions, addToast, createCommand, t, updateCommand, validateCommand]);
+    await runCrud(
+      {
+        hasPermission: permissions.hasAnyPermission(["organization.update"]),
+        permissionDeniedMessage: t("crud.common.permission_denied"),
+        unknownApiMessage: t("errors.unknownApi"),
+        successMessage: commId
+          ? t("crud.organization.action.comm.update.success")
+          : t("crud.organization.action.comm.create.success"),
+        errorPrefix: commId
+          ? t("crud.organization.action.comm.update.error")
+          : t("crud.organization.action.comm.create.error"),
+        onSuccess: () => {
+          setFocusTarget({ level: "command", id: commId || undefined, en: commandEn });
+          handleCommandReset();
+        },
+        onSettled: () => setCommIsOpen(false),
+      },
+      () =>
+        (commId
+          ? updateCommand({ id: commId, data: commandData })
+          : createCommand(commandData)
+        ).unwrap()
+    );
+  }, [commDeptId, commandEn, commandTh, commId, permissions, runCrud, createCommand, t, updateCommand, validateCommand]);
 
   // ===================================================================
   // Station CRUD
@@ -581,38 +522,20 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
   // Delete Station
   const handleStationDelete = useCallback(async (id: number) => {
     if (!id) {
-      // throw new Error("Station ID not found");
-      return; // Don"t save if there are validation errors
+      return;
     }
-    try {
-      // console.log("🚀 ~ OrganizationManagementComponent ~ handleStationDelete - id:", id);
-      // throw new Error("");
-
-      setLoading(true);
-      let response;
-      if (permissions.hasAnyPermission(["organization.update"])) {
-        response = await deleteStation(id).unwrap();
-      }
-      else {
-        throw new Error(t("crud.common.permission_denied"));
-      }
-      if (response?.status) {
-        // addToast("success", `Organization Management - Station: ${response?.desc || response?.msg || "Delete successfully"}`);
-        addToast("success", t("crud.organization.action.stn.delete.success"));
-        setFocusTarget(null);
-      }
-      else {
-        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
-      }
-    }
-    catch (error) {
-      // addToast("error", `Organization Management - Station: ${error}`);
-      addToast("error", `${t("crud.organization.action.stn.delete.error")}: ${error}`);
-    }
-    finally {
-      setLoading(false);
-    }
-  }, [permissions, addToast, deleteStation, t]);
+    await runCrud(
+      {
+        hasPermission: permissions.hasAnyPermission(["organization.update"]),
+        permissionDeniedMessage: t("crud.common.permission_denied"),
+        unknownApiMessage: t("errors.unknownApi"),
+        successMessage: t("crud.organization.action.stn.delete.success"),
+        errorPrefix: t("crud.organization.action.stn.delete.error"),
+        onSuccess: () => setFocusTarget(null),
+      },
+      () => deleteStation(id).unwrap()
+    );
+  }, [permissions, runCrud, deleteStation, t]);
 
   // Reset Command
   const handleStationReset = () => {
@@ -638,44 +561,30 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
       th: stationTh,
       en: stationEn,
     };
-    try {
-      // console.log("🚀 ~ OrganizationManagementComponent ~ handleStationSave - id:", stnId, "data:", stationData);
-      // throw new Error("");
-
-      setLoading(true);
-      let response;
-      if (permissions.hasAnyPermission(["organization.update"])) {
-        if (stnId) {
-          response = await updateStation({
-            id: stnId, data: stationData
-          }).unwrap();
-        }
-        else {
-          response = await createStation(stationData).unwrap();
-        }
-      }
-      else {
-        throw new Error(t("crud.common.permission_denied"));
-      }
-      if (response?.status) {
-        // addToast("success", `Organization Management - Station: ${response?.desc || response?.msg || "Save successfully"}`);
-        addToast("success", stnId && t("crud.organization.action.stn.update.success") || t("crud.organization.action.stn.create.success"));
-        setFocusTarget({ level: "station", id: stnId || undefined, en: stationEn });
-        handleStationReset();
-      }
-      else {
-        throw new Error(response?.desc || response?.msg || t("errors.unknownApi"));
-      }
-    }
-    catch (error) {
-      // addToast("error", `Organization Management - Station: ${error}`);
-      addToast("error", `${stnId && t("crud.organization.action.stn.update.success") || t("crud.organization.action.stn.create.success")}: ${error}`);
-    }
-    finally {
-      setStnIsOpen(false);
-      setLoading(false);
-    }
-  }, [permissions, stationEn, stationTh, stnCommId, stnDeptId, stnId, addToast, createStation, t, updateStation, validateStation]);
+    await runCrud(
+      {
+        hasPermission: permissions.hasAnyPermission(["organization.update"]),
+        permissionDeniedMessage: t("crud.common.permission_denied"),
+        unknownApiMessage: t("errors.unknownApi"),
+        successMessage: stnId
+          ? t("crud.organization.action.stn.update.success")
+          : t("crud.organization.action.stn.create.success"),
+        errorPrefix: stnId
+          ? t("crud.organization.action.stn.update.error")
+          : t("crud.organization.action.stn.create.error"),
+        onSuccess: () => {
+          setFocusTarget({ level: "station", id: stnId || undefined, en: stationEn });
+          handleStationReset();
+        },
+        onSettled: () => setStnIsOpen(false),
+      },
+      () =>
+        (stnId
+          ? updateStation({ id: stnId, data: stationData })
+          : createStation(stationData)
+        ).unwrap()
+    );
+  }, [permissions, stationEn, stationTh, stnCommId, stnDeptId, stnId, runCrud, createStation, t, updateStation, validateStation]);
 
   // ===================================================================
   // Render
