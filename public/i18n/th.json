@@ -339,7 +339,7 @@
       "agent_state_unknown": "ไม่ทราบ",
       "no_active_call": "ไม่มีสายที่กำลังสนทนา",
       "no_active_call_hint": "กำลังรอเหตุการณ์สาย…",
-      "mock_hint": "โหมด mock: ใช้ window.mockCall ในคอนโซลเพื่อจำลองสาย (start, hold, resume, transfer, end, agentState)",
+      "mock_hint": "โหมด mock: ใช้ window.mockCall ในคอนโซลเพื่อจำลองสาย (start, dial, hold, resume, transfer, end, agentState)",
       "call_label": "สาย",
       "status_active": "กำลังสนทนา",
       "status_on_hold": "พักสาย",
@@ -358,7 +358,28 @@
       "end_reason": "เหตุผล",
       "end_duration": "ระยะเวลา",
       "ended_dismiss": "ปิด",
-      "controls_unavailable": "การควบคุมสายต้องใช้ 3CX backend adapter (ยังไม่ได้พัฒนา); สถานะปุ่มสะท้อนเฉพาะเหตุการณ์ที่ได้รับ"
+      "controls_unavailable": "การควบคุมสายต้องใช้ 3CX backend adapter (ยังไม่ได้พัฒนา); สถานะปุ่มสะท้อนเฉพาะเหตุการณ์ที่ได้รับ",
+      "state_ready": "พร้อมรับสาย",
+      "state_not_ready": "ไม่พร้อมรับสาย",
+      "state_break": "พัก",
+      "state_available": "ว่าง",
+      "state_on_call": "กำลังสนทนา",
+      "state_busy": "ไม่ว่าง",
+      "state_after_call_work": "งานหลังวางสาย",
+      "state_offline": "ออฟไลน์",
+      "agent_state_command_unavailable": "การเปลี่ยนสถานะเจ้าหน้าที่ต้องใช้ 3CX backend adapter (ยังไม่ได้พัฒนา); ตัวบ่งชี้สะท้อนเฉพาะเหตุการณ์ที่ได้รับ",
+      "dialpad_title": "แป้นหมายเลข",
+      "dialpad_destination_placeholder": "หมายเลขโทรศัพท์หรือเบอร์ต่อ",
+      "dialpad_call": "โทรออก",
+      "dialpad_backspace": "ลบถอยหลัง",
+      "dialpad_invalid_empty": "กรุณาใส่หมายเลขที่จะโทร",
+      "dialpad_invalid_chars": "รับได้เฉพาะตัวเลข, +, *, # และเครื่องหมายคั่น",
+      "dialpad_invalid_length": "หมายเลขยาวเกินไป",
+      "dialpad_calling": "กำลังโทร {{destination}}…",
+      "dialpad_connected": "เชื่อมต่อแล้ว",
+      "dialpad_clear": "ล้างสถานะการโทร",
+      "dialpad_busy_hint": "วางสายปัจจุบันก่อนจึงจะโทรออกได้",
+      "dialpad_unavailable": "การโทรออกต้องใช้ 3CX backend adapter (ยังไม่ได้พัฒนา)"
     },
     "dashboard": {
       "title": "แดชบอร์ดศูนย์บริการ",
@@ -4917,12 +4938,6 @@
     }
   },
   "knowledge": {
-    "search": {
-      "mode": "โหมดการค้นหา",
-      "keyword": "คำค้น",
-      "semantic": "เชิงความหมาย",
-      "semantic_coming_soon": "เร็ว ๆ นี้"
-    },
     "dashboard": {
       "page": {
         "title": "แดชบอร์ดคลังความรู้",

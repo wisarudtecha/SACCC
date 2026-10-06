@@ -339,7 +339,7 @@
       "agent_state_unknown": "Unknown",
       "no_active_call": "No active call",
       "no_active_call_hint": "Waiting for call events…",
-      "mock_hint": "Mock mode: use window.mockCall in the devtools console to drive the demo (start, hold, resume, transfer, end, agentState).",
+      "mock_hint": "Mock mode: use window.mockCall in the devtools console to drive the demo (start, dial, hold, resume, transfer, end, agentState).",
       "call_label": "Call",
       "status_active": "Active",
       "status_on_hold": "On hold",
@@ -358,7 +358,28 @@
       "end_reason": "Reason",
       "end_duration": "Duration",
       "ended_dismiss": "Dismiss",
-      "controls_unavailable": "Call control actions require the backend 3CX adapter (not built yet); button states reflect live events only."
+      "controls_unavailable": "Call control actions require the backend 3CX adapter (not built yet); button states reflect live events only.",
+      "state_ready": "Ready",
+      "state_not_ready": "Not Ready",
+      "state_break": "Break",
+      "state_available": "Available",
+      "state_on_call": "On Call",
+      "state_busy": "Busy",
+      "state_after_call_work": "After-Call Work",
+      "state_offline": "Offline",
+      "agent_state_command_unavailable": "Agent-state changes require the backend 3CX adapter (not built yet); the indicator reflects live events only.",
+      "dialpad_title": "Dialpad",
+      "dialpad_destination_placeholder": "Phone number or extension",
+      "dialpad_call": "Call",
+      "dialpad_backspace": "Backspace",
+      "dialpad_invalid_empty": "Enter a number to dial",
+      "dialpad_invalid_chars": "Only digits, +, *, # and separators are allowed",
+      "dialpad_invalid_length": "Destination is too long",
+      "dialpad_calling": "Calling {{destination}}…",
+      "dialpad_connected": "Connected",
+      "dialpad_clear": "Clear dial status",
+      "dialpad_busy_hint": "Finish the current call before dialing again",
+      "dialpad_unavailable": "Dialing requires the backend 3CX adapter (not built yet)."
     },
     "dashboard": {
       "title": "Call Center Dashboard",
@@ -4888,12 +4909,6 @@
     }
   },
   "knowledge": {
-    "search": {
-      "mode": "Search mode",
-      "keyword": "Keyword",
-      "semantic": "Semantic",
-      "semantic_coming_soon": "Coming soon"
-    },
     "dashboard": {
       "page": {
         "title": "Knowledge Base Dashboard",

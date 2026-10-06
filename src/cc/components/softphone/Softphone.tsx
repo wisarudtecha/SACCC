@@ -1,9 +1,11 @@
 // The softphone workspace (`/cc/softphone`). Composition only — state lives
 // in `useSoftphone`, transitions in `softphoneCallState.ts`, presentation in
-// `ActiveCallPanel` / `TelephonyToolbar`.
+// `ActiveCallPanel` / `TelephonyToolbar` / `Dialpad` / `AgentStateSelector`.
 import { useTranslation } from "@/core/hooks/useTranslation";
 import { PhoneOff } from "lucide-react";
 import { ActiveCallPanel } from "./ActiveCallPanel";
+import { AgentStateSelector } from "./AgentStateSelector";
+import { Dialpad } from "./Dialpad";
 import { TelephonyToolbar } from "./TelephonyToolbar";
 import { useSoftphone } from "./useSoftphone";
 import { formatCallDuration } from "./softphoneCallState";
@@ -25,12 +27,11 @@ export default function Softphone() {
         <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
           {t("cc.softphone.title")}
         </h1>
-        <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1 text-xs text-gray-600 dark:text-gray-300">
-          {t("cc.softphone.agent_state")}:{" "}
-          <span className="font-medium">
-            {agentState ?? t("cc.softphone.agent_state_unknown")}
-          </span>
-        </span>
+        <AgentStateSelector
+          agentState={agentState}
+          enabled={controlsEnabled}
+          onSelect={controls.setAgentState}
+        />
       </header>
 
       <main className="flex flex-col gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 shadow-sm">
@@ -86,6 +87,13 @@ export default function Softphone() {
           call={activeCall}
           controlsEnabled={controlsEnabled}
           controls={controls}
+        />
+
+        <Dialpad
+          enabled={controlsEnabled}
+          activeCallId={activeCall?.callId ?? null}
+          lastEndedCallId={lastEndedCall?.callId ?? null}
+          onDial={controls.dial}
         />
 
         {controlsEnabled && (

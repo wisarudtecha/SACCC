@@ -13,10 +13,18 @@
 //
 //   window.mockCall.start()                       // CALL_ANSWERED with a fresh callId
 //   window.mockCall.start({ customerId: "42" })   // with backend-resolved linkage
+//   window.mockCall.dial("0811223344")            // outbound connect (make-call stand-in)
 //   window.mockCall.hold() / .resume()
 //   window.mockCall.transfer("agent-202")
 //   window.mockCall.end("abandoned")
 //   window.mockCall.agentState("break")
+//
+// `dial` is the stand-in for the make-call command contract
+// (docs/Make-Call-Command-Contract.md): it returns the new leg's callId — the
+// correlation key a real adapter's POST /call-control/calls response would
+// carry (its §3.2) — and immediately emits the outbound connect
+// (`CALL_ANSWERED`, per its §4: never CALL_INCOMING; the softphone renders the
+// leg without a prior ring, lifecycle contract §6.4).
 import type { WebSocketMessage } from "@/core/components/websocket/websocket";
 import { DEV_CONFIG } from "@/core/utils/constants";
 import {
@@ -34,9 +42,9 @@ const MOCK_AGENT_ID = "mock-agent";
 
 let mockLegCounter = 0;
 
-function nextMockLegId(): string {
+function nextMockLegId(prefix = "mock-leg"): string {
   mockLegCounter += 1;
-  return `mock-leg-${Date.now().toString(36)}-${mockLegCounter}`;
+  return `${prefix}-${Date.now().toString(36)}-${mockLegCounter}`;
 }
 
 /** Wraps a lifecycle event in the websocket envelope the provider dispatches. */
@@ -72,6 +80,15 @@ export interface MockCallStartOptions {
 export interface MockCallControls {
   /** Emits CALL_ANSWERED for a fresh call leg; returns the new callId. */
   start(options?: MockCallStartOptions): string;
+  /**
+   * Outbound dial (make-call command stand-in, contract
+   * docs/Make-Call-Command-Contract.md §4): emits CALL_ANSWERED — the
+   * outbound connect — for a fresh leg, makes it the toolbar's current call,
+   * and returns the new callId (the response correlation key). The wire
+   * payload carries no destination field: the lifecycle event schema is
+   * unchanged.
+   */
+  dial(destination: string): string;
   /** Emits CALL_ON_HOLD for the active mock call. */
   hold(): void;
   /** Emits CALL_RESUMED for the held mock call. */
@@ -109,6 +126,21 @@ export function createMockCallControls(
           agentId: MOCK_AGENT_ID,
           customerId: options?.customerId,
           caseId: options?.caseId,
+          timestamp: now(),
+        },
+      });
+      return currentCallId;
+    },
+    // The destination is deliberately unused here: the mock stands in for the
+    // adapter, which consumes `destination` server-side; the lifecycle event
+    // payload itself carries no destination field (schema unchanged).
+    dial() {
+      currentCallId = nextMockLegId("mock-out");
+      fire({
+        event: CALL_ANSWERED_WS_EVENT,
+        payload: {
+          callId: currentCallId,
+          agentId: MOCK_AGENT_ID,
           timestamp: now(),
         },
       });

@@ -25,7 +25,8 @@ export interface AniNormalization {
 /** Lengths a Thai national number can take: 9 (landline) or 10 (mobile). */
 const THAI_NATIONAL_LENGTHS: readonly number[] = [9, 10];
 
-function extractDigits(input: string): string {
+/** All digits in the input, in order — shared with the dial-destination validator. */
+export function extractDigits(input: string): string {
   return input.replace(/\D/g, "");
 }
 

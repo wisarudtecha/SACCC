@@ -339,7 +339,7 @@
       "agent_state_unknown": "未知",
       "no_active_call": "当前无通话",
       "no_active_call_hint": "正在等待通话事件…",
-      "mock_hint": "Mock 模式：在控制台使用 window.mockCall 模拟通话（start、hold、resume、transfer、end、agentState）",
+      "mock_hint": "Mock 模式：在控制台使用 window.mockCall 模拟通话（start、dial、hold、resume、transfer、end、agentState）",
       "call_label": "通话",
       "status_active": "通话中",
       "status_on_hold": "保持中",
@@ -358,7 +358,28 @@
       "end_reason": "原因",
       "end_duration": "时长",
       "ended_dismiss": "关闭",
-      "controls_unavailable": "通话控制需要后端 3CX 适配器（尚未开发）；按钮状态仅反映实时事件。"
+      "controls_unavailable": "通话控制需要后端 3CX 适配器（尚未开发）；按钮状态仅反映实时事件。",
+      "state_ready": "就绪",
+      "state_not_ready": "未就绪",
+      "state_break": "小休",
+      "state_available": "空闲",
+      "state_on_call": "通话中",
+      "state_busy": "忙碌",
+      "state_after_call_work": "话后处理",
+      "state_offline": "离线",
+      "agent_state_command_unavailable": "坐席状态切换需要后端 3CX 适配器（尚未开发）；当前指示仅反映实时事件。",
+      "dialpad_title": "拨号盘",
+      "dialpad_destination_placeholder": "电话号码或分机号",
+      "dialpad_call": "拨号",
+      "dialpad_backspace": "退格",
+      "dialpad_invalid_empty": "请输入要拨打的号码",
+      "dialpad_invalid_chars": "仅允许数字、+、*、# 和分隔符",
+      "dialpad_invalid_length": "号码过长",
+      "dialpad_calling": "正在呼叫 {{destination}}…",
+      "dialpad_connected": "已接通",
+      "dialpad_clear": "清除拨号状态",
+      "dialpad_busy_hint": "请先结束当前通话再拨号",
+      "dialpad_unavailable": "拨号需要后端 3CX 适配器（尚未开发）。"
     },
     "dashboard": {
       "title": "呼叫中心仪表板",
@@ -4286,12 +4307,6 @@
     }
   },
   "knowledge": {
-    "search": {
-      "mode": "搜索模式",
-      "keyword": "关键词",
-      "semantic": "语义搜索",
-      "semantic_coming_soon": "即将推出"
-    },
     "dashboard": {
       "page": {
         "title": "知识库仪表板",

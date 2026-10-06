@@ -15,6 +15,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useWebSocket } from "@/core/components/websocket/websocket";
 import type { WebSocketMessage } from "@/core/components/websocket/websocket";
 import { AGENT_STATE_CHANGED_WS_EVENT, parseCallLifecycleMessage } from "../../types/callEvents";
+import type { AgentStateCommand } from "../../types/agentStateCommand";
 import {
   attachMockCallConsoleUtil,
   createMockCallControls,
@@ -34,6 +35,17 @@ export interface SoftphoneControls {
   resume: () => void;
   transfer: () => void;
   hangUp: () => void;
+  /** Requests an agent presence change (command contract: docs/Agent-State-Command-Contract.md). */
+  setAgentState: (state: AgentStateCommand) => void;
+  /**
+   * Dials `destination` (make-call command contract:
+   * docs/Make-Call-Command-Contract.md). Returns the new leg's `callId` — the
+   * correlation key from the command response — or null when the command is
+   * unavailable (non-mock mode, before the adapter lands). The dialpad uses
+   * the callId for its "Calling…/Connected" indicator only; call state itself
+   * still arrives exclusively as lifecycle events (contract §4).
+   */
+  dial: (destination: string) => string | null;
 }
 
 export interface SoftphoneApi {
@@ -98,6 +110,15 @@ export function useSoftphone(): SoftphoneApi {
       resume: () => mockControls?.resume(),
       transfer: () => mockControls?.transfer(),
       hangUp: () => mockControls?.end("completed"),
+      // Same command/confirm split as the toolbar: the command emits the
+      // AGENT_STATE_CHANGED event a real adapter would publish, and the pill
+      // above still only moves on the event (contract §4).
+      setAgentState: (state) => mockControls?.agentState(state),
+      // The mock emits the outbound connect directly (its stand-in for the
+      // adapter's "dial accepted" response + CALL_ANSWERED sequence, contract
+      // §4). When the adapter lands, this calls `useMakeCallMutation` and
+      // returns the response's `data.callId` instead — same shape.
+      dial: (destination) => mockControls?.dial(destination) ?? null,
     }),
     [mockControls]
   );
