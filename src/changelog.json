@@ -1,4 +1,10 @@
 {
+  "0.91.0": {
+    "date": "2026-10-06",
+    "segment": "MINOR",
+    "notes": "feat(cc): softphone agent-state selector and outbound dialpad\n- The Softphone workspace now includes a dialpad so agents can place outbound calls by entering a phone number or extension. A status line shows when the call is connecting and when it is connected.\n- Agents can now set their presence state directly from the Softphone workspace using a new dropdown selector: Ready, Not Ready, or Break. The current state is always visible next to the selector.\n- Both the dialpad and the state selector work in dev mock mode today and will activate once the telephony (3CX) backend service is connected.\n- changelog.json / package.json: bump version 0.90.0 -> 0.91.0",
+    "author": "Wisarud Techa"
+  },
   "0.90.0": {
     "date": "2026-10-05",
     "segment": "MINOR",
