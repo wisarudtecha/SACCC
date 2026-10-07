@@ -3,10 +3,8 @@ import { AppointmentForm } from "@/cms/components/appointment/AppointmentCreate"
 import { CaseCard } from "@/cms/components/case/kanbanCard";
 import Loading from "@/core/components/common/Loading";
 import { CustomerPreviewData } from "@/cms/components/customer/CustomerPreview";
-import { ContactChannelList } from "@/cms/components/customer/social/ContactChannelList";
+import { SocialAccountManager } from "@/cms/components/customer/social/SocialAccountManager";
 import { NoteManager } from "@/cms/components/customer/notes/NoteManager";
-import { useCustomerSocials } from "@/cms/hooks/useCustomerSocials";
-import { useCustomerPrimaryContact } from "@/cms/hooks/useCustomerPrimaryContact";
 import { getTodayDate } from "@/cms/components/date/DateToString";
 import DatePickerLocal from "@/core/components/form/input/DatepicketLocal";
 import { SearchableSelectApi } from "@/cms/components/SearchInput/SearchSelectInput";
@@ -601,35 +599,24 @@ const AppointmentTab: React.FC<{ customerId: string }> = ({ customerId }) => {
 
 /**
  * The customer's contact channels — phone, email, and every linked LINE / Facebook /
- * Text Chat / extra-phone / extra-email row — as their own tab.
+ * Text Chat / extra-phone / extra-email row — as their own tab, fully manageable here
+ * (add/edit/unlink, choose primary), not just viewable.
  *
- * Previously this rendered inside the fixed left sidebar (`CustomerPreviewData`), under a
- * "Contact Information" heading. Moved here so it gets a full-width panel instead of being
- * squeezed into the narrow sidebar column; the data wiring (form-config gating on
- * mobileNo/email, `useCustomerSocials` for the linked rows) is unchanged from before the
- * move. `hideHeading` is passed because this tab's own label in the tab strip already
- * names the section — `ContactChannelList`'s internal heading would just duplicate it.
- *
- * Read-only, same as it was in the sidebar: editing (add/edit/unlink) lives separately in
- * `SocialAccountManager`, used from the case side panel.
+ * Previously this rendered inside the fixed left sidebar (`CustomerPreviewData`) as a
+ * read-only list, and separately the standalone Edit Customer page (`CustomerCreate.tsx`)
+ * carried its own manageable copy via `SocialAccountManager`. That page-level copy has been
+ * removed — `SocialAccountManager` now renders here instead, so this tab is the one place
+ * (outside the case side panel's inline edit) where channels are managed, not a read-only
+ * mirror of them.
  */
 const ContactChannelsTab: React.FC<{ customer: Customer | undefined }> = ({ customer }) => {
     const { data: formConfigRes } = useGetCustomerFormConfigQuery();
     const formConfig = formConfigRes?.data;
-    const { socials, isLoading, isPartial } = useCustomerSocials({ customerId: customer?.id });
-    // Read-only: the stored primary is shown, but choosing one belongs to the surfaces that
-    // can write (`SocialAccountManager`).
-    const { primaryKey } = useCustomerPrimaryContact({ customer, socials });
 
     return (
         <div className="p-5">
-            <ContactChannelList
+            <SocialAccountManager
                 customer={customer}
-                socials={socials}
-                isLoading={isLoading}
-                isPartial={isPartial}
-                primaryKey={primaryKey}
-                hideHeading
                 showPhone={formConfig?.mobileNo !== false}
                 showEmail={formConfig?.email !== false}
             />

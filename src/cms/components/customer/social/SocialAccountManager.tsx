@@ -30,6 +30,10 @@ interface SocialAccountManagerProps {
    * The case side panel omits it — it has no preference dropdown, so the saved value stands.
    */
   preference?: string;
+  /** Forwarded to `ContactChannelList` — hides the phone/landline row when the customer form config turns it off. */
+  showPhone?: boolean;
+  /** Forwarded to `ContactChannelList` — hides the email row when the customer form config turns it off. */
+  showEmail?: boolean;
 }
 
 const toDraft = (social: CustomerSocial): DraftCustomerSocial => ({
@@ -48,7 +52,7 @@ const toDraft = (social: CustomerSocial): DraftCustomerSocial => ({
  * write actually land — the second being non-obvious because the BFF answers business
  * failures with HTTP 200.
  */
-export const SocialAccountManager = ({ customer, preference }: SocialAccountManagerProps) => {
+export const SocialAccountManager = ({ customer, preference, showPhone, showEmail }: SocialAccountManagerProps) => {
   const { t } = useTranslation();
   const { addToast } = useToastContext();
   const { canViewField } = usePiiMasker();
@@ -261,6 +265,8 @@ export const SocialAccountManager = ({ customer, preference }: SocialAccountMana
         onSetPrimary={handleSetPrimary}
         preferredFamily={preferredFamily}
         isSettingPrimary={isSavingPrimary}
+        showPhone={showPhone}
+        showEmail={showEmail}
         renderSocialActions={social => (
           <div className="flex space-x-1">
             {/* Editing a PHONE/EMAIL row opens the editor on the raw record, which would put

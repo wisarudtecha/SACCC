@@ -1439,14 +1439,18 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
                         )}
 
                     {/*
-                        Contact channels. Not gated on `!minimal`: the cut-down form is the one
-                        the case side panel opens, and a case arriving over LINE is precisely
-                        when an agent needs to record the identity it arrived on.
+                        Contact channels, case-panel only. The standalone Edit Customer page no
+                        longer shows this section — full channel management now lives on the
+                        Customer Information page's own tab (`ContactChannelsTab` in
+                        CustomerView.tsx, via `SocialAccountManager`). It stays gated on
+                        `minimal` here because the cut-down form is the one the case side panel
+                        opens, and a case arriving over LINE is precisely when an agent needs to
+                        record the identity it arrived on right there, without leaving the case.
 
                         `!== false` rather than `=== true` so the section still works if the
                         backend's form-config endpoint doesn't persist this new key yet.
                     */}
-                    {formConfig?.social !== false && (
+                    {minimal && formConfig?.social !== false && (
                         <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-white/3 p-6 shadow-sm">
                             <div
                                 className="text-gray-800 dark:text-white flex items-center justify-between cursor-pointer border-b pb-3 mb-5 dark:border-gray-700 border-gray-200"
