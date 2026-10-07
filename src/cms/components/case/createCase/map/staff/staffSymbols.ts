@@ -27,7 +27,7 @@ const STATUS_READY = "001";
 /** Unit status: logged in but flagged not ready for duty. */
 const STATUS_NOT_READY = "000";
 
-const READY_RGB: [number, number, number] = [34, 197, 94];    // green-500
+const READY_RGB: [number, number, number] = [22, 163, 74];    // green-600
 const ENGAGED_RGB: [number, number, number] = [239, 68, 68];  // red-500
 const OFF_DUTY_RGB: [number, number, number] = [107, 114, 128]; // gray-500
 
@@ -47,8 +47,8 @@ const DEFAULT_SIZE = 18;
 // Only a nudge: selection is carried by the halo behind the icon, so the figure
 // itself barely changes and never turns into a blob.
 const SELECTED_SIZE = 22;
-const ACTIVE_ALPHA = 0.95;
-const MUTED_ALPHA = 0.45;
+const ACTIVE_ALPHA = 1;
+const MUTED_ALPHA = 0.7;
 
 /** Selection halo drawn under the marker - see createStaffHaloSymbol. */
 const HALO_SIZE = 34;
@@ -333,7 +333,7 @@ export function createStaffGroupLabelSymbol(count: number) {
 export function getStaffStatusDotClass(statusId: string, isLogin: boolean): string {
   switch (getStaffAvailability(statusId, isLogin)) {
     case "ready":
-      return "bg-green-500";
+      return "bg-green-600";
     case "engaged":
       return "bg-red-500";
     default:

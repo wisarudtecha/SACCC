@@ -11,10 +11,13 @@ import type { DeviceCategory } from "./deviceTypes";
 type Rgb = [number, number, number];
 type Rgba = [number, number, number, number];
 
+// fire_hydrant is a dark red and aed a lighter red - both stay visibly lighter
+// than Place's hospital red-600 [220, 38, 38] so the three never read as the
+// same marker.
 const CATEGORY_RGB: Record<DeviceCategory, Rgb> = {
   camera: [79, 70, 229], // indigo-600
-  fire_hydrant: [8, 145, 178], // cyan-600
-  aed: [22, 163, 74] // green-600
+  fire_hydrant: [153, 27, 27], // red-800 (dark red)
+  aed: [248, 113, 113] // red-400 (lighter red)
 };
 
 const CATEGORY_LABEL_KEY: Record<DeviceCategory, string> = {

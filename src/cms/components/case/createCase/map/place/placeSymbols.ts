@@ -16,13 +16,12 @@ type Rgb = [number, number, number];
 type Rgba = [number, number, number, number];
 
 /**
- * One fixed colour per category. Tailwind 500-scale triples, matching how
- * staffSymbols.ts writes its operational colours. Blue is deliberately close to
- * the brand case pin only for Police; Hospital and Fire take clearly separate
- * hues so the three never read as the same marker.
+ * One fixed colour per category. Police is brown (badge/uniform association),
+ * Hospital and Fire take clearly separate hues so the three never read as the
+ * same marker.
  */
 const CATEGORY_RGB: Record<PlaceCategory, Rgb> = {
-  police_station: [37, 99, 235], // blue-600
+  police_station: [139, 69, 19], // brown
   hospital: [220, 38, 38], // red-600
   fire_station: [234, 88, 12] // orange-600
 };
