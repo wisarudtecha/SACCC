@@ -2,30 +2,36 @@
 // Phase 2 (Track B4).
 //
 // ─────────────────────────────────────────────────────────────────────────────
-// DORMANT BY DESIGN — READ BEFORE WIRING THESE TO THE UI
+// PRE-ADAPTER BY DESIGN — READ BEFORE WIRING MORE OF THESE TO THE UI
 // ─────────────────────────────────────────────────────────────────────────────
 // The backend 3CX integration adapter does not exist yet (see
 // `docs/3CX-Integration-Capability-Matrix.md` §3.2 + Decision 3, and
 // `docs/CALL-Lifecycle-Websocket-Event-Contract.md` §10, which keeps call
-// control out of the websocket contract on purpose). Nothing in the UI calls
-// these hooks today: the softphone's toolbar commands run through the dev-only
-// mock lifecycle (`src/cc/components/softphone/mockCallLifecycle.ts`) until
-// the adapter lands.
+// control out of the websocket contract on purpose). Current consumers:
+//   - `answerCall` is wired to the incoming-call screen pop's Answer button
+//     (`src/cc/components/incomingCall/useIncomingCallPopups.ts`), with a
+//     mock stand-in while the adapter is absent.
+//   - every other command here is still mock-driven: the softphone toolbar,
+//     dialpad, and agent-state selector run through the dev-only mock
+//     lifecycle (`src/cc/components/softphone/mockCallLifecycle.ts`).
 //
 // 1. URL paths are the FE's *proposal* for the internal BFF surface
 //    (`/call-control/…`), modeled on the 3CX Call Control API operations the
-//    capability matrix lists (make call, answer, hold, transfer, terminate).
-//    The backend adapter owns the actual 3CX mapping; only the paths may
-//    change at sign-off — the FE consumer (useSoftphone controls) should be
-//    unaffected.
+//    capability matrix lists (make call, answer, hold, resume, transfer,
+//    terminate). The backend adapter owns the actual 3CX mapping; only the
+//    paths may change at sign-off — the FE consumer should be unaffected.
 //
-// 2. NO GQL_MAP ENTRIES ON PURPOSE. The hybrid base query
-//    (`src/core/store/api/hybridBaseQuery.ts`) auto-converts every request
-//    when `VITE_USE_GRAPHQL === "true"`, and a URL with no entry in
-//    `GQL_MAP` (`src/core/utils/gqlMapper.ts`) fails HARD — there is no REST
-//    fallback. These endpoints must NOT be called in any GraphQL-enabled
-//    environment until the BFF exposes equivalents and entries are added to
-//    a `graphql/callControlQueries.ts` file.
+// 2. GraphQL: PLACEHOLDER mappings exist in
+//    `src/cc/store/api/graphql/callControlQueries.ts` (registered in
+//    `GQL_MAP`), added ahead of the BFF adapter that would serve them.
+//    Operation names, input types, and the `CallControl` root are FE
+//    proposals pending sign-off. Until the BFF ships these operations, a
+//    call in a `VITE_USE_GRAPHQL === "true"` environment fails at the BFF —
+//    the hybrid base query (`src/core/store/api/hybridBaseQuery.ts`) has no
+//    REST fallback. The four leg commands below carry an explicit
+//    `body: { callId }` because `buildGraphQLQuery` bails out on a POST
+//    mutation with no body (hard error in GraphQL mode) — the same pattern
+//    as `area.ts` / `areaTemplateApi.ts`.
 //
 // 3. Response shape is provisional (`ApiResponse<null>`, the standard
 //    command-envelope used by e.g. `insertCustommers`). Command *results* are
@@ -48,11 +54,12 @@
 // accepted", never "connected" (its §4).
 //
 // When the backend adapter contract lands:
-//   - confirm/adjust the URL paths against the signed-off contract,
-//   - add GQL_MAP entries if the BFF provides GraphQL equivalents,
-//   - wire `useSoftphone`'s controls to these hooks (keep the mock for
-//     dev + `VITE_MOCK_API` demos), and
-//   - remove this DORMANT banner.
+//   - confirm/adjust the URL paths AND the placeholder GraphQL operation
+//     names / input types in `graphql/callControlQueries.ts` against the
+//     signed-off contract,
+//   - wire `useSoftphone`'s remaining controls to these hooks (keep the mock
+//     for dev + `VITE_MOCK_API` demos), and
+//   - remove this banner.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { baseApi } from "@/core/store/api/baseApi";
@@ -105,6 +112,7 @@ export const callControlApi = baseApi.injectEndpoints({
       query: ({ callId }) => ({
         url: `/call-control/calls/${encodeURIComponent(callId)}/answer`,
         method: "POST",
+        body: { callId },
       }),
     }),
 
@@ -112,6 +120,7 @@ export const callControlApi = baseApi.injectEndpoints({
       query: ({ callId }) => ({
         url: `/call-control/calls/${encodeURIComponent(callId)}/hold`,
         method: "POST",
+        body: { callId },
       }),
     }),
 
@@ -119,6 +128,7 @@ export const callControlApi = baseApi.injectEndpoints({
       query: ({ callId }) => ({
         url: `/call-control/calls/${encodeURIComponent(callId)}/resume`,
         method: "POST",
+        body: { callId },
       }),
     }),
 
@@ -134,6 +144,7 @@ export const callControlApi = baseApi.injectEndpoints({
       query: ({ callId }) => ({
         url: `/call-control/calls/${encodeURIComponent(callId)}/terminate`,
         method: "POST",
+        body: { callId },
       }),
     }),
 

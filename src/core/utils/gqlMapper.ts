@@ -55,6 +55,9 @@ import { GQL_PRODUCT } from "@/cms/store/api/graphql/productQueries";
 import { GQL_PRODUCT_STOCK } from "@/cms/store/api/graphql/productStockQueries";
 import { GQL_SERVICE_TYPE } from "@/cms/store/api/graphql/serviceTypeQueries";
 import { GQL_STORE } from "@/cms/store/api/graphql/storeQueries";
+// CC (call control) — placeholder mappings pending the BFF 3CX adapter
+// sign-off; see src/cc/store/api/graphql/callControlQueries.ts.
+import { GQL_CALL_CONTROL } from "@/cc/store/api/graphql/callControlQueries";
 
 const GQL_MAP: Record<string, GqlMapConfig | Record<string, GqlMapConfig>> = {
   // Core
@@ -107,7 +110,9 @@ const GQL_MAP: Record<string, GqlMapConfig | Record<string, GqlMapConfig>> = {
   ...GQL_PRODUCT,
   ...GQL_PRODUCT_STOCK,
   ...GQL_SERVICE_TYPE,
-  ...GQL_STORE
+  ...GQL_STORE,
+  // CC (call control)
+  ...GQL_CALL_CONTROL
 };
 
 // v8.0 - Auto-mapping based on URL AND method. Two different keys can compile to the

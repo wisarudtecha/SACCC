@@ -218,3 +218,68 @@ describe("buildGraphQLQuery - Case update input sanitizing", () => {
     expect(input).toHaveProperty("referCaseId", "");
   });
 });
+
+// Guards the call-control GraphQL mappings (src/cc/store/api/graphql/
+// callControlQueries.ts). The critical case is the AnswerCall one: the leg
+// commands are POSTs whose identifying data lives in the path, and
+// buildGraphQLQuery returns null (hard error in GraphQL mode, no REST
+// fallback) for a POST mutation with no body — which is why callControlApi.ts
+// sends an explicit `body: { callId }` on those endpoints.
+describe("buildGraphQLQuery - Call control", () => {
+  test("POST /call-control/calls maps to MakeCall with the destination", () => {
+    const result = buildGraphQLQuery({
+      url: "/call-control/calls",
+      method: "POST",
+      body: { destination: "0212345678" },
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.query).toContain("mutation");
+    expect(result!.query).toContain("MakeCall");
+    expect(result!.query).toContain("MakeCallInput!");
+    expect(result!.variables.input).toEqual({ destination: "0212345678" });
+  });
+
+  test("POST /call-control/calls/{callId}/answer maps to AnswerCall with callId (explicit body, not bodyless)", () => {
+    const result = buildGraphQLQuery({
+      url: "/call-control/calls/leg-1/answer",
+      method: "POST",
+      body: { callId: "leg-1" },
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.query).toContain("AnswerCall");
+    expect(result!.query).toContain("AnswerCallInput!");
+    expect(result!.variables.input).toEqual({ callId: "leg-1" });
+  });
+
+  test("transfer input carries both the body target and the path callId", () => {
+    const result = buildGraphQLQuery({
+      url: "/call-control/calls/leg-1/transfer",
+      method: "POST",
+      body: { target: "agent-2" },
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.query).toContain("TransferCall");
+    expect(result!.variables.input).toEqual({ target: "agent-2", callId: "leg-1" });
+  });
+
+  test("every call-control command URL resolves to a POST mutation mapping", () => {
+    const commands: Array<{ url: string; body: Record<string, unknown> }> = [
+      { url: "/call-control/calls", body: { destination: "0212345678" } },
+      { url: "/call-control/calls/leg-1/answer", body: { callId: "leg-1" } },
+      { url: "/call-control/calls/leg-1/hold", body: { callId: "leg-1" } },
+      { url: "/call-control/calls/leg-1/resume", body: { callId: "leg-1" } },
+      { url: "/call-control/calls/leg-1/transfer", body: { target: "agent-2" } },
+      { url: "/call-control/calls/leg-1/terminate", body: { callId: "leg-1" } },
+      { url: "/call-control/agent-state", body: { state: "ready" } },
+    ];
+
+    for (const command of commands) {
+      const result = buildGraphQLQuery({ url: command.url, method: "POST", body: command.body });
+      expect(result, command.url).not.toBeNull();
+      expect(result!.query, command.url).toContain("mutation");
+    }
+  });
+});
