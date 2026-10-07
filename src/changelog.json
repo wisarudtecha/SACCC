@@ -1,4 +1,10 @@
 {
+  "0.92.0": {
+    "date": "2026-10-07",
+    "segment": "MINOR",
+    "notes": "feat(cc): answer incoming calls from the pop-up and consolidate customer contact channels\n- Agents can now answer an incoming call directly from the incoming-call pop-up card with a new Answer button. The button is wired to the call-control API and will activate once the telephony backend is connected; in dev mode it dismisses the card so the flow can still be tested.\n- The Customer Information page now manages all contact channels — phone, email, and linked social accounts — in a single editable tab. The standalone Edit Customer page no longer duplicates this section; agents can still add or edit channels from the case side panel when working a case.\n- Map marker colours have been adjusted so staff, place, and device markers are easier to tell apart at a glance, and the active toolbar buttons for each layer now share the same highlight style.",
+    "author": "Wisarud Techa"
+  },
   "0.91.0": {
     "date": "2026-10-06",
     "segment": "MINOR",
