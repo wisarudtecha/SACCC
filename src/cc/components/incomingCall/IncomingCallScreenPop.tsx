@@ -19,7 +19,7 @@ import {
 } from "./mockIncomingCallEmitter";
 
 export default function IncomingCallScreenPop() {
-  const { items, handleMessage, openCase, createCase, dismiss } = useIncomingCallPopups();
+  const { items, handleMessage, openCase, createCase, answer, dismiss } = useIncomingCallPopups();
   const { t } = useTranslation();
 
   // Mock-mode wiring (VITE_MOCK_API + dev only): the emitter feeds the same
@@ -53,6 +53,7 @@ export default function IncomingCallScreenPop() {
             item={item}
             queueCount={items.length}
             isNewest={index === items.length - 1}
+            onAnswer={answer}
             onOpenCase={openCase}
             onCreateCase={createCase}
             onDismiss={dismiss}

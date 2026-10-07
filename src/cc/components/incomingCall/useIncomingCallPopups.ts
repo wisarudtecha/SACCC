@@ -19,6 +19,8 @@ import {
   useLazyGetCustommerByPhoneNoQuery,
   useLazyGetCustomerQuery,
 } from "@/cms/store/api/custommerApi";
+import { useAnswerCallMutation } from "../../store/api/callControlApi";
+import { isMockCallLifecycleActive } from "../softphone/mockCallLifecycle";
 import { useAppNavigate } from "@/core/router/useAppNavigate";
 import { usePermissions } from "@/core/hooks/usePermissions";
 import { useWebSocket } from "@/core/components/websocket/websocket";
@@ -61,6 +63,8 @@ export interface IncomingCallPopupsApi {
   handleMessage: (message: WebSocketMessage) => void;
   openCase: (caseId: string) => void;
   createCase: (item: IncomingCallPopupItem) => void;
+  /** Answer the ringing leg (in-app answer via the Call Control API — Q3 decision 2026-10-07). */
+  answer: (callId: string) => void;
   dismiss: (callId: string) => void;
 }
 
@@ -72,6 +76,7 @@ export function useIncomingCallPopups(): IncomingCallPopupsApi {
   const [getCustomerByPhone] = useLazyGetCustommerByPhoneNoQuery();
   const [getCustomerById] = useLazyGetCustomerQuery();
   const [getCasesByCustomer] = useLazyGetListCaseByCustomerIdQuery();
+  const [answerCall] = useAnswerCallMutation();
 
   const permissionRef = useRef(hasPermission);
   permissionRef.current = hasPermission;
@@ -252,5 +257,30 @@ export function useIncomingCallPopups(): IncomingCallPopupsApi {
     [dispatch]
   );
 
-  return { items, handleMessage, openCase, createCase, dismiss };
+  // Answer command for a ringing leg. A resolved command means "answer
+  // accepted", not "answered": the authoritative confirmation is the
+  // CALL_ANSWERED websocket lifecycle event, which the softphone's state
+  // reducer upserts by callId without needing the ring — no extra plumbing.
+  const answer = useCallback(
+    async (callId: string) => {
+      if (isMockCallLifecycleActive()) {
+        // Adapter stand-in. A mock CALL_ANSWERED has no consumer (softphone
+        // mock legs are a separate universe — see mockCallLifecycle.ts), so
+        // the mock path only retires the card.
+        dispatch({ type: "dismiss", callId });
+        return;
+      }
+      try {
+        await answerCall({ callId }).unwrap();
+        dispatch({ type: "dismiss", callId });
+      } catch (error) {
+        // Conclusive business failure (status: "-1" envelope) or transport
+        // error — keep the card so the agent can retry or dismiss.
+        console.error("Incoming call screen pop: answer command failed", error);
+      }
+    },
+    [answerCall, dispatch]
+  );
+
+  return { items, handleMessage, openCase, createCase, answer, dismiss };
 }

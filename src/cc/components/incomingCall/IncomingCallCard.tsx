@@ -20,6 +20,7 @@ export interface IncomingCallCardProps {
   queueCount: number;
   /** True for the newest card (the one carrying the queue badge). */
   isNewest: boolean;
+  onAnswer: (callId: string) => void;
   onOpenCase: (caseId: string) => void;
   onCreateCase: (item: IncomingCallPopupItem) => void;
   onDismiss: (callId: string) => void;
@@ -43,6 +44,7 @@ export function IncomingCallCard({
   item,
   queueCount,
   isNewest,
+  onAnswer,
   onOpenCase,
   onCreateCase,
   onDismiss,
@@ -213,18 +215,28 @@ export function IncomingCallCard({
         </div>
       )}
 
-      {/* Actions */}
-      <div className="flex gap-2 p-3 border-t border-gray-100 dark:border-gray-800">
+      {/* Actions — Answer is the primary (green) action; a resolved command
+          means "answer accepted", the CALL_ANSWERED event confirms. */}
+      <div className="p-3 border-t border-gray-100 dark:border-gray-800">
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className="flex-1 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-3 py-2"
+            onClick={() => onAnswer(callId)}
+          >
+            {t("cc.screenpop.action_answer")}
+          </button>
+          <button
+            type="button"
+            className="flex-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-3 py-2"
+            onClick={() => onCreateCase(item)}
+          >
+            {t("cc.screenpop.action_create_case")}
+          </button>
+        </div>
         <button
           type="button"
-          className="flex-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-3 py-2"
-          onClick={() => onCreateCase(item)}
-        >
-          {t("cc.screenpop.action_create_case")}
-        </button>
-        <button
-          type="button"
-          className="rounded-lg border border-gray-200 dark:border-gray-700 text-sm px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+          className="mt-2 w-full rounded-lg border border-gray-200 dark:border-gray-700 text-sm px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
           onClick={() => onDismiss(callId)}
         >
           {t("cc.screenpop.action_dismiss")}

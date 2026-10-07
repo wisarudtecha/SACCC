@@ -329,6 +329,7 @@
       "no_cases": "暂无最近案件",
       "cases_error": "案件加载失败",
       "linked_case": "关联案件",
+      "action_answer": "接听",
       "action_create_case": "创建案件",
       "action_dismiss": "关闭",
       "incoming_call_announcement": "来电来自 {{number}}"

@@ -329,6 +329,7 @@
       "no_cases": "ไม่มีเคสล่าสุด",
       "cases_error": "โหลดเคสไม่สำเร็จ",
       "linked_case": "เคสที่เชื่อมโยง",
+      "action_answer": "รับสาย",
       "action_create_case": "สร้างเคส",
       "action_dismiss": "ปิด",
       "incoming_call_announcement": "สายเรียกเข้าจาก {{number}}"

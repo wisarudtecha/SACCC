@@ -329,6 +329,7 @@
       "no_cases": "No recent cases",
       "cases_error": "Could not load cases",
       "linked_case": "Linked case",
+      "action_answer": "Answer",
       "action_create_case": "Create Case",
       "action_dismiss": "Dismiss",
       "incoming_call_announcement": "Incoming call from {{number}}"
