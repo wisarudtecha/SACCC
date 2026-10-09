@@ -62,7 +62,10 @@ const commonTagTypes = [
   // "Place" above: a tag not in this list is silently ignored. Distinct from
   // "Dashboard" (layout CRUD) so the KPI invalidation ping (contract §7)
   // doesn't refetch layouts.
-  "CallCenterDashboard"
+  "CallCenterDashboard",
+  // emailApi tags - FE-10. A tag not in this list is silently ignored.
+  "Email",
+  "EmailInbox"
 ];
 
 // v1.0 - Initial version with simple baseQuery

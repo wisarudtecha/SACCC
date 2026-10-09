@@ -58,6 +58,9 @@ import { GQL_STORE } from "@/cms/store/api/graphql/storeQueries";
 // CC (call control) — placeholder mappings pending the BFF 3CX adapter
 // sign-off; see src/cc/store/api/graphql/callControlQueries.ts.
 import { GQL_CALL_CONTROL } from "@/cc/store/api/graphql/callControlQueries";
+// CC (email) — placeholder mappings pending the BFF email adapter
+// sign-off; see src/cc/store/api/graphql/emailQueries.ts.
+import { GQL_EMAIL } from "@/cc/store/api/graphql/emailQueries";
 
 const GQL_MAP: Record<string, GqlMapConfig | Record<string, GqlMapConfig>> = {
   // Core
@@ -112,7 +115,9 @@ const GQL_MAP: Record<string, GqlMapConfig | Record<string, GqlMapConfig>> = {
   ...GQL_SERVICE_TYPE,
   ...GQL_STORE,
   // CC (call control)
-  ...GQL_CALL_CONTROL
+  ...GQL_CALL_CONTROL,
+  // CC (email) — FE-10 placeholders pending BE-09 sign-off
+  ...GQL_EMAIL
 };
 
 // v8.0 - Auto-mapping based on URL AND method. Two different keys can compile to the
