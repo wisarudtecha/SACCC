@@ -87,6 +87,7 @@ export interface CaseHistory {
   jsonData?: Record<string, string> | string;
   createdAt: string | Date;
   createdBy: string;
+  mentionedUserIds?: string[];
 }
 
 export interface CaseStatus extends BaseEntity {

@@ -73,6 +73,7 @@ import { CaseEscalationSection } from "@/cms/components/escalation/CaseEscalatio
 import PageBreadcrumb from "@/core/components/common/PageBreadCrumb";
 // import FormViewer from "@/cms/components/form/dynamic-form/FormViewValue";
 import Badge from "@/core/components/ui/badge/Badge";
+import { MentionPill, MentionUserPopover, parseMentionSegments } from "@/cms/components/mention";
 // import caseHistoryList from "@/mocks/caseHistoryList.json";
 
 const CaseHistoryComponent: React.FC<{
@@ -1241,9 +1242,19 @@ const CaseHistoryComponent: React.FC<{
   };
 
   const CaseHistoryActivity: React.FC<{ caseItem: CaseEntity }> = ({ caseItem }) => {
-    const caseHistories = (selectedCaseForHistory === caseItem.caseId) 
+    const caseHistories = (selectedCaseForHistory === caseItem.caseId)
       ? caseHistoriesData?.data as unknown as CaseHistory[] || []
       : [];
+    // Mention pill the detail popover is anchored to, plus resolved-user cache
+    // so pills can render avatars after a popover lookup.
+    const [activeMention, setActiveMention] = useState<{ username: string; rect: DOMRect } | null>(null);
+    const [resolvedUsers, setResolvedUsers] = useState<Record<string, UserProfile>>({});
+
+    const handleMentionResolved = useCallback((username: string, user: UserProfile) => {
+      setResolvedUsers((prev) =>
+        prev[username]?.id === user.id ? prev : { ...prev, [username]: user }
+      );
+    }, []);
 
     return (
       <div className="space-y-6">
@@ -1279,7 +1290,23 @@ const CaseHistoryComponent: React.FC<{
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    {comment.fullMsg || ""}
+                    {parseMentionSegments(comment.fullMsg || "").map((segment, idx) =>
+                      segment.type === "mention" ? (
+                        <MentionPill
+                          key={idx}
+                          username={segment.username}
+                          photo={resolvedUsers[segment.username]?.photo ?? undefined}
+                          onClick={(username, event) =>
+                            setActiveMention({
+                              username,
+                              rect: event.currentTarget.getBoundingClientRect(),
+                            })
+                          }
+                        />
+                      ) : (
+                        <span key={idx}>{segment.content}</span>
+                      )
+                    )}
                   </p>
                 </div>
               ))}
@@ -1323,6 +1350,12 @@ const CaseHistoryComponent: React.FC<{
           </div>
         )}
         */}
+        <MentionUserPopover
+          username={activeMention?.username ?? null}
+          anchorRect={activeMention?.rect ?? null}
+          onClose={() => setActiveMention(null)}
+          onResolved={handleMentionResolved}
+        />
       </div>
     );
   }

@@ -1,13 +1,21 @@
 // Comment.tsx (Updated)
 
-import Input from "@/core/components/form/input/InputField";
 import Button from "@/core/components/ui/button/Button";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { CaseHistory, useGetCaseHistoryQuery } from "@/cms/store/api/caseApi";
 import { usePostAddCaseHistoryMutation } from "@/cms/store/api/caseApi";
 import { useWebSocket } from "@/core/components/websocket/websocket";
 import { formatDate } from "@/core/utils/crud";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import {
+    MentionInput,
+    MentionPill,
+    MentionUserPopover,
+    parseMentionSegments,
+    extractMentionUserIds,
+} from "@/cms/components/mention";
+import type { MentionUser } from "@/cms/components/mention";
+import type { UserProfile } from "@/core/types/user";
 // import { Pencil } from "lucide-react";
 
 
@@ -26,6 +34,15 @@ export const Comments: React.FC<CommentsProps> = ({
     const [newCommentMessage, setNewCommentMessage] = useState<string>('');
     const commentsContainerRef = useRef<HTMLDivElement>(null);
     const [commentsData, setCommentsData] = useState<CaseHistory[]>([]);
+    // username -> user id, accumulated from autocomplete selections so the
+    // submitted mentionedUserIds carry ids (not raw usernames). Hand-typed
+    // handles without a selection are dropped (no id to send).
+    const [mentionIdMap, setMentionIdMap] = useState<Map<string, string>>(new Map());
+    // username -> resolved user profile, cached after a popover lookup so
+    // pills can render the mentioned user's avatar.
+    const [resolvedUsers, setResolvedUsers] = useState<Record<string, UserProfile>>({});
+    // The mention pill the detail popover is currently anchored to.
+    const [activeMention, setActiveMention] = useState<{ username: string; rect: DOMRect } | null>(null);
     const profile = JSON.parse(localStorage.getItem("profile") ?? "{}") as any;
     const { data: fetchedComments, isLoading: isFetchingComments, error: fetchError } = useGetCaseHistoryQuery(
         { caseId },
@@ -98,34 +115,41 @@ export const Comments: React.FC<CommentsProps> = ({
         }
     }, [fetchedComments]);
 
+    const handleMentionSelect = useCallback((user: MentionUser) => {
+        if (user.id === undefined || user.id === null) return;
+        setMentionIdMap((prev) => {
+            if (prev.get(user.username) === String(user.id)) {
+                return prev;
+            }
+            const next = new Map(prev);
+            next.set(user.username, String(user.id));
+            return next;
+        });
+    }, []);
+
+    const handleMentionResolved = useCallback((username: string, user: UserProfile) => {
+        setResolvedUsers((prev) =>
+            prev[username]?.id === user.id ? prev : { ...prev, [username]: user }
+        );
+    }, []);
+
     const handleNewComment = async () => {
         if (newCommentMessage.trim() === '') {
             return;
         }
 
         try {
+            const mentionedUserIds = extractMentionUserIds(newCommentMessage.trim(), mentionIdMap);
             const newCommentData = {
                 caseId: caseId,
                 fullMsg: newCommentMessage.trim(),
                 jsonData: "",
                 type: "comment",
-                username: profile?.username
+                username: profile?.username,
+                mentionedUserIds: mentionedUserIds.length > 0 ? mentionedUserIds : undefined,
             };
 
             await addCaseHistory(newCommentData).unwrap();
-
-            // const optimisticComment: CaseHistory = {
-            //     id: Date.now(),
-            //     orgId: commentsData[0]?.orgId || "",
-            //     caseId: caseId,
-            //     username: profile?.username,
-            //     type: "comment",
-            //     fullMsg: newCommentMessage.trim(),
-            //     jsonData: "",
-            //     createdAt: new Date().toISOString(),
-            //     createdBy: profile?.username
-            // };
-            // setCommentsData((prevComments) => [...prevComments, optimisticComment]);
 
             setNewCommentMessage('');
 
@@ -231,7 +255,25 @@ export const Comments: React.FC<CommentsProps> = ({
                     </div>
                 </div>
                 <div className="flex space-x-2 justify-between">
-                    <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap ml-2">{comment.fullMsg}</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap ml-2">
+                        {parseMentionSegments(comment.fullMsg).map((segment, idx) =>
+                            segment.type === "mention" ? (
+                                <MentionPill
+                                    key={idx}
+                                    username={segment.username}
+                                    photo={resolvedUsers[segment.username]?.photo ?? undefined}
+                                    onClick={(username, event) =>
+                                        setActiveMention({
+                                            username,
+                                            rect: event.currentTarget.getBoundingClientRect(),
+                                        })
+                                    }
+                                />
+                            ) : (
+                                <span key={idx}>{segment.content}</span>
+                            )
+                        )}
+                    </p>
                     {/* <Pencil className="w-4 text-xs text-gray-500 dark:text-gray-400" onClick={handleEditComment}/> */}
                 </div>
             </div>
@@ -257,12 +299,12 @@ export const Comments: React.FC<CommentsProps> = ({
 
             <div className={`flex gap-3 ${isModal ? 'mt-4' : 'mt-3'}`}>
                 <div className="flex-1">
-                    <Input
+                    <MentionInput
                         placeholder={t("case.sop_card.comment") + "..."}
                         value={newCommentMessage}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewCommentMessage(e.target.value)}
+                        onChange={setNewCommentMessage}
                         onKeyDown={handleKeyDownComment}
-                        className="border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800"
+                        onMentionSelect={handleMentionSelect}
                         disabled={isAddingComment}
                     />
                 </div>
@@ -290,6 +332,13 @@ export const Comments: React.FC<CommentsProps> = ({
                     </div>
                 </Button>
             </div>
+
+            <MentionUserPopover
+                username={activeMention?.username ?? null}
+                anchorRect={activeMention?.rect ?? null}
+                onClose={() => setActiveMention(null)}
+                onResolved={handleMentionResolved}
+            />
         </div>
     );
 };

@@ -138,6 +138,7 @@ export interface AddComment {
     jsonData: string;
     type: string;
     username: string;
+    mentionedUserIds?: string[];
 }
 
 export interface EditComment {
