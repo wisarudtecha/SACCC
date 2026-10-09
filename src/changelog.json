@@ -1,4 +1,10 @@
 {
+  "0.93.0": {
+    "date": "2026-10-09",
+    "segment": "MINOR",
+    "notes": "feat: @mention in case comments, softphone redesign, and email workspace rebuild\n- Agents can now @mention colleagues when writing case comments or adding to the case history. Mentioned names appear as clickable pills, and clicking a pill opens a short profile card showing the user's photo and role.\n- The Softphone workspace has been redesigned into a two-panel layout: the left side shows the active call, dialpad, and recent call history, while the right side lists contacts and shows contact details including recent cases. Agents can search contacts, filter by criteria, and quickly create a case or add a note from the call screen.\n- The Email workspace has been rebuilt with a proper inbox list, reading pane, and an AI Copilot that suggests reply drafts. Agents can reply to emails, mark them as read, star them, archive them, or move them to trash. The layout works in mock mode today and will connect to the backend email adapter once it is available.\n- Added Thai, English, and Chinese translations for all new softphone, email, and mention labels.",
+    "author": "Wisarud Techa"
+  },
   "0.92.0": {
     "date": "2026-10-07",
     "segment": "MINOR",
