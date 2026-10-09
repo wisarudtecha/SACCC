@@ -66,6 +66,8 @@ export type CallAnsweredEvent = CallLifecycleEventBase & {
   customerId?: string;
   /** Backend-resolved linked case id. */
   caseId?: string;
+  /** Caller number (ANI) when provided by the backend adapter. */
+  ani?: string;
 };
 
 /** `CALL_ON_HOLD` payload — the active leg was placed on hold. */
@@ -167,7 +169,8 @@ export function isCallAnsweredEvent(value: unknown): value is CallAnsweredEvent 
     candidate !== null &&
     hasCallEventBaseFields(candidate) &&
     isOptionalString(candidate.customerId) &&
-    isOptionalString(candidate.caseId)
+    isOptionalString(candidate.caseId) &&
+    isOptionalString(candidate.ani)
   );
 }
 

@@ -36,6 +36,8 @@ export interface CallSession {
   agentId?: string;
   customerId?: string;
   caseId?: string;
+  /** Caller number (ANI) when provided by the adapter. */
+  ani?: string;
   /** `toAgentId` of the last CALL_TRANSFERRED event, when transferred. */
   transferredTo?: string;
   /** `endReason` of the terminal CALL_ENDED event, when ended. */
@@ -65,6 +67,7 @@ function baseSession(
     agentId: payload.agentId ?? existing?.agentId,
     customerId: existing?.customerId,
     caseId: existing?.caseId,
+    ani: existing?.ani,
     lastTimestamp: payload.timestamp,
   };
 }
@@ -89,6 +92,7 @@ function applyEvent(
         ...baseSession(payload, existing),
         customerId: payload.customerId ?? existing?.customerId,
         caseId: payload.caseId ?? existing?.caseId,
+        ani: payload.ani ?? existing?.ani,
         status: "active",
       };
       break;

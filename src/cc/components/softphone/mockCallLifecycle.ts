@@ -69,6 +69,7 @@ export function isMockCallLifecycleActive(): boolean {
 export interface MockCallStartOptions {
   customerId?: string;
   caseId?: string;
+  ani?: string;
 }
 
 /**
@@ -126,6 +127,7 @@ export function createMockCallControls(
           agentId: MOCK_AGENT_ID,
           customerId: options?.customerId,
           caseId: options?.caseId,
+          ani: options?.ani,
           timestamp: now(),
         },
       });

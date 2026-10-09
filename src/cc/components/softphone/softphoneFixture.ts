@@ -1,0 +1,128 @@
+// Mock fixtures for the softphone redesign — dev/mock mode only.
+// Isolated so it can be swapped for real API data without touching components.
+import type { ContactListItem, RecentCallItem } from "./softphoneTypes";
+
+export const MOCK_CONTACTS: ContactListItem[] = [
+  {
+    id: "c1",
+    name: "John Smith",
+    phone: "+66 81-234-5678",
+    company: "ABC Corporation",
+    tags: ["VIP"],
+  },
+  {
+    id: "c2",
+    name: "Sarah Johnso",
+    phone: "+66 82-345-6789",
+    company: "XYZ Ltd",
+    tags: ["Enterprise"],
+  },
+  {
+    id: "c3",
+    name: "Michael Cher",
+    phone: "+66 83-456-7890",
+    company: "Tech Innovations",
+    tags: ["VIP"],
+  },
+  {
+    id: "c4",
+    name: "Emily Davi",
+    phone: "+66 84-567-8901",
+    company: "Startup Inc.",
+    tags: ["New"],
+  },
+  {
+    id: "c5",
+    name: "David Wilsor",
+    phone: "+66 85-678-9012",
+    company: "Enterprise Solutions",
+    tags: ["VIP"],
+  },
+  {
+    id: "c6",
+    name: "Lisa Brow",
+    phone: "+66 86-789-0123",
+    company: "ABC Corporation",
+    tags: ["Premium"],
+  },
+  {
+    id: "c7",
+    name: "Tom Andersor",
+    phone: "+66 87-890-1234",
+    company: "XYZ Ltd",
+    tags: ["Enterprise"],
+  },
+];
+
+export const MOCK_RECENT_CALLS: RecentCallItem[] = [
+  {
+    callId: "mock-leg-1",
+    name: "John Smith",
+    number: "+66 81-234-5678",
+    durationSeconds: 323,
+    timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
+    direction: "incoming",
+    missed: false,
+  },
+  {
+    callId: "mock-leg-2",
+    name: "Sarah Johnso",
+    number: "+66 82-345-6789",
+    durationSeconds: 765,
+    timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+    direction: "incoming",
+    missed: false,
+  },
+  {
+    callId: "mock-leg-3",
+    name: "Unknown",
+    number: "+66 83-456-7890",
+    timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+    direction: "incoming",
+    missed: true,
+  },
+  {
+    callId: "mock-leg-4",
+    name: "Michael Chen",
+    number: "+66 84-567-8901",
+    durationSeconds: 192,
+    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    direction: "outgoing",
+    missed: false,
+  },
+  {
+    callId: "mock-leg-5",
+    name: "Emily Davis",
+    number: "+66 85-678-9012",
+    durationSeconds: 536,
+    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+    direction: "incoming",
+    missed: false,
+  },
+  {
+    callId: "mock-leg-6",
+    name: "David Wilson",
+    number: "+66 86-789-0123",
+    timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+    direction: "incoming",
+    missed: true,
+  },
+  {
+    callId: "mock-leg-7",
+    name: "Unknown",
+    number: "+66 87-890-1234",
+    durationSeconds: 105,
+    timestamp: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(),
+    direction: "outgoing",
+    missed: false,
+  },
+  {
+    callId: "mock-leg-8",
+    name: "Lisa Brown",
+    number: "+66 88-901-2345",
+    durationSeconds: 932,
+    timestamp: new Date(Date.now() - 27 * 60 * 60 * 1000).toISOString(),
+    direction: "incoming",
+    missed: false,
+  },
+];
