@@ -1,4 +1,10 @@
 {
+  "0.94.0": {
+    "date": "2026-10-12",
+    "segment": "MINOR",
+    "notes": "feat(cc): supervisor live-call roster and call monitoring\n- Supervisors now have a dedicated Supervision page that shows every live agent call in real time. Each row displays the agent's name, call status, a live ticking duration, and the caller's number and customer details when known. Calls are sorted so the longest-running ones appear at the top, and ended calls disappear immediately.\n- Supervisors can monitor a live call in three modes: Listen In (silent observation), Whisper Coaching (the agent hears the supervisor but the customer does not), and Barge In (both the agent and customer hear the supervisor). A single click starts monitoring, and an on-screen strip lets the supervisor switch between modes or stop monitoring at any time.\n- Agents now see a clear amber badge on their active call card whenever a supervisor is monitoring the call, including the current mode, so they are never caught unaware.\n- Supervisors can force-end an agent's call when necessary, but the action always asks for confirmation first to prevent accidental disconnections.\n- The Supervision workspace is reachable from the sidebar under Workspace and works in demo mode today using mock events. It will connect to the live telephony backend once the 3CX adapter is available.",
+    "author": "Wisarud Techa"
+  },
   "0.93.0": {
     "date": "2026-10-09",
     "segment": "MINOR",
