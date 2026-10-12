@@ -4,6 +4,8 @@ import {
   CALL_ANSWERED_WS_EVENT,
   CALL_ENDED_WS_EVENT,
   CALL_LIFECYCLE_WS_EVENTS,
+  CALL_MONITOR_ENDED_WS_EVENT,
+  CALL_MONITOR_STARTED_WS_EVENT,
   CALL_ON_HOLD_WS_EVENT,
   CALL_RESUMED_WS_EVENT,
   CALL_TRANSFERRED_WS_EVENT,
@@ -11,6 +13,8 @@ import {
   isCallAnsweredEvent,
   isCallEndedEvent,
   isCallLifecycleEventName,
+  isCallMonitorEndedEvent,
+  isCallMonitorStartedEvent,
   isCallTransferredEvent,
   parseCallLifecycleMessage,
   type WebSocketMessageLike,
@@ -241,6 +245,129 @@ describe("parseCallLifecycleMessage — AGENT_STATE_CHANGED", () => {
   });
 });
 
+describe("parseCallLifecycleMessage — CALL_MONITOR_STARTED / CALL_MONITOR_ENDED", () => {
+  it("accepts a full monitor-started payload", () => {
+    const parsed = parseCallLifecycleMessage(
+      wsMessage(CALL_MONITOR_STARTED_WS_EVENT, {
+        callId: "call-1001",
+        agentId: "agent-101",
+        supervisorId: "user-9",
+        mode: "listen",
+        timestamp: "2026-10-12T09:00:00.000Z",
+      })
+    );
+    expect(parsed).toEqual({
+      event: "CALL_MONITOR_STARTED",
+      payload: {
+        callId: "call-1001",
+        agentId: "agent-101",
+        supervisorId: "user-9",
+        mode: "listen",
+        timestamp: "2026-10-12T09:00:00.000Z",
+      },
+    });
+  });
+
+  it("accepts the minimal monitor-started payload (agentId is optional base field)", () => {
+    const parsed = parseCallLifecycleMessage(
+      wsMessage(CALL_MONITOR_STARTED_WS_EVENT, {
+        callId: "call-1001",
+        supervisorId: "user-9",
+        mode: "barge",
+        timestamp: "2026-10-12T09:01:00.000Z",
+      })
+    );
+    expect(parsed?.event).toBe("CALL_MONITOR_STARTED");
+    expect(parsed?.payload.mode).toBe("barge");
+  });
+
+  it("accepts any non-empty mode string (forward compatibility)", () => {
+    const parsed = parseCallLifecycleMessage(
+      wsMessage(CALL_MONITOR_STARTED_WS_EVENT, {
+        callId: "call-1001",
+        supervisorId: "user-9",
+        mode: "some-future-3cx-mode",
+        timestamp: "2026-10-12T09:02:00.000Z",
+      })
+    );
+    expect(parsed?.payload.mode).toBe("some-future-3cx-mode");
+  });
+
+  it("accepts a monitor-ended payload with the escalation reason", () => {
+    const parsed = parseCallLifecycleMessage(
+      wsMessage(CALL_MONITOR_ENDED_WS_EVENT, {
+        callId: "call-1001",
+        supervisorId: "user-9",
+        mode: "listen",
+        reason: "escalated",
+        timestamp: "2026-10-12T09:00:30.000Z",
+      })
+    );
+    expect(parsed?.event).toBe("CALL_MONITOR_ENDED");
+    expect(parsed?.payload.reason).toBe("escalated");
+  });
+
+  it("drops a monitor-ended event with a null reason (classic integration bug)", () => {
+    expect(
+      parseCallLifecycleMessage(
+        wsMessage(CALL_MONITOR_ENDED_WS_EVENT, {
+          callId: "call-1001",
+          supervisorId: "user-9",
+          mode: "listen",
+          reason: null,
+          timestamp: "2026-10-12T09:03:00.000Z",
+        })
+      )
+    ).toBeNull();
+  });
+
+  it("drops a monitor-ended event with an empty-string reason", () => {
+    expect(
+      parseCallLifecycleMessage(
+        wsMessage(CALL_MONITOR_ENDED_WS_EVENT, {
+          callId: "call-1001",
+          supervisorId: "user-9",
+          mode: "listen",
+          reason: "  ",
+          timestamp: "2026-10-12T09:03:30.000Z",
+        })
+      )
+    ).toBeNull();
+  });
+
+  it("drops monitor events missing supervisorId or mode", () => {
+    expect(
+      parseCallLifecycleMessage(
+        wsMessage(CALL_MONITOR_STARTED_WS_EVENT, {
+          callId: "call-1001",
+          mode: "listen",
+          timestamp: "2026-10-12T09:04:00.000Z",
+        })
+      )
+    ).toBeNull();
+    expect(
+      parseCallLifecycleMessage(
+        wsMessage(CALL_MONITOR_STARTED_WS_EVENT, {
+          callId: "call-1001",
+          supervisorId: "user-9",
+          mode: "",
+          timestamp: "2026-10-12T09:04:30.000Z",
+        })
+      )
+    ).toBeNull();
+    expect(
+      parseCallLifecycleMessage(
+        wsMessage(CALL_MONITOR_ENDED_WS_EVENT, {
+          callId: "call-1001",
+          supervisorId: "user-9",
+          mode: "listen",
+          timestamp: "2026-10-12T09:05:00.000Z",
+        })
+      )
+    ).not.toBeNull();
+  });
+});
+
 describe("parseCallLifecycleMessage — envelope handling", () => {
   it("does not consume CALL_INCOMING (owned by parseIncomingCallMessage)", () => {
     expect(
@@ -294,6 +421,8 @@ describe("parseCallLifecycleMessage — envelope handling", () => {
       [CALL_TRANSFERRED_WS_EVENT]: { callId: "c", timestamp: "t" },
       [CALL_ENDED_WS_EVENT]: { callId: "c", endReason: "completed", timestamp: "t" },
       [AGENT_STATE_CHANGED_WS_EVENT]: { agentId: "a", state: "available", timestamp: "t" },
+      [CALL_MONITOR_STARTED_WS_EVENT]: { callId: "c", supervisorId: "s", mode: "listen", timestamp: "t" },
+      [CALL_MONITOR_ENDED_WS_EVENT]: { callId: "c", supervisorId: "s", mode: "listen", timestamp: "t" },
     };
     for (const eventName of CALL_LIFECYCLE_WS_EVENTS) {
       expect(
@@ -355,5 +484,65 @@ describe("exported guards", () => {
     ).toBe(true);
     expect(isAgentStateChangedEvent({ agentId: "a", timestamp: "t" })).toBe(false);
     expect(isAgentStateChangedEvent("available")).toBe(false);
+  });
+
+  it("isCallMonitorStartedEvent requires supervisorId, mode and the base fields", () => {
+    expect(
+      isCallMonitorStartedEvent({
+        callId: "c",
+        supervisorId: "user-9",
+        mode: "whisper",
+        timestamp: "t",
+      })
+    ).toBe(true);
+    expect(
+      isCallMonitorStartedEvent({ callId: "c", mode: "whisper", timestamp: "t" })
+    ).toBe(false);
+    expect(
+      isCallMonitorStartedEvent({
+        callId: "c",
+        supervisorId: "user-9",
+        mode: 7,
+        timestamp: "t",
+      })
+    ).toBe(false);
+  });
+
+  it("isCallMonitorEndedEvent additionally enforces omit-or-non-empty reason", () => {
+    expect(
+      isCallMonitorEndedEvent({
+        callId: "c",
+        supervisorId: "user-9",
+        mode: "listen",
+        timestamp: "t",
+      })
+    ).toBe(true);
+    expect(
+      isCallMonitorEndedEvent({
+        callId: "c",
+        supervisorId: "user-9",
+        mode: "listen",
+        reason: "stopped",
+        timestamp: "t",
+      })
+    ).toBe(true);
+    expect(
+      isCallMonitorEndedEvent({
+        callId: "c",
+        supervisorId: "user-9",
+        mode: "listen",
+        reason: null,
+        timestamp: "t",
+      })
+    ).toBe(false);
+    expect(
+      isCallMonitorEndedEvent({
+        callId: "c",
+        supervisorId: "user-9",
+        mode: "listen",
+        reason: "",
+        timestamp: "t",
+      })
+    ).toBe(false);
   });
 });

@@ -53,12 +53,22 @@
 // events remain the only state source: a successful response means "dial
 // accepted", never "connected" (its §4).
 //
+// The four supervisor monitoring commands (listen/whisper/barge/stop-monitor)
+// follow the same rules with their own contract:
+// `docs/Supervisor-Call-Control-Command-Contract.md` (supervisor-call-control
+// plan). Responses are envelope-only — no session id, no mode: monitor
+// sessions are derived from `CALL_MONITOR_STARTED`/`CALL_MONITOR_ENDED`
+// events (lifecycle contract v0.2 §6.5) keyed by (callId, supervisorId). The
+// supervisor roster + action UI (`src/cc/pages/Supervision/`) is mock-driven
+// until the adapter lands, same posture as the softphone toolbar.
+//
 // When the backend adapter contract lands:
 //   - confirm/adjust the URL paths AND the placeholder GraphQL operation
 //     names / input types in `graphql/callControlQueries.ts` against the
-//     signed-off contract,
+//     signed-off contract (monitoring paths are that contract's Q-S1),
 //   - wire `useSoftphone`'s remaining controls to these hooks (keep the mock
 //     for dev + `VITE_MOCK_API` demos), and
+//   - wire the supervisor UI's commands to the monitoring hooks (same split),
 //   - remove this banner.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -148,6 +158,47 @@ export const callControlApi = baseApi.injectEndpoints({
       }),
     }),
 
+    // ── Supervisor monitoring commands (Supervisor-Call-Control-Command-
+    // Contract.md). All four target another agent's live leg; authorization
+    // is the backend's (`cc.supervision.*` keys) — the FE gates visibility
+    // only. Responses are envelope-only; monitor state arrives exclusively
+    // as CALL_MONITOR_* events. A re-issue of the current mode is an
+    // idempotent no-op success (contract §4.3). The supervisor variant of
+    // `terminate` (force-terminate) reuses `hangUpCall` above under the
+    // `cc.supervision.force_terminate` key — no new route (contract Q-S6).
+
+    listenCall: builder.mutation<ApiResponse<null>, CallLegRequest>({
+      query: ({ callId }) => ({
+        url: `/call-control/calls/${encodeURIComponent(callId)}/listen`,
+        method: "POST",
+        body: { callId },
+      }),
+    }),
+
+    whisperCall: builder.mutation<ApiResponse<null>, CallLegRequest>({
+      query: ({ callId }) => ({
+        url: `/call-control/calls/${encodeURIComponent(callId)}/whisper`,
+        method: "POST",
+        body: { callId },
+      }),
+    }),
+
+    bargeInCall: builder.mutation<ApiResponse<null>, CallLegRequest>({
+      query: ({ callId }) => ({
+        url: `/call-control/calls/${encodeURIComponent(callId)}/barge-in`,
+        method: "POST",
+        body: { callId },
+      }),
+    }),
+
+    stopMonitorCall: builder.mutation<ApiResponse<null>, CallLegRequest>({
+      query: ({ callId }) => ({
+        url: `/call-control/calls/${encodeURIComponent(callId)}/stop-monitor`,
+        method: "POST",
+        body: { callId },
+      }),
+    }),
+
     setAgentState: builder.mutation<ApiResponse<null>, SetAgentStateRequest>({
       query: ({ state }) => ({
         url: "/call-control/agent-state",
@@ -170,5 +221,9 @@ export const {
   useResumeCallMutation,
   useTransferCallMutation,
   useHangUpCallMutation,
+  useListenCallMutation,
+  useWhisperCallMutation,
+  useBargeInCallMutation,
+  useStopMonitorCallMutation,
   useSetAgentStateMutation,
 } = callControlApi;

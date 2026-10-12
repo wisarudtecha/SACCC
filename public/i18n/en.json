@@ -340,7 +340,7 @@
       "agent_state_unknown": "Unknown",
       "no_active_call": "No active call",
       "no_active_call_hint": "Waiting for call events…",
-      "mock_hint": "Mock mode: use window.mockCall in the devtools console to drive the demo (start, dial, hold, resume, transfer, end, agentState).",
+      "mock_hint": "Mock mode: use window.mockCall in the devtools console to drive the demo (start, dial, hold, resume, transfer, end, agentState, monitorListen, monitorWhisper, monitorBarge, monitorStop).",
       "call_label": "Call",
       "status_active": "Active",
       "status_on_hold": "On hold",
@@ -428,7 +428,42 @@
       "note_save_failed": "Could not save note.",
       "note_placeholder": "Enter a call note…",
       "wrap_up_placeholder": "Enter wrap-up notes or disposition…",
-      "wrap_up_saved": "Wrap-up saved."
+      "wrap_up_saved": "Wrap-up saved.",
+      "monitor": {
+        "badge": "Supervisor monitoring",
+        "mode_listen": "Listening in",
+        "mode_whisper": "Whisper coaching",
+        "mode_barge": "Barge-in",
+        "mode_unknown": "Monitoring"
+      }
+    },
+    "supervision": {
+      "title": "Live Call Supervision",
+      "permission_denied": "You do not have permission to view the supervisor roster (cc.supervision.view).",
+      "mock_hint": "Mock mode: use window.mockCall in the devtools console (start, monitorListen, monitorWhisper, monitorBarge, monitorStop, end) to drive the demo.",
+      "controls_unavailable": "Supervisor commands require the backend 3CX adapter (not built yet); the roster reflects live events only.",
+      "empty_title": "No agents on calls",
+      "empty_hint": "Live calls will appear here as call events arrive.",
+      "roster_label": "Live calls",
+      "unknown_agent": "Unknown agent",
+      "status_active": "Active",
+      "status_on_hold": "On hold",
+      "status_transferred": "Transferred",
+      "duration_label": "Call duration",
+      "row_actions": "Call actions",
+      "action_listen": "Listen",
+      "action_whisper": "Whisper",
+      "action_barge": "Barge-in",
+      "action_force_end": "End Call",
+      "session_strip_title": "Your monitoring sessions",
+      "session_actions": "Monitoring session actions",
+      "escalate_listen": "Listen",
+      "escalate_whisper": "To Whisper",
+      "escalate_barge": "To Barge-in",
+      "stop_monitoring": "Stop Monitoring",
+      "force_end_title": "End this call?",
+      "force_end_message": "You are about to force-end call {{callId}}. The agent's live call will be terminated.",
+      "command_failed": "The command was rejected."
     },
     "dashboard": {
       "title": "Call Center Dashboard",
@@ -913,6 +948,7 @@
           "title": "Workspace",
           "menu": {
             "softphone": "Softphone",
+            "supervision": "Supervision",
             "chat": {
               "title": "Chat",
               "sub_menu": {

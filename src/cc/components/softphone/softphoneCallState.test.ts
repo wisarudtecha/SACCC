@@ -11,6 +11,8 @@ import type { CallScopedLifecycleEvent } from "./softphoneCallState";
 import type {
   CallAnsweredEvent,
   CallEndedEvent,
+  CallMonitorEndedEvent,
+  CallMonitorStartedEvent,
   CallTransferredEvent,
 } from "../../types/callEvents";
 
@@ -49,6 +51,34 @@ function ended(
   return {
     event: "CALL_ENDED",
     payload: { callId, endReason: "completed", timestamp, ...extra },
+  };
+}
+
+function monitorStarted(
+  callId: string,
+  timestamp: string,
+  extra?: Partial<CallMonitorStartedEvent>
+): CallScopedLifecycleEvent {
+  return {
+    event: "CALL_MONITOR_STARTED",
+    payload: { callId, supervisorId: "user-9", mode: "listen", timestamp, ...extra },
+  };
+}
+
+function monitorEnded(
+  callId: string,
+  timestamp: string,
+  extra?: Partial<CallMonitorEndedEvent>
+): CallScopedLifecycleEvent {
+  return {
+    event: "CALL_MONITOR_ENDED",
+    payload: {
+      callId,
+      supervisorId: "user-9",
+      mode: "listen",
+      timestamp,
+      ...extra,
+    },
   };
 }
 
@@ -205,6 +235,111 @@ describe("softphoneCallsReducer — clearEnded & pruning", () => {
     }
     expect(Object.keys(calls)).toHaveLength(MAX_TRACKED_CALLS);
     expect(calls["old-active"]?.status).toBe("active");
+  });
+});
+
+describe("softphoneCallsReducer — monitor events (contract §6.5)", () => {
+  it("starts a monitor session on an active leg (agent-side badge state)", () => {
+    let calls: SoftphoneCalls = {};
+    calls = softphoneCallsReducer(calls, { type: "apply", event: answered("call-1", "t1") });
+    calls = softphoneCallsReducer(calls, {
+      type: "apply",
+      event: monitorStarted("call-1", "t2", { mode: "whisper" }),
+    });
+    expect(calls["call-1"]).toMatchObject({
+      status: "active",
+      monitor: { supervisorId: "user-9", mode: "whisper" },
+    });
+  });
+
+  it("stops the monitor session on CALL_MONITOR_ENDED for the same supervisor", () => {
+    let calls: SoftphoneCalls = {};
+    calls = softphoneCallsReducer(calls, { type: "apply", event: answered("call-1", "t1") });
+    calls = softphoneCallsReducer(calls, { type: "apply", event: monitorStarted("call-1", "t2") });
+    calls = softphoneCallsReducer(calls, {
+      type: "apply",
+      event: monitorEnded("call-1", "t3", { reason: "stopped" }),
+    });
+    expect(calls["call-1"]?.status).toBe("active");
+    expect(calls["call-1"]?.monitor).toBeUndefined();
+  });
+
+  it("applies the escalation pair as a discrete mode transition", () => {
+    let calls: SoftphoneCalls = {};
+    calls = softphoneCallsReducer(calls, { type: "apply", event: answered("call-1", "t1") });
+    calls = softphoneCallsReducer(calls, { type: "apply", event: monitorStarted("call-1", "t2") });
+    // Escalation = ENDED(escalated) + STARTED(new mode), per contract §6.5.
+    calls = softphoneCallsReducer(calls, {
+      type: "apply",
+      event: monitorEnded("call-1", "t3", { reason: "escalated" }),
+    });
+    expect(calls["call-1"]?.monitor).toBeUndefined();
+    calls = softphoneCallsReducer(calls, {
+      type: "apply",
+      event: monitorStarted("call-1", "t4", { mode: "barge" }),
+    });
+    expect(calls["call-1"]?.monitor).toEqual({ supervisorId: "user-9", mode: "barge" });
+    expect(calls["call-1"]?.status).toBe("active");
+  });
+
+  it("drops monitor state when the leg ends (sticky-terminal clears the badge)", () => {
+    let calls: SoftphoneCalls = {};
+    calls = softphoneCallsReducer(calls, { type: "apply", event: answered("call-1", "t1") });
+    calls = softphoneCallsReducer(calls, { type: "apply", event: monitorStarted("call-1", "t2") });
+    calls = softphoneCallsReducer(calls, { type: "apply", event: ended("call-1", "t3") });
+    expect(calls["call-1"]?.status).toBe("ended");
+    expect(calls["call-1"]?.monitor).toBeUndefined();
+  });
+
+  it("ignores monitor events arriving after the leg's CALL_ENDED (no zombies)", () => {
+    let calls: SoftphoneCalls = {};
+    calls = softphoneCallsReducer(calls, { type: "apply", event: answered("call-1", "t1") });
+    calls = softphoneCallsReducer(calls, { type: "apply", event: ended("call-1", "t2") });
+    const before = calls;
+    calls = softphoneCallsReducer(calls, { type: "apply", event: monitorStarted("call-1", "t3") });
+    calls = softphoneCallsReducer(calls, { type: "apply", event: monitorEnded("call-1", "t4") });
+    expect(calls).toBe(before);
+  });
+
+  it("creates an active session when monitor-started is the first event for the leg (upsert)", () => {
+    const calls = softphoneCallsReducer({}, {
+      type: "apply",
+      event: monitorStarted("call-9", "t1"),
+    });
+    expect(calls["call-9"]).toMatchObject({
+      status: "active",
+      monitor: { supervisorId: "user-9", mode: "listen" },
+    });
+  });
+
+  it("does not create a session for a monitor-ended on an unseen leg", () => {
+    const calls = softphoneCallsReducer({}, {
+      type: "apply",
+      event: monitorEnded("call-9", "t1"),
+    });
+    expect(calls).toEqual({});
+  });
+
+  it("keeps another supervisor's session when a different supervisor's ENDED arrives", () => {
+    let calls: SoftphoneCalls = {};
+    calls = softphoneCallsReducer(calls, { type: "apply", event: answered("call-1", "t1") });
+    calls = softphoneCallsReducer(calls, {
+      type: "apply",
+      event: monitorStarted("call-1", "t2", { supervisorId: "user-9", mode: "listen" }),
+    });
+    calls = softphoneCallsReducer(calls, {
+      type: "apply",
+      event: monitorEnded("call-1", "t3", { supervisorId: "user-10", mode: "listen" }),
+    });
+    expect(calls["call-1"]?.monitor).toEqual({ supervisorId: "user-9", mode: "listen" });
+  });
+
+  it("keeps the leg status unchanged when monitoring starts (monitoring is not a leg transition)", () => {
+    let calls: SoftphoneCalls = {};
+    calls = softphoneCallsReducer(calls, { type: "apply", event: answered("call-1", "t1") });
+    calls = softphoneCallsReducer(calls, { type: "apply", event: onHold("call-1", "t2") });
+    calls = softphoneCallsReducer(calls, { type: "apply", event: monitorStarted("call-1", "t3") });
+    expect(calls["call-1"]?.status).toBe("on_hold");
   });
 });
 

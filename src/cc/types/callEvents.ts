@@ -6,6 +6,9 @@
 // Full wire-level contract (targeting, idempotency, validation table, test
 // vectors, open questions): docs/CALL-Lifecycle-Websocket-Event-Contract.md —
 // keep this file and that document in sync when the contract changes.
+// (v0.2 monitoring extension adds the CALL_MONITOR_* supervisor events —
+// docs/supervisor-call-control-plan.md; the commands that cause them are
+// specified by docs/Supervisor-Call-Control-Command-Contract.md.)
 //
 // This module EXTENDS the CALL_INCOMING contract (`./incomingCall.ts`,
 // `docs/CALL_INCOMING-Websocket-Event-Contract.md`) with the post-ring call
@@ -32,6 +35,10 @@ export const CALL_TRANSFERRED_WS_EVENT = "CALL_TRANSFERRED" as const;
 export const CALL_ENDED_WS_EVENT = "CALL_ENDED" as const;
 /** Websocket `message.data.EVENT` value: telephony presence for one agent. */
 export const AGENT_STATE_CHANGED_WS_EVENT = "AGENT_STATE_CHANGED" as const;
+/** Websocket `message.data.EVENT` value: a supervisor began/escalated monitoring the leg. */
+export const CALL_MONITOR_STARTED_WS_EVENT = "CALL_MONITOR_STARTED" as const;
+/** Websocket `message.data.EVENT` value: a supervisor's monitor session on the leg ended. */
+export const CALL_MONITOR_ENDED_WS_EVENT = "CALL_MONITOR_ENDED" as const;
 
 /** All event names this module parses, as a readonly tuple. */
 export const CALL_LIFECYCLE_WS_EVENTS = [
@@ -41,6 +48,8 @@ export const CALL_LIFECYCLE_WS_EVENTS = [
   CALL_TRANSFERRED_WS_EVENT,
   CALL_ENDED_WS_EVENT,
   AGENT_STATE_CHANGED_WS_EVENT,
+  CALL_MONITOR_STARTED_WS_EVENT,
+  CALL_MONITOR_ENDED_WS_EVENT,
 ] as const;
 
 /** Union of the lifecycle event names, derived from the tuple above. */
@@ -115,6 +124,35 @@ export interface AgentStateChangedEvent {
 }
 
 /**
+ * Fields shared by the `CALL_MONITOR_*` payloads (lifecycle contract v0.2
+ * §5.2). A monitor session is identified by (`callId`, `supervisorId`) — no
+ * session id exists on the wire (command contract Q-S2: event-derived).
+ */
+export interface CallMonitorEventBase extends CallLifecycleEventBase {
+  /** The monitoring supervisor's user id. Non-empty. */
+  supervisorId: string;
+  /**
+   * Free-form non-empty mode. Canonical values: "listen" | "whisper" |
+   * "barge". Unknown values render a generic monitoring badge (forward
+   * compatible).
+   */
+  mode: string;
+}
+
+/** `CALL_MONITOR_STARTED` payload — a supervisor began/escalated monitoring. */
+export type CallMonitorStartedEvent = CallMonitorEventBase;
+
+/** `CALL_MONITOR_ENDED` payload — a supervisor's monitor session ended. */
+export type CallMonitorEndedEvent = CallMonitorEventBase & {
+  /**
+   * Free-form non-empty reason when present. Canonical values: "stopped" |
+   * "escalated" | "call_ended". Omit when unknown — never null (contract
+   * §5.2 sharp edge #6). Display-only.
+   */
+  reason?: string;
+};
+
+/**
  * Discriminated union the softphone consumes: one variant per lifecycle
  * event, narrowed on `event`.
  */
@@ -124,7 +162,9 @@ export type CallLifecycleEvent =
   | { event: typeof CALL_RESUMED_WS_EVENT; payload: CallResumedEvent }
   | { event: typeof CALL_TRANSFERRED_WS_EVENT; payload: CallTransferredEvent }
   | { event: typeof CALL_ENDED_WS_EVENT; payload: CallEndedEvent }
-  | { event: typeof AGENT_STATE_CHANGED_WS_EVENT; payload: AgentStateChangedEvent };
+  | { event: typeof AGENT_STATE_CHANGED_WS_EVENT; payload: AgentStateChangedEvent }
+  | { event: typeof CALL_MONITOR_STARTED_WS_EVENT; payload: CallMonitorStartedEvent }
+  | { event: typeof CALL_MONITOR_ENDED_WS_EVENT; payload: CallMonitorEndedEvent };
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
@@ -223,6 +263,37 @@ export function isAgentStateChangedEvent(
   );
 }
 
+/** True when `value` carries the fields shared by every CALL_MONITOR_* payload. */
+function hasCallMonitorEventFields(candidate: Record<string, unknown>): boolean {
+  return (
+    hasCallEventBaseFields(candidate) &&
+    isNonEmptyString(candidate.supervisorId) &&
+    isNonEmptyString(candidate.mode)
+  );
+}
+
+/** True when `value` is a `CALL_MONITOR_STARTED` payload shape. */
+export function isCallMonitorStartedEvent(
+  value: unknown
+): value is CallMonitorStartedEvent {
+  const candidate = toRecord(value);
+  return candidate !== null && hasCallMonitorEventFields(candidate);
+}
+
+/** True when `value` is a `CALL_MONITOR_ENDED` payload shape. */
+export function isCallMonitorEndedEvent(
+  value: unknown
+): value is CallMonitorEndedEvent {
+  const candidate = toRecord(value);
+  return (
+    candidate !== null &&
+    hasCallMonitorEventFields(candidate) &&
+    // `reason` is omit-or-non-empty — null/empty drops the event (contract
+    // §5.2 sharp edge #6), unlike the plain-optional string fields.
+    (candidate.reason === undefined || isNonEmptyString(candidate.reason))
+  );
+}
+
 /** True when `value` is one of the event names this module parses. */
 export function isCallLifecycleEventName(
   value: unknown
@@ -275,6 +346,14 @@ export function parseCallLifecycleMessage(
     case AGENT_STATE_CHANGED_WS_EVENT:
       return isAgentStateChangedEvent(payload)
         ? { event: AGENT_STATE_CHANGED_WS_EVENT, payload }
+        : null;
+    case CALL_MONITOR_STARTED_WS_EVENT:
+      return isCallMonitorStartedEvent(payload)
+        ? { event: CALL_MONITOR_STARTED_WS_EVENT, payload }
+        : null;
+    case CALL_MONITOR_ENDED_WS_EVENT:
+      return isCallMonitorEndedEvent(payload)
+        ? { event: CALL_MONITOR_ENDED_WS_EVENT, payload }
         : null;
     default:
       return null;

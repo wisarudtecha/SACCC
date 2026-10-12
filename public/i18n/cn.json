@@ -340,7 +340,7 @@
       "agent_state_unknown": "未知",
       "no_active_call": "当前无通话",
       "no_active_call_hint": "正在等待通话事件…",
-      "mock_hint": "Mock 模式：在控制台使用 window.mockCall 模拟通话（start、dial、hold、resume、transfer、end、agentState）",
+      "mock_hint": "Mock 模式：在控制台使用 window.mockCall 模拟通话（start、dial、hold、resume、transfer、end、agentState、monitorListen、monitorWhisper、monitorBarge、monitorStop）",
       "call_label": "通话",
       "status_active": "通话中",
       "status_on_hold": "保持中",
@@ -428,7 +428,42 @@
       "note_save_failed": "无法保存备注。",
       "note_placeholder": "输入通话备注…",
       "wrap_up_placeholder": "输入总结或处理结果…",
-      "wrap_up_saved": "总结已保存。"
+      "wrap_up_saved": "总结已保存。",
+      "monitor": {
+        "badge": "主管正在监听",
+        "mode_listen": "静默监听",
+        "mode_whisper": "耳语辅导",
+        "mode_barge": "强插加入",
+        "mode_unknown": "监控中"
+      }
+    },
+    "supervision": {
+      "title": "实时通话监控",
+      "permission_denied": "您没有权限查看主管监控台（cc.supervision.view）。",
+      "mock_hint": "模拟模式：在 devtools 控制台使用 window.mockCall（start、monitorListen、monitorWhisper、monitorBarge、monitorStop、end）驱动演示。",
+      "controls_unavailable": "主管命令需要后端 3CX 适配器（尚未构建）；列表仅反映实时事件。",
+      "empty_title": "没有通话中的坐席",
+      "empty_hint": "通话事件到达后，实时通话将显示在此处。",
+      "roster_label": "实时通话",
+      "unknown_agent": "未知坐席",
+      "status_active": "通话中",
+      "status_on_hold": "保留",
+      "status_transferred": "已转接",
+      "duration_label": "通话时长",
+      "row_actions": "通话操作",
+      "action_listen": "监听",
+      "action_whisper": "耳语",
+      "action_barge": "强插",
+      "action_force_end": "结束通话",
+      "session_strip_title": "您的监控会话",
+      "session_actions": "监控会话操作",
+      "escalate_listen": "监听",
+      "escalate_whisper": "升级为耳语",
+      "escalate_barge": "升级为强插",
+      "stop_monitoring": "停止监控",
+      "force_end_title": "结束此通话？",
+      "force_end_message": "您即将强制结束通话 {{callId}}，坐席的通话将被终止。",
+      "command_failed": "命令被拒绝。"
     },
     "dashboard": {
       "title": "呼叫中心仪表板",
@@ -794,6 +829,7 @@
           "title": "工作区",
           "menu": {
             "softphone": "软电话",
+            "supervision": "监控台",
             "chat": {
               "title": "聊天",
               "sub_menu": {

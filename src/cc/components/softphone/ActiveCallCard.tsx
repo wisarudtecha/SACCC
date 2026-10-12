@@ -5,6 +5,7 @@ import { useTranslation } from "@/core/hooks/useTranslation";
 import { PhoneCall } from "lucide-react";
 import type { CallSession } from "./softphoneCallState";
 import { formatCallDuration } from "./softphoneCallState";
+import { MonitorBadge } from "./MonitorBadge";
 
 export interface ActiveCallCardProps {
   call: CallSession;
@@ -51,6 +52,8 @@ export function ActiveCallCard({
           {displayNumber}
         </p>
       </div>
+
+      {call.monitor && <MonitorBadge monitor={call.monitor} />}
 
       <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">
         {formatCallDuration(elapsed)}

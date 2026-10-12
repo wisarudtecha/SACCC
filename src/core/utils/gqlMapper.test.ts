@@ -265,6 +265,38 @@ describe("buildGraphQLQuery - Call control", () => {
     expect(result!.variables.input).toEqual({ target: "agent-2", callId: "leg-1" });
   });
 
+  test("POST /call-control/calls/{callId}/listen maps to ListenCall with callId", () => {
+    const result = buildGraphQLQuery({
+      url: "/call-control/calls/leg-1/listen",
+      method: "POST",
+      body: { callId: "leg-1" },
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.query).toContain("ListenCall");
+    expect(result!.query).toContain("ListenCallInput!");
+    expect(result!.variables.input).toEqual({ callId: "leg-1" });
+  });
+
+  test("every supervisor monitoring command URL resolves to a POST mutation mapping", () => {
+    const modes = ["listen", "whisper", "barge-in", "stop-monitor"] as const;
+    const operationNames = {
+      listen: "ListenCall",
+      whisper: "WhisperCall",
+      "barge-in": "BargeInCall",
+      "stop-monitor": "StopMonitorCall",
+    } as const;
+
+    for (const mode of modes) {
+      const url = `/call-control/calls/leg-1/${mode}`;
+      const result = buildGraphQLQuery({ url, method: "POST", body: { callId: "leg-1" } });
+      expect(result, url).not.toBeNull();
+      expect(result!.query, url).toContain("mutation");
+      expect(result!.query, url).toContain(operationNames[mode]);
+      expect(result!.variables.input).toEqual({ callId: "leg-1" });
+    }
+  });
+
   test("every call-control command URL resolves to a POST mutation mapping", () => {
     const commands: Array<{ url: string; body: Record<string, unknown> }> = [
       { url: "/call-control/calls", body: { destination: "0212345678" } },
@@ -274,6 +306,10 @@ describe("buildGraphQLQuery - Call control", () => {
       { url: "/call-control/calls/leg-1/transfer", body: { target: "agent-2" } },
       { url: "/call-control/calls/leg-1/terminate", body: { callId: "leg-1" } },
       { url: "/call-control/agent-state", body: { state: "ready" } },
+      { url: "/call-control/calls/leg-1/listen", body: { callId: "leg-1" } },
+      { url: "/call-control/calls/leg-1/whisper", body: { callId: "leg-1" } },
+      { url: "/call-control/calls/leg-1/barge-in", body: { callId: "leg-1" } },
+      { url: "/call-control/calls/leg-1/stop-monitor", body: { callId: "leg-1" } },
     ];
 
     for (const command of commands) {

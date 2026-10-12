@@ -2,12 +2,12 @@
 
 | Item | Detail |
 | --- | --- |
-| Status | Current — covers everything built in capability-matrix Tracks A + B, incl. the FE-1.2 dialpad and FE-1.3 agent-state selector |
-| Date | 2026-10-06 |
+| Status | Current — covers everything built in capability-matrix Tracks A + B, incl. the FE-1.2 dialpad, FE-1.3 agent-state selector, and the supervisor live-call roster + monitor commands (supervisor-call-control plan SFE-01–SFE-06) |
+| Date | 2026-10-12 |
 | Audience | FE devs, QA running the app locally |
-| Related | `docs/CC-ScreenPop-Softphone-Test-Walkthrough.md` (a single scripted session through the same features — use it for QA runs and demos, this catalog for regression sweeps); `docs/CALL_INCOMING-Mock-Cutover-Checklist.md` (testing against the **real** backend adapter — use that once it ships); `docs/CALL-Lifecycle-Websocket-Event-Contract.md`; `docs/CALL_INCOMING-Websocket-Event-Contract.md`; `docs/Make-Call-Command-Contract.md` (the outbound dial command the mock `dial` stands in for); `docs/Agent-State-Command-Contract.md` (the selector's command vocabulary and confirm semantics) |
+| Related | `docs/CC-ScreenPop-Softphone-Test-Walkthrough.md` (a single scripted session through the same features — use it for QA runs and demos, this catalog for regression sweeps); `docs/CALL_INCOMING-Mock-Cutover-Checklist.md` (testing against the **real** backend adapter — use that once it ships); `docs/CALL-Lifecycle-Websocket-Event-Contract.md` (v0.2 adds the `CALL_MONITOR_*` events); `docs/CALL_INCOMING-Websocket-Event-Contract.md`; `docs/Make-Call-Command-Contract.md` (the outbound dial command the mock `dial` stands in for); `docs/Agent-State-Command-Contract.md` (the selector's command vocabulary and confirm semantics); `docs/Supervisor-Call-Control-Command-Contract.md` (the monitor commands the mock `monitor*` functions stand in for); `docs/supervisor-call-control-plan.md` |
 
-This guide tests the incoming-call screen pop, the softphone, and the call↔case linkage using the **dev-only mock emitters** — no telephony backend required. Every step lists the exact action and the expected result; anything else is a bug.
+This guide tests the incoming-call screen pop, the softphone, the supervisor live-call roster, and the call↔case linkage using the **dev-only mock emitters** — no telephony backend required. Every step lists the exact action and the expected result; anything else is a bug.
 
 ---
 
@@ -165,6 +165,13 @@ Navigate via the sidebar (**Workspace → Softphone**) or go to `/cc/softphone` 
 - **Action:** Dial a number (2.10), then use **Hold** / **Hang Up** on it.
 - **Expected:** The dialed leg rides the same state machine as an inbound leg — **Hold** shows the amber **On hold** chip, **Hang Up** the gray ended panel ("Call ended — mock-out-…"). When the dialed leg ends, the dialpad status line disappears on its own (the ended notice takes over).
 
+### 2.14 Agent-side monitoring badge
+
+- **Action:** With an active mock call, run `window.mockCall.monitorListen()`.
+- **Expected:** An amber **Supervisor monitoring · Listening in** badge appears on the active-call card (eye icon). Escalate with `window.mockCall.monitorWhisper()` → badge switches to **Whisper coaching** (megaphone icon); `window.mockCall.monitorBarge()` → **Barge-in** (users icon); `window.mockCall.monitorStop()` → badge disappears.
+- **Sticky terminal:** End the leg while monitored (`window.mockCall.end()`) — the badge disappears with the call; a late `monitorListen()` afterwards does nothing (no zombie sessions, lifecycle contract §6.5).
+- **Unknown mode:** A hand-built `CALL_MONITOR_STARTED` with `mode: "some-future-3cx-mode"` renders the generic **Monitoring** badge (forward compatible) — e.g. via the envelope builder in `mockCallLifecycle.ts`.
+
 ---
 
 ## 3. Call↔case linkage (Create Case prefill)
@@ -187,7 +194,55 @@ Navigate via the sidebar (**Workspace → Softphone**) or go to `/cc/softphone` 
 
 ---
 
-## 4. Non-mock sanity check (optional but recommended)
+## 4. Supervisor live-call roster (`/cc/supervision`)
+
+Navigate via the sidebar (**Workspace → Supervision**) or go to `/cc/supervision` directly. The roster renders from lifecycle events (roster-feed mechanism Q-S7, FE default = events); all commands are mock-driven until the 3CX adapter lands. The mock supervisor persona is `mock-supervisor` (`MOCK_SUPERVISOR_ID`).
+
+### 4.1 Roster row appears, ticks, and prunes
+
+- **Action:** On the supervision page, run `window.mockCall.start({ customerId: "42", ani: "+66811223344" })`.
+- **Expected:** A row appears (agent `mock-agent`, **Active** chip, live-ticking duration, ANI/customer chips) sorted oldest-first. `window.mockCall.end()` removes the row. With no live calls the page shows the distinct "No agents on calls" empty state.
+
+### 4.2 Status follows the leg
+
+- **Action:** `window.mockCall.hold()` → `.resume()` → `.transfer("agent-202")`.
+- **Expected:** The row's chip switches Active → **On hold** → Active → **Transferred**, and the agent column changes to `agent-202` after the transfer (the roster follows the receiving agent).
+
+### 4.3 Monitor commands from the row actions
+
+- **Action:** Click **Listen** on the row.
+- **Expected:** The amber **Your monitoring sessions** strip appears above the roster showing the callId and **Listening in**; the row gains the **Supervisor monitoring · Listening in** badge. The row's **Listen** button disables (re-issue of the current mode is an idempotent no-op, command contract §4.3).
+- **Action:** Click **Whisper**, then **Barge-in**.
+- **Expected:** Each click is a discrete mode transition (the mock emits the `ENDED(escalated)` + `STARTED(new mode)` pair) — strip and badge follow.
+
+### 4.4 Stop monitoring
+
+- **Action:** In the session strip, click **Stop Monitoring**.
+- **Expected:** The strip and the row badge disappear.
+
+### 4.5 Force-terminate requires confirmation
+
+- **Action:** Click **End Call** on a row.
+- **Expected:** A confirmation modal names the callId. Confirming ends the leg (the row disappears and the agent-side softphone — if open — shows the ended notice); cancelling leaves everything untouched. Force-terminate reuses the terminate command under `cc.supervision.force_terminate` (command contract Q-S6).
+
+### 4.6 Roster reset on websocket reconnect
+
+- **Action:** With a row visible, stop and restart the dev server's websocket (e.g. toggle your network offline/online, or restart `pnpm dev` and re-login in a second tab).
+- **Expected:** After the socket reconnects, the roster rebuilds from scratch (empty until new events) — no ghost rows for calls that ended during the disconnection (no-replay discipline, lifecycle contract §6.3).
+
+### 4.7 Permission states
+
+- **Action:** In mock mode the page is always viewable (mock bypass — the `cc.supervision.view` key is not provisioned yet). In non-mock mode, a user without `cc.supervision.view` sees the "no permission" state instead of the roster.
+- **Expected:** Empty state and permission-denied state render distinctly; the mock-mode hint shows the available console commands.
+
+### 4.8 Pre-adapter unavailable state (non-mock)
+
+- **Action:** With `VITE_MOCK_API="false"`, open `/cc/supervision`.
+- **Expected:** The roster renders events (none, without the adapter) and all command buttons are disabled with the note that supervisor commands require the backend 3CX adapter — same posture as the softphone toolbar.
+
+---
+
+## 5. Non-mock sanity check (optional but recommended)
 
 1. Set `VITE_MOCK_API="false"` (or comment it out) in `.env`, restart `pnpm dev`.
 2. Open `/cc/softphone`.
@@ -198,23 +253,25 @@ Navigate via the sidebar (**Workspace → Softphone**) or go to `/cc/softphone` 
 
 ---
 
-## 5. What mock mode cannot cover
+## 6. What mock mode cannot cover
 
 These need the real adapter — they are in the [cutover checklist](./CALL_INCOMING-Mock-Cutover-Checklist.md) instead:
 
 - Websocket **disconnect/reconnect redelivery** behavior end-to-end
-- Real event **targeting** (per-agent delivery, not self-emitted)
+- Real event **targeting** (per-agent delivery, not self-emitted) — including the dual agent+supervisor targeting of `CALL_MONITOR_*` (lifecycle contract §6.1)
 - The 100-id dedupe cap in a real session (>100 distinct calls)
 - Real 3CX `endReason`/`durationSeconds` values on `CALL_ENDED`
+- Supervisor **authorization** (`cc.supervision.*` enforcement) and the business-rejection vocabulary (command contract §4.4) — the mock never rejects
+- Real supervisor **audio** (listen/whisper/barge media mixing happens inside 3CX; the FE never handles audio)
 
 ---
 
-## 6. Automated regression gates
+## 7. Automated regression gates
 
 Before merging any change to these areas:
 
 ```cmd
-pnpm test     # 485 tests total, 165 of them across the cc integration areas
+pnpm test     # 582 tests total (2026-10-12), incl. the cc integration + supervision suites
 npx tsc -b    # type check (tests are excluded from tsc — vitest green ≠ types green)
 pnpm lint
 ```

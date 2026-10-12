@@ -10,6 +10,7 @@ import NotFound from "@/core/pages/OtherPage/NotFound";
 
 import CallCenterDashboardPage from "@/cc/pages/Dashboard/CallCenterDashboard";
 import SoftphonePage from "@/cc/pages/Softphone/Softphone";
+import SupervisionPage from "@/cc/pages/Supervision/Supervision";
 import EmailPage from "@/cc/pages/Workspace/Email";
 import LobbyIncomingPage from "@/cc/pages/Workspace/LobbyIncoming";
 import ChatHistoryPage from "@/cc/pages/Workspace/ChatHistory";
@@ -29,6 +30,12 @@ export default function CcApp() {
             sidebar's "workspace.softphone" key is commented out until the
             backend provisions it. */}
         <Route path="/softphone" element={<SoftphonePage />} />
+        {/* Supervisor live-call roster — designed for cc.supervision.view
+            (Supervisor-Call-Control-Command-Contract.md §5.1); same as
+            /softphone, the route gate + sidebar key land with backend
+            permission provisioning (the in-page check carries a mock-mode
+            bypass until then, see SupervisionBoard.tsx). */}
+        <Route path="/supervision" element={<SupervisionPage />} />
         <Route path="/email" element={<EmailPage />} />
 
         {/* Live Chat (CC-CHAT, Professional+). Route-level entitlement gate

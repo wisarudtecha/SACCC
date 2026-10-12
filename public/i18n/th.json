@@ -340,7 +340,7 @@
       "agent_state_unknown": "ไม่ทราบ",
       "no_active_call": "ไม่มีสายที่กำลังสนทนา",
       "no_active_call_hint": "กำลังรอเหตุการณ์สาย…",
-      "mock_hint": "โหมด mock: ใช้ window.mockCall ในคอนโซลเพื่อจำลองสาย (start, dial, hold, resume, transfer, end, agentState)",
+      "mock_hint": "โหมด mock: ใช้ window.mockCall ในคอนโซลเพื่อจำลองสาย (start, dial, hold, resume, transfer, end, agentState, monitorListen, monitorWhisper, monitorBarge, monitorStop)",
       "call_label": "สาย",
       "status_active": "กำลังสนทนา",
       "status_on_hold": "พักสาย",
@@ -428,7 +428,42 @@
       "note_save_failed": "ไม่สามารถบันทึกได้",
       "note_placeholder": "ใส่บันทึกการโทร…",
       "wrap_up_placeholder": "ใส่บันทึกสรุปหรือสถานะสาย…",
-      "wrap_up_saved": "บันทึกสรุปสำเร็จ"
+      "wrap_up_saved": "บันทึกสรุปสำเร็จ",
+      "monitor": {
+        "badge": "หัวหน้ากำลังติดตามสาย",
+        "mode_listen": "ฟังแบบเงียบ",
+        "mode_whisper": "โค้ชแบบกระซิบ",
+        "mode_barge": "เข้าร่วมสนทนา",
+        "mode_unknown": "กำลังติดตาม"
+      }
+    },
+    "supervision": {
+      "title": "การควบคุมสายแบบเรียลไทม์",
+      "permission_denied": "คุณไม่มีสิทธิ์เข้าถึงหน้าผู้ควบคุม (cc.supervision.view)",
+      "mock_hint": "โหมดจำลอง: ใช้ window.mockCall ในคอนโซล devtools (start, monitorListen, monitorWhisper, monitorBarge, monitorStop, end) เพื่อทดลองการทำงาน",
+      "controls_unavailable": "คำสั่งผู้ควบคุมต้องใช้ backend 3CX adapter (ยังไม่สร้าง) ตารางแสดงเฉพาะเหตุการณ์แบบเรียลไทม์",
+      "empty_title": "ไม่มีเอเจนต์ที่กำลังสนทนา",
+      "empty_hint": "สายที่กำลังสนทนาจะแสดงที่นี่เมื่อมีเหตุการณ์สายเข้ามา",
+      "roster_label": "สายที่กำลังสนทนา",
+      "unknown_agent": "เอเจนต์ไม่ทราบชื่อ",
+      "status_active": "กำลังสนทนา",
+      "status_on_hold": "พักสาย",
+      "status_transferred": "โอนสายแล้ว",
+      "duration_label": "ระยะเวลาสนทนา",
+      "row_actions": "การดำเนินการกับสาย",
+      "action_listen": "ฟัง",
+      "action_whisper": "กระซิบ",
+      "action_barge": "เข้าร่วม",
+      "action_force_end": "วางสาย",
+      "session_strip_title": "รายการที่คุณกำลังติดตาม",
+      "session_actions": "การดำเนินการของรายการติดตาม",
+      "escalate_listen": "ฟัง",
+      "escalate_whisper": "เป็นกระซิบ",
+      "escalate_barge": "เป็นเข้าร่วม",
+      "stop_monitoring": "หยุดติดตาม",
+      "force_end_title": "วางสายนี้หรือไม่?",
+      "force_end_message": "คุณกำลังจะบังคับวางสาย {{callId}} สายของเอเจนต์จะถูกวางทันที",
+      "command_failed": "คำสั่งถูกปฏิเสธ"
     },
     "dashboard": {
       "title": "แดชบอร์ดศูนย์บริการ",
@@ -913,6 +948,7 @@
           "title": "พื้นที่ทำงาน",
           "menu": {
             "softphone": "โทรศัพท์",
+            "supervision": "ผู้ควบคุม",
             "chat": {
               "title": "แชต",
               "sub_menu": {

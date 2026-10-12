@@ -2,12 +2,12 @@
 
 | Item | Detail |
 | --- | --- |
-| Status | Current — verified against code 2026-10-06 (incl. the FE-1.2 dialpad and FE-1.3 agent-state selector) |
+| Status | Current — verified against code 2026-10-12 (incl. the FE-1.2 dialpad, FE-1.3 agent-state selector, and the supervisor live-call roster + monitor commands) |
 | Audience | QA running a single scripted session; new team members onboarding to the cc module |
-| Scope | One continuous, in-order walkthrough of the screen pop → softphone → call↔case linkage flow, driven entirely by the dev-only mock emitters |
+| Scope | One continuous, in-order walkthrough of the screen pop → softphone → call↔case linkage → supervisor roster flow, driven entirely by the dev-only mock emitters |
 | Companion | `docs/CC-Integration-Dev-Test-Guide.md` — the full **per-behavior catalog** (isolated test cases incl. negative/error paths). Use that for regression sweeps; use **this** for a session script and demo script. Real-adapter testing: `docs/CALL_INCOMING-Mock-Cutover-Checklist.md` |
 
-> Every step gives the exact action and the expected result. Anything else is a bug. Steps are ordered — each one assumes the state left by the previous. Total time ≈ 18 minutes.
+> Every step gives the exact action and the expected result. Anything else is a bug. Steps are ordered — each one assumes the state left by the previous. Total time ≈ 25 minutes.
 
 ---
 
@@ -151,6 +151,12 @@ Navigate to **Workspace → Softphone** in the sidebar (or `/cc/softphone` direc
 - **Action:** Dial a fresh number (Step 2.9). While it is connected, look at the **Call** button; then type `08a` into the destination field.
 - **Expected:** While a call is active the **Call** button is disabled with the hint "Finish the current call before dialing again" (a second dial would be consult/conference — out of scope this release). Typing `08a` immediately shows "Only digits, +, *, # and separators are allowed"; an over-20-significant-character input shows "Destination is too long". End the call to clean up.
 
+### Step 2.12 — The supervisor joins (agent-side badge)
+
+- **Action:** With a call active (start one if needed: `window.mockCall.start()`), run `window.mockCall.monitorListen()`.
+- **Expected:** An amber **Supervisor monitoring · Listening in** badge appears on the active-call card (eye icon). `window.mockCall.monitorWhisper()` switches it to **Whisper coaching** (megaphone); `window.mockCall.monitorBarge()` to **Barge-in** (users). End the call — the badge goes with it; a late `monitorListen()` does nothing (no zombie sessions).
+- **Leave the call active** — Part 4 continues from here (or start a fresh one there).
+
 ---
 
 ## Part 3 — The call becomes a case (linkage)
@@ -177,7 +183,43 @@ Navigate back to wherever your Step 1.2 card still lives (or emit a fresh known-
 
 ---
 
-## Part 4 — Negative-space sweep (5 minutes)
+## Part 4 — The supervisor takes over (live-call roster)
+
+Navigate to **Workspace → Supervision** in the sidebar (or `/cc/supervision` directly). The mock supervisor persona is `mock-supervisor`; the roster renders purely from lifecycle events.
+
+### Step 4.1 — A live call appears
+
+- **Action:** `window.mockCall.start({ customerId: "<CUST-ID>", ani: "<PHONE>" })`
+- **Expected:** A roster row appears: agent `mock-agent`, green **Active** chip, a live-ticking duration, and the ANI/customer linkage. The empty state ("No agents on calls") is what you saw a second before — that distinct render is the point.
+
+### Step 4.2 — Listen In from the row
+
+- **Action:** Click **Listen** on the row.
+- **Expected:** The amber **Your monitoring sessions** strip appears above the roster (callId + **Listening in**), and the row gains the **Supervisor monitoring · Listening in** badge. The row's **Listen** button disables — re-issuing the current mode is an idempotent no-op (command contract §4.3).
+
+### Step 4.3 — Escalate: Whisper, then Barge-in
+
+- **Action:** In the session strip, click **To Whisper**, then **To Barge-in**.
+- **Expected:** Two discrete mode transitions — the strip and the row badge step **Whisper coaching** → **Barge-in**. Each escalation is its own `CALL_MONITOR_ENDED(escalated)` + `CALL_MONITOR_STARTED(new mode)` event pair (lifecycle contract §6.5), never an in-place "mode changed".
+
+### Step 4.4 — Stop monitoring
+
+- **Action:** Click **Stop Monitoring** in the session strip.
+- **Expected:** The strip and the row badge disappear. The call itself is untouched (row still active, duration still ticking).
+
+### Step 4.5 — Force-terminate, with confirmation
+
+- **Action:** Click **End Call** on the row.
+- **Expected:** A confirmation modal names the callId. **Cancel** first — nothing changes. Click **End Call** again and confirm: the leg ends, the roster row disappears, and the agent-side softphone (Part 2's page, if still open in another tab) shows the ended notice.
+
+### Step 4.6 — Roster hygiene
+
+- **Action:** Start two calls (`window.mockCall.start()` twice) — note only the newest is the mock toolbar's "current" leg; rows for both remain. Then `window.mockCall.end()` and watch the newest row prune.
+- **Expected:** Rows sort oldest-first (longest-running on top) and disappear the moment their leg ends. No ghost rows.
+
+---
+
+## Part 5 — Negative-space sweep (5 minutes)
 
 A compact pass over the guards — the full matrix is in the catalog guide §1.8–1.9 and §2:
 
@@ -187,19 +229,21 @@ A compact pass over the guards — the full matrix is in the catalog guide §1.8
 
 ---
 
-## Part 5 — What this walkthrough cannot cover
+## Part 6 — What this walkthrough cannot cover
 
 Mock mode exercises the FE event path only. These live in the [cutover checklist](./CALL_INCOMING-Mock-Cutover-Checklist.md) for when the real adapter ships:
 
 - Websocket disconnect/reconnect redelivery end-to-end
-- Real per-agent event targeting (mock events are self-emitted)
+- Real per-agent event targeting (mock events are self-emitted) — including the dual agent+supervisor targeting of `CALL_MONITOR_*`
 - The dedupe memory cap across a real session (>100 distinct calls)
 - Real 3CX `endReason` / `durationSeconds` values on `CALL_ENDED`
+- Supervisor authorization (`cc.supervision.*` keys) and business rejections — the mock never rejects
+- Real supervisor audio (listen/whisper/barge media mixing happens inside 3CX)
 
 **Automated gates before merging any change to these areas:**
 
 ```cmd
-pnpm test     # full suite incl. the cc guard/reducer/dedupe suites
+pnpm test     # full suite incl. the cc guard/reducer/dedupe/supervision suites
 npx tsc -b    # tests are excluded from tsc — vitest green ≠ types green
 pnpm lint
 ```
@@ -218,3 +262,6 @@ pnpm lint
 | Outbound dial | `window.mockCall.dial("0811223344")` |
 | Lifecycle | `window.mockCall.hold()` / `.resume()` / `.transfer("agent-202")` / `.end("completed")` |
 | Agent state | `window.mockCall.agentState("break")` |
+| Monitor (supervisor persona) | `window.mockCall.monitorListen()` / `.monitorWhisper()` / `.monitorBarge()` / `.monitorStop()` |
+| Monitor an explicit leg | `window.mockCall.monitorListen("<callId>")` |
+| Force-end a specific leg | `window.mockCall.end("completed", "<callId>")` |

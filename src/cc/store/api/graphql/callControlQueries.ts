@@ -9,10 +9,14 @@
 // The backend 3CX adapter does not exist yet, so every operationName, inputType,
 // and the root namespace below is the FE's *proposal*, modeled on the 3CX Call
 // Control API operations the capability matrix lists (make call, answer, hold,
-// resume, transfer, terminate) plus the agent-state command contract. Only these
-// names may change at sign-off — see `docs/Make-Call-Command-Contract.md` (Q2
-// covers the makeCall response shape), `docs/Agent-State-Command-Contract.md`,
-// and `docs/3CX-Integration-Capability-Matrix.md` §3.2 + Decision 3/4.
+// resume, transfer, terminate) plus the agent-state command contract, and —
+// for the four monitoring mutations — the supervisor call-control command
+// contract. Only these names may change at sign-off — see
+// `docs/Make-Call-Command-Contract.md` (Q2 covers the makeCall response
+// shape), `docs/Agent-State-Command-Contract.md`,
+// `docs/Supervisor-Call-Control-Command-Contract.md` (Q-S1 covers the
+// monitoring paths), and `docs/3CX-Integration-Capability-Matrix.md` §3.2 +
+// Decision 3/4.
 //
 // Until the BFF ships these operations, a call through one of these mappings
 // fails at the BFF (unknown operation) in any `VITE_USE_GRAPHQL === "true"`
@@ -90,6 +94,41 @@ const SET_AGENT_STATE_MUTATION = {
   mutation: true,
 };
 
+// Supervisor monitoring commands — placeholders pending
+// docs/Supervisor-Call-Control-Command-Contract.md sign-off (its Q-S1
+// confirms/corrects the paths; operation names may change with them).
+const LISTEN_CALL_MUTATION = {
+  operationName: "ListenCall",
+  root: "CallControl",
+  inputType: "ListenCallInput!",
+  fields: `status msg data desc`,
+  mutation: true,
+};
+
+const WHISPER_CALL_MUTATION = {
+  operationName: "WhisperCall",
+  root: "CallControl",
+  inputType: "WhisperCallInput!",
+  fields: `status msg data desc`,
+  mutation: true,
+};
+
+const BARGE_IN_CALL_MUTATION = {
+  operationName: "BargeInCall",
+  root: "CallControl",
+  inputType: "BargeInCallInput!",
+  fields: `status msg data desc`,
+  mutation: true,
+};
+
+const STOP_MONITOR_CALL_MUTATION = {
+  operationName: "StopMonitorCall",
+  root: "CallControl",
+  inputType: "StopMonitorCallInput!",
+  fields: `status msg data desc`,
+  mutation: true,
+};
+
 export const GQL_CALL_CONTROL = {
   "/call-control/calls": { POST: MAKE_CALL_MUTATION },
   "/call-control/calls/:callId/answer": { POST: ANSWER_CALL_MUTATION },
@@ -98,4 +137,8 @@ export const GQL_CALL_CONTROL = {
   "/call-control/calls/:callId/transfer": { POST: TRANSFER_CALL_MUTATION },
   "/call-control/calls/:callId/terminate": { POST: TERMINATE_CALL_MUTATION },
   "/call-control/agent-state": { POST: SET_AGENT_STATE_MUTATION },
+  "/call-control/calls/:callId/listen": { POST: LISTEN_CALL_MUTATION },
+  "/call-control/calls/:callId/whisper": { POST: WHISPER_CALL_MUTATION },
+  "/call-control/calls/:callId/barge-in": { POST: BARGE_IN_CALL_MUTATION },
+  "/call-control/calls/:callId/stop-monitor": { POST: STOP_MONITOR_CALL_MUTATION },
 };

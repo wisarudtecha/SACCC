@@ -7,6 +7,7 @@ import {
   ChartColumn,
   ChevronDown,
   ClipboardCheck,
+  Eye,
   FileText,
   FolderOpen,
   History,
@@ -85,6 +86,15 @@ const SuperSidebar = (
       // permission: permissions.hasAnyPermission([
       //   "workspace.softphone"
       // ])
+    },
+    {
+      // Supervisor live-call roster (supervisor-call-control plan SFE-05);
+      // the cc.supervision.view gate lands with backend permission
+      // provisioning — same posture as the softphone entry above.
+      icon: <Eye />,
+      name: t("navigation.super_app.sidebar.workspace.menu.supervision"),
+      path: "/cc/supervision",
+      // permission: permissions.hasPermission("cc.supervision.view")
     },
     {
       icon: <MessageSquare />,

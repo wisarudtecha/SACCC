@@ -10,10 +10,16 @@
 //   - `ended` is sticky/terminal — a late hold/resume/answer for the same
 //     callId is ignored, never resurrects the session;
 //   - repeated events are safe to re-apply (idempotent state assertion).
+// Monitor events additionally follow the contract's §6.5: sessions are keyed
+// by (callId, supervisorId), escalation is an ENDED+STARTED pair, CALL_ENDED
+// clears monitor state implicitly, and a monitor event after the leg's ENDED
+// is ignored (no zombie sessions).
 import {
   AGENT_STATE_CHANGED_WS_EVENT,
   CALL_ANSWERED_WS_EVENT,
   CALL_ENDED_WS_EVENT,
+  CALL_MONITOR_ENDED_WS_EVENT,
+  CALL_MONITOR_STARTED_WS_EVENT,
   CALL_ON_HOLD_WS_EVENT,
   CALL_RESUMED_WS_EVENT,
   CALL_TRANSFERRED_WS_EVENT,
@@ -28,6 +34,17 @@ export type CallScopedLifecycleEvent = Exclude<
 
 /** Status of one call leg as tracked by the softphone. */
 export type CallSessionStatus = "active" | "on_hold" | "transferred" | "ended";
+
+/**
+ * A supervisor monitor session riding on a leg (contract §6.5). Q-S5 defaults
+ * to one concurrent session per call — tracked as a single field; a STARTED
+ * for a different supervisor overwrites (last-wins), matching the
+ * event-derived model.
+ */
+export interface CallMonitorSession {
+  supervisorId: string;
+  mode: string;
+}
 
 /** One tracked call leg, keyed by `callId`. */
 export interface CallSession {
@@ -44,6 +61,8 @@ export interface CallSession {
   endReason?: string;
   /** Whole seconds reported by CALL_ENDED, when the adapter supplied it. */
   durationSeconds?: number;
+  /** Active supervisor monitor session on this leg, when any (agent-side badge). */
+  monitor?: CallMonitorSession;
   /** `timestamp` of the last applied event — drives "most recent" ordering. */
   lastTimestamp: string;
 }
@@ -115,6 +134,35 @@ function applyEvent(
         status: "ended",
         endReason: payload.endReason,
         durationSeconds: payload.durationSeconds,
+      };
+      break;
+    case CALL_MONITOR_STARTED_WS_EVENT:
+      // Upsert discipline (§6.4): a monitor event may be the first event the
+      // agent's softphone sees for the leg — a monitored leg is necessarily
+      // live, so an unseen leg starts as active; a seen leg keeps its status
+      // (monitoring never changes leg status, contract §6.5).
+      session = {
+        ...baseSession(payload, existing),
+        status: existing?.status ?? "active",
+        monitor: { supervisorId: payload.supervisorId, mode: payload.mode },
+      };
+      break;
+    case CALL_MONITOR_ENDED_WS_EVENT:
+      // ENDED clears only the matching supervisor's session and never creates
+      // a session for an unseen leg; other supervisors' sessions (multi-
+      // monitor deployments) and non-monitored legs are left untouched.
+      if (
+        existing === undefined ||
+        existing.monitor?.supervisorId !== payload.supervisorId
+      ) {
+        return calls;
+      }
+      session = {
+        ...baseSession(payload, existing),
+        status: existing.status,
+        transferredTo: existing.transferredTo,
+        endReason: existing.endReason,
+        durationSeconds: existing.durationSeconds,
       };
       break;
   }
