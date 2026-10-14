@@ -14,6 +14,7 @@ import { formatCallDuration } from "./softphoneCallState";
 
 export interface RecentCallsListProps {
   calls: RecentCallItem[];
+  onSelectCall?: (call: RecentCallItem) => void;
 }
 
 type CallFilter = "all" | CallDirection | "missed";
@@ -39,7 +40,7 @@ const FILTERS: { key: CallFilter; labelKey: string }[] = [
   { key: "missed", labelKey: "cc.softphone.missed" },
 ];
 
-export function RecentCallsList({ calls }: RecentCallsListProps) {
+export function RecentCallsList({ calls, onSelectCall }: RecentCallsListProps) {
   const { t } = useTranslation();
   const [filter, setFilter] = useState<CallFilter>("all");
 
@@ -93,9 +94,15 @@ export function RecentCallsList({ calls }: RecentCallsListProps) {
 
       <div className="flex flex-col gap-2">
         {filtered.map((call) => (
-          <div
+          <button
             key={call.callId}
-            className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-3 dark:border-gray-800 dark:bg-gray-900"
+            type="button"
+            onClick={() => onSelectCall?.(call)}
+            className={`flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-3 text-left dark:border-gray-800 dark:bg-gray-900 ${
+              onSelectCall
+                ? "cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+                : ""
+            }`}
           >
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full">
               {call.missed ? (
@@ -134,7 +141,7 @@ export function RecentCallsList({ calls }: RecentCallsListProps) {
                 {formatTimeAgo(call.timestamp)}
               </p>
             </div>
-          </div>
+          </button>
         ))}
       </div>
     </div>

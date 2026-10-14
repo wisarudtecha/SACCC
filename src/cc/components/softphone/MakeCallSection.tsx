@@ -9,6 +9,8 @@ export interface MakeCallSectionProps {
   controlsEnabled: boolean;
   activeCallId: string | null;
   lastEndedCallId: string | null;
+  dialValue: string;
+  onDialChange: (value: string) => void;
   controls: SoftphoneControls;
 }
 
@@ -16,6 +18,8 @@ export function MakeCallSection({
   controlsEnabled,
   activeCallId,
   lastEndedCallId,
+  dialValue,
+  onDialChange,
   controls,
 }: MakeCallSectionProps) {
   const { t } = useTranslation();
@@ -33,6 +37,8 @@ export function MakeCallSection({
         enabled={controlsEnabled}
         activeCallId={activeCallId}
         lastEndedCallId={lastEndedCallId}
+        value={dialValue}
+        onChange={onDialChange}
         onDial={controls.dial}
       />
     </div>

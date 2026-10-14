@@ -2,7 +2,8 @@
 //   left  = call area (make-call / active-call / recent-calls)
 //   right = contacts / contact detail
 // State lives in `useSoftphone`; contact resolution in `useSoftphoneContact`.
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import { PhoneCall, ArrowLeft } from "lucide-react";
 import { useLazyGetCustommersProductQuery } from "@/cms/store/api/custommerApi";
@@ -18,12 +19,14 @@ import { MakeCallSection } from "./MakeCallSection";
 import { ContactsList } from "./ContactsList";
 import { ContactDetail } from "./ContactDetail";
 import { ContactNotFound } from "./ContactNotFound";
-import { ContactFilterDrawer } from "./ContactFilterDrawer";
+import { ContactFilterDrawer, type ContactFilters } from "./ContactFilterDrawer";
 import { useSoftphone } from "./useSoftphone";
 import { useSoftphoneContact } from "./useSoftphoneContact";
+import { ContactPreviewCard } from "./ContactPreviewCard";
+import { applyContactFilters } from "./applyContactFilters";
 import { MOCK_CONTACTS, MOCK_RECENT_CALLS } from "./softphoneFixture";
 import { formatCallDuration } from "./softphoneCallState";
-import type { ContactListItem } from "./softphoneTypes";
+import type { ContactListItem, RecentCallItem } from "./softphoneTypes";
 import {
   extractCustomer,
   extractCaseSummaries,
@@ -62,6 +65,8 @@ export default function Softphone() {
     controlsEnabled
   );
 
+  const navigate = useNavigate();
+
   const [filterOpen, setFilterOpen] = useState(false);
   const [contactQuery, setContactQuery] = useState("");
   const [contacts, setContacts] = useState<ContactListItem[]>([]);
@@ -71,6 +76,13 @@ export default function Softphone() {
     recentCases: CaseSummary[];
   } | null>(null);
   const [selectedContactLoading, setSelectedContactLoading] = useState(false);
+  const [dialValue, setDialValue] = useState("");
+  const [selectedPreview, setSelectedPreview] = useState<{
+    contact: ContactListItem | null;
+    recentCalls: RecentCallItem[];
+    isInAddressBook: boolean;
+  } | null>(null);
+  const [activeFilters, setActiveFilters] = useState<ContactFilters | null>(null);
 
   const [searchCustomers] = useLazyGetCustommersProductQuery();
   const [fetchCustomer] = useLazyGetCustomerQuery();
@@ -106,6 +118,48 @@ export default function Softphone() {
   }, [contactQuery, searchCustomers, isMock]);
 
   const handleSelectContact = useCallback(
+    (contact: ContactListItem) => {
+      const recentCallsForContact = (isMock ? MOCK_RECENT_CALLS : []).filter(
+        (c) => c.number === contact.phone
+      );
+      setSelectedPreview({
+        contact,
+        recentCalls: recentCallsForContact,
+        isInAddressBook: true,
+      });
+    },
+    [isMock]
+  );
+
+  const contactLookup = useMemo(() => {
+    const map = new Map<string, ContactListItem>();
+    (isMock ? MOCK_CONTACTS : contacts).forEach((c) => {
+      if (c.phone) map.set(c.phone, c);
+    });
+    return map;
+  }, [isMock, contacts]);
+
+  const displayContacts = useMemo(() => {
+    const base = isMock ? MOCK_CONTACTS : contacts;
+    return applyContactFilters(base, activeFilters);
+  }, [isMock, contacts, activeFilters]);
+
+  const handleSelectRecentCall = useCallback(
+    (call: RecentCallItem) => {
+      const contact = contactLookup.get(call.number) ?? null;
+      const recentCallsForNumber = (isMock ? MOCK_RECENT_CALLS : []).filter(
+        (c) => c.number === call.number
+      );
+      setSelectedPreview({
+        contact,
+        recentCalls: recentCallsForNumber,
+        isInAddressBook: contact !== null,
+      });
+    },
+    [contactLookup, isMock]
+  );
+
+  const handleViewFullDetails = useCallback(
     async (contact: ContactListItem) => {
       if (isMock) {
         setSelectedContact(null);
@@ -138,8 +192,6 @@ export default function Softphone() {
     },
     [fetchCustomer, fetchCases, isMock]
   );
-
-  const displayContacts = isMock ? MOCK_CONTACTS : contacts;
 
   const handleLinkContact = useCallback((contactId: string) => {
     void contactId;
@@ -205,12 +257,17 @@ export default function Softphone() {
                   controlsEnabled={controlsEnabled}
                   activeCallId={null}
                   lastEndedCallId={lastEndedCall?.callId ?? null}
+                  dialValue={dialValue}
+                  onDialChange={setDialValue}
                   controls={controls}
                 />
               </div>
 
               <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
-                <RecentCallsList calls={isMock ? MOCK_RECENT_CALLS : []} />
+                <RecentCallsList
+                  calls={isMock ? MOCK_RECENT_CALLS : []}
+                  onSelectCall={handleSelectRecentCall}
+                />
               </div>
             </>
           )}
@@ -249,6 +306,30 @@ export default function Softphone() {
             <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
               {t("common.loading")}
             </p>
+          ) : selectedPreview ? (
+            <ContactPreviewCard
+              contact={selectedPreview.contact}
+              recentCalls={selectedPreview.recentCalls}
+              isInAddressBook={selectedPreview.isInAddressBook}
+              onEmail={() => {
+                if (selectedPreview.contact?.email) {
+                  navigate(
+                    `/cc/email?to=${encodeURIComponent(selectedPreview.contact.email)}&compose=1`
+                  );
+                }
+              }}
+              onCall={() => {
+                if (selectedPreview.contact?.phone) {
+                  setDialValue(selectedPreview.contact.phone);
+                }
+              }}
+              onViewFullDetails={() => {
+                if (selectedPreview.contact) {
+                  handleViewFullDetails(selectedPreview.contact);
+                }
+              }}
+              onBack={() => setSelectedPreview(null)}
+            />
           ) : (
             <ContactsList
               contacts={displayContacts}
@@ -300,8 +381,14 @@ export default function Softphone() {
       <ContactFilterDrawer
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
-        onApply={() => setFilterOpen(false)}
-        onReset={() => setFilterOpen(false)}
+        onApply={(filters) => {
+          setActiveFilters(filters);
+          setFilterOpen(false);
+        }}
+        onReset={() => {
+          setActiveFilters(null);
+          setFilterOpen(false);
+        }}
       />
     </div>
   );

@@ -27,6 +27,10 @@ export interface DialpadProps {
   activeCallId: string | null;
   /** `callId` of the most recently ended session, or null. */
   lastEndedCallId: string | null;
+  /** Current dial input value (controlled). */
+  value: string;
+  /** Called when the dial input value changes. */
+  onChange: (value: string) => void;
   /**
    * Dials `destination`. Returns the new leg's `callId` (correlation key), or
    * null when the command is unavailable.
@@ -46,14 +50,15 @@ export function Dialpad({
   enabled,
   activeCallId,
   lastEndedCallId,
+  value,
+  onChange,
   onDial,
 }: DialpadProps) {
   const { t } = useTranslation();
-  const [input, setInput] = useState("");
   const [attemptedDial, setAttemptedDial] = useState(false);
   const [dialed, setDialed] = useState<DialedLeg | null>(null);
 
-  const validation = validateDialDestination(input);
+  const validation = validateDialDestination(value);
   const connected = dialed !== null && activeCallId === dialed.callId;
 
   // The dialed leg ended — the ended-call notice above takes over; drop the
@@ -83,7 +88,7 @@ export function Dialpad({
     const callId = onDial(validation.destination);
     if (callId !== null) {
       setDialed({ callId, destination: validation.destination });
-      setInput("");
+      onChange("");
     }
   };
 
@@ -109,11 +114,11 @@ export function Dialpad({
         <input
           type="text"
           inputMode="tel"
-          value={input}
+          value={value}
           placeholder={t("cc.softphone.dialpad_destination_placeholder")}
           aria-label={t("cc.softphone.dialpad_destination_placeholder")}
           className="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500"
-          onChange={(event) => setInput(event.target.value)}
+          onChange={(event) => onChange(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter" && !callDisabled) {
               handleDial();
@@ -124,9 +129,9 @@ export function Dialpad({
           type="button"
           aria-label={t("cc.softphone.dialpad_backspace")}
           title={t("cc.softphone.dialpad_backspace")}
-          disabled={input.length === 0}
+          disabled={value.length === 0}
           className="rounded-lg border border-gray-200 p-2.5 text-gray-600 enabled:hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-300 dark:enabled:hover:bg-gray-800"
-          onClick={() => setInput((previous) => previous.slice(0, -1))}
+          onClick={() => onChange(value.slice(0, -1))}
         >
           <Delete className="h-4 w-4" aria-hidden="true" />
         </button>
@@ -149,7 +154,7 @@ export function Dialpad({
             className="rounded-xl border border-gray-200 py-3 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
             onClick={() => {
               setAttemptedDial(false);
-              setInput((previous) => previous + key);
+              onChange(value + key);
             }}
           >
             {key}

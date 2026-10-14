@@ -25,9 +25,14 @@ export interface ContactListItem {
   id: string;
   name: string;
   phone: string;
+  email?: string;
   company?: string;
   tags?: string[];
   photo?: string;
+  channels?: ContactChannelType[];
+  accountManager?: string;
+  source?: string;
+  createdDate?: string;
 }
 
 export type ContactLookupStatus = "idle" | "loading" | "resolved" | "unknown" | "error";
