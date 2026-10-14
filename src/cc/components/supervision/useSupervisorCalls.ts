@@ -58,6 +58,8 @@ export interface SupervisorControls {
   stopMonitor: (callId: string) => void;
   /** Force-terminates the agent's live call (confirm first — destructive). */
   forceEnd: (callId: string) => void;
+  /** Dev-only: spawns a mock call on the roster. No-op when mock is inactive. */
+  simulateCall: () => void;
 }
 
 export interface SupervisorCallsApi {
@@ -201,6 +203,11 @@ export function useSupervisorCalls(
           return;
         }
         run(hangUpCall({ callId }).unwrap());
+      },
+      simulateCall: () => {
+        if (mockControls) {
+          mockControls.start();
+        }
       },
     };
   }, [

@@ -100,9 +100,13 @@ export default function SupervisionBoard() {
           {t("cc.supervision.title")}
         </h1>
         {isMockCallLifecycleActive() && (
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            {t("cc.supervision.mock_hint")}
-          </p>
+          <button
+            type="button"
+            onClick={() => controls.simulateCall()}
+            className="rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs font-medium px-3 py-1.5 hover:bg-gray-300 dark:hover:bg-gray-600"
+          >
+            Simulate Call
+          </button>
         )}
       </header>
 
