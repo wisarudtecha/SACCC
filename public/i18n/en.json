@@ -332,6 +332,8 @@
       "action_answer": "Answer",
       "action_create_case": "Create Case",
       "action_dismiss": "Dismiss",
+      "answer_success": "Call answered",
+      "answer_failed": "Could not answer the call",
       "incoming_call_announcement": "Incoming call from {{number}}"
     },
     "softphone": {
@@ -408,6 +410,9 @@
       "contact_channels": "Contact Channels",
       "primary": "Primary",
       "view_full_profile": "View Full Profile",
+      "email": "Email",
+      "call": "Call",
+      "view_full_details": "View Full Details",
       "no_contact_found": "No contact found.",
       "no_contact_hint": "Please select an existing contact or create a new one.",
       "link_existing": "Link Existing",
@@ -520,6 +525,7 @@
       "sendingReply": "Sending...",
       "sendReply": "Send Reply",
       "replyPlaceholder": "Type your reply here...",
+      "newMessage": "New Message",
       "useSuggestion": "Use suggestion"
     }
   },

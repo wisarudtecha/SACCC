@@ -332,6 +332,8 @@
       "action_answer": "รับสาย",
       "action_create_case": "สร้างเคส",
       "action_dismiss": "ปิด",
+      "answer_success": "รับสายสำเร็จ",
+      "answer_failed": "รับสายไม่สำเร็จ",
       "incoming_call_announcement": "สายเรียกเข้าจาก {{number}}"
     },
     "softphone": {
@@ -408,6 +410,9 @@
       "contact_channels": "ช่องทางติดต่อ",
       "primary": "หลัก",
       "view_full_profile": "ดูโปรไฟล์เต็ม",
+      "email": "อีเมล",
+      "call": "โทร",
+      "view_full_details": "ดูรายละเอียดเต็ม",
       "no_contact_found": "ไม่พบรายชื่อติดต่อ",
       "no_contact_hint": "กรุณาเลือกรายชื่อที่มีอยู่หรือสร้างรายชื่อใหม่",
       "link_existing": "เชื่อมโยงที่มีอยู่",
@@ -520,6 +525,7 @@
       "sendingReply": "กำลังส่ง...",
       "sendReply": "ส่งตอบกลับ",
       "replyPlaceholder": "พิมพ์คำตอบของคุณที่นี่...",
+      "newMessage": "ข้อความใหม่",
       "useSuggestion": "ใช้คำแนะนำ"
     }
   },

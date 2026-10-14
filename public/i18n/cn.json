@@ -332,6 +332,8 @@
       "action_answer": "接听",
       "action_create_case": "创建案件",
       "action_dismiss": "关闭",
+      "answer_success": "已接听",
+      "answer_failed": "接听失败",
       "incoming_call_announcement": "来电来自 {{number}}"
     },
     "softphone": {
@@ -408,6 +410,9 @@
       "contact_channels": "联系渠道",
       "primary": "主要",
       "view_full_profile": "查看完整资料",
+      "email": "邮件",
+      "call": "呼叫",
+      "view_full_details": "查看完整详情",
       "no_contact_found": "未找到联系人。",
       "no_contact_hint": "请选择现有联系人或创建新联系人。",
       "link_existing": "关联现有",
@@ -520,6 +525,7 @@
       "sendingReply": "发送中...",
       "sendReply": "发送回复",
       "replyPlaceholder": "在此输入您的回复...",
+      "newMessage": "新邮件",
       "useSuggestion": "使用建议"
     }
   },
