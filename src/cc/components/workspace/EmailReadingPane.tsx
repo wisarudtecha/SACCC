@@ -29,6 +29,7 @@ interface EmailReadingPaneProps {
   onStar?: () => void;
   onArchive?: () => void;
   onTrash?: () => void;
+  composeTo?: string;
 }
 
 function AttachmentCard({ attachment }: { attachment: EmailAttachment }) {
@@ -77,10 +78,11 @@ export default function EmailReadingPane({
   onStar,
   onArchive,
   onTrash,
+  composeTo,
 }: EmailReadingPaneProps) {
   const { t } = useTranslation();
 
-  if (!message) {
+  if (!message && !composeTo) {
     return (
       <div className="flex-1 flex items-center justify-center bg-white dark:bg-black">
         <p className="text-sm text-gray-400 dark:text-gray-500">
@@ -90,136 +92,166 @@ export default function EmailReadingPane({
     );
   }
 
-  const initials = (message.fromName || message.from).charAt(0).toUpperCase();
-  const isStarred = message.starred ?? false;
+  const initials = message
+    ? (message.fromName || message.from).charAt(0).toUpperCase()
+    : "?";
+  const isStarred = message?.starred ?? false;
 
   return (
     <div className="flex-1 flex flex-col bg-white dark:bg-black h-full overflow-hidden">
       {/* Sender Header */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 p-4">
-        <h2 className="text-lg font-semibold text-black dark:text-white mb-3">
-          {message.subject}
-        </h2>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Avatar className="w-10 h-10">
-              <AvatarFallback className="bg-blue-300 dark:bg-blue-600 text-white text-sm font-medium">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-medium text-black dark:text-white">
-                {message.fromName || message.from}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {message.from} &bull; {message.time}
-              </p>
+      {message && (
+        <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 p-4">
+          <h2 className="text-lg font-semibold text-black dark:text-white mb-3">
+            {message.subject}
+          </h2>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Avatar className="w-10 h-10">
+                <AvatarFallback className="bg-blue-300 dark:bg-blue-600 text-white text-sm font-medium">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="text-sm font-medium text-black dark:text-white">
+                  {message.fromName || message.from}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {message.from} &bull; {message.time}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-1">
+              <button
+                type="button"
+                onClick={onStar}
+                className={`p-2 rounded-md transition-colors ${
+                  isStarred
+                    ? "text-yellow-500 hover:text-yellow-600"
+                    : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                }`}
+                aria-label={isStarred ? "Unstar" : "Star"}
+              >
+                <Star
+                  className="w-4 h-4"
+                  fill={isStarred ? "currentColor" : "none"}
+                />
+              </button>
+              <button
+                type="button"
+                onClick={onArchive}
+                className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label="Archive"
+              >
+                <Archive className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={onTrash}
+                className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label="Delete"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label="More"
+              >
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
             </div>
           </div>
-          <div className="flex items-center space-x-1">
-            <button
-              type="button"
-              onClick={onStar}
-              className={`p-2 rounded-md transition-colors ${
-                isStarred
-                  ? "text-yellow-500 hover:text-yellow-600"
-                  : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-              }`}
-              aria-label={isStarred ? "Unstar" : "Star"}
-            >
-              <Star
-                className="w-4 h-4"
-                fill={isStarred ? "currentColor" : "none"}
-              />
-            </button>
-            <button
-              type="button"
-              onClick={onArchive}
-              className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              aria-label="Archive"
-            >
-              <Archive className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={onTrash}
-              className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              aria-label="Delete"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              aria-label="More"
-            >
-              <MoreHorizontal className="w-4 h-4" />
-            </button>
-          </div>
         </div>
-      </div>
+      )}
+
+      {/* Compose-only header */}
+      {!message && composeTo && (
+        <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 p-4">
+          <h2 className="text-lg font-semibold text-black dark:text-white">
+            {t("cc.email.newMessage")}
+          </h2>
+        </div>
+      )}
 
       {/* Body */}
       <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-3xl mx-auto">
-          <div className="text-sm text-black dark:text-white leading-relaxed whitespace-pre-wrap">
-            {message.body}
-          </div>
+          {message && (
+            <>
+              <div className="text-sm text-black dark:text-white leading-relaxed whitespace-pre-wrap">
+                {message.body}
+              </div>
 
-          {/* Attachments */}
-          {message.attachments.length > 0 && (
-            <div className="mt-6">
-              <div className="flex items-center gap-2 mb-3">
-                <Paperclip className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                <span className="text-sm font-medium text-black dark:text-white">
-                  {message.attachments.length} {t("cc.email.attachments")}
-                </span>
+              {/* Attachments */}
+              {message.attachments.length > 0 && (
+                <div className="mt-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Paperclip className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    <span className="text-sm font-medium text-black dark:text-white">
+                      {message.attachments.length} {t("cc.email.attachments")}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    {message.attachments.map((att) => (
+                      <AttachmentCard key={att.id} attachment={att} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2 mt-6">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800"
+                  onClick={() => onShowReplyChange(true)}
+                >
+                  <Reply className="w-4 h-4 mr-1.5" />
+                  {t("cc.email.reply")}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800"
+                  onClick={() => onShowReplyChange(true)}
+                >
+                  <ReplyAll className="w-4 h-4 mr-1.5" />
+                  {t("cc.email.replyAll")}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800"
+                  onClick={() => onShowReplyChange(true)}
+                >
+                  <Forward className="w-4 h-4 mr-1.5" />
+                  {t("cc.email.forward")}
+                </Button>
               </div>
-              <div className="flex flex-wrap gap-3">
-                {message.attachments.map((att) => (
-                  <AttachmentCard key={att.id} attachment={att} />
-                ))}
-              </div>
-            </div>
+            </>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2 mt-6">
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800"
-              onClick={() => onShowReplyChange(true)}
-            >
-              <Reply className="w-4 h-4 mr-1.5" />
-              {t("cc.email.reply")}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800"
-              onClick={() => onShowReplyChange(true)}
-            >
-              <ReplyAll className="w-4 h-4 mr-1.5" />
-              {t("cc.email.replyAll")}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800"
-              onClick={() => onShowReplyChange(true)}
-            >
-              <Forward className="w-4 h-4 mr-1.5" />
-              {t("cc.email.forward")}
-            </Button>
-          </div>
-
-          {/* Reply Composer */}
+          {/* Reply / Compose Composer */}
           {showReply && (
             <div className="mt-6">
               <h3 className="text-sm font-semibold text-black dark:text-white mb-3">
-                {t("cc.email.reply")}
+                {composeTo ? t("cc.email.newMessage") : t("cc.email.reply")}
               </h3>
+              {composeTo && (
+                <div className="mb-3">
+                  <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">
+                    To
+                  </label>
+                  <input
+                    type="email"
+                    value={composeTo}
+                    readOnly
+                    className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm text-black dark:text-white focus:outline-none"
+                  />
+                </div>
+              )}
               <textarea
                 placeholder={t("cc.email.replyPlaceholder")}
                 value={replyBody}
