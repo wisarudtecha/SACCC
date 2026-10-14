@@ -1,4 +1,10 @@
 {
+  "0.95.0": {
+    "date": "2026-10-14",
+    "segment": "MINOR",
+    "notes": "feat(cc): global active call indicator, softphone contact preview, and email compose integration\n- Agents now see a floating indicator bar at the bottom of the screen whenever they are on an active call. The bar shows the caller's number, current call status, and a live duration timer. It stays visible on every page so agents always know they have a call in progress even when they navigate away from the softphone.\n- Incoming call pop-ups now wait for the telephony backend's confirmation before disappearing after an agent presses Answer. A success or failure toast lets the agent know immediately whether the answer command was accepted.\n- Clicking a contact or a recent call in the softphone now opens a quick preview panel showing the person's email, company, tags, and recent call history. Agents can start a new email, place a call, or open the full contact details directly from the preview.\n- The contact filter drawer in the softphone now actually filters the contact list by company, account manager, source, tags, channel, and creation date.\n- Agents can compose a new email directly from a contact preview. The email workspace opens ready to write with the recipient already filled in.\n- Supervisors can now spawn a mock call on the live-call roster in dev mode with a single button, making it easier to test the supervision page without a connected telephony backend.\n- Added Thai, English, and Chinese translations for all new active call, softphone, and email labels.",
+    "author": "Wisarud Techa"
+  },
   "0.94.0": {
     "date": "2026-10-12",
     "segment": "MINOR",
