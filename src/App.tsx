@@ -36,11 +36,14 @@ import SecurityAlerts from "@/core/components/security/SecurityAlerts";
 // sibling so it overlays every module while living inside the
 // WebSocketProvider/router/auth providers mounted in main.tsx.
 import IncomingCallScreenPop from "@/cc/components/incomingCall/IncomingCallScreenPop";
+// Global active-call indicator bar — visible on any page when a call is answered.
+import ActiveCallBar from "@/cc/components/activeCall/ActiveCallBar";
 
 export default function App() {
   return (
     <>
       <IncomingCallScreenPop />
+      <ActiveCallBar />
       <Routes>
       <Route element={<SuperLayout />}>
         <Route path="/" element={<Navigate to="/cms" />} />

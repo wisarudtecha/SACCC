@@ -11,16 +11,19 @@
 // `window.emitMockIncomingCall({ ani: "+66811223344" })`.
 import { useEffect } from "react";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import { DEV_CONFIG } from "@/core/utils/constants";
 import { IncomingCallCard } from "./IncomingCallCard";
 import { useIncomingCallPopups } from "./useIncomingCallPopups";
 import {
   attachMockIncomingCallConsoleUtil,
+  emitMockIncomingCall,
   startMockIncomingCallEmitter,
 } from "./mockIncomingCallEmitter";
 
 export default function IncomingCallScreenPop() {
   const { items, handleMessage, openCase, createCase, answer, dismiss } = useIncomingCallPopups();
   const { t } = useTranslation();
+  const isMockMode = import.meta.env.DEV && DEV_CONFIG.MOCK_API;
 
   // Mock-mode wiring (VITE_MOCK_API + dev only): the emitter feeds the same
   // handler the real websocket uses, so the demo path is the production path.
@@ -33,19 +36,23 @@ export default function IncomingCallScreenPop() {
     };
   }, [handleMessage]);
 
-  if (items.length === 0) {
+  const hasCards = items.length > 0;
+
+  if (!hasCards && !isMockMode) {
     return null;
   }
 
   const newest = items[items.length - 1];
-  const newestNumber = newest.ani.national || newest.ani.raw;
+  const newestNumber = newest?.ani.national || newest?.ani.raw;
 
   return (
     <>
-      {/* Screen-reader announcement for each stack change; visually hidden. */}
-      <div className="sr-only" aria-live="polite">
-        {t("cc.screenpop.incoming_call_announcement", { number: newestNumber })}
-      </div>
+      {hasCards && (
+        /* Screen-reader announcement for each stack change; visually hidden. */
+        <div className="sr-only" aria-live="polite">
+          {t("cc.screenpop.incoming_call_announcement", { number: newestNumber })}
+        </div>
+      )}
       <div className="bottom-6 right-6 fixed z-9999 flex flex-col gap-2">
         {items.map((item, index) => (
           <IncomingCallCard
@@ -60,6 +67,15 @@ export default function IncomingCallScreenPop() {
           />
         ))}
       </div>
+      {isMockMode && (
+        <button
+          type="button"
+          onClick={() => emitMockIncomingCall(handleMessage)}
+          className="bottom-6 left-6 fixed z-9999 rounded-full bg-gray-800 dark:bg-gray-700 text-white text-xs font-medium px-4 py-2 shadow-lg hover:bg-gray-700 dark:hover:bg-gray-600"
+        >
+          Simulate Incoming Call
+        </button>
+      )}
     </>
   );
 }

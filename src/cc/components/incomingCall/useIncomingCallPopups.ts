@@ -12,6 +12,7 @@
 //   2. Resolution is guarded by an in-flight Set so React StrictMode's
 //      double-invoked effects cannot fire the lazy lookups twice.
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "@/core/hooks/useTranslation";
 import {
   useLazyGetListCaseByCustomerIdQuery,
 } from "@/cms/store/api/caseApi";
@@ -20,12 +21,17 @@ import {
   useLazyGetCustomerQuery,
 } from "@/cms/store/api/custommerApi";
 import { useAnswerCallMutation } from "../../store/api/callControlApi";
-import { isMockCallLifecycleActive } from "../softphone/mockCallLifecycle";
+import {
+  buildMockCallLifecycleWsMessage,
+  isMockCallLifecycleActive,
+} from "../softphone/mockCallLifecycle";
 import { useAppNavigate } from "@/core/router/useAppNavigate";
 import { usePermissions } from "@/core/hooks/usePermissions";
+import { useToastContext } from "@/core/components/crud/ToastGlobal";
 import { useWebSocket } from "@/core/components/websocket/websocket";
 import type { WebSocketMessage } from "@/core/components/websocket/websocket";
 import { parseIncomingCallMessage } from "../../types/incomingCall";
+import { CALL_ANSWERED_WS_EVENT, parseCallLifecycleMessage } from "../../types/callEvents";
 import { aniLookupVariants, normalizeThaiAni } from "../../utils/ani";
 import {
   extractCaseSummaries,
@@ -70,8 +76,10 @@ export interface IncomingCallPopupsApi {
 
 export function useIncomingCallPopups(): IncomingCallPopupsApi {
   const [items, setItems] = useState<IncomingCallPopupItem[]>([]);
-  const { onMessage } = useWebSocket();
+  const { onMessage, broadcast } = useWebSocket();
   const { hasPermission } = usePermissions();
+  const { addToast } = useToastContext();
+  const { t } = useTranslation();
   const navigate = useAppNavigate("cms");
   const [getCustomerByPhone] = useLazyGetCustommerByPhoneNoQuery();
   const [getCustomerById] = useLazyGetCustomerQuery();
@@ -96,28 +104,35 @@ export function useIncomingCallPopups(): IncomingCallPopupsApi {
 
   const handleMessage = useCallback(
     (message: WebSocketMessage) => {
-      const event = parseIncomingCallMessage(message);
-      if (!event) {
+      // 1. Try incoming-call (ringing) event first.
+      const incoming = parseIncomingCallMessage(message);
+      if (incoming) {
+        if (!canScreenPop()) {
+          return;
+        }
+        if (seenRef.current.has(incoming.callId)) {
+          return;
+        }
+        seenRef.current.add(incoming.callId);
+        const ani =
+          normalizeThaiAni(incoming.ani) ??
+          { raw: incoming.ani, digits: "", national: incoming.ani, e164: null };
+        dispatch({ type: "enqueue", call: incoming, ani, now: Date.now() });
         return;
       }
-      if (!canScreenPop()) {
-        return;
-      }
-      // Dedupe spans the whole session (not just active cards) so a websocket
-      // redelivery cannot resurrect a card the agent already dismissed. The
-      // cap/eviction rules live in the SeenCallIds helper.
-      if (seenRef.current.has(event.callId)) {
-        return;
-      }
-      seenRef.current.add(event.callId);
 
-      // A digit-less ANI (e.g. an "Anonymous" presentation) still deserves a
-      // card; it just resolves to an unknown caller after one wasted lookup.
-      const ani =
-        normalizeThaiAni(event.ani) ??
-        { raw: event.ani, digits: "", national: event.ani, e164: null };
-
-      dispatch({ type: "enqueue", call: event, ani, now: Date.now() });
+      // 2. Fall through to lifecycle events — these dismiss the ringing card
+      //    when the leg is answered or ended.
+      const lifecycle = parseCallLifecycleMessage(message);
+      if (!lifecycle) {
+        return;
+      }
+      if (
+        (lifecycle.event === CALL_ANSWERED_WS_EVENT || lifecycle.event === "CALL_ENDED") &&
+        "callId" in lifecycle.payload
+      ) {
+        dispatch({ type: "dismiss", callId: lifecycle.payload.callId });
+      }
     },
     [canScreenPop, dispatch]
   );
@@ -259,27 +274,43 @@ export function useIncomingCallPopups(): IncomingCallPopupsApi {
 
   // Answer command for a ringing leg. A resolved command means "answer
   // accepted", not "answered": the authoritative confirmation is the
-  // CALL_ANSWERED websocket lifecycle event, which the softphone's state
-  // reducer upserts by callId without needing the ring — no extra plumbing.
+  // CALL_ANSWERED websocket lifecycle event, which dismisses the card and
+  // activates the global indicator bar.
   const answer = useCallback(
     async (callId: string) => {
       if (isMockCallLifecycleActive()) {
-        // Adapter stand-in. A mock CALL_ANSWERED has no consumer (softphone
-        // mock legs are a separate universe — see mockCallLifecycle.ts), so
-        // the mock path only retires the card.
-        dispatch({ type: "dismiss", callId });
+        // Mock path: broadcast CALL_ANSWERED so all subscribers (global
+        // indicator, softphone, supervision) receive the same event.
+        const item = items.find((i) => i.call.callId === callId);
+        broadcast(
+          buildMockCallLifecycleWsMessage({
+            event: CALL_ANSWERED_WS_EVENT,
+            payload: {
+              callId,
+              agentId: item?.call.agentId,
+              customerId: item?.call.customerId,
+              caseId: item?.call.caseId,
+              ani: item?.call.ani,
+              timestamp: new Date().toISOString(),
+            },
+          })
+        );
+        addToast("success", t("cc.screenpop.answer_success"));
         return;
       }
       try {
         await answerCall({ callId }).unwrap();
-        dispatch({ type: "dismiss", callId });
+        // Command accepted — the card stays until the authoritative
+        // CALL_ANSWERED websocket event arrives (handled in handleMessage).
+        addToast("success", t("cc.screenpop.answer_success"));
       } catch (error) {
         // Conclusive business failure (status: "-1" envelope) or transport
         // error — keep the card so the agent can retry or dismiss.
         console.error("Incoming call screen pop: answer command failed", error);
+        addToast("error", t("cc.screenpop.answer_failed"));
       }
     },
-    [answerCall, dispatch]
+    [answerCall, broadcast, addToast, t, items]
   );
 
   return { items, handleMessage, openCase, createCase, answer, dismiss };

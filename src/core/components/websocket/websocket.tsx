@@ -30,6 +30,8 @@ export interface WebSocketProviderProps {
 }
 
 export interface WebSocketContextType {
+  /** Broadcast a message to all subscribers without sending over the wire. Useful for mocks. */
+  broadcast: (message: WebSocketMessage) => void;
   connectionState: "connecting" | "connected" | "disconnected" | "error";
   isConnected: boolean;
   lastMessage: WebSocketMessage | null;
@@ -342,6 +344,17 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     };
   };
 
+  const broadcast = (message: WebSocketMessage) => {
+    subscribersRef.current.forEach((callback) => {
+      try {
+        callback(message);
+      }
+      catch (error) {
+        console.error("🚀 ~ broadcast ~ Error in WebSocket subscriber callback:", error);
+      }
+    });
+  };
+
   // Auto-connect on mount if enabled
   useEffect(() => {
     if (autoConnect) {
@@ -355,6 +368,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   }, [autoConnect, defaultConfig]);
 
   const contextValue: WebSocketContextType = {
+    broadcast,
     isConnected,
     connectionState,
     send,

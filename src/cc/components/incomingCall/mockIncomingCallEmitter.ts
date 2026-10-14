@@ -75,6 +75,20 @@ export function startMockIncomingCallEmitter(
   };
 }
 
+/**
+ * Directly emit a mock incoming call event into the given handler.
+ * No-op outside `import.meta.env.DEV` + `DEV_CONFIG.MOCK_API`.
+ */
+export function emitMockIncomingCall(
+  onEvent: (message: WebSocketMessage) => void,
+  partial?: Partial<IncomingCallEvent>
+): void {
+  if (!import.meta.env.DEV || !DEV_CONFIG.MOCK_API) {
+    return;
+  }
+  const event = buildMockIncomingCallEvent(partial);
+  onEvent(buildMockIncomingCallWsMessage(event));
+}
 declare global {
   interface Window {
     /** Dev/mock-mode only — installed by `attachMockIncomingCallConsoleUtil`. */
