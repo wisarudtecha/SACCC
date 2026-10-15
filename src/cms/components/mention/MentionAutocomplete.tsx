@@ -24,14 +24,14 @@ export const MentionAutocomplete: React.FC<MentionAutocompleteProps> = ({
   onClose,
   onVisibilityChange,
 }) => {
-  const { users, isLoading } = useMentionSearch(query, enabled);
+  const { users, isLoading, isTyping } = useMentionSearch(query, enabled);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
 
-  // Loading rows are not selectable, but Enter must not submit the comment
-  // while the popover is visibly fetching either.
-  const visible = enabled && (isLoading || users.length > 0);
+  // Loading and typing rows are not selectable, but Enter must not submit the comment
+  // while the popover is visibly fetching or debouncing either.
+  const visible = enabled && (isLoading || isTyping || users.length > 0);
 
   useEffect(() => {
     setHighlightedIndex(0);
@@ -82,7 +82,7 @@ export const MentionAutocomplete: React.FC<MentionAutocompleteProps> = ({
     return null;
   }
 
-  if (!isLoading && users.length === 0) {
+  if (!isLoading && !isTyping && users.length === 0) {
     // Informational only — keys are not swallowed in this state, so Enter
     // still submits the comment.
     return (
@@ -99,6 +99,11 @@ export const MentionAutocomplete: React.FC<MentionAutocompleteProps> = ({
       ref={containerRef}
       className="absolute z-50 mt-1 w-64 max-h-60 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg"
     >
+      {isTyping && (
+        <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+          {t("case.sop_card.mention_typing")}
+        </div>
+      )}
       {isLoading && (
         <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
           {t("case.sop_card.mention_loading")}

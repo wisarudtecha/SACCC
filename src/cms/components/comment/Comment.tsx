@@ -12,7 +12,7 @@ import {
     MentionPill,
     MentionUserPopover,
     parseMentionSegments,
-    extractMentionUserIds,
+    // extractMentionUserIds,
 } from "@/cms/components/mention";
 import type { MentionUser } from "@/cms/components/mention";
 import type { UserProfile } from "@/core/types/user";
@@ -37,12 +37,13 @@ export const Comments: React.FC<CommentsProps> = ({
     // username -> user id, accumulated from autocomplete selections so the
     // submitted mentionedUserIds carry ids (not raw usernames). Hand-typed
     // handles without a selection are dropped (no id to send).
-    const [mentionIdMap, setMentionIdMap] = useState<Map<string, string>>(new Map());
+    // const [mentionIdMap, setMentionIdMap] = useState<Map<string, string>>(new Map());
     // username -> resolved user profile, cached after a popover lookup so
     // pills can render the mentioned user's avatar.
     const [resolvedUsers, setResolvedUsers] = useState<Record<string, UserProfile>>({});
     // The mention pill the detail popover is currently anchored to.
     const [activeMention, setActiveMention] = useState<{ username: string; rect: DOMRect } | null>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const profile = JSON.parse(localStorage.getItem("profile") ?? "{}") as any;
     const { data: fetchedComments, isLoading: isFetchingComments, error: fetchError } = useGetCaseHistoryQuery(
         { caseId },
@@ -107,7 +108,7 @@ export const Comments: React.FC<CommentsProps> = ({
         return () => {
             listener();
         };
-    }, [onMessage, websocket, connectionState, isConnected]);
+    }, [onMessage, websocket, caseId, connectionState, isConnected]);
 
     useEffect(() => {
         if (fetchedComments?.data) {
@@ -117,14 +118,14 @@ export const Comments: React.FC<CommentsProps> = ({
 
     const handleMentionSelect = useCallback((user: MentionUser) => {
         if (user.id === undefined || user.id === null) return;
-        setMentionIdMap((prev) => {
-            if (prev.get(user.username) === String(user.id)) {
-                return prev;
-            }
-            const next = new Map(prev);
-            next.set(user.username, String(user.id));
-            return next;
-        });
+        // setMentionIdMap((prev) => {
+        //     if (prev.get(user.username) === String(user.id)) {
+        //         return prev;
+        //     }
+        //     const next = new Map(prev);
+        //     next.set(user.username, String(user.id));
+        //     return next;
+        // });
     }, []);
 
     const handleMentionResolved = useCallback((username: string, user: UserProfile) => {
@@ -139,14 +140,14 @@ export const Comments: React.FC<CommentsProps> = ({
         }
 
         try {
-            const mentionedUserIds = extractMentionUserIds(newCommentMessage.trim(), mentionIdMap);
+            // const mentionedUserIds = extractMentionUserIds(newCommentMessage.trim(), mentionIdMap);
             const newCommentData = {
                 caseId: caseId,
                 fullMsg: newCommentMessage.trim(),
                 jsonData: "",
                 type: "comment",
                 username: profile?.username,
-                mentionedUserIds: mentionedUserIds.length > 0 ? mentionedUserIds : undefined,
+                // mentionedUserIds: mentionedUserIds.length > 0 ? mentionedUserIds : undefined,
             };
 
             await addCaseHistory(newCommentData).unwrap();
@@ -201,6 +202,7 @@ export const Comments: React.FC<CommentsProps> = ({
     }, [commentsData]);
 
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleKeyDownComment = (event: any) => {
         if (event.key === 'Enter') {
             handleNewComment()

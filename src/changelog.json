@@ -1,4 +1,10 @@
 {
+  "0.96.0": {
+    "date": "2026-10-15",
+    "segment": "MINOR",
+    "notes": "feat(cms): improved @mention experience in case comments\n- Clicking a mentioned colleague in case comments now opens a full profile modal with contact details, organization, role, and employment information, so agents can see who they are talking about without leaving the case page.\n- Mention search now filters users locally after typing at least 3 characters, making suggestions appear faster and reducing load on the server.\n- A typing indicator now appears in the mention autocomplete while the search is debouncing, so agents know the system is listening.\n- Added Thai, English, and Chinese translations for the new profile sections and typing indicator.",
+    "author": "Wisarud Techa"
+  },
   "0.95.0": {
     "date": "2026-10-14",
     "segment": "MINOR",

@@ -1,3 +1,4 @@
+export { default as UserProfileModal } from "./UserProfileModal";
 export { MentionAutocomplete } from "./MentionAutocomplete";
 export { MentionInput } from "./MentionInput";
 export { MentionPill } from "./MentionPill";
