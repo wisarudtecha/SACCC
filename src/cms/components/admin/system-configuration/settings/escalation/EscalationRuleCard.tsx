@@ -52,7 +52,7 @@ export function EscalationRuleCard({ rule, disabled = false, onChange }: Escalat
   };
 
   return (
-    <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-800 dark:bg-white/[0.02]">
+    <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-800 dark:bg-white/2">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h4 className="text-sm font-semibold text-gray-900 dark:text-white">

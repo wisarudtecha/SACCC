@@ -448,7 +448,7 @@ export default function AssignOfficerModal({
         {/* Officers Table */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden flex flex-col flex-1 min-h-0">
           <div className="flex-1 min-h-0 overflow-x-auto custom-scrollbar">
-            <div className="min-w-[1180px]">
+            <div className="min-w-295">
               {/* Table Header */}
               <div className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300">
                 <div className="flex items-center">
