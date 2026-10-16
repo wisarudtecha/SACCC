@@ -1,4 +1,10 @@
 {
+  "0.97.0": {
+    "date": "2026-10-16",
+    "segment": "MINOR",
+    "notes": "feat(cms): node-level escalation rules in workflow builder\n- Escalation rules have moved from Organization Settings into the Workflow Builder, so each workflow node can have its own escalation timer, group, and responsible people instead of sharing one system-wide rule.\n- When a node is selected in the Workflow Builder, a new Escalation section lets users set how many minutes must pass before the node escalates, choose which groups to notify, and pick the specific people to involve.\n- The workflow builder now blocks saving if any node's escalation timer is longer than the workflow's overall service-level target, and shows a clear error message naming the offending node.\n- Added Thai, English, and Chinese translations for the new escalation labels, hints, and validation messages.",
+    "author": "Wisarud Techa"
+  },
   "0.96.0": {
     "date": "2026-10-15",
     "segment": "MINOR",
