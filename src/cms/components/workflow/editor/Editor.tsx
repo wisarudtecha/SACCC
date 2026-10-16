@@ -984,6 +984,23 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
       // return; // Don"t save if there are validation errors
     }
 
+    // Node-level escalation SLA must never exceed the workflow's total SLA
+    const totalSla = workflowMetadata?.totalSla || 0;
+    const escalationNode = nodes?.find(
+      node => typeof node?.data?.config?.escalationSla === "number" || typeof node?.data?.config?.escalationSla === "string"
+        ? Number(node?.data?.config?.escalationSla) > totalSla
+        : false
+    );
+    if (escalationNode) {
+      addToast(
+        "error",
+        t("crud.workflow.builder.escalation.validation.sla_exceeded")
+          .replace("_NODE_", escalationNode?.data?.label || "")
+          .replace("_SLA_", String(totalSla))
+      );
+      return;
+    }
+
     const workflowData: WorkflowData = {
       nodes,
       connections,
@@ -1031,6 +1048,7 @@ const WorkflowEditorComponent: React.FC<WorkflowEditorComponentProps> = ({
     addToast,
     createWorkflow,
     onSave,
+    t,
     updateWorkflow,
     validateWorkflow,
   ]);

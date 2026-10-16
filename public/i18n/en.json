@@ -1725,6 +1725,25 @@
           "created_at": "Created At",
           "created_by": "By"
         },
+        "escalation": {
+          "header": "Escalation Rules",
+          "sla": {
+            "label": "Escalation SLA (Minutes)",
+            "hint": "Minutes after which this node escalates",
+            "max": "Cannot exceed Total SLA (_SLA_ minutes)"
+          },
+          "group": {
+            "label": "Escalation Group",
+            "placeholder": "Select Groups"
+          },
+          "pic": {
+            "label": "Escalation PIC",
+            "placeholder": "Select Users"
+          },
+          "validation": {
+            "sla_exceeded": "Escalation SLA of \"_NODE_\" cannot exceed Total SLA (_SLA_ minutes)"
+          }
+        },
         "node": {
           "header": "Node Configuration",
           "description": "Select a node to configure its properties",

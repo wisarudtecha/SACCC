@@ -1,5 +1,6 @@
 // src/cms/components/workflow/editor/ConfigPanel.tsx
 import React from "react";
+import { Siren } from "lucide-react";
 import { PencilIcon } from "@/core/icons";
 import { usePermissions } from "@/core/hooks/usePermissions";
 import type { BaseNode, Connection, Position, WorkflowData } from "@/cms/types/workflow";
@@ -51,6 +52,16 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
   workflowMetadata,
   workflowStatuses
 }) => {
+  const canEditWorkflow = editable && permissions?.hasAnyPermission(["workflow.create", "workflow.update"]);
+
+  // Escalation values live in the selected node's config, validated against the workflow's node-computed total SLA
+  const totalSla = workflowMetadata?.totalSla || 0;
+  const nodeEscalationSla =
+    typeof selectedNode?.data?.config?.escalationSla === "string" || typeof selectedNode?.data?.config?.escalationSla === "number"
+      ? Number(selectedNode?.data?.config?.escalationSla)
+      : 0;
+  const nodeEscalationSlaExceeded = nodeEscalationSla > totalSla;
+
   return (
     <div className="xl:w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-4 rounded-r-2xl rounded-l-2xl xl:rounded-l-none">
       <div className="flex items-center gap-2 mb-2">
@@ -357,6 +368,100 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
                     ).join(", ") : ""}
                   </div>
                 }
+              </div>
+
+              {/* Node-level Escalation Rules — rendered only for node types that carry all three prerequisite fields: SLA, Group, PIC */}
+              <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 p-3">
+                <div className="flex items-center gap-2 mb-3">
+                  <Siren className={`w-4 h-4 shrink-0 ${nodeEscalationSlaExceeded ? "text-error-500" : "text-gray-700 dark:text-gray-200"}`} />
+
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 cursor-default">
+                    {t("crud.workflow.builder.escalation.header")}
+                  </h4>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <label htmlFor="selectedNode.data.config.escalationSla" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                      {t("crud.workflow.builder.escalation.sla.label")}
+                    </label>
+
+                    {canEditWorkflow ?
+                      <Input
+                        type="number"
+                        id="selectedNode.data.config.escalationSla"
+                        min="0"
+                        max={String(totalSla)}
+                        value={
+                          typeof selectedNode?.data?.config?.escalationSla === "string" || typeof selectedNode?.data?.config?.escalationSla === "number"
+                          ? selectedNode?.data?.config?.escalationSla : ""
+                        }
+                        error={nodeEscalationSlaExceeded}
+                        hint={
+                          nodeEscalationSlaExceeded
+                            ? t("crud.workflow.builder.escalation.sla.max").replace("_SLA_", String(totalSla))
+                            : t("crud.workflow.builder.escalation.sla.hint")
+                        }
+                        onChange={e => {
+                          const parsed = e?.target?.value === "" ? 0 : parseInt(e?.target?.value);
+                          updateNodeData(selectedNode?.id, {
+                            config: { ...selectedNode?.data?.config, escalationSla: isNaN(parsed) ? 0 : Math?.max(0, parsed) }
+                          });
+                        }}
+                      />
+                    : <div className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default">
+                        {
+                          typeof selectedNode?.data?.config?.escalationSla === "string" || typeof selectedNode?.data?.config?.escalationSla === "number"
+                          ? selectedNode?.data?.config?.escalationSla : ""
+                        }
+                      </div>
+                    }
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                      {t("crud.workflow.builder.escalation.group.label")}
+                    </label>
+
+                    {canEditWorkflow ?
+                      <CustomizableSelect
+                        options={groupOptions || []}
+                        placeholder={t("crud.workflow.builder.escalation.group.placeholder")}
+                        value={Array?.isArray(selectedNode?.data?.config?.escalationGroup) ? selectedNode?.data?.config?.escalationGroup : []}
+                        onChange={value => updateNodeData(selectedNode?.id, {
+                          config: { ...selectedNode?.data?.config, escalationGroup: value as string[] }
+                        })}
+                      />
+                    : <div className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default">
+                        {Array?.isArray(selectedNode?.data?.config?.escalationGroup) ? selectedNode?.data?.config?.escalationGroup?.map(
+                          group => groupOptions?.find(g => g?.value === group)?.label
+                        ).join(", ") : ""}
+                      </div>
+                    }
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                      {t("crud.workflow.builder.escalation.pic.label")}
+                    </label>
+
+                    {canEditWorkflow ?
+                      <CustomizableSelect
+                        options={userOptions || []}
+                        placeholder={t("crud.workflow.builder.escalation.pic.placeholder")}
+                        value={Array?.isArray(selectedNode?.data?.config?.escalationPic) ? selectedNode?.data?.config?.escalationPic : []}
+                        onChange={value => updateNodeData(selectedNode?.id, {
+                          config: { ...selectedNode?.data?.config, escalationPic: value as string[] }
+                        })}
+                      />
+                    : <div className="h-11 w-full rounded-lg appearance-none py-2.5 text-sm bg-transparent text-gray-800 dark:text-gray-100 cursor-default">
+                        {Array?.isArray(selectedNode?.data?.config?.escalationPic) ? selectedNode?.data?.config?.escalationPic?.map(
+                          pic => userOptions?.find(u => u?.value === pic)?.label
+                        ).join(", ") : ""}
+                      </div>
+                    }
+                  </div>
+                </div>
               </div>
             </>
           )}

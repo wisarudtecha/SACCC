@@ -1597,6 +1597,25 @@
           "created_at": "创建时间",
           "created_by": "由"
         },
+        "escalation": {
+          "header": "升级规则",
+          "sla": {
+            "label": "升级 SLA（分钟）",
+            "hint": "触发该节点升级的分钟数",
+            "max": "不能超过总 SLA（_SLA_ 分钟）"
+          },
+          "group": {
+            "label": "升级接收组",
+            "placeholder": "选择组"
+          },
+          "pic": {
+            "label": "升级负责人 (PIC)",
+            "placeholder": "选择用户"
+          },
+          "validation": {
+            "sla_exceeded": "\"_NODE_\" 的升级 SLA 不能超过总 SLA（_SLA_ 分钟）"
+          }
+        },
         "node": {
           "header": "节点配置",
           "description": "选择一个节点来配置其属性",
