@@ -66,8 +66,15 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
           key={toast.id}
           className={`${
             getToastClasses(toast.type)
-          } duration-1000 flex gap-3 items-center p-4 rounded-lg shadow-lg transition-all`
-        }>
+          } duration-1000 flex gap-3 items-center p-4 rounded-lg shadow-lg transition-all ${toast.onClick ? "cursor-pointer hover:shadow-xl" : ""}`}
+          onClick={() => {
+            if (!toast.onClick) {
+              return;
+            }
+            onRemove(toast.id);
+            toast.onClick();
+          }}
+        >
           {getToastIcon(toast.type)}
           <span className="font-medium text-sm ">{toast.isI18N ? t(toast.message) : toast.message}</span>
           {!disbleCloseButton && 
@@ -75,7 +82,11 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
               className="text-gray-700 hover:text-gray-900 dark:text-white dark:hover:text-gray-200 transition-colors"
               // size="xs"
               // variant={getButtonClasses(toast.type)}
-              onClick={() => onRemove(toast.id)}
+              onClick={(event) => {
+                // Keep the dismiss from also triggering the toast's own onClick.
+                event.stopPropagation();
+                onRemove(toast.id);
+              }}
             >
             <CloseIcon className="h-4 w-4" />
           </button>}

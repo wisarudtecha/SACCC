@@ -34,6 +34,8 @@ export interface Toast {
   message: string;
   duration?: number;
   isI18N?:boolean
+  /** When set, the toast becomes clickable and runs this instead of just dismissing. */
+  onClick?: () => void;
 }
 
 export interface CrudConfig<T> {

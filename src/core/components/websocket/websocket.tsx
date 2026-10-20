@@ -1,11 +1,15 @@
 // src/crm/components/websocket/WebSocketContext.tsx
 import React, { createContext, ReactNode, useContext, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ToastContainer } from "@/core/components/crud/ToastContainer";
 import { getNewCaseDataByCaseId } from "@/cms/components/case/caseLocalStorage.tsx/caseListUpdate";
 import { notifyCaseListChanged } from "@/cms/components/case/caseListSignal";
 import { idbStorage } from "@/cms/components/idb/idb";
 import { resolveRuntimeEnv } from "@/core/config/api";
 import { useToast as UseToast } from "@/core/hooks/useToast";
+import type { UseToastResult } from "@/core/hooks/useToast";
+import { useTranslation } from "@/core/hooks/useTranslation";
+import { ROUTE_PREFIX } from "@/core/router/routePrefix";
 import type { CaseEntity } from "@/cms/types/case";
 
 export interface WebSocketConfig {
@@ -113,6 +117,59 @@ export const WebSocketCaseEvent = (message: WebSocketMessage) => {
   }
 };
 
+// Transient, per-agent push fired when another user @mentions you in a case
+// comment (Option A — no notification-center persistence, so this toast is the
+// only surface). Contract: welcome-case docs/events/mention-event-contract.md.
+export interface MentionEvent {
+  EVENT: "MENTION";
+  orgId: string;
+  caseId: string;
+  /** Stringified bigserial (tix_case_history_events.id), not a UUID. */
+  commentId: string;
+  mentionedByUserId: string;
+  mentionedByUsername: string;
+  mentionedByDisplayName: string;
+  mentionedUserId: string;
+  mentionedUsername: string;
+  timestamp: string;
+}
+
+const isMentionEvent = (data: unknown): data is MentionEvent => {
+  if (typeof data !== "object" || data === null) {
+    return false;
+  }
+  const candidate = data as Record<string, unknown>;
+  return (
+    candidate.EVENT === "MENTION" &&
+    typeof candidate.caseId === "string" &&
+    candidate.caseId !== ""
+  );
+};
+
+export interface WebSocketMentionEventTools {
+  addToast: UseToastResult["addToast"];
+  navigate: (path: string) => void;
+  t: ReturnType<typeof useTranslation>["t"];
+}
+
+export const WebSocketMentionEvent = (
+  message: WebSocketMessage,
+  tools: WebSocketMentionEventTools
+) => {
+  const data = message.data;
+  if (!isMentionEvent(data)) {
+    return;
+  }
+
+  const name =
+    data.mentionedByDisplayName || data.mentionedByUsername || data.mentionedByUserId;
+  const messageText = `${name} ${tools.t("common.mention_toast", { caseId: data.caseId })}`;
+
+  tools.addToast("info", messageText, 8000, false, () => {
+    tools.navigate(`${ROUTE_PREFIX.cms}/case/${data.caseId}`);
+  });
+};
+
 export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   autoConnect = false,
   children,
@@ -133,6 +190,8 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
 
   const { toasts, addToast, removeToast } = UseToast();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
   
   const clearTimers = () => {
     if (reconnectTimeoutRef.current) {
@@ -253,6 +312,10 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
           switch (message.data.EVENT != null) {
             case message.data.EVENT?.includes("CASE"):
               WebSocketCaseEvent(message)
+              break;
+
+            case message.data.EVENT === "MENTION":
+              WebSocketMentionEvent(message, { addToast, navigate, t })
               break;
 
             default:
