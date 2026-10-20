@@ -1,14 +1,18 @@
 // The "Currently assigned cases" column cell for one officer row.
 //
 // Shows a count; clicking it expands the actual list of case numbers inline
-// (Decision #4 — count with expand-to-list). The click is stopped from bubbling
-// so it never opens OfficerDetailModal, which the rest of the row does.
+// (Decision #4 — count with expand-to-list). Clicking a case in the expanded
+// list opens the compact Case Preview popover (entry fields first, a lazy
+// /case/caseId/{id} lookup only for bare entries — see CasePreviewPopover).
+// Every click is stopped from bubbling so it never opens OfficerDetailModal,
+// which the rest of the row does, and never toggles the row selection.
 //
 // Loading / empty / error live here and do not affect anything else on the row.
 import { memo, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import type { UnitWorkloadCase } from "@/cms/types/unitWorkload";
+import CasePreviewPopover from "./CasePreviewPopover";
 
 interface OfficerAssignedCasesCellProps {
   cases?: UnitWorkloadCase[];
@@ -32,6 +36,9 @@ function OfficerAssignedCasesCellBase({
 }: OfficerAssignedCasesCellProps) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
+  // The case whose preview is open, plus where the click happened (the popover
+  // anchors below it). Null = closed.
+  const [preview, setPreview] = useState<{ entry: UnitWorkloadCase; anchorRect: DOMRect } | null>(null);
 
   if (isLoading) {
     return (
@@ -93,15 +100,32 @@ function OfficerAssignedCasesCellBase({
       {expanded && caseList.length > 0 && (
         <ul className="max-h-24 w-full space-y-0.5 overflow-y-auto rounded bg-gray-50 p-1.5 text-left custom-scrollbar dark:bg-white/5">
           {caseList.map((assignedCase) => (
-            <li
-              key={assignedCase.caseId}
-              className="truncate text-xs text-gray-700 dark:text-gray-300"
-              title={assignedCase.caseNumber || assignedCase.caseId}
-            >
-              {assignedCase.caseNumber || assignedCase.caseId}
+            <li key={assignedCase.caseId} className="truncate">
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setPreview({
+                    entry: assignedCase,
+                    anchorRect: event.currentTarget.getBoundingClientRect()
+                  });
+                }}
+                className="block w-full truncate rounded px-1 text-left text-xs text-blue-600 hover:underline dark:text-blue-400"
+                title={assignedCase.caseNumber || assignedCase.caseId}
+              >
+                {assignedCase.caseNumber || assignedCase.caseId}
+              </button>
             </li>
           ))}
         </ul>
+      )}
+
+      {preview && (
+        <CasePreviewPopover
+          entry={preview.entry}
+          anchorRect={preview.anchorRect}
+          onClose={() => setPreview(null)}
+        />
       )}
     </div>
   );

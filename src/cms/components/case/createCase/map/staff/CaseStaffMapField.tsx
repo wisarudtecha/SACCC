@@ -17,7 +17,7 @@
 // map's 320px there is space for the case, not for a roster and a detail card.
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CaseDetails } from "@/cms/types/case";
-import { useUnitWorkloads } from "@/cms/components/assignOfficer/workload/useUnitWorkloads";
+import { buildWorkloadByUnitId } from "@/cms/components/assignOfficer/workload/unitWorkloadAdapter";
 import type { CaseSopUnit } from "@/cms/types/dispatch";
 import { PermissionGate } from "@/core/components/auth/PermissionGate";
 import { usePermissions } from "@/core/hooks/usePermissions";
@@ -227,7 +227,7 @@ function CaseStaffMapFieldBase({
   // drawing them on the inline map would show a line for a card nobody can see.
   const isExpandedStaffLayerOn = isStaffVisible && isExpanded;
 
-  const { staff, isLoading, isLoaded, isError, refresh, canRefresh } = useStaffPositions(
+  const { staff, units, isLoading, isLoaded, isError, refresh, canRefresh } = useStaffPositions(
     caseId,
     isStaffLayerOn
   );
@@ -237,13 +237,16 @@ function CaseStaffMapFieldBase({
   // accumulated whether or not the trail is currently drawn - see useStaffTrails.
   const trails = useStaffTrails(staff, isStaffLayerOn);
 
-  // Workload, only to rank the shortlist - so only fetched while the layer is on
-  // AND the filter needs it. One bulk call for every unit, never one per officer.
-  const staffUnitIds = useMemo(() => staff.map((marker) => marker.unitId), [staff]);
-  const { byUnitId: workloadByUnitId, isError: isWorkloadError } = useUnitWorkloads({
-    unitIds: staffUnitIds,
-    enabled: isStaffLayerOn && staffFilterMode === "recommend"
-  });
+  // Workload to rank the recommend shortlist — EMBEDDED in the same units
+  // response the markers come from (Unit.workloadCount / workloadCases, adapted
+  // by unitWorkloadAdapter.ts), so no separate request exists anymore. Raw
+  // units rather than markers: toStaffMarkers deliberately drops every field
+  // the map does not draw, and workload is not one of them. With no separate
+  // request there is no separate error state — a unit whose fields are
+  // missing/invalid is simply absent from the map and staffFilter falls back to
+  // showing everyone (see staffFilter.ts).
+  const workloadByUnitId = useMemo(() => buildWorkloadByUnitId(units), [units]);
+  const isWorkloadError = false;
 
   // The staff actually drawn and listed: `staff` narrowed by the filter. Everyone
   // already on the case is always in it, so the assignment itself is never hidden

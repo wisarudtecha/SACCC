@@ -1,7 +1,7 @@
 import { ApiResponse } from "@/cms/types";
 import { baseApi } from "@/core/store/api/baseApi";
 // import { FormFieldWithNode } from "@/cms/components/interface/FormField";
-import { Commands, CaseSop, CaseSopParams, dispatchInterface, CancelCase, CancelUnit, Unit } from "@/cms/types/dispatch";
+import { Commands, CaseSop, CaseSopParams, dispatchInterface, CancelCase, CancelUnit, UnitWithWorkload } from "@/cms/types/dispatch";
 import { Station } from "@/core/types/organization";
 import { Department } from "@/core/types/user";
 import { PaginationParams } from "./custommerApi";
@@ -41,7 +41,7 @@ export const dispantchApi = baseApi.injectEndpoints({
             providesTags: ["Dispatch"],
         }),
 
-        getUnit: builder.query<ApiResponse<Unit[]>, { caseId: string }>({
+        getUnit: builder.query<ApiResponse<UnitWithWorkload[]>, { caseId: string }>({
             query: (params) => ({
                 url: `/dispatch/${params.caseId}/units`,
             }),

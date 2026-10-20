@@ -1,5 +1,6 @@
 import { FormFieldWithNode } from "@/cms/components/interface/FormField";
 import { Attachment } from "./case";
+import type { UnitWorkloadCase } from "./unitWorkload";
 
 export interface Commands {
     id: string;
@@ -264,6 +265,26 @@ export interface Unit {
         th: string
     }[]
 }
+
+/**
+ * Workload embedded in the getUnit units response (backend contract): the
+ * unit's currently active/open assigned cases and their count. Kept in its own
+ * interface rather than as optional fields on `Unit` on purpose — `keyof Unit`
+ * feeds the sort columns of both officer modals, and optional keys would make
+ * every indexed read possibly-undefined there. Compose instead:
+ * `UnitWithWorkload` is what the units endpoint actually returns.
+ *
+ * Both fields optional: a response that omits them (older backend, mock mode)
+ * must still render the roster; adaptation/validation lives in
+ * unitWorkloadAdapter.ts.
+ */
+export interface UnitWorkloadFields {
+    workloadCases?: UnitWorkloadCase[];
+    workloadCount?: number;
+}
+
+/** A dispatch unit plus the embedded workload block. The getUnit response shape. */
+export type UnitWithWorkload = Unit & UnitWorkloadFields;
 
 export interface UnitWithSop {
     unit: CaseSopUnit

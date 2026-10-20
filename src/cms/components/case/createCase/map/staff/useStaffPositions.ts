@@ -31,7 +31,7 @@
 //   status and crew the snapshot genuinely is authoritative.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGetUnitQuery } from "@/cms/store/api/dispatch";
-import type { Unit } from "@/cms/types/dispatch";
+import type { Unit, UnitWithWorkload } from "@/cms/types/dispatch";
 import type { UnitStatus } from "@/cms/types/unit";
 import { useWebSocket } from "@/core/components/websocket/websocket";
 import { parseMobEvent, type MobUnitEvent } from "./mobEvents";
@@ -92,6 +92,14 @@ interface LocationPatch {
 
 export interface UseStaffPositionsResult {
   staff: StaffMarker[];
+  /**
+   * The RAW units snapshot behind `staff`, before toStaffMarkers drops the
+   * fields the map does not draw. Consumers that need a non-map field of the
+   * roster (e.g. the embedded workload data — see unitWorkloadAdapter.ts) read
+   * it here rather than re-fetching. Patch state is deliberately NOT merged in:
+   * socket events carry no workload, so the raw snapshot is the honest source.
+   */
+  units: readonly UnitWithWorkload[] | undefined;
   isLoading: boolean;
   /**
    * True once the unit list for this case has arrived. Distinct from
@@ -490,6 +498,7 @@ export function useStaffPositions(caseId: string, enabled: boolean): UseStaffPos
 
   return {
     staff,
+    units,
     isLoading: isFetching,
     isLoaded: enabled && isSuccess,
     isError,

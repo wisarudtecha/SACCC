@@ -994,7 +994,8 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     // are the ones the assign modal already uses, so the two paths cannot drift.
 
     // The SOP unit list is the single source of truth for "already assigned",
-    // the same rule AssignOfficerModal applies to build its available officers.
+    // the same rule AssignOfficerModal applies to make already-assigned officers'
+    // checkboxes unselectable (they stay listed for workload tracking).
     const assignedUnitIds = useMemo(
         () => new Set((sopData?.data?.unitLists ?? []).map((unit) => unit.unitId)),
         [sopData?.data?.unitLists]

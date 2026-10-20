@@ -17,7 +17,7 @@ import { useTranslation } from "@/core/hooks/useTranslation"
 import { ChevronDown, ChevronUp, Search, X } from "lucide-react"
 import { useState, useMemo, useEffect, useRef } from "react"
 import type { MapLatLon } from "@/cms/components/case/createCase/map/mapTypes"
-import { useUnitWorkloads } from "@/cms/components/assignOfficer/workload/useUnitWorkloads"
+import { buildWorkloadByUnitId } from "@/cms/components/assignOfficer/workload/unitWorkloadAdapter"
 import { compareWorkloadRank, getWorkloadRank } from "@/cms/components/assignOfficer/workload/workloadRank"
 import { useOfficerRouteSolves } from "@/cms/components/assignOfficer/workload/useOfficerRouteSolves"
 import { OfficerWorkloadCell } from "@/cms/components/assignOfficer/workload/OfficerWorkloadCell"
@@ -96,11 +96,14 @@ const SkillsDisplay = ({
 const UnifiedCheckbox = ({
   checked,
   indeterminate = false,
+  disabled = false,
   onChange,
   className = ""
 }: {
   checked: boolean
   indeterminate?: boolean
+  /** Set for officers already assigned to this case: visible, never selectable. */
+  disabled?: boolean
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   className?: string
 }) => {
@@ -118,8 +121,10 @@ const UnifiedCheckbox = ({
         ref={checkboxRef}
         type="checkbox"
         checked={checked}
+        disabled={disabled}
         onChange={onChange}
-        className={`w-4 h-4 appearance-none rounded cursor-pointer transition-all duration-200
+        className={`w-4 h-4 appearance-none rounded transition-all duration-200
+      ${disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer"}
       bg-gray-200 border-2 border-gray-300
       focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
       checked:bg-blue-600 checked:border-blue-600
@@ -189,8 +194,12 @@ export default function AssignOfficerModal({
     if (selectedOfficerIds.length === 0 || disableAssign) return;
     setDisableAssign(true);
     try {
-      const selectedOfficerObjects = availableOfficers.filter(officer =>
-        selectedOfficerIds.includes(officer.unitId)
+      // Assigned officers cannot be selected (guards below), but the payload
+      // filters them again so a stale selection can never re-dispatch someone
+      // already on the case.
+      const selectedOfficerObjects = rosterOfficers.filter(officer =>
+        selectedOfficerIds.includes(officer.unitId) &&
+        !assignedUnitIds.has(officer.unitId)
       );
       if (selectedOfficerObjects.length > 0) {
         await onAssign(selectedOfficerObjects);
@@ -202,7 +211,7 @@ export default function AssignOfficerModal({
     }
   };
 
-  const { data: unitData, isLoading: isLoadingUnits, error: unitError } = useGetUnitQuery(
+  const { data: unitData, isLoading: isLoadingUnits, error: unitError, refetch: refetchUnits } = useGetUnitQuery(
     { caseId },
     {
       skip: !open || !caseId,
@@ -214,45 +223,54 @@ export default function AssignOfficerModal({
     JSON.parse(localStorage.getItem("area") ?? "[]") as Area[], []
   );
 
-  const availableOfficers = useMemo(() => {
-    if (!unitData?.data) return []
+  // The FULL roster as the units endpoint returns it. Officers already assigned
+  // to THIS case (sopUnitLists) stay listed on purpose — their workload and
+  // assigned-cases cells remain visible so a dispatcher can track whether their
+  // load has cleared — but they are never selectable (see assignedUnitIds and
+  // selectableFilteredOfficers below).
+  const rosterOfficers = useMemo(() => unitData?.data ?? [], [unitData?.data])
 
-    return unitData.data.filter((officer) => {
-      return !sopUnitLists.some((assignedUnit) =>
-        assignedUnit.unitId === officer.unitId
-      );
-    })
-  }, [unitData?.data, sopUnitLists])
+  // Who is already on this case. Drives the disabled checkbox and every
+  // selection guard — one definition so the two cannot drift.
+  const assignedUnitIds = useMemo(
+    () => new Set(sopUnitLists.map((assignedUnit) => assignedUnit.unitId)),
+    [sopUnitLists]
+  )
 
   useEffect(() => {
     if (open) {
-      setSelectedOfficerIds(assignedOfficers.map((officer) => officer.unitId))
+      // Preselect only officers not already on the case: an assigned officer's
+      // checkbox is disabled, and a checked-but-disabled row would still count
+      // toward the Assign button.
+      setSelectedOfficerIds(
+        assignedOfficers
+          .filter((officer) => !assignedUnitIds.has(officer.unitId))
+          .map((officer) => officer.unitId)
+      )
     } else {
       setSelectedOfficerIds([])
       setSearchTerm("")
       setViewMode("all")
     }
     setDisableAssign(false)
-  }, [open, assignedOfficers])
+  }, [open, assignedOfficers, assignedUnitIds])
 
   const { t, language } = useTranslation();
 
   // --- Per-officer signals (workload, assigned cases, ETA/TTL) ---------------
-  // Each of the three is fetched/computed independently and fails on its own:
-  // none of them gate the base roster below, each other, or the Assign action.
+  // Workload and assigned cases now arrive EMBEDDED in the roster response
+  // itself (Unit.workloadCount / Unit.workloadCases — validated and indexed by
+  // unitWorkloadAdapter.ts), so there is no second network call anymore and no
+  // separate loading/error state: while the roster loads the modal shows its
+  // full-screen loader, and a unit whose fields are missing/invalid simply has
+  // no entry (the cells' own "-" state). The old dedicated bulk call
+  // (useUnitWorkloads → POST /units/workload) is disconnected, not deleted.
+  // ETA/TTL remains an independent, on-demand signal.
 
-  const officerIds = useMemo(
-    () => availableOfficers.map((officer) => officer.unitId),
-    [availableOfficers]
+  const workloadByUnitId = useMemo(
+    () => buildWorkloadByUnitId(unitData?.data),
+    [unitData?.data]
   )
-
-  // One bulk call for the whole visible roster — never one call per officer.
-  const {
-    byUnitId: workloadByUnitId,
-    isLoading: isWorkloadLoading,
-    isError: isWorkloadError,
-    refetch: refetchWorkloads,
-  } = useUnitWorkloads({ unitIds: officerIds, enabled: open })
 
   // The open case's location, for the on-demand per-row route solves. Strings on
   // CaseSop; NaN here just means "no case location" and the cell says so.
@@ -264,12 +282,12 @@ export default function AssignOfficerModal({
     return { latitude, longitude }
   }, [caseData?.caseLat, caseData?.caseLon])
 
-  const officerRoutes = useOfficerRouteSolves({ officers: availableOfficers, caseLocation })
+  const officerRoutes = useOfficerRouteSolves({ officers: rosterOfficers, caseLocation })
 
   const filteredOfficers = useMemo(() => {
-    if (!searchTerm.trim()) return availableOfficers
+    if (!searchTerm.trim()) return rosterOfficers
     const searchLower = searchTerm.toLowerCase()
-    return availableOfficers.filter((officer) =>
+    return rosterOfficers.filter((officer) =>
       officer.username.toLowerCase().includes(searchLower) ||
       officer.deptId.toLowerCase().includes(searchLower) ||
       officer.unitId.toLowerCase().includes(searchTerm) ||
@@ -285,7 +303,7 @@ export default function AssignOfficerModal({
       })()
     )
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [availableOfficers, searchTerm])
+  }, [rosterOfficers, searchTerm])
 
   const sortedOfficers = useMemo(() =>
     [...filteredOfficers].sort((a, b) => {
@@ -320,6 +338,8 @@ export default function AssignOfficerModal({
   }, [viewMode, sortedOfficers, workloadByUnitId])
 
   const handleSelectOfficer = (officerId: string) => {
+    // Assigned officers are listed for tracking only — never selectable.
+    if (assignedUnitIds.has(officerId)) return
     setSelectedOfficerIds(prev =>
       prev.includes(officerId)
         ? prev.filter(id => id !== officerId)
@@ -327,20 +347,28 @@ export default function AssignOfficerModal({
     )
   }
 
+  // Selectable = filtered rows NOT already on this case. The header checkbox
+  // and "select all" act on these only, so a search result full of assigned
+  // officers leaves the header honestly unchecked instead of half-broken.
+  const selectableFilteredOfficers = useMemo(
+    () => filteredOfficers.filter(officer => !assignedUnitIds.has(officer.unitId)),
+    [filteredOfficers, assignedUnitIds]
+  )
+
   // "Select all" acts on the visible (filtered) rows only, so a search term
   // narrows what the header checkbox can add or remove.
   const isAllFilteredSelected = useMemo(() => {
-    if (filteredOfficers.length === 0) return false
-    return filteredOfficers.every(officer => selectedOfficerIds.includes(officer.unitId))
-  }, [filteredOfficers, selectedOfficerIds])
+    if (selectableFilteredOfficers.length === 0) return false
+    return selectableFilteredOfficers.every(officer => selectedOfficerIds.includes(officer.unitId))
+  }, [selectableFilteredOfficers, selectedOfficerIds])
 
   const isSomeFilteredSelected = useMemo(() => {
-    if (filteredOfficers.length === 0) return false
-    return !isAllFilteredSelected && filteredOfficers.some(officer => selectedOfficerIds.includes(officer.unitId))
-  }, [filteredOfficers, selectedOfficerIds, isAllFilteredSelected])
+    if (selectableFilteredOfficers.length === 0) return false
+    return !isAllFilteredSelected && selectableFilteredOfficers.some(officer => selectedOfficerIds.includes(officer.unitId))
+  }, [selectableFilteredOfficers, selectedOfficerIds, isAllFilteredSelected])
 
   const handleSelectAll = () => {
-    const filteredIds = filteredOfficers.map(officer => officer.unitId)
+    const filteredIds = selectableFilteredOfficers.map(officer => officer.unitId)
     if (isAllFilteredSelected) {
       setSelectedOfficerIds(prev => prev.filter(id => !filteredIds.includes(id)))
     } else {
@@ -350,8 +378,8 @@ export default function AssignOfficerModal({
 
   // Selected officer objects for the summary badges.
   const selectedOfficerObjects = useMemo(
-    () => availableOfficers.filter(officer => selectedOfficerIds.includes(officer.unitId)),
-    [availableOfficers, selectedOfficerIds]
+    () => rosterOfficers.filter(officer => selectedOfficerIds.includes(officer.unitId)),
+    [rosterOfficers, selectedOfficerIds]
   )
 
   if (isLoadingUnits) {
@@ -477,11 +505,15 @@ export default function AssignOfficerModal({
                   <div className="divide-y divide-gray-200 dark:divide-gray-700">
                     {displayedOfficers.length === 0 ? (
                       <div className="flex justify-center items-center text-center text-gray-500 dark:text-gray-400 py-4">
-                        {availableOfficers.length === 0 ? t("case.assign_officer_modal.no_officer") : t("case.assign_officer_modal.not_match_officer")}
+                        {rosterOfficers.length === 0 ? t("case.assign_officer_modal.no_officer") : t("case.assign_officer_modal.not_match_officer")}
                       </div>
                     ) : (
                       displayedOfficers.map((officer) => {
                         const isSelected = selectedOfficerIds.includes(officer.unitId)
+                        // Already on this case: row stays for workload tracking,
+                        // but the checkbox is disabled and selection guards
+                        // (above) make it unselectable by any path.
+                        const isAssignedToCase = assignedUnitIds.has(officer.unitId)
                         return (
                           <div
                             key={officer.unitId}
@@ -493,6 +525,7 @@ export default function AssignOfficerModal({
                             <div className="px-4">
                               <UnifiedCheckbox
                                 checked={isSelected}
+                                disabled={isAssignedToCase}
                                 onChange={(e) => {
                                   e.stopPropagation()
                                   handleSelectOfficer(officer.unitId)
@@ -555,9 +588,14 @@ export default function AssignOfficerModal({
                               <div className="flex items-center justify-center">
                                 <OfficerWorkloadCell
                                   count={workloadByUnitId[officer.unitId]?.activeCaseCount}
-                                  isLoading={isWorkloadLoading}
-                                  isError={isWorkloadError}
-                                  onRetry={refetchWorkloads}
+                                  // Workload rides the roster fetch: no separate
+                                  // loading/error state exists anymore (see the
+                                  // signals comment above). The cells stay as-is;
+                                  // the retry path is unreachable but stays wired
+                                  // to the roster refetch for prop-shape parity.
+                                  isLoading={false}
+                                  isError={false}
+                                  onRetry={refetchUnits}
                                 />
                               </div>
                               {/* Currently assigned cases — count, click to expand the list. */}
@@ -565,9 +603,9 @@ export default function AssignOfficerModal({
                                 <OfficerAssignedCasesCell
                                   cases={workloadByUnitId[officer.unitId]?.cases}
                                   count={workloadByUnitId[officer.unitId]?.activeCaseCount}
-                                  isLoading={isWorkloadLoading}
-                                  isError={isWorkloadError}
-                                  onRetry={refetchWorkloads}
+                                  isLoading={false}
+                                  isError={false}
+                                  onRetry={refetchUnits}
                                 />
                               </div>
                               {/* ETA / TTL — solved on demand, per row only. */}
