@@ -1204,5 +1204,11 @@
     "segment": "MINOR",
     "notes": "chore: baseline cms standalone application\n- Stable cms module\n- Standalone layout architecture\n- Product-level providers and infrastructure",
     "author": "Wisarud Techa"
+  },
+  "0.98.0": {
+    "date": "2026-10-19",
+    "segment": "MINOR",
+    "notes": "feat(cms): workload now rides the officer roster and case preview on assigned cases\n- The officer assignment modal and the case map no longer make a second API call to fetch workload. Each officer's active case count and assigned case list now travel with the roster itself, so the list appears faster and the modal stays responsive even when many officers are visible.\n- Clicking any case number in an officer's \"Assigned Cases\" list now opens a compact preview showing the case ID, number, status, priority, and creation date, so dispatchers can check a case without leaving the assignment screen. If the roster only carried the case ID, the preview quietly fetches the rest on demand.\n- Officers already assigned to the current case now stay visible in the roster with their workload, but their checkboxes are disabled so they cannot be selected again.\n- feat(core): mention notifications through websocket\n- When someone @mentions you in a case comment, a toast now appears immediately naming the case and the person who mentioned you. Clicking the toast opens that case directly.\n- Added Thai, English, and Chinese translations for the new case preview labels and mention notification.",
+    "author": "Wisarud Techa"
   }
 }
