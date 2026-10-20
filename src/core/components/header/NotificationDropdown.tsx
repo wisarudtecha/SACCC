@@ -1,5 +1,5 @@
 // src/core/components/header/NotificationDropdown.tsx
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { useEffect, useRef, useState } from "react";
 // import { useNavigate } from "react-router-dom";
 import { useAppNavigate } from "@/core/router/useAppNavigate";
@@ -10,8 +10,9 @@ import { useWebSocket } from "@/core/components/websocket/websocket";
 import { useSuperApp } from "@/core/context/SuperAppContext";
 import { useTranslation } from "@/core/hooks/useTranslation";
 // import { useGetNotificationByIdQuery as UseGetNotificationByIdQuery } from "@/core/store/api/notificationApi";
+import { useGetNotificationByIdQuery } from "@/core/store/api/notificationApi";
 // import { APP_CONFIG, POPUP_AUTO_DISMISS_MS, POPUP_GROUP_AUTO_CLOSE_MS, POPUP_TRANSITION_MS } from "@/core/utils/constants";
-import { APP_CONFIG, DEV_CONFIG, POPUP_AUTO_DISMISS_MS, POPUP_GROUP_AUTO_CLOSE_MS, POPUP_TRANSITION_MS } from "@/core/utils/constants";
+import { DEV_CONFIG, POPUP_AUTO_DISMISS_MS, POPUP_GROUP_AUTO_CLOSE_MS, POPUP_TRANSITION_MS } from "@/core/utils/constants";
 import { isValidImageUrl } from "@/core/utils/resourceValidators";
 import { formatLastNotification } from "@/core/utils/utils";
 import type { Notification, PopupItem } from "@/core/types/notification";
@@ -536,72 +537,45 @@ const NotificationDropdown = () => {
     wasConnectedRef.current = isConnected;
   }, [isConnected]);
 
-  // ===== Hydration (mention persistence plan rev 3, Phase B): persisted
-  // notifications fetched from the backend so the list survives page refresh.
-  // Direct REST call with the Bearer token — independent of the GraphQL
-  // toggle; live entries keep arriving through the websocket broadcast path
-  // (the generic notification branch in onMessage), which dedups by the same
-  // notification id used here.
-  const loadNotifications = async () => {
-    const profile = getProfile();
-    const token = getAuthToken();
-    if (!profile?.username || !profile?.orgId || !token) {
-      return;
-    }
+  // Hydration: persisted notifications via the notification API store — the
+  // call flows through the app's query layer (GQL_MAP /notifications/:id →
+  // GetNotificationById under VITE_USE_GRAPHQL, REST otherwise).
+  const { data: getNotificationById } = useGetNotificationByIdQuery(profile.username, {
+    skip: !profile.username,
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
 
-    try {
-      const url = `${APP_CONFIG.API_BASE_URL}/notifications/${encodeURIComponent(profile.username)}`;
-      const res = await axios.get<Notification[]>(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!Array.isArray(res.data)) {
+  useEffect(() => {
+    const loadNotifications = async () => {
+      const profile = getProfile();
+      const token = getAuthToken();
+      if (!profile || !profile.username || !profile.orgId) {
         return;
       }
-      // Hydrated entries count as read; live (unread) entries already in the
-      // list win — dedup by id against broadcasts and earlier hydrations.
-      setNotifications(prev => {
-        const byId = new Map(prev.map(n => [String(n.id), n]));
-        for (const noti of res.data) {
-          const key = String(noti.id);
-          if (!byId.has(key)) {
-            byId.set(key, { ...noti, read: true });
-          }
-        }
-        return Array.from(byId.values());
-      });
-    }
-    catch (err) {
-      // Hydration is best-effort — live websocket delivery is unaffected.
-      if (err instanceof AxiosError) {
-        console.debug("Notification hydration failed:", err.response?.status);
+
+      if (!token) {
+        return;
       }
-    }
-  };
 
-  // O4: hydrate on mount.
-  useEffect(() => {
+      try {
+        const res = getNotificationById;
+        if (Array.isArray(res)) {
+          const notificationsAsRead = res.map(noti => ({ ...noti, read: true }));
+          setNotifications(notificationsAsRead as unknown as Notification[]);
+          setUnread(0);
+        }
+      }
+      catch (err) {
+        if (err instanceof AxiosError) {
+          // Hydration is best-effort — live websocket delivery is unaffected.
+        }
+      }
+    };
+
     loadNotifications();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // O4: refetch when the dropdown opens, so entries persisted while the user
-  // was away or offline appear immediately.
-  useEffect(() => {
-    if (isOpen) {
-      loadNotifications();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
-
-  // O4: refetch on websocket (re)connect — a reconnect is exactly when
-  // notifications missed while offline should reappear.
-  useEffect(() => {
-    if (!isConnected) {
-      return;
-    }
-    loadNotifications();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected]);
+  }, [getNotificationById]);
 
   useEffect(() => {
     if (!isOpen) {
