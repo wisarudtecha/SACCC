@@ -23,6 +23,12 @@ import { useOfficerRouteSolves } from "@/cms/components/assignOfficer/workload/u
 import { OfficerWorkloadCell } from "@/cms/components/assignOfficer/workload/OfficerWorkloadCell"
 import { OfficerAssignedCasesCell } from "@/cms/components/assignOfficer/workload/OfficerAssignedCasesCell"
 import { OfficerEtaTtlCell } from "@/cms/components/assignOfficer/workload/OfficerEtaTtlCell"
+import {
+  MAX_BATCH_ASSIGN_OFFICERS,
+  canSelectMore,
+  isSelectAllDisabled,
+  pruneSelection
+} from "@/cms/components/assignOfficer/batchAssignSelection"
 
 // One class for the 7-column officer grid so the header and every row stay in
 // lockstep. Name gets the most room; ETA/TTL needs room for three lines + button.
@@ -237,8 +243,15 @@ export default function AssignOfficerModal({
     [sopUnitLists]
   )
 
+  // Seed/reset the selection ONLY on the modal's open-state TRANSITIONS. The
+  // deps below churn while the modal is open: every dispatch POST (each
+  // officer of a batch) invalidates the "Dispatch" tag and refetches the SOP,
+  // producing a new unitLists array and a new assignedUnitIds Set. Re-seeding
+  // on every churn reset the selection to assignedOfficers (empty in the case
+  // detail flow) mid-session - the "selected list disappeared" regression.
+  const wasOpenRef = useRef(false)
   useEffect(() => {
-    if (open) {
+    if (open && !wasOpenRef.current) {
       // Preselect only officers not already on the case: an assigned officer's
       // checkbox is disabled, and a checked-but-disabled row would still count
       // toward the Assign button.
@@ -247,13 +260,40 @@ export default function AssignOfficerModal({
           .filter((officer) => !assignedUnitIds.has(officer.unitId))
           .map((officer) => officer.unitId)
       )
-    } else {
+    } else if (!open) {
       setSelectedOfficerIds([])
       setSearchTerm("")
       setViewMode("all")
     }
+    wasOpenRef.current = open
     setDisableAssign(false)
   }, [open, assignedOfficers, assignedUnitIds])
+
+  // The roster is live (refetch on reopen, "Dispatch" tag invalidation after an
+  // assignment, SOP unit updates): whenever it changes, the selection follows.
+  // A selected officer who disappeared from the roster - or who has since been
+  // assigned to this case - drops out of the selection, and an over-cap
+  // selection is trimmed back to the cap. Skipped while the first roster load is
+  // still in flight, so the preselection above is not wiped before there is a
+  // roster to reconcile against. Same array returned when nothing changed.
+  useEffect(() => {
+    if (!open || isLoadingUnits) return
+    // An empty roster here is a TRANSIENT state far more often than a real one
+    // (a refetch blip, or churn on the shared units cache the map keeps
+    // refreshing); pruning against it would wipe the whole selection. Stale ids
+    // left in the selection are harmless: no row renders for them, and the
+    // assign payload filters by the roster anyway.
+    if (rosterOfficers.length === 0) return
+    setSelectedOfficerIds(prev => {
+      const selectableIds = new Set(
+        rosterOfficers
+          .filter(officer => !assignedUnitIds.has(officer.unitId))
+          .map(officer => officer.unitId)
+      )
+      const pruned = pruneSelection(prev, selectableIds)
+      return pruned.length === prev.length ? prev : pruned
+    })
+  }, [open, isLoadingUnits, rosterOfficers, assignedUnitIds])
 
   const { t, language } = useTranslation();
 
@@ -343,7 +383,10 @@ export default function AssignOfficerModal({
     setSelectedOfficerIds(prev =>
       prev.includes(officerId)
         ? prev.filter(id => id !== officerId)
-        : [...prev, officerId]
+        // At the batch cap no NEW officer may be checked - the row checkboxes
+        // of unselected officers are disabled and this guard is the safety
+        // net behind them (badge removal, select-all, ...).
+        : canSelectMore(prev.length) ? [...prev, officerId] : prev
     )
   }
 
@@ -372,7 +415,15 @@ export default function AssignOfficerModal({
     if (isAllFilteredSelected) {
       setSelectedOfficerIds(prev => prev.filter(id => !filteredIds.includes(id)))
     } else {
-      setSelectedOfficerIds(prev => Array.from(new Set([...prev, ...filteredIds])))
+      // "Select all" adds the whole selectable filtered list, but never past
+      // the batch cap: when slots are already used by officers outside the
+      // current filter, only the remaining free slots are filled.
+      setSelectedOfficerIds(prev => {
+        const remaining = MAX_BATCH_ASSIGN_OFFICERS - prev.length
+        if (remaining <= 0) return prev
+        const toAdd = filteredIds.filter(id => !prev.includes(id)).slice(0, remaining)
+        return Array.from(new Set([...prev, ...toAdd]))
+      })
     }
   }
 
@@ -484,6 +535,10 @@ export default function AssignOfficerModal({
                     <UnifiedCheckbox
                       checked={isAllFilteredSelected}
                       indeterminate={isSomeFilteredSelected}
+                      // "Select all" is disabled when the selectable filtered
+                      // list exceeds the batch cap: it may never pick a partial
+                      // slice that would still look like "all".
+                      disabled={isSelectAllDisabled(selectableFilteredOfficers.length)}
                       onChange={handleSelectAll}
                     />
                   </div>
@@ -525,7 +580,10 @@ export default function AssignOfficerModal({
                             <div className="px-4">
                               <UnifiedCheckbox
                                 checked={isSelected}
-                                disabled={isAssignedToCase}
+                                // Second rule: once the batch cap is reached, an
+                                // UNselected officer is locked out until someone
+                                // unchecks first. Selected rows stay togglable.
+                                disabled={isAssignedToCase || (!isSelected && !canSelectMore(selectedOfficerIds.length))}
                                 onChange={(e) => {
                                   e.stopPropagation()
                                   handleSelectOfficer(officer.unitId)
@@ -635,6 +693,11 @@ export default function AssignOfficerModal({
             <div className="text-sm text-gray-700 dark:text-gray-300">
               {t("case.assign_officer_modal.select")} {selectedOfficerObjects.length} {t("case.assign_officer_modal.officer")}:
             </div>
+            {!canSelectMore(selectedOfficerIds.length) && (
+              <div className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                {t("case.assign_officer_modal.batch_limit_hint", { count: MAX_BATCH_ASSIGN_OFFICERS })}
+              </div>
+            )}
             <div className="flex flex-wrap gap-2 mt-2 max-h-20 overflow-y-auto custom-scrollbar">
               {selectedOfficerObjects.map((officer) => (
                 <Badge key={officer.unitId}>

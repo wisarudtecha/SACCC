@@ -1075,6 +1075,36 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         [handleDispatch]
     );
 
+    // Batch-assign from the map's cluster (group) panel. Same per-officer
+    // dispatch the table modal's handleAssignOfficers uses - one request per
+    // selected member through the EXISTING single-assignment endpoint
+    // (POST /dispatch/event), sent sequentially, with a single refetch at the
+    // end. Documented intent: a dedicated batch endpoint is future work the
+    // team has consciously deferred; the N-request cost is accepted.
+    const handleBatchAssignFromMap = useCallback(
+        async (markers: readonly StaffMarker[]) => {
+            const failedNames: string[] = [];
+            for (const marker of markers) {
+                // dispatchOfficer reads only unitId / username off the Unit.
+                const isDispatched = await dispatchOfficer(
+                    { unitId: marker.unitId, username: marker.username } as Unit
+                );
+                if (!isDispatched) {
+                    failedNames.push(marker.unitName);
+                }
+            }
+            if (failedNames.length === 0) {
+                addToast("success", t("case.display.toast.dispatch_success"));
+            } else if (failedNames.length < markers.length) {
+                addToast("error", `${t("case.display.toast.dispatch_fail")}: ${failedNames.join(", ")}`);
+            } else {
+                addToast("error", t("case.display.toast.dispatch_fail"));
+            }
+            await refetch();
+        },
+        [dispatchOfficer, refetch, addToast, t]
+    );
+
     // Undo of a drag-and-drop assignment. Refetches on success because, unlike the
     // dialog path, nothing else is going to make the staff panel drop its
     // "assigned" state straight away.
@@ -1107,6 +1137,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                     onRequestAssign: handleRequestAssignFromMap,
                     onRequestCancel: handleRequestCancelFromMap,
                     onAssignNow: handleAssignNowFromMap,
+                    onBatchAssign: handleBatchAssignFromMap,
                     onUndoAssign: handleUndoAssignFromMap,
                     onRequestCaseDetails: handleRequestCaseDetails
                 }
@@ -1124,6 +1155,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
             handleRequestAssignFromMap,
             handleRequestCancelFromMap,
             handleAssignNowFromMap,
+            handleBatchAssignFromMap,
             handleUndoAssignFromMap,
             handleRequestCaseDetails
         ]

@@ -4243,6 +4243,9 @@
       "map_staff_group_title": "此处有 {{count}} 名人员",
       "map_staff_group_hint": "他们在地图上过于靠近，无法区分。请选择一位查看详情。",
       "map_staff_group_back": "返回此处的 {{count}} 名人员",
+      "map_staff_group_select_all": "全选",
+      "map_staff_group_batch_assign": "指派所选（{{count}}）",
+      "map_staff_group_batch_limit_hint": "每次最多可指派 {{count}} 名人员。",
       "map_staff_section_personal_info": "个人信息",
       "map_staff_section_personal_info_desc": "联系方式、所属单位、技能与组织。",
       "map_staff_section_tracking": "实时人员追踪",
@@ -4484,6 +4487,7 @@
       "no_officer": "没有可用的警员",
       "not_match_officer": "没有符合您搜索条件的警员",
       "assign_button": "分配选定的警员",
+      "batch_limit_hint": "每次最多可指派 {{count}} 名警员。",
       "select": "已选定",
       "officer": "警员"
     },

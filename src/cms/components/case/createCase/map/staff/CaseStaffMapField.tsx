@@ -82,6 +82,13 @@ export interface StaffAssignmentOverlay {
    * when the officer ended up dispatched. Upstream owns the toasts and refetch.
    */
   onAssignNow: (marker: StaffMarker) => Promise<boolean>;
+  /**
+   * Batch-assign several staff at once, from the cluster (group) panel only.
+   * One request per member through the EXISTING single-assignment endpoint,
+   * sent sequentially - upstream owns requests, toasts and the refetch. A
+   * dedicated batch endpoint is documented future intent, not near-term.
+   */
+  onBatchAssign: (markers: readonly StaffMarker[]) => Promise<void>;
   /** Undoes a drag-and-drop assignment. Resolves true when the cancel went through. */
   onUndoAssign: (marker: StaffMarker) => Promise<boolean>;
   /** Opens the full case record. Rendered upstream - the map clips its own children. */
@@ -661,6 +668,8 @@ function CaseStaffMapFieldBase({
           assignedUnitStatusById={assignment.assignedUnitStatusById}
           clusterRoutes={clusterRoutes}
           onSolveMember={solveClusterMember}
+          canAssign={assignment.canAssign}
+          onBatchAssign={assignment.onBatchAssign}
           className={CARD_CLASS}
         />
       );

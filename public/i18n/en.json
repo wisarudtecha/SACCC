@@ -4367,6 +4367,9 @@
       "map_staff_group_title": "{{count}} staff here",
       "map_staff_group_hint": "They are too close together to tell apart on the map. Pick one to see their details.",
       "map_staff_group_back": "Back to the {{count}} staff here",
+      "map_staff_group_select_all": "Select all",
+      "map_staff_group_batch_assign": "Assign selected ({{count}})",
+      "map_staff_group_batch_limit_hint": "You can assign up to {{count}} staff at a time.",
       "map_staff_section_personal_info": "Personal Information",
       "map_staff_section_personal_info_desc": "Contact details, unit, skills and organisation.",
       "map_staff_section_tracking": "Real-Time Staff Tracking",
@@ -4646,6 +4649,7 @@
       "no_officer": "No officers available",
       "not_match_officer": "No officers match your search",
       "assign_button": "Assign Selected Officers",
+      "batch_limit_hint": "You can assign up to {{count}} officers at a time.",
       "select": "Selected",
       "officer": "officer",
       "end_of_action": "Done"
