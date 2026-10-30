@@ -1,5 +1,6 @@
-// The Assignment Rules section: two single-select option groups in one form, one
-// atomic Save for the whole section, one Cancel that reverts to the last-loaded
+// The Assignment Rules section: Automatic/Manual toggle, routing criteria
+// checkboxes (when Automatic), AND/OR combine toggle, plus Workload Allocation.
+// One atomic Save for the whole section, one Cancel that reverts to the last-loaded
 // (or schema-default) values with no network call. Owns form state and the
 // save-error banner. Mirrors MapSettingsSection.tsx.
 //
@@ -15,6 +16,7 @@ import type { OrgAssignmentRuleSettings } from "@/core/types/organization";
 import { useOrgAssignmentRules } from "../useOrgAssignmentRules";
 import { SmartRoutingSettings } from "./SmartRoutingSettings";
 import { WorkloadAllocationSettings } from "./WorkloadAllocationSettings";
+import { AdvancedAssignmentSettings } from "./AdvancedAssignmentSettings";
 
 export function AssignmentRulesSection() {
   const { t } = useTranslation();
@@ -37,8 +39,10 @@ export function AssignmentRulesSection() {
 
   const handleSave = async () => {
     const result = await save({
-      routingMethod: form.routingMethod,
+      mode: form.mode,
+      routingModes: form.routingModes,
       allocationMethod: form.allocationMethod,
+      advancedOptions: form.advancedOptions,
     });
     if (result.ok) {
       setSaveFailed(false);
@@ -91,13 +95,32 @@ export function AssignmentRulesSection() {
       )}
 
       <SmartRoutingSettings
-        value={form.routingMethod}
-        onChange={(routingMethod) => setForm((prev) => ({ ...prev, routingMethod }))}
+        mode={form.mode}
+        routingModes={form.routingModes}
+        onModeChange={(mode) =>
+          setForm((prev) => ({ ...prev, mode }))
+        }
+        onRoutingModesChange={(routingModes) =>
+          setForm((prev) => ({
+            ...prev,
+            routingModes: { ...prev.routingModes, ...routingModes },
+          }))
+        }
       />
       <WorkloadAllocationSettings
         value={form.allocationMethod}
         onChange={(allocationMethod) =>
           setForm((prev) => ({ ...prev, allocationMethod }))
+        }
+      />
+      <AdvancedAssignmentSettings
+        mode={form.mode}
+        options={form.advancedOptions}
+        onChange={(advancedOptions) =>
+          setForm((prev) => ({
+            ...prev,
+            advancedOptions: { ...prev.advancedOptions, ...advancedOptions },
+          }))
         }
       />
 

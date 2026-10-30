@@ -1,10 +1,10 @@
 // Deterministic stand-in for the not-yet-built org assignment-rules endpoints.
 //
-// Used ONLY when VITE_MOCK_API="true" (see `useOrgAssignmentRules`). It exists so
+// Used ONLY when VITE_MOCK_API="true" (see useOrgAssignmentRules). It exists so
 // the Organization/System Settings -> Assignment Rules page can be built and
-// demoed end-to-end before the backend (`GET`/`PATCH
-// /organizations/{orgId}/assignment-rules`, contract in
-// `src/core/types/organization.ts`) is available. It is NOT wired to any live
+// demoed end-to-end before the backend (GET/PATCH
+// /organizations/{orgId}/assignment-rules, contract in
+// src/core/types/organization.ts) is available. It is NOT wired to any live
 // data and MUST NOT be imported by production code paths.
 //
 // Like orgMapSettingsStub.ts, this keeps a session-scoped in-memory store keyed
@@ -22,7 +22,9 @@ import {
 const store = new Map<string, OrgAssignmentRuleSettings>();
 
 /** Mirrors GET: the stored record for this org, seeded from schema defaults on first read. */
-export function readOrgAssignmentRulesStub(orgId: string): OrgAssignmentRuleSettings {
+export function readOrgAssignmentRulesStub(
+  orgId: string
+): OrgAssignmentRuleSettings {
   const existing = store.get(orgId);
   if (existing) {
     return existing;

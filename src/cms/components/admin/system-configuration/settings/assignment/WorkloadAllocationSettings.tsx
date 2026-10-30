@@ -1,14 +1,13 @@
 // "Workload & Resource Allocation" subsection - single-select allocation method,
 // two options. Configuration only; no engine consumes the choice.
 import { ALLOCATION_METHODS, type AllocationMethod } from "@/core/types/organization";
-import { MethodPicker, type MethodOption } from "./MethodPicker";
+import { MethodPicker } from "./MethodPicker";
 
-const ALLOCATION_OPTIONS: ReadonlyArray<MethodOption<AllocationMethod>> =
-  ALLOCATION_METHODS.map((method) => ({
-    value: method,
-    labelKey: `settings.assignment.allocation.${method}.label`,
-    descKey: `settings.assignment.allocation.${method}.desc`,
-  }));
+const ALLOCATION_OPTIONS = ALLOCATION_METHODS.map((method) => ({
+  value: method,
+  labelKey: "settings.assignment.allocation." + method + ".label",
+  descKey: "settings.assignment.allocation." + method + ".desc",
+}));
 
 interface WorkloadAllocationSettingsProps {
   value: AllocationMethod;

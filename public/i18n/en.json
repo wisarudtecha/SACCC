@@ -132,39 +132,53 @@
         "workload_allocation": "Workload & Resource Allocation"
       },
       "field": {
-        "routing_method": {
-          "label": "Routing method",
-          "help": "How incoming cases are routed to personnel. Configuration only — no automatic routing runs yet; dispatchers still assign every case by hand."
+        "mode": {
+          "label": "Assignment mode",
+          "help": "Turn Automatic on to let the system route cases based on selected criteria. Manual means dispatchers assign every case by hand.",
+          "manual": "Manual",
+          "automatic": "Automatic"
+        },
+        "routing_criteria": {
+          "label": "Routing criteria",
+          "help": "Select one or more criteria the system will use to route cases automatically."
+        },
+        "combine": {
+          "label": "Combine criteria",
+          "help": "OR = match any selected criterion. AND = match all selected criteria.",
+          "or": "OR",
+          "and": "AND"
         },
         "allocation_method": {
           "label": "Allocation method",
-          "help": "How work is distributed across eligible personnel once a routing method has selected them."
+          "help": "How work is distributed across eligible personnel once routing has selected them."
+        },
+        "case_type_sub_types": {
+          "label": "Case type sub-types",
+          "help": "Select which case sub-types this routing criterion applies to.",
+          "select_all": "Select All",
+          "deselect_all": "Deselect All"
         }
       },
       "routing": {
-        "manual": {
-          "label": "Manual",
-          "desc": "No automatic routing — dispatchers assign every case by hand (current behaviour)."
-        },
         "skill_based": {
-          "label": "Skill-Based Routing",
+          "label": "Skill-Based",
           "desc": "Assign by personnel skills, expertise and equipment matched to the incident type."
         },
         "location_based": {
-          "label": "Location-Based Routing",
+          "label": "Location-Based",
           "desc": "Assign the field personnel closest to the incident location."
         },
         "department": {
-          "label": "Department Routing",
+          "label": "Department",
           "desc": "Filter and forward to the directly responsible department or division."
         },
         "availability": {
-          "label": "Availability Routing",
-          "desc": "Check work status (available, on duty, on break) and only assign personnel ready to work."
+          "label": "Availability",
+          "desc": "Check work status and only assign personnel ready to work."
         },
         "case_type": {
-          "label": "Case Type Routing",
-          "desc": "Classify and assign based on incident type and severity (the existing case priority)."
+          "label": "Case Type",
+          "desc": "Classify and assign based on incident type and severity."
         }
       },
       "allocation": {
@@ -176,6 +190,38 @@
           "label": "Load Balance Assignment",
           "desc": "Assignment based on cumulative workload, to avoid concentration."
         }
+      },
+      "advanced": {
+        "expand": "Show advanced options",
+        "collapse": "Hide advanced options",
+        "title": "Advanced Options",
+        "sub_type": {
+          "label": "Service sub-type",
+          "help": "Choose the service category these advanced options apply to.",
+          "general": "General",
+          "emergency": "Emergency",
+          "maintenance": "Maintenance",
+          "inspection": "Inspection"
+        },
+        "auto_require_all_skills": {
+          "label": "Require all matched skills",
+          "help": "Only assign if the officer has every skill required by the case."
+        },
+        "auto_respect_shift": {
+          "label": "Respect shift schedule",
+          "help": "Do not assign to officers outside their scheduled working hours."
+        },
+        "manual_suggest_workload": {
+          "label": "Suggest by workload",
+          "help": "When dispatching manually, recommend the officer with the lightest load."
+        },
+        "manual_allow_override": {
+          "label": "Allow dispatcher override",
+          "help": "Dispatchers can override system suggestions and assign anyone."
+        }
+      },
+      "validation": {
+        "no_criteria_selected": "Select at least one routing criterion for Automatic mode."
       },
       "banner": {
         "not_saved": {
@@ -286,28 +332,77 @@
       "readonly_note": "Subscription details are managed by the platform provider. Contact your account manager to change your package."
     },
     "sku": {
-      "cc_core": { "label": "CC-Core (CMS, CRM, Customer Contact)", "description": "Core platform: case management, CRM, and customer contact." },
-      "cc_agent": { "label": "CC-Agent (Agent Seats)", "description": "Agent, supervisor, admin, and report-user seats." },
-      "cc_kb": { "label": "CC-KB (Knowledge Base)", "description": "Article management, approval, and search." },
-      "cc_chat": { "label": "CC-Chat (Live Chat)", "description": "Live chat with SLA, assignment, and dashboards." },
-      "cc_bot": { "label": "CC-Bot (Chatbot Intent)", "description": "Intent flows, self-service, and human handoff." },
-      "cc_gis": { "label": "CC-GIS (Maps & Spatial)", "description": "Map providers, geocoding, and spatial analysis." },
-      "cc_cad": { "label": "CC-CAD (Dispatch)", "description": "Computer-aided dispatch for coordinators and supervisors." },
-      "cc_channel": { "label": "CC-Channel (Social Channels)", "description": "LINE, Facebook, WeChat, and other channel integrations." },
-      "cc_service": { "label": "CC-Service (Professional Services)", "description": "Implementation, integration, migration, training, and support." }
+      "cc_core": {
+        "label": "CC-Core (CMS, CRM, Customer Contact)",
+        "description": "Core platform: case management, CRM, and customer contact."
+      },
+      "cc_agent": {
+        "label": "CC-Agent (Agent Seats)",
+        "description": "Agent, supervisor, admin, and report-user seats."
+      },
+      "cc_kb": {
+        "label": "CC-KB (Knowledge Base)",
+        "description": "Article management, approval, and search."
+      },
+      "cc_chat": {
+        "label": "CC-Chat (Live Chat)",
+        "description": "Live chat with SLA, assignment, and dashboards."
+      },
+      "cc_bot": {
+        "label": "CC-Bot (Chatbot Intent)",
+        "description": "Intent flows, self-service, and human handoff."
+      },
+      "cc_gis": {
+        "label": "CC-GIS (Maps & Spatial)",
+        "description": "Map providers, geocoding, and spatial analysis."
+      },
+      "cc_cad": {
+        "label": "CC-CAD (Dispatch)",
+        "description": "Computer-aided dispatch for coordinators and supervisors."
+      },
+      "cc_channel": {
+        "label": "CC-Channel (Social Channels)",
+        "description": "LINE, Facebook, WeChat, and other channel integrations."
+      },
+      "cc_service": {
+        "label": "CC-Service (Professional Services)",
+        "description": "Implementation, integration, migration, training, and support."
+      }
     },
     "feature": {
-      "core": { "label": "Core Platform (CMS / CRM / Contact)" },
-      "agent_desktop": { "label": "Agent Desktop" },
-      "kb": { "label": "Knowledge Base" },
-      "kb_semantic_search": { "label": "KB Semantic Search" },
-      "chat": { "label": "Live Chat" },
-      "bot": { "label": "Chatbot Intent" },
-      "gis": { "label": "GIS / Maps" },
-      "cad": { "label": "CAD Dispatch" },
-      "channel_social": { "label": "Social Channels" },
-      "audit": { "label": "Audit Logs" },
-      "rbac_advanced": { "label": "Advanced RBAC" }
+      "core": {
+        "label": "Core Platform (CMS / CRM / Contact)"
+      },
+      "agent_desktop": {
+        "label": "Agent Desktop"
+      },
+      "kb": {
+        "label": "Knowledge Base"
+      },
+      "kb_semantic_search": {
+        "label": "KB Semantic Search"
+      },
+      "chat": {
+        "label": "Live Chat"
+      },
+      "bot": {
+        "label": "Chatbot Intent"
+      },
+      "gis": {
+        "label": "GIS / Maps"
+      },
+      "cad": {
+        "label": "CAD Dispatch"
+      },
+      "channel_social": {
+        "label": "Social Channels"
+      },
+      "audit": {
+        "label": "Audit Logs"
+      },
+      "rbac_advanced": {
+        "label": "Advanced RBAC"
+      }
     }
   },
   "cc": {
@@ -4887,11 +4982,11 @@
   },
   "report": {
     "1": "1.Service Summary Report",
+    "2": "2.Service Detail Report",
     "1_1": "1.1 Daily Service Summary Report",
     "1_2": "1.2 Monthly Service Summary Report",
     "1_3": "1.3 Service Comparison Report by Day",
     "1_4": "1.4 Service Comparison Report by Month",
-    "2": "2.Service Detail Report",
     "2_1": "2.1 Service Data Detail Report",
     "2_2": "2.2 Service Summary Report Classified by Service Type",
     "2_3": "2.3 Service Summary Report Classified by Service Outcome",
@@ -4902,10 +4997,10 @@
     },
     "order": {
       "1": "1.Order Summary Report",
+      "2": "2.Order Detail Report",
       "1_1": "1.1 Daily Order Summary Report",
       "1_2": "1.2 Product Summary Report",
       "1_3": "1.3 Parts Summary Report",
-      "2": "2.Order Detail Report",
       "2_1": "2.1 Order Detail Information Report",
       "2_2": "2.2 Parts/Component Requisition Summary Report",
       "2_3": "2.3 Top 10 Sales Report"

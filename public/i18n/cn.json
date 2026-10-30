@@ -128,65 +128,111 @@
     },
     "assignment": {
       "group": {
-        "smart_routing": "智能路由与分派规则",
+        "smart_routing": "智能路由与分配规则",
         "workload_allocation": "工作量与资源分配"
       },
       "field": {
-        "routing_method": {
-          "label": "路由方式",
-          "help": "来案如何路由给人员。仅为配置项 —— 尚未运行任何自动路由，调度员仍需手动分派每个案件。"
+        "mode": {
+          "label": "分配模式",
+          "help": "开启自动模式后，系统将根据所选条件自动分配工单。手动模式表示调度员手动分配每个工单。",
+          "manual": "手动",
+          "automatic": "自动"
+        },
+        "routing_criteria": {
+          "label": "路由条件",
+          "help": "选择一个或多个系统将用于自动分配工单的条件。"
+        },
+        "combine": {
+          "label": "组合条件",
+          "help": "OR = 匹配任一条件。AND = 匹配所有选定条件。",
+          "or": "或",
+          "and": "与"
         },
         "allocation_method": {
           "label": "分配方式",
-          "help": "在路由方式筛选出人员后，如何在符合条件的人员之间分配工作。"
+          "help": "路由筛选出符合条件的人员后，如何在其间分配工作。"
+        },
+        "case_type_sub_types": {
+          "label": "工单子类型",
+          "help": "选择此路由条件适用的工单子类型。",
+          "select_all": "全选",
+          "deselect_all": "取消全选"
         }
       },
       "routing": {
-        "manual": {
-          "label": "手动",
-          "desc": "无自动路由 —— 调度员手动分派每个案件（当前行为）。"
-        },
         "skill_based": {
-          "label": "基于技能的路由",
-          "desc": "根据人员的技能、专长和装备与事件类型进行匹配分派。"
+          "label": "按技能",
+          "desc": "根据人员技能、专长和设备与事件类型的匹配度进行分配。"
         },
         "location_based": {
-          "label": "基于位置的路由",
-          "desc": "分派距离事件位置最近的外勤人员。"
+          "label": "按位置",
+          "desc": "分配给离事件发生地点最近的外勤人员。"
         },
         "department": {
-          "label": "部门路由",
-          "desc": "筛选并转发给直接负责的部门或处室。"
+          "label": "按部门",
+          "desc": "筛选并转发至直接负责的部门或科室。"
         },
         "availability": {
-          "label": "基于可用性的路由",
-          "desc": "检查工作状态（空闲、值勤、休息），仅分派给可立即工作的人员。"
+          "label": "按可用性",
+          "desc": "检查工作状态，仅分配给 ready to work 的人员。"
         },
         "case_type": {
-          "label": "基于案件类型的路由",
-          "desc": "根据事件类型和严重程度（现有的案件优先级）进行分类和分派。"
+          "label": "按工单类型",
+          "desc": "根据事件类型和严重程度进行分类和分配。"
         }
       },
       "allocation": {
         "round_robin": {
-          "label": "轮询分派",
-          "desc": "按人员列表循环、平均地分派。"
+          "label": "轮询分配",
+          "desc": "在人员列表中循环分配，均匀分布。"
         },
         "load_balance": {
-          "label": "负载均衡分派",
-          "desc": "根据累计工作量进行分派，避免集中。"
+          "label": "负载均衡分配",
+          "desc": "根据累计工作量进行分配，避免任务集中。"
         }
+      },
+      "advanced": {
+        "expand": "显示高级选项",
+        "collapse": "隐藏高级选项",
+        "title": "高级选项",
+        "sub_type": {
+          "label": "服务子类型",
+          "help": "选择这些高级选项适用的服务类别。",
+          "general": "常规",
+          "emergency": "紧急",
+          "maintenance": "维护",
+          "inspection": "检查"
+        },
+        "auto_require_all_skills": {
+          "label": "要求匹配全部技能",
+          "help": "仅当人员具备案件所需的全部技能时才分配。"
+        },
+        "auto_respect_shift": {
+          "label": "遵守排班",
+          "help": "不分配给排班时间外的人员。"
+        },
+        "manual_suggest_workload": {
+          "label": "按工作量建议",
+          "help": "手动调度时，建议工作量最轻的人员。"
+        },
+        "manual_allow_override": {
+          "label": "允许调度员覆盖",
+          "help": "调度员可以覆盖系统建议并分配给任何人。"
+        }
+      },
+      "validation": {
+        "no_criteria_selected": "自动模式下请至少选择一个路由条件。"
       },
       "banner": {
         "not_saved": {
           "title": "未保存到服务器",
-          "body": "分派规则的后端尚不可用，因此您的更改未被保存。在您离开此页面前，您的编辑将保留在此处。",
+          "body": "分配规则后端尚未可用，因此您的更改未保存。在离开页面前，您的编辑将保留在此处。",
           "dismiss": "关闭"
         }
       },
       "action": {
         "save": {
-          "success": "分派规则已保存。"
+          "success": "分配规则已保存。"
         }
       }
     },
@@ -286,28 +332,77 @@
       "readonly_note": "订阅详情由平台服务商管理。如需更改套餐，请联系您的客户经理。"
     },
     "sku": {
-      "cc_core": { "label": "CC-Core (CMS, CRM, 客户联络)", "description": "核心平台：工单管理、CRM 与客户联络。" },
-      "cc_agent": { "label": "CC-Agent (坐席)", "description": "坐席、主管、管理员与报表用户席位。" },
-      "cc_kb": { "label": "CC-KB (知识库)", "description": "文章管理、审批与搜索。" },
-      "cc_chat": { "label": "CC-Chat (在线客服)", "description": "在线客服，含 SLA、分配与仪表盘。" },
-      "cc_bot": { "label": "CC-Bot (聊天机器人意图)", "description": "意图流程、自助服务与人工转接。" },
-      "cc_gis": { "label": "CC-GIS (地图与空间分析)", "description": "地图服务商、地理编码与空间分析。" },
-      "cc_cad": { "label": "CC-CAD (调度)", "description": "面向协调员与主管的计算机辅助调度。" },
-      "cc_channel": { "label": "CC-Channel (社交渠道)", "description": "LINE、Facebook、WeChat 等渠道集成。" },
-      "cc_service": { "label": "CC-Service (专业服务)", "description": "实施、集成、迁移、培训与支持。" }
+      "cc_core": {
+        "label": "CC-Core (CMS, CRM, 客户联络)",
+        "description": "核心平台：工单管理、CRM 与客户联络。"
+      },
+      "cc_agent": {
+        "label": "CC-Agent (坐席)",
+        "description": "坐席、主管、管理员与报表用户席位。"
+      },
+      "cc_kb": {
+        "label": "CC-KB (知识库)",
+        "description": "文章管理、审批与搜索。"
+      },
+      "cc_chat": {
+        "label": "CC-Chat (在线客服)",
+        "description": "在线客服，含 SLA、分配与仪表盘。"
+      },
+      "cc_bot": {
+        "label": "CC-Bot (聊天机器人意图)",
+        "description": "意图流程、自助服务与人工转接。"
+      },
+      "cc_gis": {
+        "label": "CC-GIS (地图与空间分析)",
+        "description": "地图服务商、地理编码与空间分析。"
+      },
+      "cc_cad": {
+        "label": "CC-CAD (调度)",
+        "description": "面向协调员与主管的计算机辅助调度。"
+      },
+      "cc_channel": {
+        "label": "CC-Channel (社交渠道)",
+        "description": "LINE、Facebook、WeChat 等渠道集成。"
+      },
+      "cc_service": {
+        "label": "CC-Service (专业服务)",
+        "description": "实施、集成、迁移、培训与支持。"
+      }
     },
     "feature": {
-      "core": { "label": "核心平台 (CMS / CRM / 联络)" },
-      "agent_desktop": { "label": "坐席工作台" },
-      "kb": { "label": "知识库" },
-      "kb_semantic_search": { "label": "知识库语义搜索" },
-      "chat": { "label": "在线客服" },
-      "bot": { "label": "聊天机器人意图" },
-      "gis": { "label": "GIS / 地图" },
-      "cad": { "label": "CAD 调度" },
-      "channel_social": { "label": "社交渠道" },
-      "audit": { "label": "审计日志" },
-      "rbac_advanced": { "label": "高级 RBAC" }
+      "core": {
+        "label": "核心平台 (CMS / CRM / 联络)"
+      },
+      "agent_desktop": {
+        "label": "坐席工作台"
+      },
+      "kb": {
+        "label": "知识库"
+      },
+      "kb_semantic_search": {
+        "label": "知识库语义搜索"
+      },
+      "chat": {
+        "label": "在线客服"
+      },
+      "bot": {
+        "label": "聊天机器人意图"
+      },
+      "gis": {
+        "label": "GIS / 地图"
+      },
+      "cad": {
+        "label": "CAD 调度"
+      },
+      "channel_social": {
+        "label": "社交渠道"
+      },
+      "audit": {
+        "label": "审计日志"
+      },
+      "rbac_advanced": {
+        "label": "高级 RBAC"
+      }
     }
   },
   "cc": {
@@ -1628,13 +1723,19 @@
             "determine_connections": "_NODE_ 节点已同时具有“是”和“否”连接"
           },
           "form": {
-            "label": { "label": "标签" },
+            "label": {
+              "label": "标签"
+            },
             "description": {
               "label": "描述",
               "placeholder": "输入描述..."
             },
-            "node_type": { "label": "节点类型" },
-            "position": { "label": "位置" },
+            "node_type": {
+              "label": "节点类型"
+            },
+            "position": {
+              "label": "位置"
+            },
             "actions": {
               "label": "操作",
               "placeholder": "选择操作"
@@ -1643,7 +1744,9 @@
               "label": "表单",
               "placeholder": "选择表单"
             },
-            "sla": { "label": "SLA（分钟）" },
+            "sla": {
+              "label": "SLA（分钟）"
+            },
             "group": {
               "label": "负责组",
               "placeholder": "选择组"
@@ -1675,12 +1778,16 @@
         "modal": {
           "import": {
             "header": "导入工作流程",
-            "file": { "label": "上传 .json 文件" },
+            "file": {
+              "label": "上传 .json 文件"
+            },
             "textarea": {
               "label": "或粘贴 JSON 内容",
               "placeholder": "在此粘贴工作流程 JSON..."
             },
-            "actions": { "import": "导入" }
+            "actions": {
+              "import": "导入"
+            }
           },
           "preview": {
             "header": "预览工作流程的SOP",
@@ -1699,7 +1806,9 @@
             },
             "current_path": "当前路径",
             "end": "工作流程结束",
-            "actions": { "close": "关闭" },
+            "actions": {
+              "close": "关闭"
+            },
             "empty": {
               "title": "没有标准操作程序可供预览",
               "description": "添加开始节点、流程节点、调度节点和结束节点以及连接，以生成 SOP 预览。"
@@ -1715,7 +1824,9 @@
               "saving": "保存中..."
             }
           },
-          "actions": { "cancel": "取消" }
+          "actions": {
+            "cancel": "取消"
+          }
         }
       },
       "metrics": {
@@ -5448,11 +5559,11 @@
   },
   "report": {
     "1": "1.服务汇总报告",
+    "2": "2.服务明细报告",
     "1_1": "1.1 每日服务汇总报告",
     "1_2": "1.2 每月服务汇总报告",
     "1_3": "1.3 按日服务对比报告",
     "1_4": "1.4 按月服务对比报告",
-    "2": "2.服务明细报告",
     "2_1": "2.1 服务数据明细报告",
     "2_2": "2.2 按服务类型分类的服务汇总报告",
     "2_3": "2.3 按服务结果分类的服务汇总报告",
@@ -5463,10 +5574,10 @@
     },
     "order": {
       "1": "1.订单汇总报告",
+      "2": "2.订单明细报告",
       "1_1": "1.1 每日订单汇总报告",
       "1_2": "1.2 产品汇总报告",
       "1_3": "1.3 备件汇总报告",
-      "2": "2.订单明细报告",
       "2_1": "2.1 订单明细信息报告",
       "2_2": "2.2 备件领用汇总报告",
       "2_3": "2.3 十大销售报告"

@@ -254,44 +254,40 @@ export function isOrgMapSettings(value: unknown): value is OrgMapSettings {
  * Organization-level assignment rules (the "Assignment Rules" section of the
  * Organization/System Settings page).
  *
- * Configuration only: an admin picks one routing method and one workload-
- * allocation method. No routing/assignment engine consumes these values yet -
- * selecting one changes nothing about how a real case is assigned. "manual" is
- * the default and preserves today's dispatcher-driven behaviour.
+ * Configuration only: an admin toggles Automatic/Manual mode, selects individual
+ * routing criteria when Automatic is on, and chooses a workload-allocation
+ * method. No routing/assignment engine consumes these values yet.
  *
- * FE contract ahead of the backend: `GET`/`PATCH /organizations/{orgId}/assignment-rules`
- * do not exist server-side yet. Until they ship, `useOrgAssignmentRules` isolates
+ * FE contract ahead of the backend: GET/PATCH /organizations/{orgId}/assignment-rules
+ * do not exist server-side yet. Until they ship, useOrgAssignmentRules isolates
  * the failure - a 404 / GraphQL error / bad shape all fall back to
- * `buildDefaultOrgAssignmentRuleSettings` (schema defaults), and Save surfaces a
+ * buildDefaultOrgAssignmentRuleSettings (schema defaults), and Save surfaces a
  * persistent "not saved to server" banner without discarding the admin's edits.
- * With `VITE_MOCK_API="true"` a session-scoped stub backs both calls so the page
+ * With VITE_MOCK_API="true" a session-scoped stub backs both calls so the page
  * is fully demoable.
  *
- * GraphQL environments (`VITE_USE_GRAPHQL="true"`, which is every `.env*` here)
+ * GraphQL environments (VITE_USE_GRAPHQL="true", which is every .env* here)
  * additionally need the matching entry keyed by the exact REST url, registered in
- * `src/core/store/api/graphql/organizationQueries.ts` (spread into `GQL_MAP` via
- * `...GQL_ORGANIZATION`), since there is no REST fallback once GraphQL is on.
+ * src/core/store/api/graphql/organizationQueries.ts (spread into GQL_MAP via
+ * ...GQL_ORGANIZATION), since there is no REST fallback once GraphQL is on.
  * Adding it now makes the backend cut-over a no-op FE change.
  */
-export type RoutingMethod =
-  | "manual"
-  | "skill_based"
-  | "location_based"
-  | "department"
-  | "availability"
-  | "case_type";
+export type AssignmentMode = "automatic" | "manual";
 
 export type AllocationMethod = "round_robin" | "load_balance";
 
-/** Routing methods in display order (also the type-guard whitelist). */
-export const ROUTING_METHODS: readonly RoutingMethod[] = [
-  "manual",
-  "skill_based",
-  "location_based",
-  "department",
-  "availability",
-  "case_type",
-];
+/** Individual routing criteria available in both Manual and Automatic modes. */
+export interface RoutingModes {
+  skillBased: boolean;
+  locationBased: boolean;
+  department: boolean;
+  availability: boolean;
+  caseType: boolean;
+  /** Selected sub-type sTypeIds when caseType routing is enabled. */
+  caseTypeSubTypes: string[];
+  /** When true, selected criteria are combined with AND; otherwise OR. */
+  combineWithAnd: boolean;
+}
 
 /** Allocation methods in display order (also the type-guard whitelist). */
 export const ALLOCATION_METHODS: readonly AllocationMethod[] = [
@@ -299,19 +295,37 @@ export const ALLOCATION_METHODS: readonly AllocationMethod[] = [
   "load_balance",
 ];
 
-/** PATCH body - both fields optional so the FE can send a partial update; server merges onto the stored record. */
-export interface OrgAssignmentRulesUpdateData {
-  routingMethod?: RoutingMethod;
-  allocationMethod?: AllocationMethod;
+/** Service sub-types for advanced assignment options. */
+export type ServiceSubType = "general" | "emergency" | "maintenance" | "inspection";
+
+/** Advanced options that vary by service sub-type and Automatic/Manual mode. */
+export interface AdvancedAssignmentOptions {
+  serviceSubType: ServiceSubType;
+  autoRequireAllSkills: boolean;
+  autoRespectShiftSchedule: boolean;
+  manualSuggestByWorkload: boolean;
+  manualAllowOverride: boolean;
 }
 
-/** GET / PATCH response `data` - always fully populated (server fills unset fields with defaults). */
+/** PATCH body - fields optional so the FE can send a partial update; server merges onto the stored record. */
+export interface OrgAssignmentRulesUpdateData {
+  mode?: AssignmentMode;
+  routingModes?: Partial<RoutingModes>;
+  allocationMethod?: AllocationMethod;
+  advancedOptions?: Partial<AdvancedAssignmentOptions>;
+}
+
+/** GET / PATCH response data - always fully populated (server fills unset fields with defaults). */
 export interface OrgAssignmentRuleSettings {
   orgId: string;
-  /** The active routing method. "manual" = no automatic routing (default). */
-  routingMethod: RoutingMethod;
+  /** Automatic = auto-route with selected criteria; Manual = dispatcher assigns every case. */
+  mode: AssignmentMode;
+  /** Active routing criteria when mode = "automatic". Ignored when mode = "manual". */
+  routingModes: RoutingModes;
   /** The active workload-distribution method. */
   allocationMethod: AllocationMethod;
+  /** Advanced options per service sub-type and mode. */
+  advancedOptions: AdvancedAssignmentOptions;
   updatedAt?: string;
   updatedBy?: string | null;
 }
@@ -321,10 +335,23 @@ export function isOrgAssignmentRuleSettings(
 ): value is OrgAssignmentRuleSettings {
   if (typeof value !== "object" || value === null) return false;
   const c = value as Record<string, unknown>;
+  const mode = c.mode as AssignmentMode;
+  const allocation = c.allocationMethod as AllocationMethod;
+  const routingModes = c.routingModes as Record<string, unknown> | undefined;
   return (
     typeof c.orgId === "string" &&
-    ROUTING_METHODS.includes(c.routingMethod as RoutingMethod) &&
-    ALLOCATION_METHODS.includes(c.allocationMethod as AllocationMethod)
+    (mode === "automatic" || mode === "manual") &&
+    ALLOCATION_METHODS.includes(allocation) &&
+    typeof routingModes === "object" &&
+    routingModes !== null &&
+    typeof routingModes.skillBased === "boolean" &&
+    typeof routingModes.locationBased === "boolean" &&
+    typeof routingModes.department === "boolean" &&
+    typeof routingModes.availability === "boolean" &&
+    typeof routingModes.caseType === "boolean" &&
+    Array.isArray(routingModes.caseTypeSubTypes) &&
+    routingModes.caseTypeSubTypes.every((s) => typeof s === "string") &&
+    typeof routingModes.combineWithAnd === "boolean"
   );
 }
 
