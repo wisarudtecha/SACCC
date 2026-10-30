@@ -1,4 +1,34 @@
 {
+  "0.102.0": {
+    "date": "2026-10-28",
+    "segment": "MINOR",
+    "notes": "feat(cms): smarter assignment rules and batch assignment\n- Assignment Rules in Organization Settings now has a simple Automatic / Manual switch. In Automatic mode, admins can tick one or more routing criteria (skills, location, department, availability, case type) and choose whether a case must match any or all of them.\n- When case type is selected as a criterion, admins can pick exactly which case sub-types it applies to, with Select All / Deselect All shortcuts.\n- A new Advanced Options panel lets admins set extra preferences such as requiring all matched skills, respecting shift schedules, suggesting the least-busy officer, and allowing dispatchers to override suggestions. These settings are saved as configuration for now; automatic routing itself is not switched on yet.\n- Dispatchers can now assign several officers at once from a group of staff on the case map: tick the officers (or Select all) and press Assign selected.\n- Up to five officers can be assigned in one go, both on the map and in the officer assignment window, with a clear hint when the limit is reached.\n- Fixed the officer assignment window clearing the dispatcher's selection while assignments were being sent.\n- Added Thai, English, and Chinese translations for the new options.",
+    "author": "Wisarud Techa"
+  },
+  "0.101.0": {
+    "date": "2026-10-27",
+    "segment": "MINOR",
+    "notes": "feat(cms): quicker workflow type switching\n- The workflow list now has a Case / Request toggle instead of a dropdown, and opens on Case workflows by default.",
+    "author": "Wisarud Techa"
+  },
+  "0.100.0": {
+    "date": "2026-10-21",
+    "segment": "MINOR",
+    "notes": "feat(kms): knowledge articles linked to service types\n- Admins can now link knowledge base articles to each service type from the service settings screen, using a searchable article tree.\n- When an agent picks a service type while creating a case, the Knowledge tab automatically shows the articles linked to that service, so the right guidance is at hand without searching. Typing a search still searches the whole knowledge base.\n- Removing a service type also removes its article links.\nfeat(cms): live coordinate preview while drawing boundaries\n- While drawing or reshaping an area boundary on the map, the coordinates box now updates live to show the shape being drawn, and returns to the saved value if the drawing is cancelled.",
+    "author": "Wisarud Techa"
+  },
+  "0.99.0": {
+    "date": "2026-10-20",
+    "segment": "MINOR",
+    "notes": "feat(cms): mention alerts in the notification bell with jump-to-comment\n- When someone @mentions you in a case comment, the alert now also appears in the notification bell and follows your popup and sound preferences, and the same mention never alerts twice.\n- Opening a mention notification takes you straight to the case, opens the comments, scrolls to the exact comment, and briefly highlights it.\n- The notification list is reloaded from the server when you open the page, return to the window, or reconnect, so earlier notifications are no longer lost after a refresh.\n- Internal (hidden) comments no longer flash briefly into the visible comment feed.",
+    "author": "Wisarud Techa"
+  },
+  "0.98.0": {
+    "date": "2026-10-19",
+    "segment": "MINOR",
+    "notes": "feat(cms): workload now rides the officer roster and case preview on assigned cases\n- The officer assignment modal and the case map no longer make a second API call to fetch workload. Each officer's active case count and assigned case list now travel with the roster itself, so the list appears faster and the modal stays responsive even when many officers are visible.\n- Clicking any case number in an officer's \"Assigned Cases\" list now opens a compact preview showing the case ID, number, status, priority, and creation date, so dispatchers can check a case without leaving the assignment screen. If the roster only carried the case ID, the preview quietly fetches the rest on demand.\n- Officers already assigned to the current case now stay visible in the roster with their workload, but their checkboxes are disabled so they cannot be selected again.\n- feat(core): mention notifications through websocket\n- When someone @mentions you in a case comment, a toast now appears immediately naming the case and the person who mentioned you. Clicking the toast opens that case directly.\n- Added Thai, English, and Chinese translations for the new case preview labels and mention notification.",
+    "author": "Wisarud Techa"
+  },
   "0.97.0": {
     "date": "2026-10-16",
     "segment": "MINOR",
@@ -1203,12 +1233,6 @@
     "date": "2026-02-17",
     "segment": "MINOR",
     "notes": "chore: baseline cms standalone application\n- Stable cms module\n- Standalone layout architecture\n- Product-level providers and infrastructure",
-    "author": "Wisarud Techa"
-  },
-  "0.98.0": {
-    "date": "2026-10-19",
-    "segment": "MINOR",
-    "notes": "feat(cms): workload now rides the officer roster and case preview on assigned cases\n- The officer assignment modal and the case map no longer make a second API call to fetch workload. Each officer's active case count and assigned case list now travel with the roster itself, so the list appears faster and the modal stays responsive even when many officers are visible.\n- Clicking any case number in an officer's \"Assigned Cases\" list now opens a compact preview showing the case ID, number, status, priority, and creation date, so dispatchers can check a case without leaving the assignment screen. If the roster only carried the case ID, the preview quietly fetches the rest on demand.\n- Officers already assigned to the current case now stay visible in the roster with their workload, but their checkboxes are disabled so they cannot be selected again.\n- feat(core): mention notifications through websocket\n- When someone @mentions you in a case comment, a toast now appears immediately naming the case and the person who mentioned you. Clicking the toast opens that case directly.\n- Added Thai, English, and Chinese translations for the new case preview labels and mention notification.",
     "author": "Wisarud Techa"
   }
 }
