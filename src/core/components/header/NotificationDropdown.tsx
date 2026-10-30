@@ -27,6 +27,13 @@ import {
   buildEscalationNotification,
   escalationAlertKey,
 } from "@/cms/components/escalation/slaEscalationNotification";
+import {
+  buildMentionNotification,
+  isMentionEvent,
+  mentionAlertKey,
+  MENTION_WS_EVENT,
+} from "@/cms/components/mention";
+import type { MentionEvent } from "@/cms/components/mention";
 // import type { Notification, NotificationEvent, PopupItem } from "@/core/types/notification";
 
 const NotificationDropdown = () => {
@@ -44,6 +51,8 @@ const NotificationDropdown = () => {
   const hasInitialized = useRef(false);
   const alertedEscalationKeysRef = useRef<Set<string>>(new Set());
   const handleEscalationEventRef = useRef<(event: SlaEscalationEvent) => void>(() => undefined);
+  const alertedMentionKeysRef = useRef<Set<string>>(new Set());
+  const handleMentionEventRef = useRef<(event: MentionEvent) => void>(() => undefined);
   const hasEverConnectedRef = useRef(false);
   const wasConnectedRef = useRef(false);
   const itemTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -239,11 +248,47 @@ const NotificationDropdown = () => {
   };
 
   // ===================================================================
+  // @mention in case comments (transient Option A push — contract in
+  // cms/components/mention/mentionEvent.ts). Same lifecycle as the SLA
+  // handler above: one in-app alert per (commentId, mentionedUserId), so
+  // reconnect replays never double-popup.
+  // ===================================================================
+  const handleMentionEvent = (event: MentionEvent) => {
+    const alertKey = mentionAlertKey(event);
+    if (alertedMentionKeysRef.current.has(alertKey)) {
+      return;
+    }
+    alertedMentionKeysRef.current.add(alertKey);
+
+    const noti = buildMentionNotification(event, {
+      message: t("common.mention_toast", { caseId: event.caseId }),
+    });
+
+    const prefs = getPreferences();
+    setNotifications(prev => (prev.some(n => n.id === noti.id) ? prev : [noti, ...prev]));
+
+    if (prefs.popupEnabled) {
+      enqueuePopup(noti);
+    }
+
+    setNotifying(true);
+    setTimeout(() => setNotifying(false), 3000);
+
+    if (prefs.soundEnabled && audioRef.current) {
+      const soundFile = `/sounds/${prefs.sound}.mp3`;
+      audioRef.current.src = soundFile;
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+    }
+  };
+
+  // ===================================================================
   // Latest-handler ref: the subscribe/emitter/reconnect effects below have
   // intentionally narrow dep arrays, so they call the handler through this
   // ref instead of capturing a stale mount-time closure (and its stale `t`).
   useEffect(() => {
     handleEscalationEventRef.current = handleEscalationEvent;
+    handleMentionEventRef.current = handleMentionEvent;
   });
 
   const toggleDropdown = () => {
@@ -414,6 +459,16 @@ const NotificationDropdown = () => {
           const event = message.data?.additionalJson;
           if (isSlaEscalationEvent(event)) {
             handleEscalationEventRef.current(event);
+          }
+          return;
+        }
+
+        // Mention pushes carry their fields at the top level of
+        // message.data (no additionalJson envelope like SLA events).
+        if (message.data?.EVENT === MENTION_WS_EVENT) {
+          const event = message.data;
+          if (isMentionEvent(event)) {
+            handleMentionEventRef.current(event);
           }
           return;
         }

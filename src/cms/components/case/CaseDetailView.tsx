@@ -21,7 +21,7 @@ import { CaseCard } from "./sopCard"
 import { CaseDetails, CaseEntity, caseResults, FileItem } from "@/cms/types/case"
 import CreateSubCaseModel from "./subCase/subCaseModel"
 import dispatchUpdateLocate from "./caseLocalStorage.tsx/caseLocalStorage"
-import { useNavigate, useParams } from "react-router-dom"
+import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import Panel from "./CasePanel"
 import OfficerDataModal from "./OfficerDataModal"
 import { AcknowledgedStatus, cancelAndCloseStatus, CaseStatusInterface, closeStatus, doneStatus, RequestCloesStage } from "../ui/status/status"
@@ -272,6 +272,10 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     // disables only the affected card instead of freezing the whole map.
     const [submittingUnitId, setSubmittingUnitId] = useState<string | null>(null);
     const { caseId: paramCaseId } = useParams<{ caseId: string }>();
+    // Mention deep-link target: /case/:caseId?commentId=<id> opens the
+    // comment section and scrolls to that exact comment.
+    const [searchParams] = useSearchParams();
+    const highlightCommentId = searchParams.get("commentId") ?? undefined;
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const initialCaseData: CaseEntity | undefined = caseData || (paramCaseId ? { caseId: paramCaseId } as CaseEntity : undefined);
     const [caseState, setCaseState] = useState<CaseDetails | undefined>(undefined);
@@ -1182,6 +1186,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
                                         caseData={sopData.data}
                                         editFormData={editFormData}
                                         setCaseData={setCaseState}
+                                        highlightCommentId={highlightCommentId}
                                     />
                                 )}
                                 <AttachedFiles

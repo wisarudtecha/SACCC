@@ -24,16 +24,23 @@ interface CommentsProps {
     caseId: string;
     currentUsername?: string;
     isModal?: boolean;
+    /** Mention deep-link target (case history id as string): scroll to it. */
+    highlightCommentId?: string;
 }
 
 export const Comments: React.FC<CommentsProps> = ({
     isOpen,
     caseId,
-    isModal = false
+    isModal = false,
+    highlightCommentId,
 }) => {
     const [newCommentMessage, setNewCommentMessage] = useState<string>('');
     const commentsContainerRef = useRef<HTMLDivElement>(null);
     const [commentsData, setCommentsData] = useState<CaseHistory[]>([]);
+    // Mention deep-link: the comment currently flashed with a highlight, and
+    // the target already handled (so late comment appends don't re-flash).
+    const [highlightedCommentId, setHighlightedCommentId] = useState<string | null>(null);
+    const highlightDoneRef = useRef<string | null>(null);
     // username -> user id, accumulated from autocomplete selections so the
     // submitted mentionedUserIds carry ids (not raw usernames). Hand-typed
     // handles without a selection are dropped (no id to send).
@@ -61,10 +68,17 @@ export const Comments: React.FC<CommentsProps> = ({
                 switch (message?.data?.EVENT) {
                     case "CASE-HISTORY": {
                         const data = message.data;
-                        if (data?.additionalJson?.type === "comment" && caseId === data?.additionalJson?.caseId) {
+                        // "hidden" events (e.g. internal comments) must not flash
+                        // into the visible feed; the refetched history remains the
+                        // source of truth for what is actually visible.
+                        if (
+                            data?.additionalJson?.type === "comment" &&
+                            data?.eventType !== "hidden" &&
+                            caseId === data?.additionalJson?.caseId
+                        ) {
                             const optimisticComment: CaseHistory = {
                                 id: Date.now(),
-                                orgId: data.additionalJson.org || "",
+                                orgId: data.additionalJson.orgId || "",
                                 caseId: data?.additionalJson?.caseId,
                                 username: data?.additionalJson?.username,
                                 type: "comment",
@@ -83,7 +97,9 @@ export const Comments: React.FC<CommentsProps> = ({
                         if (data?.additionalJson?.caseId === caseId) {
                             const optimisticComment: CaseHistory = {
                                 id: Date.now(),
-                                orgId: data.org || "",
+                                // Live CASE-STATUS-UPDATE payloads put the org in
+                                // additionalJson.orgId; older ones carried data.org.
+                                orgId: data?.additionalJson?.orgId || data?.org || "",
                                 caseId: data?.additionalJson?.caseId,
                                 username: data?.createdBy,
                                 type: "comment",
@@ -115,6 +131,35 @@ export const Comments: React.FC<CommentsProps> = ({
             setCommentsData(fetchedComments.data);
         }
     }, [fetchedComments]);
+
+    // Mention deep-link: once the target comment is rendered, scroll it into
+    // view inside the feed. Retries as commentsData arrives/grows until found.
+    useEffect(() => {
+        if (!highlightCommentId || commentsData.length === 0) {
+            return;
+        }
+        if (highlightDoneRef.current === highlightCommentId) {
+            return;
+        }
+        const target = commentsContainerRef.current?.querySelector<HTMLElement>(
+            `[data-comment-id="${CSS.escape(highlightCommentId)}"]`
+        );
+        if (!target) {
+            return;
+        }
+        highlightDoneRef.current = highlightCommentId;
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        setHighlightedCommentId(highlightCommentId);
+    }, [highlightCommentId, commentsData]);
+
+    // Dismiss the highlight flash after a few seconds.
+    useEffect(() => {
+        if (!highlightedCommentId) {
+            return;
+        }
+        const timer = setTimeout(() => setHighlightedCommentId(null), 4000);
+        return () => clearTimeout(timer);
+    }, [highlightedCommentId]);
 
     const handleMentionSelect = useCallback((user: MentionUser) => {
         if (user.id === undefined || user.id === null) return;
@@ -246,7 +291,8 @@ export const Comments: React.FC<CommentsProps> = ({
         return commentsData.map((comment: CaseHistory) => (
             <div
                 key={comment.id}
-                className={`p-4 border border-gray-200 dark:border-gray-700  transition-colors duration-150 ${isModal ? 'hover:bg-gray-50 dark:hover:bg-gray-800' : ''}`}
+                data-comment-id={String(comment.id)}
+                className={`p-4 border transition-colors duration-150 ${highlightedCommentId === String(comment.id) ? 'border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/30' : 'border-gray-200 dark:border-gray-700'} ${isModal ? 'hover:bg-gray-50 dark:hover:bg-gray-800' : ''}`}
             >
                 <div className="flex items-center justify-between mb-2">
                     <p className="text-sm font-semibold text-blue-500 dark:text-blue-400">{comment.createdBy}</p>

@@ -12,7 +12,7 @@ import {
 
 } from "lucide-react"
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { mergeCaseTypeAndSubType } from "../caseTypeSubType/mergeCaseTypeAndSubType";
 import Badge from "@/core/components/ui/badge/Badge";
 import { findCaseTypeSubTypeByTypeIdSubTypeId } from "../caseTypeSubType/findCaseTypeSubTypeByMergeName";
@@ -42,6 +42,8 @@ interface CaseCardProps {
     editFormData: boolean;
     showCommentButton?: boolean;
     showAttachButton?: boolean;
+    /** Mention deep-link target: auto-opens comments and scrolls to it. */
+    highlightCommentId?: string;
 }
 
 export const CaseCard: React.FC<CaseCardProps> = ({
@@ -52,6 +54,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
     setCaseData,
     showCommentButton = true,
     showAttachButton = true,
+    highlightCommentId,
 }) => {
     const [showComment, setShowComment] = useState<boolean>(false);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // **NEW**: Modal state
@@ -65,6 +68,14 @@ export const CaseCard: React.FC<CaseCardProps> = ({
     const handleCommentToggle = () => {
         setShowComment(!showComment);
     };
+
+    // Mention deep-link (/case/:id?commentId=...) auto-opens the comment
+    // section so the target comment can scroll into view.
+    useEffect(() => {
+        if (highlightCommentId) {
+            setShowComment(true);
+        }
+    }, [highlightCommentId]);
 
     const handleOpenModal = () => {
         setIsModalOpen(true);
@@ -257,7 +268,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({
                     onClick={handleOpenModal}
                     size={24}
                 />
-                <Comments caseId={caseData.caseId} isOpen={showComment} />
+                <Comments caseId={caseData.caseId} isOpen={showComment} highlightCommentId={highlightCommentId} />
             </div>}
 
             <CommentModal
