@@ -5351,6 +5351,15 @@
       "load-more": "加载更多",
       "noresult": "未找到结果",
       "noresult-des": "此分类中没有文章。"
+    },
+    "service-mapping-article": {
+      "article-title": "文章",
+      "article-placeholder": "请选择文章",
+      "article-cancel": "取消",
+      "article-select": "选择",
+      "article-item": "项",
+      "article-search": "搜索...",
+      "article-not-found": "未找到"
     }
   },
   "customer": {

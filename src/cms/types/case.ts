@@ -8,19 +8,19 @@ import type { EnhancedSkill } from "@/core/types/user";
 import type { Workflow } from "@/cms/types/workflow";
 import type { DraftCustomerSocial } from "@/cms/types/customerSocial";
 import { CaseSop, DeviceMetaData, SOPStage } from "./dispatch";
-
+import { TreeNode  } from '@/kms/components/casetype-map-articles/TreeMultiSelect.types';
 export interface Attachment {
-    id: number;
-    orgId: string;
-    caseId: string;
-    type: string;
-    attId: string;
-    attName: string;
-    attUrl: string;
-    createdAt: string;
-    updatedAt: string;
-    createdBy: string;
-    updatedBy: string;
+  id: number;
+  orgId: string;
+  caseId: string;
+  type: string;
+  attId: string;
+  attName: string;
+  attUrl: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
 }
 
 export interface CaseEntity extends BaseEntity {
@@ -64,8 +64,8 @@ export interface CaseEntity extends BaseEntity {
   resDetail: string;
   sop: string | null;
   currentStage: string | null;
-  caseSla:number;
-  attachments:Attachment[]
+  caseSla: number;
+  attachments: Attachment[]
 }
 
 export interface CaseHistories {
@@ -133,6 +133,7 @@ export interface CaseTypeManagementProps {
   showInactive?: boolean;
   skills?: EnhancedSkill[];
   workflows?: Workflow[];
+  serviceTypeArticles?: TreeNode[];
   handleSTypeDelete?: (id: number) => void;
   handleSTypeReset?: () => void;
   handleTypeDelete?: (id: number) => void;
@@ -424,7 +425,7 @@ export interface CaseDetails {
   area?: Area
   scheduleDate?: string
   workOrderNummber?: string
-  source?:sourceInterface
+  source?: sourceInterface
   workOrderRef?: string
   workOrderDate?: string
   iotDevice?: string
@@ -435,7 +436,7 @@ export interface CaseDetails {
   deviceMetaData?: DeviceMetaData
   resultDetail?: string
   resultId?: string
-  sopMetaData?:SOPStage[]
+  sopMetaData?: SOPStage[]
   /**
    * The social account this case arrived on, when `source` is a social channel.
    *

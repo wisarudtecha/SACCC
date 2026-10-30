@@ -33,6 +33,7 @@ export interface KbTabCardFilter {
   category?: string;
   page?: number;
   pageSize?: number;
+  cmsServiceTypeId?: string;
 }
 
 export interface KbTabCardListResult {

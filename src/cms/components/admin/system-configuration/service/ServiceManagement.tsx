@@ -35,6 +35,12 @@ import Input from "@/core/components/form/input/InputField";
 import Select from "@/core/components/form/Select";
 import Button from "@/core/components/ui/button/Button";
 
+import {
+  useSaveServiceTypeArticles,
+  useGetServiceTypeArticles,
+  useDelServiceArticle
+} from "@/kms/components/casetype-map-articles/hook/useCasetypeMapAritcles";
+import { TreeMultiSelect } from '@/kms/components/casetype-map-articles';
 // const mockAnalytics: Record<string, TypeAnalytics> = {
 //   "EMERGENCY": {
 //     usageCount: 245,
@@ -60,7 +66,8 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
   properties,
   skills,
   workflows,
-  className
+  className,
+  serviceTypeArticles
 }) => {
   const permissions = usePermissions();
   const { toasts, addToast, removeToast } = useToast();
@@ -161,7 +168,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
   // const [isLoading, ] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showInactive, ] = useState(false);
+  const [showInactive,] = useState(false);
   // const [filterCategory, ] = useState<string>("all");
   // const [viewMode, ] = useState<"hierarchy" | "list">("hierarchy");
   const [, setValidationErrors] = useState<string[]>([]);
@@ -190,31 +197,31 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
 
   const filteredTypes = useMemo(() => {
     const searchLower = searchQuery?.toLowerCase() || '';
-    
+
     const filtered = caseType.filter(type => {
       // Check if type itself matches
       if (searchQuery) {
-        const typeMatches = 
+        const typeMatches =
           type.en.toLowerCase().includes(searchLower) ||
           type.th.toLowerCase().includes(searchLower);
-        
+
         if (typeMatches) {
           return !showInactive ? type.active : true;
         }
-        
+
         // Check if any child subtype matches
-        const hasMatchingChild = caseSubType.some(subType => 
+        const hasMatchingChild = caseSubType.some(subType =>
           subType.typeId === type.typeId && (
             subType.en.toLowerCase().includes(searchLower) ||
             subType.th.toLowerCase().includes(searchLower) ||
             subType.sTypeCode.toLowerCase().includes(searchLower)
           )
         );
-        
+
         if (hasMatchingChild) {
           return !showInactive ? type.active : true;
         }
-        
+
         return false;
       }
 
@@ -231,22 +238,22 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
     }
 
     const searchLower = searchQuery.toLowerCase();
-    
+
     // Get IDs of filtered parent types
     const filteredTypeIds = filteredTypes.map(t => t.typeId);
-    
+
     return caseSubType.filter(subType => {
       // Include if parent type is in filtered list
       if (filteredTypeIds.includes(subType.typeId)) {
         return true;
       }
-      
+
       // OR include if subtype itself matches search
-      const matchesSearch = 
+      const matchesSearch =
         subType.en.toLowerCase().includes(searchLower) ||
         subType.th.toLowerCase().includes(searchLower) ||
         subType.sTypeCode.toLowerCase().includes(searchLower);
-      
+
       return matchesSearch;
     });
   }, [caseSubType, filteredTypes, searchQuery]);
@@ -493,6 +500,12 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
       let response;
       if (permissions.hasAnyPermission(["service.delete"])) {
         response = await deleteCaseSubTypes(id).unwrap();
+        if (response?.status) {
+          // delete mapping article
+          await delServiceTypeArticle({
+            cmsServiceTypeId: String(id),
+          });
+        }
       }
       else {
         throw new Error(t("crud.common.permission_denied"));
@@ -547,6 +560,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
       mDeviceTypeName: "",
       mWorkOrderType: ""
     });
+    setArticleSelectedIds([]); // articles
   };
 
   // Create / Update Sub-Type
@@ -583,13 +597,29 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
       setLoading(true);
       let response;
       if (permissions.hasAnyPermission(["service.create", "service.update"])) {
-        if (sTypeId) {          
+        if (sTypeId) {
           response = await updateCaseSubTypes({
             id: sTypeId, data: sTypeData
           }).unwrap();
+          // service map articles
+          await saveServiceTypeArticle({
+            cmsServiceTypeId: sTypeId,
+            artId: selectedArtiCleIds.map(Number),
+          });
         }
         else {
           response = await createCaseSubTypes(sTypeData).unwrap();
+          // service map articles
+          if (response?.status) {
+            const cmsServiceTypeId = response.data?.sTypeId;
+            if (!cmsServiceTypeId) {
+              throw new Error("Service Type ID is required for articles");
+            }
+            await saveServiceTypeArticle({
+              cmsServiceTypeId,
+              artId: selectedArtiCleIds.map(Number),
+            });
+          }
         }
       }
       else {
@@ -629,7 +659,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
 
   useEffect(() => {
     setCaseSubType(caseSubTypes || []);
-    setCaseType(caseTypes|| []);
+    setCaseType(caseTypes || []);
   }, [caseSubTypes, caseTypes]);
 
   useEffect(() => {
@@ -659,6 +689,11 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
       label: `${w.title}`,
     })) || []);
   }, [workflows]);
+
+
+  const handleSelectedIdsChange = useCallback((ids: string[]) => {
+    setArticleSelectedIds(ids);
+  }, []);
 
   const renderServiceHierarchy = () => (
     <ServiceTypeAndSubTypeComponent
@@ -740,6 +775,29 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
     setWorkflow(workflows || []);
   }, [workflows]);
 
+  // subcasetype mapping articles
+  const [selectedArtiCleIds, setArticleSelectedIds] = useState<string[]>([]);
+  const { saveServiceTypeArticle } = useSaveServiceTypeArticles();
+  const { getServiceTypeArticle } = useGetServiceTypeArticles();
+  const { delServiceTypeArticle } = useDelServiceArticle();
+  const loadServiceTypeArticles = useCallback(async (cmsServiceTypeId: string) => {
+    try {
+      const articleId = await getServiceTypeArticle({
+        // cmsServiceTypeId: "b6ea616d-048c-400b-86f9-24af7b32d138",
+        cmsServiceTypeId: cmsServiceTypeId,
+      });
+      setArticleSelectedIds(articleId?.data?.map(String) ?? [])
+    } catch (error) {
+      console.error("Failed to load service type articles:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!sTypeId) return;
+    loadServiceTypeArticles(sTypeId);
+  }, [sTypeId, loadServiceTypeArticles]);
+  // end subcasetype mapping articles
+
   return (
     <>
       <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3 p-6">
@@ -761,9 +819,9 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
           {/* <Tab items={tabItem} variant="underline" /> */}
         </div>
       </div>
-      
+
       <ToastContainer toasts={toasts} onRemove={removeToast} />
-      
+
       {/* Create / Update Type */}
       <Modal
         isOpen={typeIsOpen}
@@ -823,7 +881,7 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
                 {t("crud.service.action.button.reset")}
               </Button>
             )}
-            <Button 
+            <Button
               onClick={() => {
                 setTypeConfirmIsOpen(true);
                 setTypeIsOpen(false);
@@ -1070,6 +1128,19 @@ const ServiceManagementComponent: React.FC<CaseTypeManagementProps> = ({
             />
             <span className="text-red-500 dark:text-red-400 text-xs">{sTypeValidateErrors.mWorkOrderType}</span>
           </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+              {t("knowledge.service-mapping-article.article-title")}
+            </label>
+            <TreeMultiSelect
+              data={serviceTypeArticles}
+              value={selectedArtiCleIds}
+              onChange={handleSelectedIdsChange}
+              searchable
+            />
+          </div>
+
         </div>
         <div className="flex items-center justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <div className="flex gap-3">

@@ -131,6 +131,8 @@ export default function CaseCreation() {
         setCaseState(prev => prev ? { ...prev, ...updates } : prev);
     }, []);
 
+    const [typeId, setTypeId] = useState("");
+    
     // Screen-pop customer prefill: when the popup already resolved the caller
     // (customerId param), pull the full profile into the customer data once.
     // Best-effort — a failed fetch leaves the agent on the manual path, it
@@ -440,6 +442,10 @@ export default function CaseCreation() {
         setCaseState(exampleCaseState as CaseDetails);
     };
 
+    // service mapping article
+    useEffect(() => {
+        setTypeId(caseState?.caseType?.sTypeId || '')
+    }, [caseState?.caseType])
     return (
         <CaseLayout
             disablePageMeta={false}
@@ -458,6 +464,7 @@ export default function CaseCreation() {
                     referCaseList={[]}
                     setCaseState={setCaseState}
                     isCreate={true}
+                    typeId={typeId}
                 />
             }
         >

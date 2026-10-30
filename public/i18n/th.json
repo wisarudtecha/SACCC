@@ -5982,6 +5982,15 @@
       "load-more": "เพิ่มเติม",
       "noresult": "ไม่พบข้อมูล",
       "noresult-des": "ไม่มีบทความในหมวดหมู่"
+    },
+    "service-mapping-article": {
+      "article-title": "บทความ",
+      "article-placeholder": "เลือกบทความ",
+      "article-cancel": "ยกเลิก",
+      "article-select": "เลือก",
+      "article-item": "รายการ",
+      "article-search": "ค้นหา...",
+      "article-not-found": "ไม่พบข้อมูล"
     }
   }
 }

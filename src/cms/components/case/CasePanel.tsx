@@ -1131,13 +1131,15 @@ interface PanelProps {
     isCreate?: boolean;
     /** Refetch the case SOP (referCaseLists) after link/unlink; absent in create flows. */
     refetchSop?: () => Promise<unknown> | void;
+    typeId?: string;
 }
 
 const Panel: React.FC<PanelProps> = ({
     referCaseList, caseData,
     caseWorkOrderNumber, deviceMetaData, iotDevice, className,
     customerId, customerNumber, defaultTab = "customer-info", disabledTabs,
-    setCaseState, hideCustomerLinkActions, isCreate, refetchSop
+    setCaseState, hideCustomerLinkActions, isCreate, refetchSop,
+    typeId
 }) => {
 
 
@@ -1226,7 +1228,9 @@ const Panel: React.FC<PanelProps> = ({
                     title={t("knowledge.case.panel.title")}
                     description=""
                 >
-                    <KbTabCardList />
+                    <KbTabCardList
+                      typeId={typeId??''}
+                    />
              </KbSectionCard>
             , icons: <BookOpen />
         },

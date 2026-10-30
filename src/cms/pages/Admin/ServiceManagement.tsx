@@ -29,12 +29,13 @@ import type { EnhancedCaseSubType, EnhancedCaseType } from "@/cms/types/case";
 import type { Property } from "@/cms/types/unit";
 import type { EnhancedSkill } from "@/core/types/user";
 import type { Workflow } from "@/cms/types/workflow";
-import ServiceManagementComponent from "@/cms/components/admin/system-configuration/service/ServiceManagement"; 
+import ServiceManagementComponent from "@/cms/components/admin/system-configuration/service/ServiceManagement";
 import PageBreadcrumb from "@/core/components/common/PageBreadCrumb";
 import PageMeta from "@/core/components/common/PageMeta";
+import { useServiceTypeArticles } from "@/kms/components/casetype-map-articles/hook/useCasetypeMapAritcles";
 
 const CaseManagementPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { language, t } = useTranslation();
 
   // ===================================================================
   // API Data
@@ -57,6 +58,8 @@ const CaseManagementPage: React.FC = () => {
   const { data: workflowsData } = useGetWorkflowsQuery({ wfType: "case" });
   const workflows = workflowsData?.data as unknown as Workflow[] || [];
 
+  const { data: serviceTypeArticles } = useServiceTypeArticles(language);
+
   return (
     <>
       <PageMeta
@@ -73,6 +76,7 @@ const CaseManagementPage: React.FC = () => {
           properties={properties}
           skills={skills}
           workflows={workflows}
+          serviceTypeArticles={serviceTypeArticles}
         />
       </ProtectedRoute>
     </>

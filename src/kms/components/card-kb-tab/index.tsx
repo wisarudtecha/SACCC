@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
 import {
-  FiStar 
+  FiStar
 } from "react-icons/fi";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import type { KbTabCard, KbTabCardFilter } from "@/kms/components/card-kb-tab/dtos/kb-tab-card.dto";
@@ -46,8 +46,8 @@ interface KbTabCardProps {
 const KbTabCardItem = ({ article, onOpen }: KbTabCardProps) => {
   const { t } = useTranslation();
   const handleOpen = () => {
-    const url  = article.url ?? window.location.href;
-     window.open(url, "_blank", "noopener,noreferrer");
+    const url = article.url ?? window.location.href;
+    window.open(url, "_blank", "noopener,noreferrer");
     onOpen?.(article);
   };
 
@@ -56,7 +56,7 @@ const KbTabCardItem = ({ article, onOpen }: KbTabCardProps) => {
       {/* Category badge */}
       <span
         className={`absolute right-4 top-3.5 rounded-full px-2.5 py-0.5 text-xs font-semibold max-w-[100px] truncate ${getCategoryStyle(article.category)}`}
-        title= {article.category}
+        title={article.category}
       >
         {article.category}
       </span>
@@ -126,9 +126,9 @@ const KbTabCardItem = ({ article, onOpen }: KbTabCardProps) => {
           {numFmt.format(article.likes)} */}
 
 
-           <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                              <FiStar size={12} className="text-amber-400" /> {article?.score?.value}
-                            </div>
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+            <FiStar size={12} className="text-amber-400" /> {article?.score?.value}
+          </div>
         </span>
 
         <div className="flex-1" />
@@ -215,13 +215,21 @@ export const KbTabCardList = (props: KbTabCardListProps) => {
 interface KbTabCardListProps {
   onOpen?: (article: KbTabCard) => void;
   onCopy?: (article: KbTabCard) => void;
+  typeId: string;
 }
 
 // export const KbTabCardList = ({ onOpen, onCopy }: KbTabCardListProps) => {
 const KbTabCardListContent = ({
   onOpen,
   onCopy,
+  typeId,
 }: KbTabCardListProps) => {
+
+  useEffect(() => {
+    setFilter((f) => ({ ...f, search: '', cmsServiceTypeId: typeId, page: 1 }))
+  }, [typeId]);
+
+
   const [filter, setFilter] = useState<KbTabCardFilter>({
     category: "All",
     page: 1,
@@ -229,8 +237,9 @@ const KbTabCardListContent = ({
   });
   const { t, language } = useTranslation();
   const { data, isLoading, isError } = useKbTabCards(filter);
-  const setSearch = (search: string) =>
-    setFilter((f) => ({ ...f, search, page: 1 }));
+   const setSearch = (search: string) => {
+    setFilter((f) => ({ ...f, search, cmsServiceTypeId: search ? '' : typeId, page: 1 }))
+  };
 
   const setCategory = (category: string) =>
     setFilter((f) => ({ ...f, category, page: 1 }));
