@@ -38,6 +38,27 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               className="cursor-pointer"
             />
           )}
+          {filter.type === "button-group" && filter.options && (
+            <div className="flex items-center gap-2">
+              <div className="flex rounded-lg overflow-hidden">
+                {filter.options.map((option, index) => {
+                  const isFirst = index === 0;
+                  const isLast = index === (filter.options?.length ?? 0) - 1;
+                  return (
+                    <Button
+                      key={option.value}
+                      size="sm"
+                      className={(isFirst ? "" : "rounded-l-none ") + (isLast ? "" : "rounded-r-none")}
+                      variant={values[filter.key] === option.value ? "primary" : "outline"}
+                      onClick={() => onChange(filter.key, option.value)}
+                    >
+                      {option.label}
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       ))}
 

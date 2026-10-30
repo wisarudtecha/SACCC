@@ -97,7 +97,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[], workflowsPaginati
     start: 0,
     length: 10,
     search: "",
-    wfType: ""
+    wfType: "case"
   });
 
   const [trigger, { data: response, isLoading }] = useLazyGetWorkflowsQuery();
@@ -129,7 +129,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[], workflowsPaginati
       start: 0,
       length: queryParams.length,
       search: "",
-      wfType: ""
+      wfType: "case"
     });
   };
 
@@ -348,9 +348,8 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[], workflowsPaginati
       {
         key: "wfType",
         label: "Type",
-        type: "select" as const,
+        type: "button-group" as const,
         options: [
-          { value: "", label: "All" },
           { value: "case", label: "Case" },
           { value: "request", label: "Request" }
         ]
@@ -832,6 +831,7 @@ const WorkflowListComponent: React.FC<{ workflows: Workflow[], workflowsPaginati
         displayModes={["card", "table"]}
         displayModeDefault="table"
         enableDebug={true} // Enable debug mode to troubleshoot
+        filterValues={{ wfType: queryParams.wfType }}
         // error={null}
         // exportOptions={exportOptions}
         features={{

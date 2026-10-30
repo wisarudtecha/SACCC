@@ -84,7 +84,7 @@ export interface TableViewProps<T> {
 export interface FilterDefinition {
   key: string;
   label: string;
-  type: "select" | "text" | "date" | "boolean";
+  type: "select" | "text" | "date" | "boolean" | "button-group";
   options?: { value: string; label: string }[];
   placeholder?: string;
 }

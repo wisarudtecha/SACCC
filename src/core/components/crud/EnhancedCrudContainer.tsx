@@ -64,6 +64,7 @@ interface EnhancedCrudContainerProps<T> {
   previewConfig?: PreviewConfig<T>;
   searchFields?: (keyof T)[];
   customFilterFunction?: (item: T, filters: Record<string, unknown>) => boolean;
+  filterValues?: Record<string, unknown>;
   // onAdvancedFilter?: (filters: Record<string, unknown>) => void;
   onChangePageSize?: (size: number) => void;
   onClearFilters?: () => void;
@@ -102,6 +103,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
   previewConfig,
   searchFields = [],
   customFilterFunction,
+  filterValues,
   // onAdvancedFilter,
   onChangePageSize,
   onClearFilters,
@@ -516,7 +518,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
                     <div className="mb-2 xl:mb-0">
                       <FilterBar
                         filters={config.filters}
-                        values={filterConfig}
+                        values={filterValues || filterConfig}
                         // onChange={handleFilter}
                         onChange={apiConfig?.serverSide && (onFilter as (key: string, value: string | number | boolean | undefined) => void) || handleFilter}
                         onClear={clearFilters}
@@ -531,7 +533,7 @@ export const EnhancedCrudContainer = <T extends { id: string }>({
                     <div className="mb-2 xl:mb-0">
                       <AdvancedFilterPanel
                         filters={advancedFilters}
-                        values={filterConfig}
+                        values={filterValues || filterConfig}
                         onChange={(filters) => Object.entries(filters).forEach(([key, value]) => 
                           // handleFilter(key, value as string | number | boolean | null | undefined)
                           apiConfig?.serverSide
