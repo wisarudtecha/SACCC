@@ -14,6 +14,13 @@
 // gesture that finishes writes back through the same `onChange`. That is what
 // keeps the map, the textarea, the host's validation and its Reset/Restore
 // buttons all describing one thing instead of four.
+//
+// The one deliberate exception is the DRAFT: rings a gesture emits while it
+// runs, held only so the textarea can preview the geometry as it is being
+// drawn or dragged. It never reaches `onChange` - an in-progress ring is short
+// and open, so it would fail the host's validation and re-render the form per
+// vertex - and it is dropped the moment the gesture ends, so a cancelled draw
+// leaves the field exactly as it was.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PolygonCoordinates } from "@/cms/types/area";
 import {
@@ -48,6 +55,8 @@ export interface BoundarySketchState {
   mode: BoundarySketchMode;
   /** Vertices in the ring currently being drawn. Zero unless a create is running. */
   vertexCount: number;
+  /** Formatted in-progress rings for the textarea's live preview; null when no gesture is running. */
+  draftText: string | null;
   hasGeometry: boolean;
   isExpanded: boolean;
   startDraw: () => void;
@@ -78,6 +87,8 @@ export function useBoundarySketchState({
   const [vertexCount, setVertexCount] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
   const [debouncedValue, setDebouncedValue] = useState(value);
+  /** In-progress rings reported by the map while a gesture runs. Display-only - see header. */
+  const [draftRings, setDraftRings] = useState<PolygonCoordinates | null>(null);
 
   const modeRef = useRef<BoundarySketchMode>(mode);
   modeRef.current = mode;
@@ -116,17 +127,34 @@ export function useBoundarySketchState({
     onChangeRef.current(text);
   }, []);
 
+  const handleDraftChange = useCallback((next: PolygonCoordinates) => {
+    setDraftRings(next);
+  }, []);
+
+  // The textarea's live preview while a gesture runs; null means "show the
+  // field's value". An empty draft counts as null so the textarea never
+  // blanks out mid-gesture.
+  const draftText = useMemo(
+    () => (draftRings && draftRings.length > 0 ? formatPolygonRings(draftRings) : null),
+    [draftRings]
+  );
+
   const handleModeEnd = useCallback(() => {
     setMode("idle");
     setVertexCount(0);
+    setDraftRings(null);
   }, []);
 
   const startDraw = useCallback(() => {
     setVertexCount(0);
     setMode("draw");
+    setDraftRings(null);
   }, []);
 
-  const startEdit = useCallback(() => setMode("edit"), []);
+  const startEdit = useCallback(() => {
+    setMode("edit");
+    setDraftRings(null);
+  }, []);
 
   // Both end the gesture through the map, and the mode returns to idle when the
   // model reports back - not here. Setting it optimistically would tear the
@@ -138,6 +166,7 @@ export function useBoundarySketchState({
     controlsRef.current?.cancel();
     setMode("idle");
     setVertexCount(0);
+    setDraftRings(null);
     lastValidRingsRef.current = EMPTY_RINGS;
     setDebouncedValue("");
     onChangeRef.current("");
@@ -151,6 +180,7 @@ export function useBoundarySketchState({
       // then and cannot report the end itself, so the mode is reset here.
       setMode("idle");
       setVertexCount(0);
+      setDraftRings(null);
     }
   }, []);
 
@@ -182,6 +212,7 @@ export function useBoundarySketchState({
       controlsRef.current?.cancel();
       setMode("idle");
       setVertexCount(0);
+      setDraftRings(null);
     };
     document.addEventListener("keydown", handleKeyDown, true);
     return () => document.removeEventListener("keydown", handleKeyDown, true);
@@ -194,14 +225,16 @@ export function useBoundarySketchState({
     controlsRef,
     onCommit: handleCommit,
     onModeEnd: handleModeEnd,
-    onVertexCountChange: setVertexCount
-  }), [rings, mode, readOnly, handleCommit, handleModeEnd]);
+    onVertexCountChange: setVertexCount,
+    onDraftChange: handleDraftChange
+  }), [rings, mode, readOnly, handleCommit, handleModeEnd, handleDraftChange]);
 
   return {
     rings,
     errorKey: parsed.error,
     mode,
     vertexCount,
+    draftText,
     hasGeometry,
     isExpanded,
     startDraw,

@@ -69,3 +69,26 @@ export function polygonToRings(polygon: Polygon | null | undefined): PolygonCoor
     .map(ring => closeRing(roundRing(ring)))
     .filter(ring => ring.length >= MIN_RING_POINTS);
 }
+
+/**
+ * A polygon mid-gesture -> rings for the live draft preview.
+ *
+ * Unlike polygonToRings this neither closes nor filters: a ring under
+ * construction is short and open by definition, and the draft exists
+ * precisely to show it that way. Only the rounding is shared, so a previewed
+ * point stays identical to what a commit would store.
+ */
+export function polygonToDraftRings(polygon: Polygon | null | undefined): PolygonCoordinates {
+  if (!polygon) {
+    return [];
+  }
+
+  const geographic = polygon.spatialReference?.isWGS84
+    ? polygon
+    : (webMercatorUtils.webMercatorToGeographic(polygon) as Polygon | null);
+  if (!geographic?.rings) {
+    return [];
+  }
+
+  return geographic.rings.map(ring => roundRing(ring));
+}

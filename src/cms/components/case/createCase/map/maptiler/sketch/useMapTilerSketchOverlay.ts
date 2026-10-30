@@ -8,8 +8,10 @@
 // gesture commits when it FINISHES, never per vertex. The owner's state is a
 // JSON string a textarea also edits, so a per-vertex commit would re-render the
 // whole form on every click AND hand parsePolygonRings a two-point ring. Live
-// feedback is the rubber band plus the vertex count reported through
-// onVertexCountChange.
+// feedback is the rubber band, the vertex count reported through
+// onVertexCountChange, and the in-progress rings reported through onDraftChange
+// for the textarea's preview - a channel separate from onCommit precisely
+// because a draft ring must never enter the form value.
 //
 // HAND-ROLLED, no draw library. MapLibre has no create tool, and the app already
 // owns BoundaryDrawToolbar (in three languages, wired to the controlsRef
@@ -49,6 +51,9 @@ const CLOSE_RING_HIT_RADIUS_PX = 14;
 /** Vertices needed before a ring can be closed. */
 const MIN_DRAWN_VERTICES = 3;
 
+/** Minimum gap between draft emissions during a vertex drag, which fires per pointer move. */
+const DRAFT_EMIT_MIN_INTERVAL_MS = 120;
+
 interface UseMapTilerSketchOverlayOptions {
   mapRef: React.MutableRefObject<MlMap | null>;
   isReady: boolean;
@@ -76,6 +81,15 @@ function draftToRings(draft: readonly number[][]): PolygonCoordinates {
   }
   const closed = closeRing(roundRing(draft.map((point) => [point[0], point[1]])));
   return closed.length >= MIN_RING_POINTS ? [closed] : [];
+}
+
+/**
+ * Working ring -> live-preview rings. Unclosed and unfiltered, unlike
+ * draftToRings: a draft shows exactly where the vertices sit, even at a
+ * length that could not be a polygon yet.
+ */
+function draftToPreviewRings(ring: readonly number[][]): PolygonCoordinates {
+  return [roundRing(ring.map((point) => [point[0], point[1]]))];
 }
 
 /** An open working ring (no closing duplicate) from stored rings. */
@@ -140,6 +154,8 @@ export function useMapTilerSketchOverlay({
   const renderedSignatureRef = useRef<string>("");
   const hasFramedRef = useRef(false);
   const isTearingDownRef = useRef(false);
+  /** When a draft was last emitted, to throttle the per-move events of a vertex drag. */
+  const lastDraftEmitAtRef = useRef(0);
 
   const isEnabled = Boolean(sketch);
   const mode = sketch?.mode ?? "idle";
@@ -326,6 +342,7 @@ export function useMapTilerSketchOverlay({
       draftRef.current = [...draft, point];
       renderDraft();
       configRef.current?.onVertexCountChange?.(draftRef.current.length);
+      configRef.current?.onDraftChange?.(draftToPreviewRings(draftRef.current));
     };
 
     const handleKeyDown = (keyEvent: KeyboardEvent) => {
@@ -377,6 +394,13 @@ export function useMapTilerSketchOverlay({
           i === index ? [lngLat.lng, lngLat.lat] : existing
         );
         redrawShape();
+        // Live preview of the drag, throttled: MapLibre fires drag per pointer
+        // move. The final position is committed on dragend below.
+        const now = performance.now();
+        if (now - lastDraftEmitAtRef.current >= DRAFT_EMIT_MIN_INTERVAL_MS) {
+          lastDraftEmitAtRef.current = now;
+          configRef.current?.onDraftChange?.(draftToPreviewRings(editRingRef.current));
+        }
       });
       marker.on("dragend", () => {
         const nextRings = openRingToRings(editRingRef.current);

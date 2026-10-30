@@ -10,6 +10,9 @@
 //     copy back out;
 //   - a typo in the JSON shows an error without the polygon disappearing, since
 //     the map keeps rendering the last text that parsed.
+//   - while a gesture runs, the textarea previews the in-progress ring
+//     (read-only, slightly dimmed) instead of the value; it snaps back to the
+//     value on cancel and is replaced by the committed JSON on finish.
 //
 // Used by two hosts with different form machinery - AreaFormModal's descriptor
 // list and crm/Form's customRender - so it renders NO label: both wrap their
@@ -69,6 +72,7 @@ export function BoundaryGeometryField({
     errorKey,
     mode,
     vertexCount,
+    draftText,
     hasGeometry,
     startDraw,
     startEdit,
@@ -87,6 +91,7 @@ export function BoundaryGeometryField({
   const geometry = describeGeometry(rings);
   const parseError = errorKey ? t(`crud.areaTemplate.geometry.error.${errorKey}`) : "";
   const message = error || parseError;
+  const isDrafting = draftText !== null;
 
   // While drawing, the count of what is on the map beats the count of what is
   // saved - the ring being laid down is the thing the user is looking at.
@@ -132,10 +137,15 @@ export function BoundaryGeometryField({
         id={textareaId}
         rows={3}
         placeholder={placeholder}
-        value={value}
+        value={draftText ?? value}
         disabled={disabled}
+        // While a gesture runs the textarea mirrors the map: the value is the
+        // map's to commit, and hand edits would only fight the draft
+        // overwriting them. readOnly rather than disabled so the coordinates
+        // stay selectable to copy mid-draw.
+        readOnly={isDrafting}
         onChange={handleTextChange}
-        className={TEXTAREA_CLASS}
+        className={isDrafting ? `${TEXTAREA_CLASS} opacity-80 italic` : TEXTAREA_CLASS}
       />
 
       {message

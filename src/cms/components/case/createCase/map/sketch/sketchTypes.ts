@@ -58,6 +58,16 @@ export interface BoundarySketchConfig {
   /** Vertex count of the ring being drawn, for the live readout. */
   onVertexCountChange?: (count: number) => void;
   /**
+   * In-progress rings while a gesture runs, for the field's live preview.
+   *
+   * A PREVIEW channel, deliberately separate from onCommit: the ring under
+   * construction is short and open, so it must never be written through the
+   * owner's value (parsePolygonRings would reject it, and the whole form
+   * would re-render per vertex). The owner drops its draft copy when
+   * onModeEnd fires, so no explicit clear is needed here.
+   */
+  onDraftChange?: (rings: PolygonCoordinates) => void;
+  /**
    * The layer hook publishes its gesture controls here while its mode is not
    * idle, so the toolbar and the Escape key can end a gesture from outside the
    * map.

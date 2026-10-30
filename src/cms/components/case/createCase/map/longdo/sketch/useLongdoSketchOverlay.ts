@@ -9,8 +9,12 @@
 // state is a JSON string that a textarea also edits, so a per-vertex commit
 // would re-render the whole form on every click AND hand parsePolygonRings a
 // two-point ring, which it rightly rejects - flashing a validation error
-// through the entire draw. Live feedback is the rubber band plus the vertex
-// count reported through onVertexCountChange.
+// through the entire draw. Live feedback is the rubber band, the vertex count
+// reported through onVertexCountChange, and the in-progress rings reported
+// through onDraftChange for the textarea's preview - a channel separate from
+// onCommit precisely because a draft ring must never enter the form value.
+// (Edit mode is the exception that proves the rule: the SDK's own drag events
+// commit live there, as they always have.)
 //
 // WHY THIS IS HAND-ROLLED. Longdo does ship a drawing tool (Terra Draw - see
 // `longdo.MapTheme.ui.terraDrawOptions`, and the DrawCreate/DrawDelete event
@@ -122,6 +126,15 @@ function draftToRings(draft: readonly LongdoLocation[]): PolygonCoordinates {
   }
   const closed = closeRing(roundRing(toRing(draft)));
   return closed.length >= MIN_RING_POINTS ? [closed] : [];
+}
+
+/**
+ * Drawn vertices -> live-preview rings. Unclosed and unfiltered, unlike
+ * draftToRings: a draft shows exactly what has been placed, even at a length
+ * that could not be a polygon yet.
+ */
+function draftToPreviewRings(draft: readonly LongdoLocation[]): PolygonCoordinates {
+  return [roundRing(toRing(draft))];
 }
 
 export function useLongdoSketchOverlay({
@@ -325,6 +338,7 @@ export function useLongdoSketchOverlay({
       draftRef.current = [...draft, location];
       renderDraft();
       configRef.current?.onVertexCountChange?.(draftRef.current.length);
+      configRef.current?.onDraftChange?.(draftToPreviewRings(draftRef.current));
     };
 
     // Enter finishes, matching what SketchViewModel does natively on the ArcGIS

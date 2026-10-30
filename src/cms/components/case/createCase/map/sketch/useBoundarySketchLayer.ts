@@ -14,9 +14,12 @@
 // every click AND hand parsePolygonRings a two-point ring, which it rightly
 // rejects - the field would flash a validation error through the entire draw.
 // So a gesture commits when it FINISHES (create complete, a drag stopping, an
-// update ending). The live feedback in the meantime is the map's own rubber
-// band plus the vertex count reported through onVertexCountChange, which the
-// owner keeps in local state and never in the form.
+// update ending). The live feedback in the meantime is threefold: the map's
+// own rubber band, the vertex count reported through onVertexCountChange
+// (which the owner keeps in local state, never in the form), and the
+// in-progress rings reported through onDraftChange for the textarea's preview
+// - a separate channel precisely because a draft ring must never enter the
+// form value.
 import { useEffect, useRef } from "react";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer.js";
 import Graphic from "@arcgis/core/Graphic.js";
@@ -25,12 +28,15 @@ import type Polygon from "@arcgis/core/geometry/Polygon.js";
 import type esriMap from "@arcgis/core/Map.js";
 import type MapView from "@arcgis/core/views/MapView.js";
 import { createSketchPolygonSymbol } from "./sketchSymbols";
-import { polygonToRings, ringsToPolygon } from "./sketchGeometry";
+import { polygonToDraftRings, polygonToRings, ringsToPolygon } from "./sketchGeometry";
 import { ringsSignature } from "@/cms/utils/areaGeometry";
 import type { BoundarySketchConfig, BoundarySketchControls } from "./sketchTypes";
 
 /** Padding applied to the polygon's extent before framing it. Pure breathing room. */
 const SKETCH_FRAME_PADDING_FACTOR = 1.4;
+
+/** Minimum gap between draft emissions during a reshape drag, which fires per pointer move. */
+const DRAFT_EMIT_MIN_INTERVAL_MS = 120;
 
 // Minimal shapes for the event fields actually read here. Same reasoning as
 // ArcgisAddressMap's ViewClickEventLike: the SDK's generated event types live in
@@ -94,6 +100,10 @@ export function useBoundarySketchLayer({
   const hasFramedRef = useRef(false);
   /** Set during cleanup so a cancel-triggered event cannot call back into a dead owner. */
   const isTearingDownRef = useRef(false);
+  /** Outer-ring length when a draft was last emitted, so the rubber band's cursor moves do not re-emit. */
+  const lastDraftLengthRef = useRef(-1);
+  /** When a draft was last emitted, to throttle the per-move events of a reshape drag. */
+  const lastDraftEmitAtRef = useRef(0);
 
   const isEnabled = Boolean(sketch);
   const mode = sketch?.mode ?? "idle";
@@ -148,11 +158,27 @@ export function useBoundarySketchLayer({
       configRef.current?.onCommit(nextRings);
     };
 
+    const emitDraft = (polygon: Polygon | null) => {
+      if (isTearingDownRef.current) {
+        return;
+      }
+      configRef.current?.onDraftChange?.(polygonToDraftRings(polygon));
+    };
+
     const createHandle = model.on("create", (event: SketchCreateEventLike) => {
       const polygon = asPolygon(event.graphic?.geometry);
 
       if (event.state === "start" || event.state === "active") {
-        configRef.current?.onVertexCountChange?.(outerRingLength(polygon));
+        const count = outerRingLength(polygon);
+        configRef.current?.onVertexCountChange?.(count);
+        // A draft goes out only when a vertex lands. The active state also
+        // fires for every cursor move of the rubber band, and a cursor move
+        // does not change how many vertices the ring has - so the count
+        // doubling as the emission key filters those out.
+        if (count !== lastDraftLengthRef.current) {
+          lastDraftLengthRef.current = count;
+          emitDraft(polygon);
+        }
         return;
       }
 
@@ -170,6 +196,9 @@ export function useBoundarySketchLayer({
         graphicRef.current = null;
         renderedSignatureRef.current = "";
       }
+      // Either way the gesture is over; the next create starts its draft
+      // emissions from scratch. The owner drops its draft copy on onModeEnd.
+      lastDraftLengthRef.current = -1;
       configRef.current?.onVertexCountChange?.(0);
       if (!isTearingDownRef.current) {
         configRef.current?.onModeEnd();
@@ -180,10 +209,21 @@ export function useBoundarySketchLayer({
       const graphic = event.graphics?.[0];
       const polygon = asPolygon(graphic?.geometry);
 
-      // A drag that just ended, mid-session: commit it so the textarea keeps up
-      // without waiting for the whole edit session to finish.
-      if (event.state === "active" && isGestureStop(event.toolEventInfo?.type)) {
-        commit(polygon);
+      if (event.state === "active") {
+        // Live preview of the reshape, time-throttled: a drag fires active
+        // events per pointer move, and unlike a create there is no vertex
+        // count to coalesce them on. The authoritative shape is still the
+        // commit's job - on the gesture-stop just below, or on complete.
+        const now = performance.now();
+        if (now - lastDraftEmitAtRef.current >= DRAFT_EMIT_MIN_INTERVAL_MS) {
+          lastDraftEmitAtRef.current = now;
+          emitDraft(polygon);
+        }
+        // A drag that just ended, mid-session: commit it so the textarea keeps
+        // up without waiting for the whole edit session to finish.
+        if (isGestureStop(event.toolEventInfo?.type)) {
+          commit(polygon);
+        }
         return;
       }
       if (event.state !== "complete") {
