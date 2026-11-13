@@ -25,7 +25,7 @@ export const LoginForm: React.FC = () => {
   const [credentials, setCredentials] = useState<LoginCredentials>({
     username: "",
     password: "",
-    organization: "BMA",
+    organization: "",
     rememberMe: false
   });
   const [showPassword, setShowPassword] = useState(false);
