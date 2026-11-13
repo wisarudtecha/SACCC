@@ -35,6 +35,7 @@ import ProgressSummary from "@/cms/components/case/activityTimeline/sumaryUnitPr
 import { formatDate } from "@/core/utils/crud";
 import Loading from "@/core/components/common/Loading";
 import { useServiceCenterMatch } from "./formFields";
+import { CASE_IOT_ENABLED } from "@/core/config/featureFlags";
 
 // Heavy @arcgis/core SDK - lazy-loaded so it stays out of the initial bundle.
 // BoundaryMapField rather than the bare map: read-only location pin for the
@@ -292,6 +293,7 @@ const OverviewTab: React.FC<Props> = ({ caseItem, areas, caseTitle }) => {
                   {areaDisplay || "-"}
                 </div>
               </div>
+              {CASE_IOT_ENABLED && (
               <div className="xl:flex items-left justify-left gap-2">
                 <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
                   <Siren className="w-4 h-4" />
@@ -301,6 +303,7 @@ const OverviewTab: React.FC<Props> = ({ caseItem, areas, caseTitle }) => {
                   {formatDate(sopData?.startedDate as string) || "-"}
                 </div>
               </div>
+              )}
               <div className="xl:flex items-left justify-left gap-2">
                 <div className="flex items-center justify-left gap-1">
                   <ClockArrowUp className="w-4 h-4 text-gray-900 dark:text-white" />
@@ -380,6 +383,7 @@ const OverviewTab: React.FC<Props> = ({ caseItem, areas, caseTitle }) => {
                   {contactMethod?.name || "-"}
                 </div>
               </div>
+              {CASE_IOT_ENABLED && (
               <div className="xl:flex items-left justify-left">
                 <div className="flex items-center justify-left gap-1 text-gray-900 dark:text-white">
                   <Cpu className="w-4 h-4" />
@@ -389,6 +393,7 @@ const OverviewTab: React.FC<Props> = ({ caseItem, areas, caseTitle }) => {
                   {sopData?.deviceId || "-"}
                 </div>
               </div>
+              )}
             </div>
           </div>
 

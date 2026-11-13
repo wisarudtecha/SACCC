@@ -4,6 +4,7 @@ import FormViewer from "../form/dynamic-form/FormViewValue";
 import { mergeArea } from "@/cms/store/api/area";
 import { CaseDetails } from "@/cms/types/case";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import { CASE_IOT_ENABLED } from "@/core/config/featureFlags";
 import { formatDate } from "@/core/utils/crud";
 import { cancelAndCloseStatus, closeStatus } from "../ui/status/status";
 import AttachedFiles from "@/cms/components/Attachment/AttachmentPreviewList";
@@ -147,7 +148,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                         <div className="text-sm font-medium text-gray-900 dark:text-white"> {caseData?.area && mergeArea(caseData?.area, language) || "-"}</div>
                     </div>
                 </div>
-                {caseData?.iotDate &&
+                {CASE_IOT_ENABLED && caseData?.iotDate &&
                     <div className="flex  text-gray-500 dark:text-gray-400 mb-2">
                         <Siren />
                         <div className="ml-2">
@@ -231,7 +232,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                                         readOnly
                                         height={220}
                                         showPlaceButton
-                                        showDeviceButton
+                                        showDeviceButton={CASE_IOT_ENABLED}
                                         incidentRadius={serviceCenterMatch.incidentRadius}
                                     />
                                 )}
@@ -271,7 +272,8 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                         </div>
                     </div>
 
-                    {/* IoT Device */}
+                    {/* IoT Device (VITE_SHOW_CASE_IOT) */}
+                    {CASE_IOT_ENABLED && (
                     <div className="mb-4">
                         <div className="flex items-center text-md text-gray-500 dark:text-gray-400">
                             <Cpu className="h-4 w-4 mr-2" />
@@ -281,6 +283,7 @@ const FormFieldValueDisplay: React.FC<FormFieldValueDisplayProps> = ({ caseData,
                             {caseData?.iotDevice || "-"}
                         </div>
                     </div>
+                    )}
 
                     {/* Schedule Date */}
                     {/* {caseData?.requireSchedule && (

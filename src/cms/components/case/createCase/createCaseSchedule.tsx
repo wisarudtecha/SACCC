@@ -15,6 +15,7 @@ import { findCaseTypeSubTypeByTypeIdSubTypeId } from "../../caseTypeSubType/find
 import { CaseDetails, CaseEntity, FileItem } from "@/cms/types/case"
 import { useNavigate, useParams } from "react-router-dom"
 import { useTranslation } from "@/core/hooks/useTranslation";
+import { CASE_IOT_ENABLED } from "@/core/config/featureFlags";
 import { exampleCaseState } from "../constants/exampleData";
 import { source } from "../constants/caseConstants";
 import { validateCaseForDraft, validateCaseForSubmission } from "../caseDataValidation/caseDataValidation";
@@ -485,7 +486,8 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
 
                     <CaseScheduleDateInput caseState={caseState} onCaseChange={updateCaseState} />
 
-                    {/* Case Type + IoT device, then the type's dynamic form */}
+                    {/* Case Type (+ IoT device unless VITE_SHOW_CASE_IOT is off),
+                        then the type's dynamic form */}
                     <div className="grid-cols-2 xl:grid">
                         <CaseTypeSelect
                             value={caseState?.caseType?.caseType ?? ""}
@@ -493,7 +495,9 @@ export default function CaseDetailViewSchedule({ onBack, caseData, disablePageMe
                             onChange={handleCaseTypeChange}
                             disabled={!!caseState.workOrderNummber}
                         />
-                        <CaseIotDeviceInput caseState={caseState} onCaseChange={updateCaseState} />
+                        {CASE_IOT_ENABLED && (
+                            <CaseIotDeviceInput caseState={caseState} onCaseChange={updateCaseState} />
+                        )}
                     </div>
                     <CaseDynamicForm
                         form={selectedCaseTypeForm?.formField}

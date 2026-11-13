@@ -9,6 +9,9 @@ import React
 from "react";
 import { LoginForm } from "@/core/components/auth/LoginForm";
 import { SessionRefreshIndicator } from "@/core/components/auth/SessionRefreshIndicator";
+import { Navigate } from "react-router-dom";
+import { ENTITLEMENT_UPSELL_ENABLED } from "@/core/config/featureFlags";
+import { ROUTE_PREFIX } from "@/core/router/routePrefix";
 import {
   forceSSOLogout,
   getSSOAccessToken,
@@ -384,8 +387,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     if (isFeatureLocked(requiredFeature)) {
       return Fallback ? (
         <Fallback />
-      ) : (
+      ) : ENTITLEMENT_UPSELL_ENABLED ? (
         <EntitlementLockedPage feature={requiredFeature} />
+      ) : (
+        // VITE_SHOW_ENTITLEMENT_UPSELL="false": the locked page IS the notice
+        // being switched off, and rendering nothing would leave the route blank,
+        // so the user lands on the cms home instead.
+        <Navigate to={ROUTE_PREFIX.cms} replace />
       );
     }
   }

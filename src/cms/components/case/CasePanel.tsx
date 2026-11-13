@@ -42,6 +42,7 @@ import { CaseSop, DeviceMetaData, Unit } from "@/cms/types/dispatch";
 import Loading from "@/core/components/common/Loading";
 import { ToastContainer } from "@/core/components/crud/ToastContainer";
 import { useToastContext } from "@/core/components/crud/ToastGlobal";
+import { CASE_IOT_ENABLED } from "@/core/config/featureFlags";
 import { useToast } from "@/core/hooks";
 import { usePermissions } from "@/core/hooks/usePermissions";
 import { useTranslation } from "@/core/hooks/useTranslation";
@@ -1240,6 +1241,7 @@ const Panel: React.FC<PanelProps> = ({
         }
     ].filter((tab) => {
         if (tab.id === "customer-info" && import.meta.env.VITE_SHOW_CASE_CONTRACT !== "true") return false;
+        if (tab.id === "Device info" && !CASE_IOT_ENABLED) return false;
         if (tab.id === "Appointment" && !caseWorkOrderNumber) return false;
         if (disabledTabs?.includes(tab.id as PanelTabId)) return false;
         return true;
@@ -1260,7 +1262,9 @@ const Panel: React.FC<PanelProps> = ({
 
     const { data: deviceResponse } = useGetDeviceIoTQuery(
         { start: 0, length: 100 },
-        { skip: cachedDevices !== null }
+        // Nothing renders the device registry while VITE_SHOW_CASE_IOT is off
+        // (the "Device info" tab is filtered out), so do not fetch it either.
+        { skip: !CASE_IOT_ENABLED || cachedDevices !== null }
     );
 
     useEffect(() => {

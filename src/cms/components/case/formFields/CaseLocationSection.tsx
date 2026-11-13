@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useMemo } from "react";
 import { COMMON_INPUT_CSS as commonInputCss } from "@/cms/components/case/constants/caseConstants";
 import Loading from "@/core/components/common/Loading";
 import { useToastContext } from "@/core/components/crud/ToastGlobal";
+import { CASE_IOT_ENABLED } from "@/core/config/featureFlags";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import type { AddressResult, IncidentRadiusOverlay } from "@/cms/components/case/createCase/map/mapTypes";
 import { CaseFieldSectionProps } from "./types";
@@ -87,9 +88,13 @@ export const CaseLocationSection = ({
                             readOnly={false}
                             height={320}
                             showPlaceButton
-                            showDeviceButton
-                            onDeviceSelect={handleDeviceSelect}
-                            linkedDeviceId={caseState?.iotDevice || null}
+                            // VITE_SHOW_CASE_IOT="false" removes the Device layer
+                            // completely. `onDeviceSelect` is the popup's only write
+                            // path (Link/Unlink -> iotDevice) and BoundaryMapField
+                            // derives `canLink` from its presence, so it goes too.
+                            showDeviceButton={CASE_IOT_ENABLED}
+                            onDeviceSelect={CASE_IOT_ENABLED ? handleDeviceSelect : undefined}
+                            linkedDeviceId={CASE_IOT_ENABLED ? caseState?.iotDevice || null : null}
                             incidentRadius={incidentRadius}
                             manualOnly={manualOnly}
                             authorizedDistrictIds={authorizedDistrictIds}

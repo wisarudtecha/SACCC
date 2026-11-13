@@ -31,6 +31,8 @@ import { usePermissions } from "@/core/hooks/usePermissions";
 import { useEntitlements } from "@/core/hooks/useEntitlements";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import { useUpgradePrompt } from "@/core/components/entitlements/useUpgradePrompt";
+import { ENTITLEMENT_UPSELL_ENABLED } from "@/core/config/featureFlags";
+import { hideLockedNavItems } from "./navVisibility";
 import type { EntitlementFeature } from "@/core/types/entitlement";
 import changelog from "@/changelog.json";
 import { KbPermission } from "@/kms/common/utils/enumHelper"
@@ -69,7 +71,9 @@ const SuperSidebar = (
   const { t } = useTranslation();
 
   // Locked nav entries stay visible (upsell motion) but their navigation is
-  // intercepted with an upgrade prompt instead.
+  // intercepted with an upgrade prompt instead. When VITE_SHOW_ENTITLEMENT_UPSELL
+  // is off they are filtered out before this point (see renderMenuItems), so
+  // neither the badge nor the intercept can fire.
   const handleLockedClick = (
     event: React.MouseEvent,
     feature: EntitlementFeature
@@ -414,6 +418,11 @@ const SuperSidebar = (
         : [nav]
     );
 
+  // One filtering point for every menu group: with the upsell flag off, entries
+  // the tenant cannot use disappear instead of sitting there locked.
+  const itemsForMenu = (items: NavItem[]) =>
+    ENTITLEMENT_UPSELL_ENABLED ? items : hideLockedNavItems(items, isLocked);
+
   const renderMenuItems = (items: NavItem[], menuType: MenuProps) => (
     <>
       <h3 className={`${isIconOnly ? "hidden" : ""} mb-3 text-xs leading-3 text-[#8A99AF]`}>
@@ -423,7 +432,7 @@ const SuperSidebar = (
         </span>
       </h3>
       <ul className="flex flex-col gap-2">
-        {(isIconOnly ? flattenForRail(items) : items).map((nav, index) => (
+        {(isIconOnly ? flattenForRail(itemsForMenu(items)) : itemsForMenu(items)).map((nav, index) => (
           <li key={nav.name}>
             {nav.subItems ? (
               <button

@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthorizedDistrictIds } from "@/core/hooks/useAuthorizedDistrictIds";
+import { CASE_IOT_ENABLED } from "@/core/config/featureFlags";
 import { Area } from "@/cms/store/api/area";
 import { Customer } from "@/cms/store/api/custommerApi";
 import { CaseDetails, CaseTypeSubType } from "@/cms/types/case";
@@ -167,8 +168,11 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
         updateOnSameType: isCreate,
     });
 
+    // `defaultIotDate` exists only to seed the IoT alert-date field, so it must
+    // not run while that field is hidden (VITE_SHOW_CASE_IOT) - writing a value
+    // nobody can see would move `startedDate` without the operator's knowledge.
     useEffect(() => {
-        if (defaultIotDate && caseState && !caseState.iotDate) {
+        if (CASE_IOT_ENABLED && defaultIotDate && caseState && !caseState.iotDate) {
             onCaseChange({ iotDate: TodayLocalDate() });
         }
     }, [defaultIotDate, caseState, onCaseChange]);
@@ -194,11 +198,13 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
                 onFormChange={handleFormFieldChange}
             />
 
-            {/* IoT Device and Alert Date */}
+            {/* IoT Device and Alert Date. VITE_SHOW_CASE_IOT="false" drops both
+                fields for deployments that do not track IoT; the work order
+                reference keeps its own row, so nothing else shifts. */}
             <div className="xl:grid grid-cols-2">
                 {caseState?.workOrderRef && <CaseWorkOrderRefInput caseState={caseState} />}
-                <CaseIotDeviceInput caseState={caseState} onCaseChange={onCaseChange} />
-                <CaseIotDateInput caseState={caseState} onCaseChange={onCaseChange} />
+                {CASE_IOT_ENABLED && <CaseIotDeviceInput caseState={caseState} onCaseChange={onCaseChange} />}
+                {CASE_IOT_ENABLED && <CaseIotDateInput caseState={caseState} onCaseChange={onCaseChange} />}
             </div>
 
             {/* Case Details */}

@@ -22,6 +22,7 @@ import type { CaseSopUnit } from "@/cms/types/dispatch";
 import { PermissionGate } from "@/core/components/auth/PermissionGate";
 import { usePermissions } from "@/core/hooks/usePermissions";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import { CASE_IOT_ENABLED } from "@/core/config/featureFlags";
 import BoundaryMapField from "../BoundaryMapField";
 import { dockedCardsWidthPx } from "../frameBounds";
 import { MAP_BOTTOM_LEFT_CLEARANCE_CLASS } from "../mapControlStyles";
@@ -778,7 +779,7 @@ function CaseStaffMapFieldBase({
       height={height}
       className={className}
       showPlaceButton
-      showDeviceButton
+      showDeviceButton={CASE_IOT_ENABLED}
       incidentRadius={incidentRadius}
       manualOnly={manualOnly}
       authorizedDistrictIds={authorizedDistrictIds}
