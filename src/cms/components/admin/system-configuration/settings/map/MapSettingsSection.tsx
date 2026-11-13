@@ -43,6 +43,17 @@ export function MapSettingsSection() {
   const [saveFailed, setSaveFailed] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
+  // The placeholder below is for the FIRST load only. Once a record has settled
+  // in, a later refetch (every Save invalidates the "Organization" tag) must not
+  // unmount this subtree - unmounting throws away `advancedOpen`, `errors`, and
+  // any edits the admin has typed since.
+  const [hasSettledOnce, setHasSettledOnce] = useState(false);
+  useEffect(() => {
+    if (!isLoading) {
+      setHasSettledOnce(true);
+    }
+  }, [isLoading]);
+
   // Re-seed the form from the loaded record: first load, and again after a
   // successful save (the query re-fetches / the mock store updates). This is the
   // "changes take effect on next load" behaviour - deliberately no live merge.
@@ -95,7 +106,7 @@ export function MapSettingsSection() {
     setSaveFailed(false);
   };
 
-  if (isLoading) {
+  if (isLoading && !hasSettledOnce) {
     return (
       <div className="animate-pulse space-y-4">
         {[0, 1, 2].map((row) => (

@@ -51,6 +51,11 @@ export function useOrgMapSettings(): UseOrgMapSettingsResult {
   const orgId = state.user?.orgId ?? "";
   const isMock = DEV_CONFIG.MOCK_API;
 
+  // The request really runs even though the route is missing server-side: a 404 /
+  // GraphQL error resolves to "no saved record" (see realLoaded) and RTK settles
+  // `isLoading` to false, which is what keeps the form reachable. Without this
+  // call there is no fetch to settle and the section would sit on its loading
+  // placeholder forever.
   const { data, isLoading } = useGetOrgMapSettingsQuery(orgId, {
     skip: !orgId || isMock,
   });
@@ -65,6 +70,10 @@ export function useOrgMapSettings(): UseOrgMapSettingsResult {
     }
   }, [isMock, orgId]);
 
+  // Deliberately `data`, not `currentData`: during the refetch that follows a
+  // save, `currentData` drops to undefined and the form would re-seed itself from
+  // schema defaults, throwing away the values the admin just entered. `data`
+  // keeps the last successful record on screen for the duration of the refetch.
   const realLoaded = useMemo<OrgMapSettings>(
     () =>
       isOrgMapSettings(data?.data)
@@ -105,6 +114,10 @@ export function useOrgMapSettings(): UseOrgMapSettingsResult {
 
   return {
     loaded,
+    // Never hardcode this: `isLoading` has to be the query's own flag, narrowed by
+    // the same two conditions the query is skipped on. A constant `true` here (the
+    // placeholder that shipped with the commented-out query) is indistinguishable
+    // from a real in-flight request and leaves the whole section stuck on skeleton.
     isLoading: !isMock && !!orgId && isLoading,
     isMock,
     isSaving,
