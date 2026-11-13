@@ -1026,3 +1026,623 @@ If you catch yourself repeating a documented mistake, stop, identify which Preve
   (3) pick the lookup endpoint by which RECORD STATES it serves, not by which hook is
   already imported — if the detail page can display the record, use the detail page's
   endpoint for lookups of that record.
+
+### A file's name is not its encoding, and an environment's bucket is not a default
+- **Date:** 2026-11-02
+- **Mistake:** Wiring the boundary polygons to MinIO, two things were inferred from
+  names instead of measured. (1) `.json.gz`, served as `Content-Type: application/gzip`,
+  was assumed to be gzip - so a `response.json()` parser and a `DecompressionStream`
+  branch were both on the table without evidence. The objects are PLAIN JSON: the bytes
+  start with `[`, there is no `Content-Encoding`, and nothing decompresses them. (2)
+  `BOUNDARY_MINIO_BASE_URL` was first written with a hardcoded fallback to the staging
+  bucket, so a production deploy that omitted the variable would have read staging
+  geometry and rendered successfully.
+- **Root Cause:** A remote payload's properties were taken from its labels. An extension
+  and a `Content-Type` are claims by the WRITER; the bytes are the contract. Likewise a
+  bucket name in a sample URL describes ONE environment, and a default is a decision
+  that silently applies to every environment that omits the variable. Neither failure is
+  reachable by `tsc`, lint, or a unit test built on a hand-written fixture - all three
+  only ever confirm what the author already believed.
+- **Correct Behavior:** Fetch one real object and inspect the raw bytes before writing
+  the parser (gzip magic is `1f 8b`; decode conditionally, so a writer that later starts
+  compressing for real needs no change here). Require per-environment roots and treat
+  "absent" as "not configured", falling back to a known-good code path with a loud error
+  rather than to a plausible-looking default.
+- **Prevention Rule:** Before parsing anything remote, spend one request looking at the
+  BYTES rather than the name, the header or the documentation - and write the parser so
+  the surprise is handled, not merely avoided. Any config value that identifies an
+  environment (bucket, project, tenant, region) is required, never defaulted: a default
+  belonging to another environment fails silently and looks healthy, which is worse than
+  failing to start.
+- **Example:**
+  ```ts
+  // WRONG - trusts the extension, and lets prod read the staging bucket
+  const res = await fetch(url);              // ".json.gz"
+  const rings = await res.json();            // breaks the day the writer gzips
+  BOUNDARY_MINIO_BASE_URL: import.meta.env.VITE_X || "https://storage/cms-stg/area-org-tree",
+
+  // CORRECT - read bytes, decompress only if they really are gzip
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  const isGzip = bytes[0] === 0x1f && bytes[1] === 0x8b;
+  // ...and no default: empty means "not configured", handled explicitly by the caller
+  BOUNDARY_MINIO_BASE_URL: (import.meta.env.VITE_X || "").replace(/\/+$/, ""),
+  ```
+
+### A store that exists is not a store that is populated — find the dispatcher before reading from it
+- **Date:** 2026-11-02
+- **Mistake:** `boundarySource.ts` needed the signed-in user's `orgId` from outside React and
+  read `store.getState().auth.user?.orgId`. In a fully logged-in session that was `null`, so
+  every boundary polygon silently failed to draw behind
+  "Cannot load boundary geometry: the signed-in user carries no orgId". The reported cause -
+  "the user has no orgId" - was wrong: the value existed all along, in a different store.
+- **Root Cause:** `src/core/store/slices/authSlice.ts` defines an `auth` slice with a
+  `loginSuccess` reducer, but **nothing in `src` ever dispatches it**. The real session lives in
+  `AuthProvider`'s `useReducer` (`src/core/providers/AuthProvider.tsx`) and is rehydrated from
+  `TokenManager.getStoredUser()` - the `"profile"` entry in localStorage/sessionStorage, which
+  carries `orgId` at its root (`AuthService.createMockUser`, and `AuthProvider`'s own backfill at
+  `AuthProvider.tsx:45`). Two parallel `AuthState`/`User` types exist - the Redux slice uses the
+  CMS `User` (`@/cms/types`, no `orgId`), the context uses `@/core/types/auth` (has it) - and the
+  type error that should have been the warning was silenced with a cast to `{ orgId?: unknown }`,
+  which made an always-null read look deliberate.
+- **Correct Behavior:** Read the persisted profile
+  (`TokenManager.getStoredUser()` - synchronous, framework-free, so usable from a plain module).
+  Belt and braces: the RTK base query already falls back to `TokenManager` for exactly the same
+  reason, so this is the established source of truth, not a workaround.
+- **Prevention Rule:** Before reading a value out of any shared state container (Redux slice,
+  context, cache), grep for the thing that WRITES it and confirm it is actually dispatched. A
+  slice that is defined, typed and exported proves nothing. If a cast is needed to make the read
+  compile, that is the signal to go find the writer, not to narrow the shape and move on - and
+  when a value can be absent, fail with a message that names the exact record inspected, so the
+  next reader is not sent to the wrong place by a plausible-sounding symptom.
+- **Example:**
+  ```ts
+  // WRONG - authSlice declares loginSuccess, but no dispatcher exists anywhere in src
+  const user = store.getState().auth.user as { orgId?: unknown } | null; // always null
+
+  // CORRECT - the store AuthProvider itself rehydrates from
+  const profile = TokenManager.getStoredUser() as { orgId?: unknown } | null;
+  const orgId = profile?.orgId;
+  return typeof orgId === "string" && orgId.length > 0 ? orgId : null;
+  ```
+
+### A field name in a document is a claim about the data model
+- **Date:** 2026-11-04
+- **Mistake:** The v1 tenant-setup document listed fields and hierarchies that the product does
+  not have: an area hierarchy of "Level 1 / Level 2 / Level 3" whose own example
+  (`SKYICT / Central Zone / Station 1`) was a *department/command/station* path, a User Group
+  `Main Category` column (`CAD`/`ORDER`/`KB`) with no such field, an appointment type with
+  "category" and "stay duration", a priority scale documented as `CRITICAL 0 - NONCRITICAL 9`
+  while the UI emits `0,0,1,2,0,1,2,0,1,2`, and a "Package" menu entry pointing at a route that
+  does not exist. None of it failed anything: it was a document, and the customer was about to
+  use it as the specification for provisioning a real tenant.
+- **Root Cause:** The document was written from how the product *should* look, then carried
+  forward by editing rather than by re-reading the code. A field name copies cheaply and its
+  wrongness is invisible until someone types it into a form that does not have it. The same
+  habit that makes prose reuse feel efficient is what makes a stale spec dangerous: there is no
+  compiler, no test and no runtime between a document and the claim it makes.
+- **Correct Behavior:** Every field, code, hierarchy level and route named in a document that
+  will be used as a work order was traced to its source before publication - the TS interface
+  (`src/**/types/*.ts`), the form component that renders it, the route table
+  (`src/App.tsx`, `src/{cms,cc,kms}/App.tsx`), or the menu array. Claims that could not be
+  traced were labelled as unverified instead of being restated. The corrections went into the
+  new document as a numbered list with evidence paths, so the reviewer can check each one
+  rather than re-auditing the whole document.
+- **Prevention Rule:** Before publishing any document that another person will act on, treat
+  every proper noun it contains - field name, code, status value, level label, menu item, route,
+  permission key - as a claim requiring evidence, and cite the file you read it from. If a value
+  came from a previous version of the document rather than from code, that is not evidence:
+  re-verify or mark it unverified. When a document contradicts the code, the code wins and the
+  contradiction gets an explicit correction entry - never a quiet edit.
+  **This includes the document's own derived numbers and citations:** a count ("7 of 11 features"),
+  a cross-reference ("§8 C17"), and a `file:line` range are claims exactly like a field name - the
+  count must be computed from the artifact, the reference must resolve to a section that exists,
+  and a line range may only be cited for lines actually read (otherwise cite the file alone).
+  A summary written before the body is where inverted counts and dangling references come from;
+  re-derive both after the body is final.
+- **Example:**
+  ```text
+  WRONG (v1)                                  RIGHT (verified against code)
+  Area L1/L2/L3 = SKYICT/Central/Station1   -> Area = Country > Province > District (types/area.ts)
+  User Group: Main Category CAD/ORDER/KB    -> UserGroup = grpId/th/en/description/active
+  Priority CRITICAL 0 .. NONCRITICAL 9      -> 4 labels, value = index inside group (0,0,1,2,...)
+  Menu "Package" -> /cms/packages           -> no such route anywhere in src (dead link)
+
+  WRONG (v0.2 draft, caught in self-audit)     RIGHT
+  header "4 of 11 features gate nothing"    -> grep the feature keys: 4 gate, 7 gate nothing
+  "§8 C17"                                  -> C17 does not exist; C14 is the workflow entry
+  ".env.staging:51-90"                      -> only 52-56,68-85 were read; cite those
+  ```
+### An identifier the system assigns is not yours to invent
+
+- **Date:** 2026-11-05
+- **Mistake:** Writing `db/seed/skyict/02-sec_org-structure.sql`, the department's business key had
+  to be supplied because a raw INSERT lists every column - so the script invented fixed, readable
+  UUIDs (`5ec00001-...`, `5ec00002-...-0001`, ...) and derived the children's keys from them. The
+  user rejected it outright: "dept_uuid ต้องไม่กำหนดเอง". Checking the contract afterwards confirmed
+  why - the frontend's `DepartmentCreateData` / `CommandCreateData` / `StationCreateData` carry only
+  `{active, en, th}` plus the parent id (`src/core/types/organization.ts:25-84`), i.e. the product
+  treats these keys as server-assigned. The only thing that demanded a value was the column list of
+  a hand-written INSERT, not the data model.
+- **Root Cause:** A raw SQL statement's column list reads like a requirement ("supply all 36
+  values"), and it silently converted "the database's job" into "the author's choice". Nothing in
+  the statement, the type system or a dry run objects: invented ids insert fine, satisfy every FK
+  and look correct in review. The mistake is invisible until someone asks who owns the value - or
+  until a second environment diverges.
+- **Correct Behavior:** Let the database mint every identifier the application never sends -
+  `gen_random_uuid()` (or the column default) - and link rows by their natural business key instead
+  of by a value written down in advance: children resolve their parent with a join on `(orgId, en)`,
+  idempotency is guarded by `NOT EXISTS` on that same key, and the generated ids are printed at the
+  end for whoever needs them next (here: the user seed's parameters). Surrogate `id` columns are
+  omitted from the INSERT entirely so their default - and their sequence - stays intact.
+- **Prevention Rule:** Before writing any value into a column, ask which side produces it. If the
+  application never sends it - business keys, surrogate ids, tokens, timestamps, hash salts - the
+  script must not choose it: use the database's generator and read the result back. Hard-coded
+  identifiers in a seed/migration are acceptable only when the value is genuinely external and fixed
+  (an enum code, a country code). Corollary: a statement that seems to require a value for such a
+  column is a sign the script needs a generate-and-return step, not a literal.
+- **Example:**
+  ```sql
+  -- WRONG - the author picked the tenant's department key
+  \set dept_uuid '5ec00001-0000-4000-8000-000000000001'
+  INSERT INTO public.sec_departments ("deptId", "orgId", en, ...)
+  VALUES (:'dept_uuid'::uuid, :'org_id'::uuid, 'SKYICT', ...);
+
+  -- CORRECT - the database assigns it; children resolve the parent by name
+  INSERT INTO public.sec_departments ("deptId", "orgId", en, ...)
+  SELECT gen_random_uuid(), :'org_id'::uuid, v.en, ...
+    FROM (VALUES ('SKYICT')) AS v (en)
+   WHERE NOT EXISTS (SELECT 1 FROM public.sec_departments d
+                      WHERE d."orgId" = :'org_id'::uuid AND d.en = v.en);
+
+  INSERT INTO public.sec_commands ("deptId", "orgId", "commId", en, ...)
+  SELECT d."deptId", d."orgId", gen_random_uuid(), v.en, ...
+    FROM (VALUES ('Center Zone')) AS v (en)
+    JOIN public.sec_departments d ON d."orgId" = :'org_id'::uuid AND d.en = 'SKYICT'
+   WHERE NOT EXISTS (SELECT 1 FROM public.sec_commands c
+                      WHERE c."orgId" = d."orgId" AND c."deptId" = d."deptId" AND c.en = v.en);
+  ```
+
+### A script's execution environment is part of its contract
+
+- **Date:** 2026-11-05
+- **Mistake:** `db/seed/skyict/01-um_users.sql` and `02-sec_org-structure.sql` were written with psql
+  meta-commands (`\set`, `\if :flag`) and described as runnable. The operator pasted them into a GUI
+  SQL editor and got `ERROR: syntax error at or near "\"` / `LINE 57: \set org_id …` /
+  `SQL state: 42601` - the client never sees `\set` as SQL. The scripts had been "tested" only through
+  `psql`, which of course accepts them, so the test could not fail.
+- **Root Cause:** Two assumptions were never stated, let alone checked: *which client* the operator
+  uses, and *what the file must be* to be portable. `\set` felt like a neutral way to parameterise a
+  script because it is the obvious one to whoever is writing from inside psql. A test run in the same
+  tool that produced the file confirms the file works **there** - it cannot reveal a dependency on
+  that tool.
+- **Correct Behavior:** Parameters moved into a session `CREATE TEMP TABLE _seed_cfg (…);` populated by
+  one `INSERT`, and each statement joined `_seed_cfg`; `\if :flag` became a `cfg.flag` guard in the
+  WHERE clause. The files are now plain SQL: no `\`-commands, no `\gset`, no session assumptions
+  beyond "one connection", and they run identically in psql, DBeaver, pgAdmin, DataGrip or CI.
+- **Prevention Rule:** Treat the consumer of a script as part of its specification. Before shipping
+  anything executable, name how it will be run and test it that way; if that is unknown, use only
+  constructs every target client supports (plain SQL, explicit transactions) and put every parameter
+  in one editable place. Applies beyond SQL: a shell snippet assuming bash on macOS, a Node script
+  assuming a global CLI, a curl example assuming a shell that expands `{a,b}`. "It ran on my machine,
+  in my tool" is the failure mode, not the evidence.
+- **Example:**
+  ```sql
+  -- WRONG - works in psql, fails everywhere else with SQLSTATE 42601
+  \set org_id '11111111-1111-1111-1111-111111111111'
+  INSERT INTO public.sec_departments ("orgId", en) VALUES (:'org_id'::uuid, 'SKYICT');
+
+  -- CORRECT - plain SQL, one edit point, same result in any client
+  DROP TABLE IF EXISTS _seed_cfg;
+  CREATE TEMP TABLE _seed_cfg (org_id uuid NOT NULL, actor text NOT NULL);
+  INSERT INTO _seed_cfg VALUES ('11111111-1111-1111-1111-111111111111'::uuid, 'system');
+  INSERT INTO public.sec_departments ("orgId", en)
+  SELECT cfg.org_id, 'SKYICT' FROM _seed_cfg cfg;
+  ```
+
+### A guard that skips work without reporting is indistinguishable from success
+
+- **Date:** 2026-11-05
+- **Mistake:** `db/seed/skyict/01-um_users.sql` §3 guarded its INSERT with
+  `WHERE NOT EXISTS (SELECT 1 FROM um_users WHERE username = ...)`, so a run against a database where
+  10 of the 16 usernames already existed **under another orgId** inserted 6 rows, reported
+  `INSERT 0 6`, and said nothing about the other 10. The operator saw six rows in a grid, concluded
+  "the script does nothing", and two rounds went into debugging role assignment while the real problem
+  was ten missing accounts.
+- **Root Cause:** Two assumptions stacked. (1) *Scope*: `username` was assumed unique per tenant; it is
+  unique across `um_users`, so "create this user for this tenant" was really "this person already has
+  an account somewhere". (2) *Silence*: the NOT-EXISTS guard was written to prevent duplicates — a
+  correct intent — but a skip is a **decision about data** and the operator never saw which rows were
+  skipped or why. `INSERT 0 n` reports only what happened, never what did not.
+- **Correct Behavior:** Before inserting, print a per-user report of where each username currently
+  lives (`db/seed/skyict/00-diagnose-users.sql`, and §2c of the seed); after inserting, verify with an
+  explicit state per user — `ok` / `IN OTHER ORG` (naming the owning orgId) / `NOT IN DB` / `ROLE
+  DIFFERS` — instead of counting successful rows. Moving an account between tenants became a separate,
+  off-by-default, explicitly-labelled step (`reassign_other_org`), because it takes the account away
+  from the tenant that owns it.
+- **Prevention Rule:** Any statement that skips rows must report **how many and why**, in the same run,
+  in terms the operator can act on. And before treating an identifier as scoped (per tenant, per
+  organisation, per environment), check the constraint that governs it: a global unique index silently
+  converts "create" into "conflict", and every NOT-EXISTS guard on that column becomes a no-op that
+  looks like a success. Same family as "A truthiness check is not a success check" — the evidence of
+  work done is the reported state of every expected row, never the absence of errors.
+- **Example:**
+  ```sql
+  -- WRONG - 10 rows silently skipped, output still looks like success
+  INSERT INTO public.um_users (...) SELECT ... FROM _seed_users s
+   WHERE NOT EXISTS (SELECT 1 FROM public.um_users u WHERE u.username = s.username);
+
+  -- CORRECT - the same guard, but the run states what it did and what it refused to do
+  SELECT s.username,
+         CASE WHEN t.id IS NOT NULL THEN 'this tenant'
+              WHEN o.id IS NOT NULL THEN 'IN OTHER ORG: ' || o."orgId"::text
+              ELSE 'NOT IN DB' END AS state
+    FROM _seed_users s
+    LEFT JOIN public.um_users t ON t.username = s.username AND t."orgId" = cfg.org_id
+    LEFT JOIN public.um_users o ON o.username = s.username AND o."orgId" <> cfg.org_id;
+  ```
+
+### A transposed literal is invisible to the eye — verify copied values by machine, not by re-reading
+- **Date:** 2026-11-06
+- **Mistake:** Transcribing the 16-user seed list into `db/seed/skyict/api-payloads/06-users.json`,
+  `lastName: "Techa"` became `"displayName": "Wisarud Tehca"` — letters swapped. A re-read and even
+  a grep for the name looked correct because the transposition is the same length with the same
+  characters; the fix attempt first produced a SECOND wrong spelling ("Techna") because the eye
+  keeps "reading" the intended word, not the bytes. The first detection was a grep that matched the
+  line and showed the bytes — but the match was read as "the row is there", not "compare these
+  bytes to the source".
+- **Root Cause:** Literal values were copied by hand across an artifact boundary (SQL → JSON) and
+  then "verified" by looking. A grep hit confirms PRESENCE, not CORRECTNESS: `Select-String 'Wisarud'`
+  returns the line and the reader's expectation fills in the expected spelling. There is no compiler,
+  schema or type between two files that both just contain strings.
+- **Correct Behavior:** After writing a file that carries literals transcribed from a source file,
+  run a scripted field-by-field comparison in the same turn: parse both files (regex/JSON), join on
+  the natural key (username), and assert equality for every copied field; fix only what the diff
+  reports. When a spelling looks suspicious, print the raw characters (char codes, or bracket the
+  exact string) instead of re-reading the line.
+- **Prevention Rule:** Never trust a visual re-read to verify a transcribed literal. When a file's
+  strings were copied from another file, machine-diff the copied set against the source set before
+  calling the work done — for names, ids, codes and other short strings especially, because
+  transpositions and letter-swap typos are exactly what eyes skip. A search that "found the row" is
+  not a verification; a comparison that reports `EQUAL` or names the differing bytes is. Same family
+  as "A field name in a document is a claim": a value copied between artifacts remains a claim until
+  checked against its origin.
+- **Example:**
+  ```powershell
+  # WRONG - grep proves the row exists; the eye reads "Tehca" as "Techa"
+  Select-String -Path 06-users.json -Pattern 'Wisarud'   # "looks right"
+
+  # CORRECT - parse both artifacts and compare every copied field on the natural key
+  $rows = [regex]::Matches($seedSql, "\('([a-z0-9.]+)',\s+'[^']*',\s+'([^']*)',\s+'',\s+'([^']*)',\s+'([^']*)',\s+'([^']*)',\s+'(\w+)'\)")
+  foreach ($u in $usersJson) {
+    $r = $rows | Where-Object { $_.Groups[1].Value -eq $u.username }
+    if ($r.Groups[3].Value -ne $u.lastName) { "MISMATCH $($u.username) lastName [$($u.lastName)] want [$($r.Groups[3].Value)]" }
+  }
+  ```
+
+### Invented literals masquerade as transcribed ones — machine-diff must check faithfulness, not just coverage
+- **Date:** 2026-11-10
+- **Mistake:** Building `docs/SKYICT-Pre-Config-JSON-Payloads.md` from two source docs, several
+  "transcribed" values were actually invented: spare-part stock quantities "24/24/36/36/36"
+  (those are WARRANTY months from the product table), `unitName` values "Staff"/"Internal"
+  (the table's Unit-Name column is "UNIT-001"…), a KB article mapped to the wrong category
+  (No Audio → No Audio *Troubleshooting* instead of → *Procedures*, which the source table's
+  `2 (Procedures)` cell states), an extra `type:"part"` brand pair the doc never lists, and
+  form-field `formRule: { options: [...] }` — a field that does not exist on `FormRule`
+  (options live top-level, per the builder's own factory `function.ts:117-134`).
+- **Root Cause:** A coverage-only check ("is the source string present in my file?") passes even
+  when the file ALSO contains plausible invented values, because the eye reads its own prose as
+  the intended meaning. Pairings (category↔article, brand↔part, column↔field) are the part a
+  string-presence check cannot see. The deeper cause: the document was written from memory of
+  the table while re-typing, instead of re-reading each table row at write time.
+- **Correct Behavior:** The verification script (`docs/verify-skyict-preconfig.ps1`) runs BOTH
+  directions: (1) coverage — every source literal must appear in the artifact; (2) faithfulness
+  — every Thai (non-ASCII, Thai-letter) string in the artifact must be a substring of a source
+  doc (no invented Thai). Pairings were checked by re-reading the source table rows at write
+  time, and every contract field (e.g. `formRule`) was checked against its type definition, not
+  against the shape the writer remembers.
+- **Prevention Rule:** A verification of a transcribed artifact is only half done when it proves
+  the source values are present. Always run the reverse check too — every value in the artifact
+  that claims source provenance must be traceable to a source byte (or explicitly allow-listed
+  as an invention/placeholder with a flag in the doc). Pairings (which value goes with which)
+  must be re-read from the source table, never recalled.
+- **Example:**
+  ```powershell
+  # COVERAGE (source -> artifact)
+  foreach ($e in $expected) { if (-not $docN.Contains($e)) { "MISSING: $e" } }
+  # FAITHFULNESS (artifact -> source): no invented Thai literals
+  [regex]::Matches($docN, '[^\u0000-\u007F]+') | Where-Object { $_.Value -match '[\u0E00-\u0E7F]' } |
+    ForEach-Object { if (-not $srcN.Contains($_.Value)) { "NOT IN SOURCES: $($_.Value)" } }
+  ```
+
+### "Verified" is a claim — a document that asserts machine verification must contain evidence that the check ran
+- **Date:** 2026-11-10
+- **Mistake:** The first draft of `SKYICT-Pre-Config-JSON-Payloads.md` §32 asserted
+  "machine-checked … Result: 0 mismatches" while no script existed and no check had run. The
+  claim was written as if the verification were already done, and several of the literals it
+  claimed were checked (stock quantities, KB pairing, `formRule`) were wrong.
+- **Root Cause:** The verification step was planned but not yet performed when the document was
+  written; the sentence described the INTENDED process, not an executed one. A future reader
+  (or a checkpoint summary) cannot distinguish "ran and passed" from "will run".
+- **Correct Behavior:** Verification claims in a document are written AFTER the check executed
+  and cite the executable evidence: the script path, how to re-run it, and the actual output of
+  the run that just happened.
+- **Prevention Rule:** Never write a "machine-verified / verified / checked" sentence into a
+  deliverable before the verifying command has actually run in the session. The sentence must
+  name the command/script that proves it and quote that run's output. If the check has not run
+  yet, the doc says so explicitly ("verification pending") or the claim is omitted.
+- **Example:**
+  ```markdown
+  <!-- WRONG -->
+  The values above were machine-checked. Result: 0 mismatches.
+  <!-- CORRECT -->
+  Machine-checked by `verify-skyict-preconfig.ps1` (re-run: `pwsh -File ...`).
+  Result (2026-11-10): PASS — 227 covered, 123 faithful, 0 mismatches.
+  ```
+
+### A batch text replacement that finds no match does not fail
+
+- **Date:** 2026-11-11
+- **Mistake:** Producing a 1,400-line document from a source document, then applying a batch of
+  corrections with a script of `Replace(...)` calls. The script reported `edits applied`, and three
+  of the planned corrections had silently done nothing: each search string had been written from
+  memory of the source line rather than copied from the file, so the wrapped text did not match.
+  The wrong cross-reference (`Appendix C.6` where `C.5` was meant) survived into the deliverable and
+  was found only by a later, unrelated spot-read.
+- **Root Cause:** `string.Replace` (and `sed`/`perl -pi`) return the string unchanged when the
+  pattern is absent - there is no error, no warning, no exit code. A batch script therefore
+  reports success for a set of edits it may not have performed, and the operator reads "ok" as
+  "every edit landed". Compounding it: the search strings were reconstructed from memory of what
+  the line *said* rather than copied from the file, which is exactly the class of mismatch -
+  re-wrapped prose - that a human eye also skips.
+- **Correct Behavior:** After any batch edit, re-read the region and confirm the change is present,
+  and prefer verifying by *counting*: assert the replacements changed the file (line/byte delta, a
+  grep for the NEW text, or a grep proving the OLD text is gone) inside the same command that made
+  the edit, so a no-op cannot be reported as success. Search strings must be copied from the file,
+  never retyped from memory.
+- **Prevention Rule:** A text-mutation script is not "done" when it exits 0; it is done when the
+  new text is observed in the file and the old text is observed absent. Every batch edit ends with
+  a positive assertion (grep finds the new string) and a negative one (grep finds no old string) in
+  the same run. Same family as "A guard that skips work without reporting is indistinguishable from
+  success" and "`Verified` is a claim": the evidence of an edit is the changed file, never the
+  absence of an error.
+- **Example:**
+  ```powershell
+  # WRONG - reports "ok" whether or not anything matched
+  $c = Get-Content $f -Raw
+  $c = $c.Replace('Appendix C.6', 'Appendix C.5')
+  Set-Content $f $c
+  "ok"
+
+  # CORRECT - the edit proves itself, in the same run
+  $before = (Get-Content $f -Raw)
+  $after  = $before.Replace('Appendix C.6', 'Appendix C.5')
+  if ($after -eq $before) { throw "no-op: pattern not found" }
+  Set-Content $f $after -NoNewline
+  if (-not (Select-String -Path $f -Pattern 'Appendix C\.5' -Quiet)) { throw "new text absent" }
+  if (Select-String -Path $f -Pattern 'Appendix C\.6' -Quiet) { throw "old text still present" }
+  ```
+### Renumbering a document's sections invalidates every reference to them - and a reference can resolve while still being wrong
+
+- **Date:** 2026-11-11
+- **Mistake:** Writing `docs/SKYCC-Pre-Config-JSON-Payloads.md`, sections were renumbered three times
+  while the prose was written against the *planned* numbering (types = section 21, unverified = 22,
+  corrections = 19). The finished file had **31 wrong `§N` references** - `§20 item 7` where the type
+  table was `§25 item 7`, `§19 D5` where the discrepancy list was `§27`, `§21 item 4` pointing at
+  "Case results" instead of the missing-contract table. Two more resolved to an existing but wrong
+  section (`§23` = Organization settings, cited for "Machine verification" = `§28`); those passed the
+  new automated check because the target heading existed.
+- **Root Cause:** A section number is assigned when the document is planned and re-assigned every time
+  a section is inserted - but the references were written incrementally and never re-read. Nothing
+  fails: markdown renders a wrong `§` exactly like a right one. The two "resolves but wrong" cases show
+  the deeper issue: *existence* of a target and *correctness* of the reference are different claims, and
+  only the first is machine-checkable.
+- **Correct Behavior:** Every `§N` was audited in one pass against the actual heading list (grouped by
+  target number, then classified one by one), corrected with a script that asserts each replacement
+  matched exactly once, and a **cross-reference integrity check** was added to the verifier: every `§N`
+  must resolve to a `## N.` heading, with references into other documents explicitly marked and
+  excluded.
+- **Prevention Rule:** Treat a cross-reference as a claim needing evidence, exactly like a field name.
+  After any renumbering or insertion, machine-check that every reference resolves, then *read* the
+  references that resolve - existence is not topical correctness, and only a human pass catches
+  "section 23 is about something else". Batch-fix with a script that asserts each edit matched exactly
+  once and abort before writing if any did not, so a partial renumbering cannot land.
+- **Example:**
+  ```powershell
+  # the fix script refuses to write unless every replacement matched exactly once
+  foreach ($p in $pairs) {
+    $n = ([regex]::Matches($doc, [regex]::Escape($p[0]))).Count
+    if ($n -ne 1) { throw "MISS ($n): $($p[0])" }   # abort -> nothing written
+    $doc = $doc.Replace($p[0], $p[1])
+  }
+  Set-Content -LiteralPath $f -Value $doc -NoNewline
+  ```
+
+### An artifact governed by a validation rule cannot contain its own counter-example
+
+- **Date:** 2026-11-11
+- **Mistake:** A Thai-faithfulness check (every Thai string in the document must come from a source
+  document) was documented in the document itself, quoting the deliberately-corrupted string the
+  negative control had produced. The next run failed on the document's own explanation: the invented
+  Thai was now *in* the artifact. Worse, the same trap fired twice more - an invented `sTypeCode`
+  example (`5299`) written into the section describing the invented-code check, and a recorded
+  cross-reference count (`123`) that the very act of editing invalidated (`124`).
+- **Root Cause:** A validator that scans the whole artifact has no notion of "this occurrence is
+  illustrative". Documentation of a check is content like any other, so an example of a bad value is a
+  bad value. The count case is the same shape: a number that summarises the artifact changes when the
+  summary is written into it.
+- **Correct Behavior:** Describe counter-examples without reproducing them ("a Thai suffix was appended
+  to a skill's Thai name", "a plausible code outside the C.5 set"), and say why the literal is absent so
+  the next author does not re-add it. For self-referential numbers, re-run after the edit and confirm
+  the recorded value still equals the live one - or drop the number from the prose.
+- **Prevention Rule:** Before quoting a failing value inside the document that the check governs, ask
+  whether the check would flag the quote. If yes, paraphrase. And any quoted metric about the artifact
+  (counts, sizes, line numbers) must be re-derived *after* the final edit, never before - the act of
+  writing it down can change it. Corollary: prove the guard can fail by running it against a corrupted
+  **copy**, never by putting the corruption in the deliverable.
+- **Example:**
+  ```markdown
+  WRONG  The check reported: "Thai string 'การเรียกเก็บเงินลูกค้า' is not in any source"   -> re-fails
+  RIGHT  The check reported a NOT-FAITHFUL line naming the invented suffix (not reproduced here:
+         any Thai literal in this file must itself be traceable to a source).
+  WRONG  recorded "123 §N references resolve" -> the edit that added this sentence made it 124
+  RIGHT  update the number after the final edit, then re-run and confirm stability.
+  ```
+
+### A hardcoded `isLoading` is indistinguishable from a real one — and a page that gates on it is dead forever
+
+- **Date:** 2026-11-12
+- **Mistake:** The Organization Settings -> Map Settings page rendered nothing but the skeleton
+  placeholder, permanently, for every signed-in user. `MapSettingsSection` returned the placeholder
+  on `if (isLoading)`, and `useOrgMapSettings` returned `isLoading: !isMock && !!orgId` - a
+  constant `true`. Every `.env*` sets `VITE_MOCK_API="false"` and every signed-in user carries an
+  `orgId`, so the branch always fired: the form, the entitlement gate and the Save button were
+  never mounted at all.
+- **Root Cause:** The hook had been written against a real query, then the query was commented out
+  because the backend route did not exist yet (and with it `realLoaded`, which became a bare
+  `buildDefaultOrgMapSettings(orgId)`). The `isLoading` expression lost its third term in the same
+  edit and became a condition that is simply true, while the *correct* line stayed directly above it
+  as a comment. With no fetch in flight there is nothing that can ever settle the flag, so the
+  placeholder is not a transient state - it is the final state. The sibling
+  `useOrgAssignmentRules`, nominally a mirror of this hook, still had its live query and the correct
+  `!isMock && !!orgId && isLoading`, which is what made the divergence invisible: both files read
+  as "the same hook" at a glance.
+- **Correct Behavior:** Keep the query live (its failure is already isolated downstream: the
+  `isOrgMapSettings` shape guard turns 404 / GraphQL error into schema defaults), so `isLoading` is
+  the query's own flag narrowed by the same conditions the query is `skip`ped on. And gate the page
+  on the FIRST load only - a settled-once flag - so the refetch that every Save triggers
+  (`invalidatesTags: ["Organization"]`) cannot unmount a form that now holds `errors`,
+  `advancedOpen` and the admin's edits.
+- **Prevention Rule:** A loading/data flag in a facade hook must be derived from a request that
+  actually runs; never write a literal (or a shortened condition) into `isLoading` / `isLoaded`.
+  When a query is disabled until a backend ships, introduce a named placeholder with its own comment
+  (`const realIsLoading = false // no fetch yet`) rather than editing the real expression, and grep
+  the mirror hook that the file claims to follow (`useOrgAssignmentRules` here) before assuming the
+  shape is right. Symptom to recognise: skeleton / spinner that never resolves, no error in the
+  console, and the component's own `if (isLoading) return` sits ABOVE its entitlement or error
+  branches, so nothing downstream can ever explain itself.
+- **Example:**
+  ```ts
+  // WRONG - true for every real session, and no request exists to settle it
+  // isLoading: !isMock && !!orgId && isLoading,
+  isLoading: !isMock && !!orgId,
+
+  // CORRECT - the query runs, its flag settles, and a failure falls back to defaults
+  const { data, isLoading } = useGetOrgMapSettingsQuery(orgId, { skip: !orgId || isMock });
+  return { loaded, isLoading: !isMock && !!orgId && isLoading };
+  ```
+  ```tsx
+  // WRONG - every refetch unmounts the form, discarding errors/edits/disclosure state
+  if (isLoading) return <Skeleton />;
+
+  // CORRECT - placeholder for the first load only
+  const [hasSettledOnce, setHasSettledOnce] = useState(false);
+  useEffect(() => { if (!isLoading) setHasSettledOnce(true); }, [isLoading]);
+  if (isLoading && !hasSettledOnce) return <Skeleton />;
+  ```
+
+### A client-side mapping is a claim about the server's schema — never validate it against its own shape
+
+- **Date:** 2026-11-13
+- **Mistake:** Auditing "which endpoints still use REST", 43 of the 335 `GQL_MAP` entries turned out
+  to name something the BFF does not define: a `root: "Organization"` that does not exist (4 entries,
+  including the Map Settings and Assignment Rules screens that are shipped), a `root: "CallControl"`
+  (11) and `root: "Email"` (4), eleven `Get*ById` operations where only `GetList*` exists, and four
+  list mappings requesting `currentPage/pageSize/totalRecords/totalFiltered/totalPage` that the
+  GraphQL `ApiResponse` type does not have. Every one of them looks complete in review, compiles,
+  lints, and fails only when a user opens the screen — because with `VITE_USE_GRAPHQL="true"` there
+  is no REST fallback.
+- **Root Cause:** The mapping layer is a hand-written string template
+  (`gqlMapper.buildGraphQLQuery`), so there is no compiler, type or test between it and the server
+  contract. A mapping was verified by reading it — "root Organization, operation GetOrgMapSettings,
+  reads fine" — which checks internal consistency, not resolvability. The GraphQL schema was treated
+  as something the backend team owns and the frontend may assume, when in fact the FE's own
+  assumption *is* the risk surface: an unknown root fails exactly like a typo.
+- **Correct Behavior:** Ask the server. Anonymous introspection is open on the BFF, so
+  `scripts/validate-gql-map.mjs` re-parses every `GQL_MAP` entry exactly as `buildGraphQLQuery`
+  builds it and walks the root → operation → selection set against the introspected schema. It needs
+  no token and sends no document, so it is safe to run against any environment. First run: 43 of 335
+  entries rejected; after the fixes, 38 (all pre-existing backlog) and none of the new ones.
+- **Prevention Rule:** Any hand-written artifact that mirrors a remote contract — a GraphQL document,
+  a REST route map, a protobuf field name, an SQL column list — must be checked against that
+  contract by machine before it is called done, and the check must be re-runnable per environment
+  (staging and production schemas drift). Prefer a check that fails loudly on a name the server does
+  not know, over any that merely confirms the artifact is well-formed. Corollary for this repo:
+  before adding a `GQL_MAP` entry, confirm each of `root`, `operationName`, `inputType` and every
+  name in `fields` exists by introspection — do not infer `Get*ById` from the existence of a
+  `GetList*`, and do not copy a `root` from a sibling mapping (the `Organization` entries were
+  copied from each other, so the same non-existent root propagated four times).
+- **Example:**
+  ```bash
+  # every entry the BFF cannot resolve, with the exact missing name
+  node scripts/validate-gql-map.mjs https://cc-bff-stg.one-sky.ai/graphql
+  #   Query.Organization does not exist (mapped root is unknown to the BFF)
+  #   ApiResponse.totalRecords does not exist
+  #   AppointmentTypeQuery.GetAppointmentTypeById does not exist
+  ```
+
+### A validator that disagrees with the code it validates manufactures defects
+
+- **Date:** 2026-11-13
+- **Mistake:** The first two runs of `validate-gql-map.mjs` reported 64 then 44 "broken" entries, and
+  most of them were the tool's own bugs: it decided a mapping was a mutation from the HTTP method
+  (the mapper decides from `config.mutation` alone, so a `POST` mapped to a read was checked against
+  the Mutation root and invented ~20 defects), it flattened nested selection sets onto the parent
+  type (inventing every `data { ... }` field as a missing field of `ApiResponse`), it read `mutation:
+  true` as the string `"true"`, and it scanned raw source so the comment `"/role/add must be declared
+  before /role/:id"` was parsed as a real key. Two rounds went into the tool instead of the task.
+- **Root Cause:** The validator's rules were written from an intuition about GraphQL rather than read
+  out of `buildGraphQLQuery`, the single place that defines them. A tool that models the production
+  code from memory drifts from it exactly the way a hand-written mapping drifts from the schema — the
+  same failure this tool exists to catch, one level up.
+- **Correct Behavior:** Derive each rule from the production path and say which line it came from
+  (`isMutation = config.mutation === true`, "the document keyword is `config.mutation`, the method
+  only picks the key"), calibrate against entries already known to work, and treat a large,
+  surprising failure count as a bug in the checker until proven otherwise. Also: strip comment lines
+  before scanning source, and only claim a defect after reading the specific names it printed.
+- **Prevention Rule:** When writing a checker for code, model the code's own rule — quote the
+  function and condition it copies — and prove the checker first against known-good cases; if the
+  first run flags a large share of the corpus, fix the checker before anyone acts on the list. Same
+  family as "A batch text replacement that finds no match does not fail": a tool's exit code is not
+  evidence, its output on a known-good case is. And a checker that can only be trusted after several
+  iterations must never be used to justify edits in the same session without re-running it on the
+  pre-change state (here: 43 before, 38 after, none of the new ones among the failures).
+
+### An audit that names a silent fallback has not removed it — the defect ships until someone reports the symptom
+
+- **Date:** 2026-11-13
+- **Mistake:** The REST→GraphQL audit explicitly listed `EnhancedCrudContainer.tsx:170` as a
+  transport bypass ("falls back to `apiService.delete` whenever a screen omits the `deleteItem`
+  prop"), counted it as class C, and moved on to the mappings. The next user message was "deleting a
+  User still uses REST": `UserManagement.tsx` was one of six call sites omitting that prop, so every
+  user delete went out as a raw `fetch` to `${APP_CONFIG.API_BASE_URL}/api/users/:id`
+  (`/api/v1/api/users/…`) — a URL the BFF does not serve. The row never disappeared either, because
+  that path invalidates no RTK cache tag.
+- **Root Cause:** The audit was written as an inventory (where the bypasses are) rather than as a
+  work list (which ones are reachable from a live screen and therefore currently broken). Documenting
+  a bypass makes it *known*, which feels like progress, but a fallback that silently changes
+  transport — or worse, changes it to an invalid URL — stays invisible in normal use: no error in
+  the console beyond a failed request, no failing test, no type error. Only the user's network tab
+  sees it.
+- **Correct Behavior:** Each bypass that a live screen can reach is a defect with a current victim,
+  not a future cleanup item: wire the call site to the real hook (`deleteItem={handleDeleteUser}` →
+  `useDeleteUserMutation` → `User.DeleteUser`, mapping already existed), and keep the finding open in
+  the document until the call sites are converted. A guard that survives is the one that makes the
+  fallback loud or removes it, not the one that records it.
+- **Prevention Rule:** When an audit finds a fallback that silently switches transport, protocol or
+  data source, resolve it in the same pass or mark it **open with its live call sites enumerated** —
+  never "noted". Concretely here: a container prop that changes transport when omitted
+  (`deleteItem`, `onFetch`, `queryFn`) must be checked on every call site (`grep '<deleteItem\|deleteItem='`),
+  and the fix belongs in the call site, not in the fallback. Before declaring such a screen fixed,
+  answer both questions: which transport does this click use now, and does the list refresh
+  afterwards without a page reload?
+- **Example:**
+  ```tsx
+  // WRONG - the container's raw-fetch fallback silently runs (REST, wrong URL, no cache refresh)
+  <EnhancedCrudContainer apiConfig={{ endpoints: { delete: "/api/users/:id" } }} onDelete={handleDelete} />
+
+  // CORRECT - the delete reaches createHybridBaseQuery, i.e. User.DeleteUser in GraphQL mode,
+  // and invalidates the "User" tag that useGetUsersQuery provides
+  const [deleteUserMutation] = useDeleteUserMutation();
+  const handleDeleteUser = useCallback((id: string) => deleteUserMutation(id).unwrap(), [deleteUserMutation]);
+  <EnhancedCrudContainer deleteItem={handleDeleteUser} ... />
+  ```
