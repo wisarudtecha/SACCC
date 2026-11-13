@@ -40,6 +40,10 @@ const DELETE_SKILL_MUTATION = {
 
 export const GQL_SKILL = {
   "/skill": GET_LIST_SKILL_QUERY,
+  // skillApi.createSkill POSTs to "/skill/add" with SkillCreateData { active, en, th } - the same
+  // field set SkillInput declares, so no alias/omission is needed. Declared before "/skill/:id"
+  // so the literal segment wins the match.
+  "/skill/add": { POST: CREATE_SKILL_MUTATION },
   "/skill/:id": {
     GET: GET_SKILL_BY_ID_QUERY,
     POST: CREATE_SKILL_MUTATION,

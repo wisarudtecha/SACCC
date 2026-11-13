@@ -183,6 +183,12 @@ const UPDATE_ORG_ASSIGNMENT_RULES_MUTATION = {
 export const GQL_ORGANIZATION = {
   // Commands
   "/commands": GET_LISTS_COMMAND_QUERY,
+  // The REST create endpoints use an "/add" suffix (organizationApi.createCommands and friends),
+  // which no ":id" key can cover - matchUrl compiles ":id" to ([^/]+), so `/commands/:id` would
+  // match "/commands/add" but only for the methods it declares, and create is a POST while the
+  // ":id" POST is CreateCommand with the wrong input shape (no commId/deptId from the path).
+  // Declared before the ":id" keys so the literal wins, same ordering rule as customerNoteRoutes.
+  "/commands/add": { POST: CREATE_COMMAND_MUTATION },
   "/commands/:id": {
     GET: GET_COMMAND_BY_ID_QUERY,
     POST: CREATE_COMMAND_MUTATION,
@@ -192,6 +198,7 @@ export const GQL_ORGANIZATION = {
 
   // Departments
   "/departments": GET_LISTS_DEPARTMENT_QUERY,
+  "/departments/add": { POST: CREATE_DEPARTMENT_MUTATION },
   "/departments/:id": {
     GET: GET_DEPARTMENT_BY_ID_QUERY,
     POST: CREATE_DEPARTMENT_MUTATION,
@@ -202,6 +209,7 @@ export const GQL_ORGANIZATION = {
 
   // Stations
   "/stations": GET_LISTS_STATION_QUERY,
+  "/stations/add": { POST: CREATE_STATION_MUTATION },
   "/stations/:id": {
     GET: GET_STATION_QUERY,
     POST: CREATE_STATION_MUTATION,

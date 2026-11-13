@@ -25,6 +25,7 @@ import {
   useGetUserGroupsByUsernameQuery,
   useAssignUserGroupMutation,
   useDeleteAssignUserGroupMutation,
+  useDeleteUserMutation,
 } from "@/core/store/api/userApi";
 import { AuthService } from "@/core/utils/authService";
 import { formatLastLogin } from "@/core/utils/crud";
@@ -195,6 +196,16 @@ const UserManagementComponent: React.FC<{
   // }, []);
 
   const [updateUserWithSkillsBatchMutation] = useUpdateUserWithSkillsBatchMutation();
+
+  // User deletion has to travel through RTK Query, because that is the only path that reaches
+  // createHybridBaseQuery - which is what turns DELETE /users/:id into the BFF's
+  // User.DeleteUser mutation when VITE_USE_GRAPHQL is on (mapping: graphql/userQueries.ts).
+  // EnhancedCrudContainer falls back to apiService.delete (a raw fetch) whenever `deleteItem` is
+  // omitted, and that fallback is wrong twice over: it never reaches the GraphQL switch, and it
+  // composes `${APP_CONFIG.API_BASE_URL}/api/users/:id` = "/api/v1/api/users/…", a path the BFF
+  // does not serve. The mutation also invalidates the "User" tag that useGetUsersQuery provides,
+  // so the row disappears without a page reload.
+  const [deleteUserMutation] = useDeleteUserMutation();
 
   const handleUserSkillsSave = async () => {
     try {
@@ -876,6 +887,14 @@ const UserManagementComponent: React.FC<{
     console.log("User deleted:", caseId);
   };
 
+  // Performs the delete through RTK Query (see the note on deleteUserMutation above). `.unwrap()`
+  // is deliberate: EnhancedCrudContainer surfaces the error toast by catching a rejection, so
+  // swallowing the result here would report success for a rejected delete.
+  const handleDeleteUser = useCallback(
+    (id: string) => deleteUserMutation(id).unwrap(),
+    [deleteUserMutation],
+  );
+
   // Filter Logic Implementation
   // const applyFilters = useCallback(() => {
   //   let filtered = [...usr];
@@ -959,6 +978,9 @@ const UserManagementComponent: React.FC<{
         config={config}
         // data={usr as unknown as { id: string }[]}
         data={data}
+        // Routes the delete through RTK Query -> createHybridBaseQuery -> GraphQL. Without this
+        // the container silently uses apiService.delete, which is a raw REST fetch.
+        deleteItem={handleDeleteUser}
         displayModes={["card", "table"]}
         enableDebug={true} // Enable debug mode to troubleshoot
         // error={null}

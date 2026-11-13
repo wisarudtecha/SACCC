@@ -319,3 +319,132 @@ describe("buildGraphQLQuery - Call control", () => {
     }
   });
 });
+
+// The REST bodies keep the field names the REST BFF expects; `inputFieldAliases` renames them only
+// on the GraphQL side. Every case below is a call site whose body would otherwise fail
+// BAD_USER_INPUT against a curated input type (see src/core/types/gql.ts).
+describe("buildGraphQLQuery - inputFieldAliases", () => {
+  test("PATCH /forms/active sends formId as GetIdInput.id", () => {
+    const result = buildGraphQLQuery({
+      url: "/forms/active",
+      method: "PATCH",
+      body: { formId: "FORM-1", active: false },
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.query).toContain("UpdateFormsActive");
+    expect(result!.query).toContain("GetIdInput");
+    expect(result!.variables.input).toEqual({ id: "FORM-1", active: false });
+  });
+
+  test("PATCH /forms/version and /forms/publish rename formId the same way", () => {
+    const version = buildGraphQLQuery({
+      url: "/forms/version",
+      method: "PATCH",
+      body: { formId: "FORM-1", version: "2" },
+    });
+    const publish = buildGraphQLQuery({
+      url: "/forms/publish",
+      method: "PATCH",
+      body: { formId: "FORM-1", publish: true },
+    });
+
+    expect(version!.query).toContain("UpdateFormsVersion");
+    expect(version!.variables.input).toEqual({ id: "FORM-1", version: "2" });
+    expect(publish!.query).toContain("UpdateFormsPublish");
+    expect(publish!.variables.input).toEqual({ id: "FORM-1", publish: true });
+  });
+
+  test("the literal form action paths win over /forms/:id", () => {
+    // "/forms/publish" would match "/forms/:id" first if that key were declared earlier, turning
+    // a publish into UpdateForms with a { formId, publish } body.
+    const result = buildGraphQLQuery({
+      url: "/forms/publish",
+      method: "PATCH",
+      body: { formId: "FORM-1", publish: true },
+    });
+
+    expect(result!.query).toContain("UpdateFormsPublish");
+    expect(result!.query).not.toContain("UpdateForms ");
+  });
+
+  test("GET /forms/GetFormlinkWf reads a query, not a mutation, and renames formId", () => {
+    const result = buildGraphQLQuery({
+      url: "/forms/GetFormlinkWf?formId=FORM-1",
+      method: "GET",
+      params: { formId: "FORM-1" },
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.query).toContain("GetFormlinkWf");
+    expect(result!.query.startsWith("query")).toBe(true);
+    expect(result!.variables.input).toEqual({ id: "FORM-1" });
+  });
+
+  test("DELETE /orders/:orderId/items/:itemId sends itemId as GetOrderItemInput.requestId", () => {
+    const result = buildGraphQLQuery({ url: "/orders/ORD-1/items/ITM-9", method: "DELETE" });
+
+    expect(result).not.toBeNull();
+    expect(result!.query).toContain("DeleteOrderItem");
+    expect(result!.variables.input).toEqual({ orderId: "ORD-1", requestId: "ITM-9" });
+  });
+});
+
+// Guards the transport of the admin delete actions: UserManagement must call
+// useDeleteUserMutation rather than EnhancedCrudContainer's apiService.delete fallback, and this
+// pins the mapping that makes that call GraphQL instead of REST. If this test ever fails, the
+// delete is silently back on the raw-fetch path (REST, and a URL the BFF does not serve).
+describe("buildGraphQLQuery - admin delete paths resolve to mutations", () => {
+  test("DELETE /users/:id maps to User.DeleteUser with GetIdInput", () => {
+    const result = buildGraphQLQuery({ url: "/users/USR-1", method: "DELETE" });
+
+    expect(result).not.toBeNull();
+    expect(result!.query).toContain("mutation");
+    expect(result!.query).toContain("DeleteUser");
+    expect(result!.query).toContain("User");
+    expect(result!.query).toContain("GetIdInput");
+    expect(result!.variables.input).toEqual({ id: "USR-1" });
+  });
+});
+
+describe("buildGraphQLQuery - create paths added for previously unmapped endpoints", () => {
+  const cases: Array<{ url: string; body: Record<string, unknown>; operation: string; inputType: string }> = [
+    { url: "/departments/add", body: { active: true, en: "D", th: "ท" }, operation: "CreateDepartment", inputType: "DepartmentInput" },
+    { url: "/commands/add", body: { active: true, deptId: "D-1", en: "C", th: "ค" }, operation: "CreateCommand", inputType: "CommandInput" },
+    { url: "/stations/add", body: { active: true, commId: "C-1", deptId: "D-1", en: "S", th: "ส" }, operation: "CreateStation", inputType: "StationInput" },
+    { url: "/skill/add", body: { active: true, en: "Skill", th: "ทักษะ" }, operation: "CreateSkill", inputType: "SkillInput" },
+    { url: "/role/add", body: { active: true, roleName: "Admin" }, operation: "CreateRole", inputType: "RoleInput" },
+    { url: "/role_permission/add", body: { roleId: "R-1", permissions: [] }, operation: "CreateRolePermission", inputType: "RolePermissionInput" },
+    { url: "/customer_service/add", body: { customerId: "CUS-1", serviceDate: "2026-01-01", serviceId: "SVC-1" }, operation: "CreateCustomerService", inputType: "CustomerServiceInput" },
+  ];
+
+  test("each create path maps to its mutation with the body forwarded verbatim", () => {
+    for (const testCase of cases) {
+      const result = buildGraphQLQuery({ url: testCase.url, method: "POST", body: testCase.body });
+      expect(result, testCase.url).not.toBeNull();
+      expect(result!.query, testCase.url).toContain("mutation");
+      expect(result!.query, testCase.url).toContain(testCase.operation);
+      expect(result!.query, testCase.url).toContain(testCase.inputType);
+      expect(result!.variables.input, testCase.url).toEqual(testCase.body);
+    }
+  });
+
+  test("PATCH /role_permission/:roleId merges the path param into RolePermissionInput", () => {
+    const result = buildGraphQLQuery({
+      url: "/role_permission/R-1",
+      method: "PATCH",
+      body: { permissions: [] },
+    });
+
+    expect(result!.query).toContain("UpdateRolePermission");
+    expect(result!.query).not.toContain("UpdateRolePermissionMulti");
+    expect(result!.variables.input).toEqual({ roleId: "R-1", permissions: [] });
+  });
+
+  test("DELETE /role_permission/:id maps to DeleteRolePermission with GetIdInput", () => {
+    const result = buildGraphQLQuery({ url: "/role_permission/RP-1", method: "DELETE" });
+
+    expect(result!.query).toContain("DeleteRolePermission");
+    expect(result!.variables.input).toEqual({ id: "RP-1" });
+  });
+});

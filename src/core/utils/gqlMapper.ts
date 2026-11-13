@@ -339,9 +339,17 @@ export const buildGraphQLQuery = (args: FetchArgs) => {
   // ("attachments.orgId") are applied recursively after the top-level pass.
   const omitTopLevel = new Set((config.omitInputFields ?? []).filter((f) => !f.includes(".")));
   const omitNested = (config.omitInputFields ?? []).filter((f) => f.includes("."));
+  // v5.3 - config.inputFieldAliases renames caller-side keys to the target input type's field
+  // names (formApi's formId -> GetIdInput.id, orderItem's itemId -> GetOrderItemInput.requestId).
+  // Applied first: everything below sees the server-facing names, and the REST body keeps the
+  // names the REST BFF expects.
+  const aliases = config.inputFieldAliases ?? {};
+  const namedSource = Object.fromEntries(
+    Object.entries(inputSource).map(([key, value]) => [aliases[key] ?? key, value])
+  );
   let cleanedInput = normalizeObject(
     Object.fromEntries(
-      Object.entries(inputSource).filter(
+      Object.entries(namedSource).filter(
         ([k, v]) => !omitTopLevel.has(k) && v !== undefined && v !== null && (v !== "" || k === "referCaseId")
       )
     )

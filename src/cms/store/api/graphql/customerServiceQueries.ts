@@ -39,6 +39,11 @@ const DELETE_CUSTOMER_SERVICE_MUTATION = {
 
 export const GQL_CUSTOMER_SERVICE = {
   "/customer_service": GET_LIST_CUSTOMER_SERVICE_QUERY,
+  // customerServiceApi.addCustomerService POSTs to "/customer_service/add" (an "add" suffix), and
+  // its body is exactly { serviceId, customerId, serviceDate } - the same three fields
+  // CustomerServiceInput declares, so no alias or omission is needed. Declared before the ":id"
+  // key so the literal segment wins the match.
+  "/customer_service/add": { POST: CREATE_CUSTOMER_SERVICE_MUTATION },
   "/customer_service/:id": {
     GET: GET_CUSTOMER_SERVICE_BY_ID_QUERY,
     POST: CREATE_CUSTOMER_SERVICE_MUTATION,

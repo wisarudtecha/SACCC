@@ -35,4 +35,14 @@ export type GqlMapConfig = {
   // stricter than the record's read model (AttachmentInput accepts only
   // id/type/attId/attName/attUrl).
   omitInputFields?: string[];
+  // Renames caller-side body/param keys to the names the target GraphQL input type defines.
+  //
+  // `omitInputFields` can drop a mismatched field, but some call sites send the *same value*
+  // under a different name: formApi sends `{ formId, active }` to PATCH /forms/active while the
+  // BFF's UpdateFormsActive takes `GetIdInput { id, active }`; orderItem sends the item id as
+  // `itemId` while GetOrderItemInput calls it `requestId`. Renaming here fixes every caller of
+  // the endpoint at once and leaves the REST body exactly as the REST BFF expects it - the same
+  // division of labour `omitInputFields` already follows. Applied before the empty-value strip
+  // and before omitInputFields, so a rename and an omit can be combined on one endpoint.
+  inputFieldAliases?: Record<string, string>;
 };
