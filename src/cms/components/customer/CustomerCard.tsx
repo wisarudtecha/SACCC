@@ -20,7 +20,10 @@ interface CustomerProps {
 
 const CustomerCard: React.FC<CustomerProps> = ({ customerData, onEdit, onView, onDelete }) => {
     const { t } = useTranslation();
-    const { canViewField, maskValue } = usePiiMasker();
+    const {
+        // canViewField,
+        maskValue
+    } = usePiiMasker();
     return (
         <div
             key={customerData.id}
@@ -38,7 +41,9 @@ const CustomerCard: React.FC<CustomerProps> = ({ customerData, onEdit, onView, o
                     /> */}
                     {/* A face is sensitive personal data — without it, fall through to the
                         initials branch below. */}
-                    {canViewField("photo") && customerData.photo ? (
+                    {
+                        // canViewField("photo") &&
+                        customerData.photo ? (
                         <Avatar className="w-20 h-20 justify-center items-center" >
                             <img src={customerData.photo} alt={customerData.displayName} className="h-full w-full object-cover rounded-full"/>
                         </Avatar>

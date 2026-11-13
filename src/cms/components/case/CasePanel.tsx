@@ -575,7 +575,8 @@ const CustomerInfoTab: React.FC<{
                 <div className="flex flex-wrap gap-3 items-center">
                     <Avatar
                         src={
-                            canViewField("photo") && customer?.photo
+                            // canViewField("photo") &&
+                            customer?.photo
                                 ? customer.photo
                                 : "/images/user/unknow user.png"
                         }

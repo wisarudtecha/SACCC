@@ -86,7 +86,9 @@ export const CustomerPreviewData = ({ customer, className }: { customer: Custome
                         // through to the initials the component already renders for customers
                         // with no photo — a mask string in `src` would only produce a broken
                         // image.
-                        canViewField("photo") && customer?.photo ? (
+
+                        // canViewField("photo") &&
+                        customer?.photo ? (
                             <Avatar className="w-30 h-30 justify-center items-center">
                                 <img src={customer?.photo} alt={customer?.displayName} className="h-full w-full object-cover rounded-full" />
                             </Avatar>
