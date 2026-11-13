@@ -2,6 +2,8 @@ import type { TenantEntitlements } from "@/core/types/entitlement";
 import bmaFixture from "./bma.json";
 import sihFixture from "./sih.json";
 import skyAiFixture from "./sky-ai.json";
+import skyictFixture from "./skyict.json";
+import skyccFixture from "./skycc.json";
 import defaultFixture from "./default.json";
 
 /**
@@ -17,6 +19,8 @@ export const ENTITLEMENT_FIXTURES: Record<string, TenantEntitlements> = {
   BMA: bmaFixture as TenantEntitlements,
   SIH: sihFixture as TenantEntitlements,
   "SKY-AI": skyAiFixture as TenantEntitlements,
+  SKYICT: skyictFixture as TenantEntitlements,
+  SKYCC: skyccFixture as TenantEntitlements,
 };
 
 const FALLBACK = defaultFixture as TenantEntitlements;

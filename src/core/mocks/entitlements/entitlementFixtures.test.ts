@@ -17,6 +17,7 @@ describe("entitlement fixture registry", () => {
     expect(resolveFixture("BMA").plan).toBe("enterprise");
     expect(resolveFixture("SIH").plan).toBe("professional");
     expect(resolveFixture("SKY-AI").plan).toBe("essential");
+    expect(resolveFixture("SKYICT").plan).toBe("enterprise");
   });
 
   it("matches organization names trim + case-insensitively", () => {
@@ -24,6 +25,7 @@ describe("entitlement fixture registry", () => {
     expect(resolveFixture(" BMA ").plan).toBe("enterprise");
     expect(resolveFixture("Sih").plan).toBe("professional");
     expect(resolveFixture("sky-ai").plan).toBe("essential");
+    expect(resolveFixture("skyict").plan).toBe("enterprise");
   });
 
   it("falls back to the Essential default for unknown or missing orgs", () => {
@@ -44,11 +46,12 @@ describe("entitlement fixture registry", () => {
     const second = resolveFixture("SIH");
     expect(second.seats.used).toBe(80);
     expect(second.features.length).toBeGreaterThan(0);
+    expect(resolveFixture("SKYICT").features).toContain("entitlement.gis");
   });
 
   it("exposes tenant display names for the login selector", () => {
     expect(FIXTURE_TENANT_NAMES).toEqual(
-      expect.arrayContaining(["BMA", "SIH", "SKY-AI"]),
+      expect.arrayContaining(["BMA", "SIH", "SKY-AI", "SKYICT"]),
     );
   });
 });

@@ -1,0 +1,30 @@
+{
+  "orgId": "SKYICT",
+  "plan": "enterprise",
+  "skus": [
+    "CC-CORE", "CC-AGENT", "CC-KB", "CC-CHAT",
+    "CC-CHANNEL", "CC-GIS", "CC-CAD", "CC-BOT"
+  ],
+  "features": [
+    "entitlement.core",
+    "entitlement.agent.desktop",
+    "entitlement.kb",
+    "entitlement.kb.semantic_search",
+    "entitlement.chat",
+    "entitlement.channel.social",
+    "entitlement.gis",
+    "entitlement.cad",
+    "entitlement.bot",
+    "entitlement.audit",
+    "entitlement.rbac.advanced"
+  ],
+  "limits": {
+    "maxAgents": 50,
+    "maxStorageGB": 25,
+    "maxCasesPerMonth": 10000,
+    "maxAPICallsPerDay": 20000
+  },
+  "seats": { "used": 0, "max": 50 },
+  "renewedAt": "2026-11-01T00:00:00Z",
+  "expiresAt": "2027-11-01T00:00:00Z"
+}
