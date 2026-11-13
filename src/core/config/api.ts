@@ -60,6 +60,22 @@ const getWelcomeApiBaseUrl = (): string => {
  */
 export type MapProviderId = "arcgis" | "longdo" | "maptiler";
 
+/**
+ * Where the case map's administrative boundary POLYGONS come from.
+ *
+ * Named here rather than in `@/cms` for the same reason as MapProviderId: this is
+ * one of this config object's own values, so `core` should not have to reach into
+ * a module to type it. The level tables and both boundary sources live in
+ * `@/cms/components/case/createCase/map/boundaries`.
+ *
+ *   "org"    the organization's area records + static TopoJSON under
+ *            public/geo/thailand (one file per level)
+ *   "minio"  the organization's area records + one geometry object per AREA in
+ *            object storage (see minioBoundaryGeometry.ts)
+ *   "local"  the static Bangkok GeoJSON fixtures, kept as the reference view
+ */
+export type BoundarySourceId = "org" | "minio" | "local";
+
 export interface SSOCookie {
   accessToken: string | null;
   disabled_audio: string | null;
@@ -176,13 +192,31 @@ export const API_CONFIG = {
   // VITE_ORS_API_KEY. Travels in the Authorization header, browser-side key.
   ORS_API_KEY: import.meta.env.VITE_ORS_API_KEY || "",
   // Which administrative boundary polygons the case maps draw.
-  //   "org"   (default) the organization's own area data from the BFF,
-  //           levelled country -> province -> district
+  //   "minio" (default) the organization's own area data from the BFF, with
+  //           polygon geometry fetched per area from object storage
+  //           (see BOUNDARY_MINIO_BASE_URL below)
+  //   "org"             the organization's own area data, with geometry from the
+  //                     static TopoJSON files under public/geo/thailand
   //   "local"           the static Bangkok GeoJSON files under public/geo,
-  //           levelled province -> district -> subdistrict
-  // Anything other than the literal "local" resolves to "org", so an unset or
-  // mistyped value fails towards real data rather than towards the fixtures.
-  BOUNDARY_SOURCE: import.meta.env.VITE_BOUNDARY_SOURCE === "local" ? "local" : "org",
+  //                     levelled province -> district -> subdistrict
+  // Anything unrecognised resolves to "org", so an unset or mistyped value fails
+  // towards real data rather than towards the fixtures.
+  BOUNDARY_SOURCE: (import.meta.env.VITE_BOUNDARY_SOURCE === "local"
+    ? "local"
+    : import.meta.env.VITE_BOUNDARY_SOURCE === "minio"
+      ? "minio"
+      : "org") as BoundarySourceId,
+  // Base URL of the boundary geometry bucket, INCLUDING bucket name and prefix.
+  // Objects live at `${BASE}/{orgId}/{countryId}[/{provId}[/{distId}]].json.gz` -
+  // the layout is encoded in minioBoundaryGeometry.ts, so only this one root is
+  // configurable. Public read on the bucket; no credentials, no signing.
+  //
+  // NO FALLBACK ON PURPOSE. A per-environment bucket cannot have a safe default:
+  // defaulting to the staging bucket would make a production deploy that forgot
+  // this variable read staging geometry and look fine. Empty means "not
+  // configured", and boundarySource.ts falls back to the static-geometry source
+  // when it is empty.
+  BOUNDARY_MINIO_BASE_URL: (import.meta.env.VITE_BOUNDARY_MINIO_BASE_URL || "").replace(/\/+$/, ""),
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000, // 1 second
   TIMEOUT: 10000 // 10 seconds

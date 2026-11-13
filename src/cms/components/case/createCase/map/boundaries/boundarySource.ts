@@ -37,6 +37,9 @@
 //     (scripts/build-thailand-boundaries.mjs, at build time) - this source no
 //     longer computes colour client-side the way it used to.
 import store from "@/core/store/index";
+// The persisted session profile - the real source of the signed-in user, since the
+// Redux `auth` slice is never populated (see currentOrgId).
+import { TokenManager } from "@/core/utils/tokenManager";
 import { areaApi } from "@/cms/store/api/area";
 import type { AreaCountryTree, Country, AreaProvince, AreaDistrict, PolygonCoordinates } from "@/cms/types/area";
 import { API_CONFIG } from "@/core/config/api";
@@ -50,6 +53,18 @@ import {
   type BoundaryOption,
   type BoundarySelection
 } from "./boundaryTypes";
+// Provider-neutral and SDK-free on purpose: boundaryColors.ts imports nothing at
+// all and boundaryColoring.ts imports only a type, so pulling them in here cannot
+// drag @arcgis/core into a Longdo-only chunk (see the "pure helper in an
+// SDK-bound module" note in the anti-regression lessons).
+import { assignBoundaryColors } from "./boundaryColoring";
+import { BOUNDARY_PALETTE_SIZE } from "./boundaryColors";
+import {
+  boundaryGeometryUrl,
+  fetchBoundaryRings,
+  mapWithConcurrency,
+  MINIO_FETCH_CONCURRENCY
+} from "./minioBoundaryGeometry";
 
 export interface BoundarySource {
   /**
@@ -177,6 +192,19 @@ interface OrgAreaNode {
   code: string;
   parent: string | null;
   rawId: string;
+  /**
+   * This node's path inside the geometry bucket, coarsest first:
+   * [countryId], [countryId, provId] or [countryId, provId, distId].
+   *
+   * A THIRD key alongside `code` and `rawId` because all three differ:
+   * `code` is lineage-prefixed for uniqueness across countries, `rawId` is the
+   * TIS-1099 code the retired static TopoJSON files were keyed by (and, for a
+   * district, a CONCATENATION of two ids), and only these segments are the org's
+   * own ids in their own nesting - which is exactly what the object path mirrors.
+   * Do not fold this into `rawId`: the district's rawId is "1001"-shaped while
+   * its path is countryId/10/01.
+   */
+  pathSegments: readonly string[];
   en: string;
   th: string;
 }
@@ -210,7 +238,14 @@ function buildFlatOrgAreas(trees: readonly AreaCountryTree[]): FlatOrgAreas {
 
   trees.filter(isActive).forEach((countryNode) => {
     const countryCode = countryNode.countryId;
-    country.push({ code: countryCode, parent: null, rawId: countryCode, en: countryNode.en, th: countryNode.th });
+    country.push({
+      code: countryCode,
+      parent: null,
+      rawId: countryCode,
+      pathSegments: [countryCode],
+      en: countryNode.en,
+      th: countryNode.th
+    });
 
     (countryNode.provinces || []).filter(isActive).forEach((provinceNode) => {
       // See OrgAreaNode's comment: the lineage prefix keeps `code` unique
@@ -221,6 +256,7 @@ function buildFlatOrgAreas(trees: readonly AreaCountryTree[]): FlatOrgAreas {
         code: provinceCode,
         parent: countryCode,
         rawId: provinceNode.provId,
+        pathSegments: [countryCode, provinceNode.provId],
         en: provinceNode.en,
         th: provinceNode.th
       });
@@ -238,6 +274,9 @@ function buildFlatOrgAreas(trees: readonly AreaCountryTree[]): FlatOrgAreas {
           // omits the leading zero, since "10" + "1" would otherwise wrongly
           // produce "101" instead of "1001".
           rawId: `${provinceNode.provId}${districtNode.distId.padStart(2, "0")}`,
+          // The bucket stores the BARE distId, not the concatenation above - the
+          // nesting already supplies the province.
+          pathSegments: [countryCode, provinceNode.provId, districtNode.distId],
           en: districtNode.en,
           th: districtNode.th
         };
@@ -562,6 +601,27 @@ function retainBlobUrl(key: string, collection: OrgFeatureCollection): string {
 }
 
 /**
+ * Drops a reference to a blob URL and revokes it once the last holder lets go.
+ *
+ * Shared by every source that serves geometry as a blob (the org static source and
+ * the MinIO source), so the reference-counting rule lives in one place.
+ */
+function releaseRetainedBlobUrl(url: string): void {
+  const remaining = (blobRefCount.get(url) ?? 0) - 1;
+  if (remaining > 0) {
+    blobRefCount.set(url, remaining);
+    return;
+  }
+  blobRefCount.delete(url);
+  for (const [key, cached] of blobUrlByKey) {
+    if (cached === url) {
+      blobUrlByKey.delete(key);
+    }
+  }
+  URL.revokeObjectURL(url);
+}
+
+/**
  * Drops the cached ORG RECORDS (names/hierarchy/active flags) and their
  * derived blobs so the next map read rebuilds them. Area edits never reach
  * this module otherwise: without this a map opened after an edit keeps
@@ -581,6 +641,12 @@ function retainBlobUrl(key: string, collection: OrgFeatureCollection): string {
 export function invalidateOrgBoundaryData(): void {
   flatOrgDataPromise = null;
   blobUrlByKey.clear();
+  // MinIO geometry is per area and DOES change at runtime - an operator redrawing an
+  // area's polygon writes a new object - so its cache is dropped here too, together
+  // with the colour map derived from it. The static TopoJSON caches
+  // (countryGeometryPromise and friends) stay: those are build-time files.
+  minioGeometryByUrl.clear();
+  minioColorByLevel.clear();
 }
 
 export const orgAreaSource: BoundarySource = {
@@ -629,18 +695,7 @@ export const orgAreaSource: BoundarySource = {
   },
 
   releaseLayerUrl(url) {
-    const remaining = (blobRefCount.get(url) ?? 0) - 1;
-    if (remaining > 0) {
-      blobRefCount.set(url, remaining);
-      return;
-    }
-    blobRefCount.delete(url);
-    for (const [key, cached] of blobUrlByKey) {
-      if (cached === url) {
-        blobUrlByKey.delete(key);
-      }
-    }
-    URL.revokeObjectURL(url);
+    releaseRetainedBlobUrl(url);
   },
 
   async loadIndex() {
@@ -654,10 +709,302 @@ export const orgAreaSource: BoundarySource = {
   }
 };
 
+// ===================================================================
+// MinIO geometry source
+// ===================================================================
+//
+// The RECORDS are the same as orgAreaSource: names, hierarchy and active flags
+// still come from the area API, so they still travel through GraphQL when
+// VITE_USE_GRAPHQL is on. Only the GEOMETRY moves - from whole-level TopoJSON
+// files under public/geo/thailand to one object per AREA in object storage
+// (layout and wire format documented in minioBoundaryGeometry.ts).
+//
+// Two consequences worth knowing before touching this:
+//
+//   - COLOUR can no longer come from a data file. The static index carried a
+//     COLOR_IDX baked in at build time; a stored object carries only rings. The
+//     slot is therefore computed here by adjacency (assignBoundaryColors), which
+//     is the same four-colour algorithm the build script used, so bordering areas
+//     still provably never share a hue - the property boundaryColors.ts's
+//     accessibility record depends on.
+//   - ONE REQUEST PER AREA. The old source fetched one file per level, and one per
+//     SELECTED province at the district level. This one fetches one object per
+//     drawn area: every province of the country (~76), and every district of every
+//     selected province (~50 each). Depth is bounded by MINIO_FETCH_CONCURRENCY and
+//     every URL is cached for the session, but the request COUNT is inherent to a
+//     per-area layout. If that becomes the bottleneck, the fix is a merged
+//     per-level object upstream, not a cache here.
+
+/** The signed-in user's organization - the root path segment of every object. */
+function currentOrgId(): string | null {
+  // Read the PERSISTED session profile, not the Redux `auth` slice.
+  //
+  // AuthState lives in AuthProvider's useReducer (src/core/providers/AuthProvider.tsx)
+  // and is rehydrated from `TokenManager.getStoredUser()` - the "profile" entry in
+  // localStorage/sessionStorage. The Redux `auth` slice is a parallel definition that
+  // nothing ever feeds: `loginSuccess` is exported but has no dispatcher anywhere in
+  // src, so `store.getState().auth.user` is permanently null. Reading it here is what
+  // produced "the signed-in user carries no orgId" on a fully logged-in session.
+  //
+  // TokenManager is synchronous and framework-free, which is what makes it usable from
+  // this plain module - the same reason AuthProvider and the RTK base query both fall
+  // back to it.
+  //
+  // orgId is not declared on the CMS `User` type (@/cms/types) even though the login
+  // response, the persisted profile and AuthProvider's own backfill (it injects one
+  // when a legacy profile lacks it) all carry it. Read it through a narrow shape and
+  // check the TYPE rather than truthiness, so an absent value fails loudly instead of
+  // building a path like "undefined/C-ID.json.gz".
+  const profile = TokenManager.getStoredUser() as { orgId?: unknown; user?: unknown } | null;
+  // `user` is the org/tenant name string on this record; `orgId` is the uuid the
+  // bucket nests under. Only orgId is accepted - falling back to the name would
+  // silently produce a path that cannot exist.
+  const orgId = profile?.orgId;
+  return typeof orgId === "string" && orgId.length > 0 ? orgId : null;
+}
+
+/**
+ * Geometry objects, cached per URL for the session.
+ *
+ * `null` results are cached too, deliberately: "this area has no polygon yet" is
+ * the normal state for most of a fresh organization, and re-requesting dozens of
+ * 404s every time the boundary selection changes would cost more than the stale
+ * window it avoids. invalidateOrgBoundaryData clears this when area writes land.
+ */
+const minioGeometryByUrl = new Map<string, Promise<PolygonCoordinates | null>>();
+
+function loadMinioGeometry(url: string): Promise<PolygonCoordinates | null> {
+  let cached = minioGeometryByUrl.get(url);
+  if (!cached) {
+    cached = fetchBoundaryRings(url);
+    minioGeometryByUrl.set(url, cached);
+  }
+  return cached;
+}
+
+/**
+ * Colour slot per node code, filled as a side effect of drawing a level.
+ *
+ * The index has to stay geometry-free - that is what lets the picker list every
+ * area before, or without, any geometry arriving - so an option's colour is only
+ * known once its level has been drawn. Until then it falls back to slot 0 rather
+ * than hashing the code: a hash would break the adjacency guarantee the palette's
+ * accessibility record rests on.
+ */
+const minioColorByLevel = new Map<AdminLevel, Map<string, number>>();
+
+/** The selected provinces' bare provIds - the district level's fetch scope. */
+function selectedProvinceRawIds(
+  selection: BoundarySelection,
+  flat: FlatOrgAreas
+): string[] {
+  return [
+    ...new Set(
+      selection.province
+        .map((code) => flat.province.find((province) => province.code === code)?.rawId)
+        .filter((rawId): rawId is string => Boolean(rawId))
+    )
+  ].sort();
+}
+
+/** The nodes whose geometry a level needs, before any object is requested. */
+function minioNodesFor(
+  level: AdminLevel,
+  flat: FlatOrgAreas,
+  provinceRawIds: readonly string[]
+): OrgAreaNode[] {
+  if (level === "country") {
+    return flat.country;
+  }
+  if (level === "province") {
+    return flat.province;
+  }
+  if (level === "district") {
+    return provinceRawIds.flatMap((provId) => flat.districtsByProvinceRawId.get(provId) ?? []);
+  }
+  // subdistrict: the org table has no fourth level.
+  return [];
+}
+
+async function loadMinioGeometryByCode(
+  orgId: string,
+  nodes: readonly OrgAreaNode[],
+  level: AdminLevel
+): Promise<Map<string, PolygonCoordinates>> {
+  const urls = nodes.map((node) =>
+    boundaryGeometryUrl(API_CONFIG.BOUNDARY_MINIO_BASE_URL, [orgId, ...node.pathSegments])
+  );
+  const rings = await mapWithConcurrency(
+    urls,
+    MINIO_FETCH_CONCURRENCY,
+    (url) => loadMinioGeometry(url)
+  );
+
+  const byCode = new Map<string, PolygonCoordinates>();
+  nodes.forEach((node, index) => {
+    const geometry = rings[index];
+    if (geometry) {
+      byCode.set(node.code, geometry);
+    }
+  });
+
+  // One line, not one per area: an organization that has drawn three provinces out
+  // of seventy-six is a data state, not seventy-three errors.
+  if (byCode.size < nodes.length) {
+    console.info(
+      `Boundary geometry: ${byCode.size} of ${nodes.length} ${level} areas have a drawn polygon`
+    );
+  }
+  return byCode;
+}
+
+function buildMinioColorMap(
+  nodes: readonly OrgAreaNode[],
+  geometryByCode: ReadonlyMap<string, PolygonCoordinates>,
+  level: AdminLevel
+): Map<string, number> {
+  const { colors, conflicts } = assignBoundaryColors(
+    nodes.map((node) => geometryByCode.get(node.code) ?? null),
+    BOUNDARY_PALETTE_SIZE
+  );
+  if (conflicts > 0) {
+    // Not fatal - the areas still draw, two neighbours just share a hue. Warned
+    // because it silently weakens the palette's accessibility record.
+    console.warn(
+      `Boundary colouring left ${conflicts} same-coloured neighbour pair(s) at the ${level} level`
+    );
+  }
+  const byCode = new Map<string, number>();
+  nodes.forEach((node, index) => byCode.set(node.code, colors[index] ?? 0));
+  minioColorByLevel.set(level, byCode);
+  return byCode;
+}
+
+/** Features for the nodes that actually have geometry, in node order. */
+function buildMinioFeatures(
+  nodes: readonly OrgAreaNode[],
+  geometryByCode: ReadonlyMap<string, PolygonCoordinates>,
+  colorByCode: ReadonlyMap<string, number>
+): OrgFeature[] {
+  const features: OrgFeature[] = [];
+  nodes.forEach((node) => {
+    const rings = geometryByCode.get(node.code);
+    if (!rings) {
+      return;
+    }
+    features.push({
+      type: "Feature",
+      properties: {
+        // GeoJSONLayer needs an objectIdField and will not invent one.
+        OBJECTID: features.length + 1,
+        CODE: node.code,
+        PARENT: node.parent,
+        NAME_TH: node.th || node.en,
+        NAME_EN: node.en,
+        // No Chinese name anywhere in the area API, so English stands in - the same
+        // contract gap orgAreaSource documents.
+        NAME_CN: node.en,
+        COLOR_IDX: colorByCode.get(node.code) ?? 0
+      },
+      geometry: { type: "Polygon", coordinates: rings }
+    });
+  });
+  return features;
+}
+
+function buildMinioOptions(
+  nodes: readonly OrgAreaNode[],
+  level: AdminLevel
+): BoundaryOption[] {
+  const colorByCode = minioColorByLevel.get(level);
+  return nodes.map((node) => ({
+    code: node.code,
+    parent: node.parent,
+    th: node.th,
+    en: node.en,
+    cn: node.en,
+    // 0 until this level has been drawn at least once - see minioColorByLevel.
+    color: colorByCode?.get(node.code) ?? 0
+  }));
+}
+
+export const minioAreaSource: BoundarySource = {
+  async getLayerUrl(level, selection) {
+    const orgId = currentOrgId();
+    if (!orgId) {
+      // Loud, because every object path begins with it: fetching nothing in silence
+      // would reach the user as "the boundaries are broken" with no cause in the UI.
+      // Names the exact record inspected, not just the symptom - this message once
+      // said "carries no orgId" while the truth was that it was read from the wrong
+      // store entirely.
+      console.error(
+        "Cannot load boundary geometry: no orgId on the persisted session profile (localStorage/sessionStorage \"profile\")"
+      );
+      return retainBlobUrl(`minio:${level}:no-org`, { type: "FeatureCollection", features: [] });
+    }
+
+    const flat = await loadFlatOrgData();
+    const provinceRawIds = selectedProvinceRawIds(selection, flat);
+    const nodes = minioNodesFor(level, flat, provinceRawIds);
+    // District content is exactly whichever provinces are selected; every other
+    // level's content is fixed, so its key is just the level name.
+    //
+    // orgId is part of the key, not just the path: these blobs are cached for the
+    // session, and without it a sign-out into a different organization would keep
+    // serving the previous tenant's outlines from cache.
+    const blobKey = level === "district"
+      ? `minio:${orgId}:district:${provinceRawIds.join(",")}`
+      : `minio:${orgId}:${level}`;
+
+    const geometryByCode = await loadMinioGeometryByCode(orgId, nodes, level);
+    const colorByCode = buildMinioColorMap(nodes, geometryByCode, level);
+    return retainBlobUrl(blobKey, {
+      type: "FeatureCollection",
+      features: buildMinioFeatures(nodes, geometryByCode, colorByCode)
+    });
+  },
+
+  releaseLayerUrl(url) {
+    releaseRetainedBlobUrl(url);
+  },
+
+  async loadIndex() {
+    const flat = await loadFlatOrgData();
+    return {
+      country: buildMinioOptions(flat.country, "country"),
+      province: buildMinioOptions(flat.province, "province"),
+      district: buildMinioOptions(flat.district, "district"),
+      subdistrict: []
+    };
+  }
+};
+
+/**
+ * Which source is live.
+ *
+ * "minio" additionally requires its base URL. An environment that flips the flag
+ * without configuring a bucket falls back to the static-geometry source - real
+ * data, one console error - rather than fetching from a built-in default that
+ * would be some other environment's bucket.
+ */
+function resolveBoundarySource(): BoundarySource {
+  if (API_CONFIG.BOUNDARY_SOURCE === "local") {
+    return mockFileSource;
+  }
+  if (API_CONFIG.BOUNDARY_SOURCE === "minio") {
+    if (API_CONFIG.BOUNDARY_MINIO_BASE_URL) {
+      return minioAreaSource;
+    }
+    console.error(
+      "VITE_BOUNDARY_SOURCE=minio but VITE_BOUNDARY_MINIO_BASE_URL is empty - falling back to static boundary geometry"
+    );
+  }
+  return orgAreaSource;
+}
+
 /**
  * The source the app uses. A single named export rather than a prop threaded
  * through every component: there is exactly one source at a time, and the switch
  * is a deploy-time decision, not a per-map one.
  */
-export const boundarySource: BoundarySource =
-  API_CONFIG.BOUNDARY_SOURCE === "local" ? mockFileSource : orgAreaSource;
+export const boundarySource: BoundarySource = resolveBoundarySource();
