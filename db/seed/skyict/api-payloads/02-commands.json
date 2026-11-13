@@ -1,0 +1,8 @@
+[
+  { "active": true, "deptId": "{{DEPT_ID_SKYICT}}", "en": "Center Zone", "th": "Center Zone" },
+  { "active": true, "deptId": "{{DEPT_ID_SKYICT}}", "en": "North Zone", "th": "North Zone" },
+  { "active": true, "deptId": "{{DEPT_ID_SKYICT}}", "en": "Northeast Zone", "th": "Northeast Zone" },
+  { "active": true, "deptId": "{{DEPT_ID_SKYICT}}", "en": "South Zone", "th": "South Zone" },
+  { "active": true, "deptId": "{{DEPT_ID_SKYICT}}", "en": "East Zone", "th": "East Zone" },
+  { "active": true, "deptId": "{{DEPT_ID_SKYICT}}", "en": "West Zone", "th": "West Zone" }
+]

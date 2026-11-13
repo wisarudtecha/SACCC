@@ -1,0 +1,7 @@
+[
+  { "active": true, "roleName": "system_admin" },
+  { "active": true, "roleName": "admin" },
+  { "active": true, "roleName": "agent" },
+  { "active": true, "roleName": "dispatcher" },
+  { "active": true, "roleName": "responder" }
+]

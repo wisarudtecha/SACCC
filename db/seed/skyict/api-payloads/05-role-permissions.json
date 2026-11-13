@@ -1,0 +1,32 @@
+[
+  {
+    "roleId": "{{ROLE_ID_SYSTEM_ADMIN}}",
+    "permissions": [
+      { "permId": "{{PERM_ID_FROM_TENANT_CATALOG}}", "active": true }
+    ]
+  },
+  {
+    "roleId": "{{ROLE_ID_ADMIN}}",
+    "permissions": [
+      { "permId": "{{PERM_ID_FROM_TENANT_CATALOG}}", "active": true }
+    ]
+  },
+  {
+    "roleId": "{{ROLE_ID_AGENT}}",
+    "permissions": [
+      { "permId": "{{PERM_ID_FROM_TENANT_CATALOG}}", "active": true }
+    ]
+  },
+  {
+    "roleId": "{{ROLE_ID_DISPATCHER}}",
+    "permissions": [
+      { "permId": "{{PERM_ID_FROM_TENANT_CATALOG}}", "active": true }
+    ]
+  },
+  {
+    "roleId": "{{ROLE_ID_RESPONDER}}",
+    "permissions": [
+      { "permId": "{{PERM_ID_FROM_TENANT_CATALOG}}", "active": true }
+    ]
+  }
+]

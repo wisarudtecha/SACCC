@@ -1,0 +1,9 @@
+[
+  { "active": true, "commId": "{{COMM_ID_CTR}}", "deptId": "{{DEPT_ID_SKYICT}}", "en": "Station 1", "th": "Station 1" },
+  { "active": true, "commId": "{{COMM_ID_CTR}}", "deptId": "{{DEPT_ID_SKYICT}}", "en": "Station 2", "th": "Station 2" },
+  { "active": true, "commId": "{{COMM_ID_NOR}}", "deptId": "{{DEPT_ID_SKYICT}}", "en": "Station 3", "th": "Station 3" },
+  { "active": true, "commId": "{{COMM_ID_NEA}}", "deptId": "{{DEPT_ID_SKYICT}}", "en": "Station 4", "th": "Station 4" },
+  { "active": true, "commId": "{{COMM_ID_SOU}}", "deptId": "{{DEPT_ID_SKYICT}}", "en": "Station 5", "th": "Station 5" },
+  { "active": true, "commId": "{{COMM_ID_EAS}}", "deptId": "{{DEPT_ID_SKYICT}}", "en": "Station 6", "th": "Station 6" },
+  { "active": true, "commId": "{{COMM_ID_WES}}", "deptId": "{{DEPT_ID_SKYICT}}", "en": "Station 7", "th": "Station 7" }
+]
