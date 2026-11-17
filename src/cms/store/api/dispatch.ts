@@ -1,38 +1,27 @@
 import { ApiResponse } from "@/cms/types";
 import { baseApi } from "@/core/store/api/baseApi";
 // import { FormFieldWithNode } from "@/cms/components/interface/FormField";
-import { Commands, CaseSop, CaseSopParams, dispatchInterface, CancelCase, CancelUnit, UnitWithWorkload } from "@/cms/types/dispatch";
-import { Station } from "@/core/types/organization";
-import { Department } from "@/core/types/user";
-import { PaginationParams } from "./custommerApi";
+import { CaseSop, CaseSopParams, dispatchInterface, CancelCase, CancelUnit, UnitWithWorkload } from "@/cms/types/dispatch";
 
-
+// NOTE (2026-11-16) — do not reintroduce getCommands / getStations / getDepartment here.
+//
+// endpoint names are GLOBAL to `baseApi`: RTK Query keeps exactly one definition per name, and
+// a second `injectEndpoints` call only replaces it when `overrideExisting === true` — which
+// every api slice in this repo sets to `import.meta.env.DEV`. So the winner is "last module
+// evaluated" in dev and "first module evaluated" in a production build: the same duplicate
+// silently resolves to a different definition per environment.
+//
+// These three used to live here with `providesTags: ["Dispatch"]`, colliding with
+// `@/core/store/api/organizationApi`'s versions (`providesTags: ["Organization"]`). Whichever
+// won, the other caller's invalidation stopped matching: the Organization admin page's deletes
+// invalidated "Organization" while the running `getCommands`/`getStations` provided only
+// "Dispatch", so the deleted row stayed on screen until a full browser reload.
+//
+// `/departments`, `/commands` and `/stations` are owned by `@/core/store/api/organizationApi`
+// (all three providers are exported from there and every consumer imports that module). Dispatch
+// only needs the case/unit endpoints below.
 export const dispantchApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
-
-        getCommands: builder.query<ApiResponse<Commands[]>, PaginationParams>({
-            query: (params) => ({
-                url: "/commands",
-                params,
-            }),
-            providesTags: ["Dispatch"],
-        }),
-
-        getDepartment: builder.query<ApiResponse<Department[]>, PaginationParams>({
-            query: (params) => ({
-                url: "/departments",
-                params,
-            }),
-            providesTags: ["Dispatch"],
-        }),
-
-        getStations: builder.query<ApiResponse<Station[]>, PaginationParams>({
-            query: (params) => ({
-                url: "/stations",
-                params,
-            }),
-            providesTags: ["Dispatch"],
-        }),
 
         getCaseSop: builder.query<ApiResponse<CaseSop>, CaseSopParams>({
             query: (params) => ({
@@ -109,9 +98,6 @@ export const dispantchApi = baseApi.injectEndpoints({
 });
 
 export const {
-    useGetCommandsQuery,
-    useGetDepartmentQuery,
-    useGetStationsQuery,
     useGetCaseSopQuery,
     useLazyGetCaseSopQuery,
     useGetUnitQuery,

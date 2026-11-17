@@ -424,9 +424,13 @@ export const userApi = baseApi.injectEndpoints({
     // }),
 
     // Department management
-    getDepartments: builder.query<ApiResponse<string[]>, void>({
-      query: () => "/departments",
-    }),
+    // NOTE (2026-11-16) — `getDepartments` deliberately lives in
+    // `@/core/store/api/organizationApi` (it provides the "Organization" tag and forwards
+    // the pagination params). A second definition here — as one stood until this date, with
+    // no tag and no params — collides on the GLOBAL endpoint name inside `baseApi`: in a
+    // production build (`overrideExisting === false`) the FIRST registration wins, so the
+    // untagged copy used to be the live one and every departments write left the list
+    // stale until a page reload. Do not reintroduce it.
 
     createDepartment: builder.mutation<ApiResponse<string>, { name: string }>({
       query: (data) => ({
@@ -539,7 +543,8 @@ export const {
   useBulkUpdateUsersMutation,
   useGetUserActivityQuery,
   // useGetUserAnalyticsQuery,
-  useGetDepartmentsQuery,
+  // useGetDepartmentsQuery — owned by @/core/store/api/organizationApi (see the note
+  // above; a duplicate name here silently wins in production builds).
   useCreateDepartmentMutation,
   useImpersonateUserMutation,
   useStopImpersonationMutation,

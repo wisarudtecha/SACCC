@@ -982,17 +982,18 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
                 </div>
               </div>
             </div>
-            {/* Loading state */}
+            {/* Loading state — `isLoading` is the CRUD runner's flag (a write is in
+                flight), never a data-loading flag. It is rendered BESIDE the tree rather
+                than gating it: `{!isLoading && <OrganizationHierarchyView/>}` unmounted
+                the whole subtree on every save/delete, and with it `HierarchyView`'s
+                `expandedItems`, so the tree folded itself back up after each write. */}
             {isLoading && (
               <div className="flex items-center justify-center py-12">
                 <RefreshCw className="w-6 h-6 animate-spin text-blue-600 dark:text-blue-300" />
               </div>
             )}
             {/* Content */}
-            {!isLoading 
-              && 
-              // filteredOrganizations?.length !== 0 
-              (
+            {(
                 filteredDepartments?.length > 0 || 
                 filteredCommands?.length > 0 || 
                 filteredStations?.length > 0
@@ -1011,10 +1012,7 @@ const OrganizationManagementComponent: React.FC<OrganizationManagementProps> = (
               </>
             )}
             {/* Empty state */}
-            {!isLoading 
-              && 
-              // filteredOrganizations?.length === 0 
-              filteredDepartments?.length === 0 && 
+            {filteredDepartments?.length === 0 && 
               filteredCommands?.length === 0 && 
               filteredStations?.length === 0 
               && (
