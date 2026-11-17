@@ -1646,3 +1646,208 @@ If you catch yourself repeating a documented mistake, stop, identify which Preve
   const handleDeleteUser = useCallback((id: string) => deleteUserMutation(id).unwrap(), [deleteUserMutation]);
   <EnhancedCrudContainer deleteItem={handleDeleteUser} ... />
   ```
+
+### An endpoint name is global to the api slice — a second `injectEndpoints` copy silently picks the winner
+
+- **Date:** 2026-11-16
+- **Mistake:** The Organization admin page (`core/components/admin/user-management/organization/`)
+  did not refresh after deleting a Command or a Station: the row stayed on screen until a full
+  browser reload (a Department delete was fine). The mutations carried
+  `invalidatesTags: ["Organization"]` and the queries `providesTags: ["Organization"]`, so the
+  tagging looked complete — and had been "fixed" once already for exactly this symptom.
+- **Root Cause:** Endpoint names are **global to the api slice**, and three of them were defined
+  twice on `baseApi`: `getCommands` / `getStations` in `cms/store/api/dispatch.ts`
+  (`providesTags: ["Dispatch"]`) as well as in `core/store/api/organizationApi.ts`
+  (`["Organization"]`), and `getDepartments` in `core/store/api/userApi.ts` (no tags at all) as well
+  as in `organizationApi`. RTK Query keeps exactly ONE definition per name
+  (`rtk-query.modern.mjs`: `if (inject.overrideExisting !== true && endpointName in
+  context.endpointDefinitions) continue;`), and every api file in this repo passes
+  `overrideExisting: import.meta.env.DEV`. So the live definition is "the last module evaluated" in
+  dev and "the first" in a production build — the same duplicate resolves to a different definition
+  per environment, and HMR can flip it mid-session. Read live from the running dev server with
+  `baseApi.enhanceEndpoints({ endpoints: { getCommands: d => … } })`: `getDepartments` provided
+  `["Organization"]` (organizationApi won), `getCommands`/`getStations` provided `["Dispatch"]`
+  (dispatch.ts won). `deleteCommands` invalidated `"Organization"`, no mounted query provided it,
+  so RTK Query refetched nothing.
+- **Correct Behavior:** Keep exactly one definition per endpoint name. `/departments`, `/commands`
+  and `/stations` are owned by `@/core/store/api/organizationApi`; the colliding copies were deleted
+  from `dispatch.ts` and `userApi.ts` (neither had a consumer — every call site already imported
+  `organizationApi`), with a comment at each site saying why nothing may be re-added there.
+- **Prevention Rule:** Before adding a `builder.query`/`builder.mutation` to any `*Api.ts`, grep for
+  the endpoint name across `src/**/store/api/**` — a name already registered on the same slice is not
+  a second endpoint, it is a coin flip on which definition runs. The three things that must agree for
+  an invalidation to work (mutation invalidates, query provides, tag in `tagTypes`) are necessary but
+  NOT sufficient: the providing definition also has to be the one that won. When a list stubbornly
+  refuses to refresh although the tags look right, read the **live** definition
+  (`baseApi.enhanceEndpoints({ endpoints: { <name>: def => … } })` in the browser console) instead of
+  re-reading the source you assume is running — and remember `injectEndpoints` never *removes* an
+  endpoint, so an HMR edit that deletes one leaves the old definition registered until a full reload.
+- **Example:**
+  ```ts
+  // WRONG - two definitions of one name; which one is live depends on evaluation order
+  // cms/store/api/dispatch.ts
+  getCommands: builder.query<ApiResponse<Commands[]>, PaginationParams>({
+    query: params => ({ url: "/commands", params }),
+    providesTags: ["Dispatch"],            // <- wins in this dev session
+  }),
+  // core/store/api/organizationApi.ts
+  getCommands: builder.query<ApiResponse<Command[]>, OrganizationQueryParams>({
+    query: params => `/commands?...`,
+    providesTags: ["Organization"],        // <- what deleteCommands invalidates
+  }),
+
+  // CORRECT - one definition, in the module that owns the resource
+  // core/store/api/organizationApi.ts  (dispatch.ts / userApi.ts define nothing that lives here)
+
+  // And the check that reads the LIVE definition, not the source:
+  const { baseApi } = await import("/src/core/store/api/baseApi.ts");
+  baseApi.enhanceEndpoints({ endpoints: { getCommands: def => console.log(def.providesTags) } });
+  ```
+
+### `t(key) || "fallback"` is dead code — a missing translation renders the key, not empty
+
+- **Date:** 2026-11-16
+- **Mistake:** `ResetPasswordModal` guarded every label with an inline Thai literal, e.g.
+  `t("userform.resetPasswordDescriptionForAdmin") || "กรอกอีเมล ชื่อผู้ใช้ และรหัสผ่านใหม่เพื่อรีเซ็ต"`.
+  The `||` reads as protection against a missing catalog entry. It is not: `t` returns the dotted
+  key itself when the lookup misses, and a non-empty string is truthy, so the right-hand side can
+  never run. A key that is genuinely absent renders `userform.resetPassword` in the dialog —
+  visible, but nothing like the intended sentence — while the fallback sits there looking like
+  the safety net.
+- **Root Cause:** `LanguageContext.t` → `getNestedValue(translations, path)` ends in
+  `... as string || path`, i.e. "the value, or the path". `TranslationKey` is `string`
+  (`src/core/types/i18n.ts`), so no compiler check ties a key to the catalogs either. Two
+  independent reasons the fallback branch was never exercised, and neither is visible at a call
+  site that "looks defensive".
+- **Correct Behavior:** Write `t(key)` alone. The real verification is that the key exists in ALL
+  THREE catalogs (`public/i18n/{en,th,cn}.json`) inside the same change — that is the check the
+  `||` was pretending to be. Verify the edit by parsing each file with node, not PowerShell:
+  `ConvertFrom-Json` collapses keys that differ only in case (these catalogs contain both
+  `OVERDUE` and `Overdue`) and fails with "keys with different casing", which looks exactly like
+  invalid JSON you just introduced.
+- **Prevention Rule:** In this codebase a translation fallback branch never runs — `t` returns the
+  key on a miss — so treat `t(k) || "…"` as a defect to remove, not as defensive coding. When
+  adding a key, add it to `en`, `th` and `cn` in the same change and machine-check the catalogs
+  with `JSON.parse` under node rather than with PowerShell's case-insensitive JSON reader.
+- **Example:**
+  ```tsx
+  // WRONG - unreachable fallback; a missing key shows "userform.resetPassword" instead
+  {t("userform.resetPassword") || "รีเซ็ตรหัสผ่าน"}
+
+  // CORRECT - the key is the contract, verified against all three catalogs
+  {t("userform.resetPassword")}
+
+  // and the check that actually proves it (node, not ConvertFrom-Json):
+  // node -e "for (const f of ['en','th','cn']) JSON.parse(require('fs').readFileSync(`public/i18n/${f}.json`,'utf8'))"
+  ```
+
+### A selector that matches nothing is not evidence that the UI element is missing
+
+- **Date:** 2026-11-16
+- **Mistake:** Reproducing the Custom Dashboard in a headless browser, a probe searched the
+  toolbar for `getByRole("button", { name: /add widget|เพิ่ม widget/i })`, got `count: 0` after
+  clicking Customize, and was one line short of reporting "the Add Widget button never renders —
+  that is why you cannot add a widget". The button renders fine; its Thai label is
+  **"เพิ่มวิดเจ็ต"**, which transliterates the English word instead of containing it, so the regex
+  could never match. The defect list being built had an invented defect at the top of it.
+- **Root Cause:** The selector was written from a guess about how the label would read, not read
+  from the catalog that owns it. A zero count is ambiguous between "absent" and "not matched",
+  and nothing in that run distinguished the two — so the probe's silence was read as the
+  application's silence.
+- **Correct Behavior:** Read the label from its source first (`public/i18n/th.json` →
+  `dashboard.custom.add_widget` = "เพิ่มวิดเจ็ต"), and make every probe dump the text it actually
+  saw (`body.innerText`) in the same run as the count. With the dump in hand the ambiguity is gone:
+  the label had been on screen all along.
+- **Prevention Rule:** Never report a missing UI element from a zero selector count. A negative
+  result from an automated probe is a claim about the probe until the label's authoritative source
+  — or a positive dump of what was on the page — is included in the same run. Same family as
+  "A validator that disagrees with the code it validates manufactures defects": a checker's
+  silence proves nothing about the system, only about the pattern.
+- **Example:**
+  ```js
+  // WRONG - reports "button missing" when the label is merely spelled differently
+  const n = await page.getByRole("button", { name: /add widget|เพิ่ม widget/i }).count();
+  if (n === 0) report("Add Widget button never renders");
+
+  // CORRECT - label taken from the catalog, plus the dump showing what was on screen
+  // public/i18n/th.json: "add_widget": "เพิ่มวิดเจ็ต"
+  const n = await page.getByRole("button", { name: "เพิ่มวิดเจ็ต" }).count();   // 1
+  const seen = await page.locator("body").innerText();                        // "… เพิ่มวิดเจ็ต …"
+  ```
+### A request that carries the right value is not a request that succeeded
+
+- **Date:** 2026-11-16
+- **Mistake:** Changing the Jasper report login username to `<tenant>_<username>`, the evidence that
+  "it works" was a captured POST body containing `j_username: "SKYICT_tester"`. That is what the
+  client SENT. The report server had answered by redirecting the popup to
+  `jasperserver/login.html` - the login was rejected. Reported at that point, the change would have
+  read as verified while every report click dead-ended on Jasper's login page.
+- **Root Cause:** The evidence was taken at the boundary that was edited (the request body) instead
+  of at the other end (the response / the screen the server produced). A form POST, a `fetch` and a
+  GraphQL mutation all leave the client looking healthy regardless of what the server decided, and
+  a cross-origin POST is not even readable from the page that sent it - so the request is the only
+  thing that is easy to observe, and it is exactly the thing that cannot prove the outcome.
+- **Correct Behavior:** Probe both behaviours in the running app and compare: forcing the previous
+  shared account (`bma`) sent the popup to the rendered report ("TIBCO Jaspersoft: 1.1 ..."), the
+  new per-user name sent it to `login.html`. That differential located the outcome on the server and
+  separated "our value is correct" from "the server accepted it". It also bounds the claim: the
+  signed-in user in that session was the QA account `tester`, so the rejection proves *that*
+  account is missing or mismatched - not that the naming convention is wrong.
+- **Prevention Rule:** When verifying a change to an identity/credential value, a request payload,
+  or anything a server is allowed to reject, capture the request AND the resulting state in the
+  same run: the value sent plus the status, redirect or screen the server produced. Report a
+  request-only capture as "the client now sends X", never as "X works". Where the old and the new
+  behaviour can both be reproduced, run them as a differential - only the difference tells you which
+  layer is responsible - and state the scope of what was verified (which account, which tenant).
+- **Example:**
+  ```js
+  // WRONG - proves only that the form was built with the new name
+  // captured: { j_username: "SKYICT_tester" }  -> "it works"
+
+  // CORRECT - same run, both paths, and the server's answer for each
+  // per-user  -> popup URL: .../jasperserver/login.html          (rejected)
+  // shared    -> popup URL: .../flow.html?_flowId=viewReportFlow (report rendered)
+  // conclusion: the format is right; the report server has no SKYICT_tester account yet
+  ```
+
+### An empty branch is not a missing capability — grep the verb before asserting absence
+
+- **Date:** 2026-11-17
+- **Mistake:** Planning the websocket token work, I read `baseQueryFactory.ts:40-42`
+  (`if (result.error?.status === 401) { // Refresh token }`) and put a definite "no" into the plan's
+  decision table: *"Is there a token-refresh endpoint? No — that branch is empty, so an expired token
+  means a dead socket. Separate ticket; not blocking this change."* The user answered "there is a
+  token-refresh endpoint". It does: `AuthContext.refreshToken` → `AuthProvider.refreshToken`
+  (`AuthProvider.tsx:288-354`) → `AuthService.refreshToken` → `POST /auth/refresh` (GraphQL
+  `AuthRefresh`, input `RefreshInput!`), plus a scheduled silent refresh on top of it. The wrong "no"
+  had already re-scoped the reconnect design away from a refresh path.
+- **Root Cause:** An empty branch is evidence about **that function**, not about the codebase. I had
+  grepped only `Authorization|prepareHeaders` inside `store/api`, so the word `refresh` never entered
+  a result set — and a search that was never run looks exactly like a search that found nothing. The
+  claim then landed in a table where a "no" reads as final, so nobody had a reason to re-check it.
+- **Correct Behavior:** Score "does X exist?" with a repo-wide grep on the capability's own vocabulary
+  (`refresh`, `refreshToken`, `retry`, `reconnect`, `invalidate`, …) and read the state/context layer
+  (context callbacks, provider `useCallback`s, scheduling hooks) before concluding. Then correct the
+  document where the wrong claim was made, and re-derive whatever was scoped because of it — here the
+  reconnect policy gained `refresh-and-retry` and a test that a second `4401` must stop, not loop.
+- **Prevention Rule:** Never write "there is no X", "X does not exist", "not supported", or "separate
+  ticket" into a plan, review, report or PR until a repo-wide grep for X's vocabulary has actually run
+  in the session; one call site proves only that one call site does not do it. Absence claims are the
+  most dangerous kind in a document because a wrong "no" silently deletes work from scope and nothing
+  fails — no compiler, no test, no runtime. When one is disproved, say plainly that the earlier claim
+  was wrong and re-scope, rather than quietly editing it away.
+- **Example:**
+  ```text
+  WRONG (shipped in the plan as a settled question)
+    Q6 | Is there a token-refresh endpoint?
+       | No - baseQueryFactory.ts:40-42's 401 branch is empty. Separate ticket; not blocking.
+
+  CORRECT (grep the vocabulary, then read the writers)
+    $ rg -n "refreshToken" src
+      src/core/context/AuthContext.tsx:10       refreshToken: () => Promise<void>;
+      src/core/providers/AuthProvider.tsx:288   const refreshToken = useCallback(async () => {
+      src/core/utils/authService.ts:333         static async refreshToken(refreshToken: string)
+      src/core/store/api/authApi.ts:64          refreshToken: builder.mutation(… url: "/auth/refresh")
+    -> the capability exists, so a 4401 close becomes "refresh once, then reconnect"
+       instead of a dead end.
+  ```
