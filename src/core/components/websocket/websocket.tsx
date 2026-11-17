@@ -1,11 +1,23 @@
 // src/crm/components/websocket/WebSocketContext.tsx
 import React, { createContext, ReactNode, useContext, useEffect, useRef, useState } from "react";
 import { ToastContainer } from "@/core/components/crud/ToastContainer";
+import {
+  STAMP_EVERY_OUTGOING_FRAME,
+  buildRegisterFrame,
+  getAccessToken,
+  hasRefreshToken,
+  isAuthRejectionCode,
+  nextReconnectAction,
+  withAccessToken
+} from "@/core/components/websocket/websocketAuth";
 import { getNewCaseDataByCaseId } from "@/cms/components/case/caseLocalStorage.tsx/caseListUpdate";
 import { notifyCaseListChanged } from "@/cms/components/case/caseListSignal";
 import { idbStorage } from "@/cms/components/idb/idb";
 import { resolveRuntimeEnv } from "@/core/config/api";
+import { useAuth } from "@/core/hooks/useAuth";
 import { useToast as UseToast } from "@/core/hooks/useToast";
+import { TokenManager } from "@/core/utils/tokenManager";
+import type { User } from "@/core/types/auth";
 import type { CaseEntity } from "@/cms/types/case";
 
 export interface WebSocketConfig {
@@ -29,10 +41,16 @@ export interface WebSocketProviderProps {
   defaultConfig?: WebSocketConfig;
 }
 
+/**
+ * "unauthorized" is terminal, not transient: the socket stopped because the server
+ * rejected the credential (or there was none to present). It never recovers by
+ * waiting, so consumers should not treat it like "disconnected".
+ */export type WebSocketConnectionState = "connecting" | "connected" | "disconnected" | "error" | "unauthorized";
+
 export interface WebSocketContextType {
   /** Broadcast a message to all subscribers without sending over the wire. Useful for mocks. */
   broadcast: (message: WebSocketMessage) => void;
-  connectionState: "connecting" | "connected" | "disconnected" | "error";
+  connectionState: WebSocketConnectionState;
   isConnected: boolean;
   lastMessage: WebSocketMessage | null;
   disconnect: () => void;
@@ -123,17 +141,31 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   const heartbeatIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isConnectingRef = useRef(false);
   const reconnectAttemptsRef = useRef(0);
+  // One refresh attempt per auth rejection. Reset on a successful SUBSCRIBE and on an
+  // explicit disconnect, so a second 4401 for the SAME failure becomes terminal
+  // instead of an endless refresh/retry loop.
+  const refreshedForFailureRef = useRef(false);
   // const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const subscribersRef = useRef<Set<(message: WebSocketMessage) => void>>(new Set());
   const wsRef = useRef<WebSocket | null>(null);
 
-  const [connectionState, setConnectionState] = useState<"connecting" | "connected" | "disconnected" | "error">("disconnected");
+  const [connectionState, setConnectionState] = useState<WebSocketConnectionState>("disconnected");
   const [isConnected, setIsConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
 
   const { toasts, addToast, removeToast } = UseToast();
-  
+
+  // Used only after the server rejects the credential (4401/4403). This component is
+  // mounted inside <AuthProvider> (main.tsx), so the context is available here.
+  //
+  // Held in a ref rather than called through the closed-over value: `refreshToken` is a
+  // useCallback that AuthProvider rebuilds whenever its auth state changes, and the socket
+  // created at mount would otherwise keep calling the first-render copy forever.
+  const { refreshToken } = useAuth();
+  const refreshTokenRef = useRef(refreshToken);
+  refreshTokenRef.current = refreshToken;
+
   const clearTimers = () => {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
@@ -153,7 +185,13 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
 
     heartbeatIntervalRef.current = setInterval(() => {
       if (wsRef.current?.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify({ type: "ping" }));
+        // The credential is established once, by the SUBSCRIBE frame, so a ping does
+        // not need to repeat it (see STAMP_EVERY_OUTGOING_FRAME in websocketAuth.ts).
+        const ping = STAMP_EVERY_OUTGOING_FRAME
+          ? withAccessToken({ type: "ping" }, getAccessToken())
+          : { type: "ping" };
+
+        wsRef.current.send(JSON.stringify(ping));
       }
     }, config.heartbeatInterval);
   };
@@ -190,22 +228,29 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     }, interval);
   };
 
-  const getProfile = () => {
-    const profile = localStorage.getItem("profile");
-    if (profile) {
-      try {
-        return JSON.parse(profile);
-      }
-      catch (err) {
-        console.error("🚀 ~ getProfile ~ Failed to parse profile:", err);
-        return null;
-      }
-    }
-    return null;
-  };
+  /**
+   * The identity half of the SUBSCRIBE frame.
+   *
+   * Read through TokenManager, not `localStorage.getItem("profile")` directly: TokenManager
+   * is what writes that key, it can store the session in sessionStorage instead
+   * (tokenManager.ts:52), and it applies `decrypt()` on the way out. Reading the storage key
+   * by hand is the defect recorded against UserAuditLog — and here it fails silently, because
+   * the frame would simply carry `orgId: undefined` and the server would subscribe nobody.
+   */
+  const getProfile = (): User | null => TokenManager.getStoredUser();
 
   const websocket = (config: WebSocketConfig) => {
     if (isConnectingRef.current || wsRef.current?.readyState === WebSocket.OPEN) {
+      return;
+    }
+
+    // Fail closed. Opening first and authenticating afterwards is what the server used
+    // to accept and what this change exists to stop; without a credential there is
+    // nothing to present, so no socket is created at all.
+    const token = getAccessToken();
+    if (!token) {
+      setIsConnected(false);
+      setConnectionState("unauthorized");
       return;
     }
 
@@ -215,10 +260,18 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     clearTimers();
 
     try {
+      // The upgrade request carries no credential — the browser cannot set a header on it.
+      // The token goes out in the first frame instead, so nothing about the URL changes.
       const ws = new WebSocket(config.url);
       const profile = getProfile();
       ws.onopen = () => {
-        const userRegisterPayload = { "EVENT": "SUBSCRIBE", orgId: profile.orgId, username: profile.username };
+        // Re-read the token here rather than reusing the one captured above: a refresh
+        // may have rotated it between construction and open. The frame carries a flat
+        // `access_token` field, which is what the server authenticates the connection with.
+        const userRegisterPayload = buildRegisterFrame(
+          { orgId: profile?.orgId, username: profile?.username },
+          getAccessToken()
+        );
 
         ws.send(JSON.stringify(userRegisterPayload));
 
@@ -244,6 +297,11 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
           
           if (isConnected === false && message.data.EVENT === "SUBSCRIBE-SUCCESS") {
             console.log("🚀 ~ websocket ~ WebSocket connected");
+            // The credential was accepted, so the next auth rejection earns its own
+            // single refresh attempt — and the reconnect budget starts over, because the
+            // connection is healthy again.
+            refreshedForFailureRef.current = false;
+            reconnectAttemptsRef.current = 0;
             setIsConnected(true);
             setConnectionState("connected");
             return
@@ -282,10 +340,36 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
         isConnectingRef.current = false;
         stopHeartbeat();
 
-        // Attempt reconnect if it wasn"t a manual close
-        if (event.code !== 1000 && configRef.current) {
-          attemptReconnect();
+        // No config means `disconnect()` was called on purpose.
+        if (!configRef.current) {
+          return;
         }
+
+        const action = nextReconnectAction({
+          alreadyRefreshed: refreshedForFailureRef.current,
+          attempts: reconnectAttemptsRef.current,
+          closeCode: event.code,
+          hasAccessToken: Boolean(getAccessToken()),
+          hasRefreshToken: hasRefreshToken(),
+          maxAttempts: configRef.current.maxReconnectAttempts || 10
+        });
+
+        if (action === "refresh-and-retry") {
+          refreshedForFailureRef.current = true;
+          void recoverAfterAuthRejection();
+          return;
+        }
+
+        if (action === "stop") {
+          // Terminal. Retrying an auth rejection or a missing credential only produces
+          // the same close again, so say what happened instead of looping silently.
+          if (isAuthRejectionCode(event.code) || !getAccessToken()) {
+            setConnectionState("unauthorized");
+          }
+          return;
+        }
+
+        attemptReconnect();
       };
 
       ws.onerror = (
@@ -300,7 +384,11 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
 
         // connect(defalutWebsocketConfig);
 
-        reconnectAttemptsRef.current = 0;
+        // Do NOT reset the attempt counter here. It used to be zeroed on every error, which
+        // defeated `maxReconnectAttempts` entirely: a handshake the browser keeps refusing
+        // (an echoed-protocol mismatch does exactly this) retried forever, every 5 s, with
+        // no ceiling. The counter now resets on a successful SUBSCRIBE-SUCCESS instead —
+        // the moment the connection is genuinely healthy again.
         attemptReconnect();
       };
       wsRef.current = ws;
@@ -312,9 +400,43 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     }
   };
 
+  /**
+   * One refresh attempt after the server rejects the credential, then a single reconnect.
+   *
+   * `AuthContext.refreshToken` resolves `void` and swallows its own failures
+   * (AuthProvider.tsx:346-353 deliberately does not sign the user out), so the outcome
+   * cannot be read from the promise. It is judged by re-reading the credential, and a
+   * second rejection is caught by `refreshedForFailureRef` — which turns "still
+   * rejected" into a terminal unauthorized state instead of a refresh loop.
+   */
+  const recoverAfterAuthRejection = async () => {
+    setConnectionState("connecting");
+
+    try {
+      await refreshTokenRef.current();
+    }
+    catch (error) {
+      // The provider already logs; this is for the socket path only.
+      console.error("🚀 ~ recoverAfterAuthRejection ~ Token refresh failed:", error);
+    }
+
+    // Disconnected (or unmounted) while the refresh was in flight.
+    if (!configRef.current) {
+      return;
+    }
+
+    if (!getAccessToken()) {
+      setConnectionState("unauthorized");
+      return;
+    }
+
+    websocket(configRef.current);
+  };
+
   const disconnect = () => {
     clearTimers();
     configRef.current = null;
+    refreshedForFailureRef.current = false;
 
     if (wsRef.current) {
       wsRef.current.close(1000, "Manual disconnect");
@@ -328,7 +450,14 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const send = (data: any) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify(data));
+      // The connection is authenticated once, by the SUBSCRIBE frame, so outgoing frames
+      // do not repeat the token by default — every copy is another place a JWT can be
+      // captured. Flip STAMP_EVERY_OUTGOING_FRAME if the server ever validates per frame.
+      const payload = STAMP_EVERY_OUTGOING_FRAME
+        ? withAccessToken(data as Record<string, unknown>, getAccessToken())
+        : data;
+
+      wsRef.current.send(JSON.stringify(payload));
     }
     else {
       console.warn("🚀 ~ send ~ WebSocket is not connected. Message not sent:", data);

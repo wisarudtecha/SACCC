@@ -28,8 +28,25 @@ Rides the **existing notifications websocket** — no new socket, no new endpoin
 | --- | --- |
 | Socket URL | `/api/v1/notifications/register` (as configured by `VITE_WEBSOCKET_BASE_URL`) |
 | Handshake | FE sends `{ "EVENT": "SUBSCRIBE", orgId, username }` on open; backend confirms with `EVENT: "SUBSCRIBE-SUCCESS"` |
+| Credential | The same `SUBSCRIBE` frame carries a flat `access_token` field — see §2.1 |
 | Heartbeat | FE sends `{ "type": "ping" }` every 60 s |
 | Envelope | Identical to the existing `CASE-CREATE` / `CASE-UPDATE` / `SLA-ESCALATION` events |
+
+### 2.1 Credential on the register frame
+
+Implemented on the FE 2026-11-17; **server validation still pending**, so the socket is not yet authenticated end to end.
+
+A browser cannot set an `Authorization` header on a WebSocket upgrade — `new WebSocket(url, protocols)` accepts no header parameter — so the access token travels in-band, on the frame that establishes the connection, as one flat field:
+
+```json
+{ "EVENT": "SUBSCRIBE", "orgId": "…", "username": "…", "access_token": "<jwt>" }
+```
+
+- **Carrier:** in-band on this frame only, as `access_token`. The upgrade request carries no credential — a header there is impossible from a browser (the `Sec-WebSocket-Protocol` workaround was built, verified and dropped on 2026-11-17 because it aborts the handshake unless the server echoes the protocol, and the header cannot be named `Authorization`).
+- **FE behaviour now:** no access token → the socket is never opened and the app reports `connectionState: "unauthorized"`; close `4401`/`4403` → one token refresh (`POST /auth/refresh`) and one reconnect, then terminal; the token is read through `TokenManager` at connect time and again at send time. Every other outgoing frame (heartbeat, `DASHBOARD` requests) omits it.
+- **What the backend still owes:** validate `access_token`. Proposed contract: close `4401` with reason `unauthorized` when it is missing, malformed, expired, or does not match the `orgId`/`username` claimed in the same frame; close a socket that has sent no valid `SUBSCRIBE` within 10 s. Until that ships, the backend trusts whatever identity the client claims and this document does not promise authentication.
+
+Reasoning, options considered and the evidence trail: [`WEBSOCKET-Auth-Token-Implementation-Plan.md`](./WEBSOCKET-Auth-Token-Implementation-Plan.md).
 
 ---
 
