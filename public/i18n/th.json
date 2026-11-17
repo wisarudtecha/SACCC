@@ -1254,7 +1254,8 @@
         "edit_profile": "โปรไฟล์",
         "account_settings": "การตั้งค่าบัญชี",
         "notification": "การแจ้งเตือน",
-        "sign_out": "ออกจากระบบ"
+        "sign_out": "ออกจากระบบ",
+        "tenant": "องค์กร"
       }
     },
     "sidebar": {
@@ -4185,7 +4186,10 @@
     "userTypeUnknown": "ไม่ทราบ",
     "resetPassword": "รีเซ็ตรหัสผ่าน",
     "resetPasswordDescription": "ติดต่อผู้ดูแลระบบหรือฝ่ายสนับสนุน เพื่อรีเซ็ตรหัสผ่านของคุณ",
-    "resetPasswordDescriptionForAdmin": "กรอกอีเมล ชื่อผู้ใช้ และรหัสผ่านใหม่เพื่อรีเซ็ต",
+    "resetPasswordDescriptionForAdmin": "ตั้งรหัสผ่านใหม่ให้ผู้ใช้นี้ โดยระบบจะใช้อีเมลและชื่อผู้ใช้จากบัญชีให้อัตโนมัติ ไม่ต้องกรอกซ้ำ",
+    "resetPasswordTargetTitle": "กำลังรีเซ็ตรหัสผ่านให้",
+    "resetPasswordTargetNote": "ระบบจะส่งอีเมลและชื่อผู้ใช้ของบัญชีนี้ไปพร้อมคำขอรีเซ็ต",
+    "resetPasswordTargetMissing": "บัญชีนี้ไม่มีชื่อผู้ใช้หรืออีเมลในระบบ จึงไม่สามารถส่งคำขอรีเซ็ตได้ กรุณาแก้ไขข้อมูลบัญชีก่อน",
     "resetPasswordContactEmail": "อีเมล์",
     "resetPasswordContactPhone": "โทรศัพท์",
     "changePassword": "เปลี่ยนรหัสผ่าน",
@@ -4220,7 +4224,9 @@
     "passwordValidation": {
       "minLength": "อย่างน้อย 8 ตัวอักษร",
       "uppercase": "อย่างน้อยตัวใหญ่ 1 ตัว",
-      "specialChar": "อย่างน้อยอักขระพิเศษ 1 ตัว"
+      "specialChar": "อย่างน้อยอักขระพิเศษ 1 ตัว",
+      "met": "ผ่าน",
+      "notMet": "ไม่ผ่าน"
     },
     "blood_type": {
       "A": "เอ",

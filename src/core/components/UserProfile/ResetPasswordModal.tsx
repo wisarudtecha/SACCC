@@ -9,15 +9,26 @@ import { useResetPasswordMutation } from "@/core/store/api/userApi";
 import { readEnvelopeMessage, readEnvelopeStatus } from "@/core/utils/apiResponseStatus";
 import type { EnvelopeLike } from "@/core/utils/apiResponseStatus";
 import { validatePassword } from "@/core/utils/passwordValidation";
+import type { PasswordValidation } from "@/core/utils/passwordValidation";
 import type { ResetPasswordModalProps } from "@/core/types/user";
-import Input from "@/core/components/form/input/InputField";
 import PasswordInput from "@/core/components/form/input/PasswordInput";
 import Label from "@/core/components/form/Label";
 import Button from "@/core/components/ui/button/Button";
+import { PasswordChecklist, PasswordMatchHint } from "@/core/components/UserProfile/PasswordChecklist";
+
+const EMPTY_VALIDATION: PasswordValidation = {
+  isValid: false,
+  hasMinLength: false,
+  hasUppercase: false,
+  hasSpecialChar: false
+};
 
 const ResetPasswordModal = ({
   isOpen,
   onClose,
+  email,
+  username,
+  displayName,
   onSuccess
 }: ResetPasswordModalProps) => {
   const { t } = useTranslation();
@@ -31,12 +42,21 @@ const ResetPasswordModal = ({
   // the BFF can enforce the permission server-side, which is what actually closes the hole.
   const canResetOthers = permissions.hasPermission("user.reset_password") || isSystemAdmin;
 
-  const [email, setEmail] = useState("");
-  const [inputUsername, setInputUsername] = useState("");
+  // The target's identity is no longer typed by the admin — it is read off the account record
+  // this dialog was opened from. POST /users/reset_password (User.ResetPassword) still identifies
+  // the account by email + username, so both go into the payload exactly as before; only the
+  // re-entry is gone. They are trimmed and validated here because the GraphQL input cleaner drops
+  // empty strings: a blank value would reach the BFF as a *missing* field and come back as an
+  // opaque rejection instead of an obvious "who are we resetting?" error.
+  const targetEmail = (email ?? "").trim();
+  const targetUsername = (username ?? "").trim();
+  const hasTargetIdentity = targetEmail !== "" && targetUsername !== "";
+
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState<PasswordValidation>(EMPTY_VALIDATION);
 
   const handleReset = async () => {
     if (!canResetOthers) {
@@ -44,44 +64,38 @@ const ResetPasswordModal = ({
       return;
     }
 
-    if (!email) {
-      setError(t("forms.email") || "กรุณากรอกอีเมล");
-      return;
-    }
-
-    if (!inputUsername) {
-      setError(t("forms.username") || "กรุณากรอกชื่อผู้ใช้");
+    if (!hasTargetIdentity) {
+      setError(t("userform.resetPasswordTargetMissing"));
       return;
     }
 
     if (!newPassword) {
-      setError(t("userform.newPasswordRequired") || "กรุณากรอกรหัสผ่านใหม่");
+      setError(t("userform.newPasswordRequired"));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError(t("userform.passwordMismatch") || "รหัสผ่านไม่ตรงกัน");
+      setError(t("userform.passwordMismatch"));
       return;
     }
 
     if (newPassword.length < 8) {
-      setError(t("userform.passwordTooShort") || "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร");
+      setError(t("userform.passwordTooShort"));
       return;
     }
 
-    // Check password validation
-    const validation = validatePassword(newPassword);
-    if (!validation.isValid) {
-      setError(t("userform.pwdHint") || "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร ตัวใหญ่ 1 ตัว และอักขระพิเศษ 1 ตัว");
+    if (!validatePassword(newPassword).isValid) {
+      setError(t("userform.passwordRequirementsNotMet"));
       return;
     }
 
     setError("");
 
     try {
+      // Same payload shape as before: email + username + newPassword.
       const response = await resetPassword({
-        email,
-        username: inputUsername,
+        email: targetEmail,
+        username: targetUsername,
         newPassword
       }).unwrap();
 
@@ -90,7 +104,7 @@ const ResetPasswordModal = ({
       // failure here: a false failure costs a retry, a false success tells the admin the password
       // was reset when it was not.
       if (readEnvelopeStatus(response?.status) !== "success") {
-        setError(readEnvelopeMessage(response) || t("userform.resetPasswordError") || "ไม่สามารถรีเซ็ตรหัสผ่านได้");
+        setError(readEnvelopeMessage(response) || t("userform.resetPasswordError"));
         return;
       }
 
@@ -118,19 +132,17 @@ const ResetPasswordModal = ({
         setError(
           readEnvelopeMessage((err as { data?: EnvelopeLike })?.data)
           || t("userform.resetPasswordError")
-          || "ไม่สามารถรีเซ็ตรหัสผ่านได้"
         );
       }
     }
   };
 
   const handleClose = () => {
-    setEmail("");
-    setInputUsername("");
     setNewPassword("");
     setConfirmPassword("");
     setError("");
     setSuccess(false);
+    setPasswordValidation(EMPTY_VALIDATION);
     onClose();
   };
 
@@ -139,10 +151,10 @@ const ResetPasswordModal = ({
       <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-md w-[90vw] rounded-lg">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white cursor-default">
-            {t("userform.resetPassword") || "รีเซ็ตรหัสผ่าน"}
+            {t("userform.resetPassword")}
           </DialogTitle>
           <DialogDescription className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {t("userform.resetPasswordDescriptionForAdmin") || "กรอกอีเมล ชื่อผู้ใช้ และรหัสผ่านใหม่เพื่อรีเซ็ต"}
+            {t("userform.resetPasswordDescriptionForAdmin")}
           </DialogDescription>
         </DialogHeader>
 
@@ -150,7 +162,7 @@ const ResetPasswordModal = ({
           <div className="flex flex-col items-center py-6 space-y-4">
             <CheckCircleIcon className="w-16 h-16 text-green-400 dark:text-green-500" />
             <p className="text-center text-green-500 dark:text-green-400">
-              {t("userform.resetPasswordSuccess") || "รีเซ็ตรหัสผ่านสำเร็จ!"}
+              {t("userform.resetPasswordSuccess")}
             </p>
           </div>
         ) : (
@@ -162,101 +174,76 @@ const ResetPasswordModal = ({
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email">
-                {t("forms.email") || "อีเมล"}
-              </Label>
-              <Input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t("forms.email") || "กรอกอีเมล"}
-                className="w-full"
-                // className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+            {/* Who the reset applies to. Read-only text, not a disabled input: these values come
+                from the selected account and are not the admin's to edit here. */}
+            <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 p-3 space-y-1">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                {t("userform.resetPasswordTargetTitle")}
+              </p>
 
-            <div className="space-y-2">
-              <Label htmlFor="username">
-                {t("forms.username") || "ชื่อผู้ใช้"}
-              </Label>
-              <Input
-                id="username"
-                value={inputUsername}
-                onChange={(e) => setInputUsername(e.target.value)}
-                placeholder={t("forms.username") || "กรอกชื่อผู้ใช้"}
-                className="w-full"
-                // className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              {displayName && (
+                <p className="text-sm font-semibold text-gray-900 dark:text-white wrap-break-word">
+                  {displayName}
+                </p>
+              )}
+
+              <dl className="text-xs text-gray-600 dark:text-gray-300 space-y-0.5">
+                <div className="flex flex-wrap gap-x-2">
+                  <dt className="text-gray-500 dark:text-gray-400">{t("userform.username")}:</dt>
+                  <dd className="font-medium wrap-break-word">{targetUsername || "—"}</dd>
+                </div>
+                <div className="flex flex-wrap gap-x-2">
+                  <dt className="text-gray-500 dark:text-gray-400">{t("userform.email")}:</dt>
+                  <dd className="font-medium wrap-break-word">{targetEmail || "—"}</dd>
+                </div>
+              </dl>
+
+              {hasTargetIdentity ? (
+                <p className="text-xs text-gray-500 dark:text-gray-400 pt-1">
+                  {t("userform.resetPasswordTargetNote")}
+                </p>
+              ) : (
+                <p className="text-xs text-red-600 dark:text-red-400 pt-1">
+                  {t("userform.resetPasswordTargetMissing")}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="newPassword">
-                {t("userform.newPassword") || "รหัสผ่านใหม่"}
+                {t("userform.newPassword")}
               </Label>
               <PasswordInput
                 id="newPassword"
                 value={newPassword}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
-                placeholder={t("userform.enterNewPassword") || "กรอกรหัสผ่านใหม่"}
+                onChange={(e) => {
+                  setNewPassword(e.target.value);
+                  setPasswordValidation(validatePassword(e.target.value));
+                }}
+                placeholder={t("userform.enterNewPassword")}
                 className="w-full"
               />
-              
-              {/* Password validation indicators */}
-              {newPassword && (
-                <div className="space-y-1 text-xs">
-                  {(() => {
-                    const validation = validatePassword(newPassword);
-                    return (
-                      <>
-                        <div className={`flex items-center space-x-2 ${validation.hasMinLength ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"}`}>
-                          <span>{validation.hasMinLength ? "✓" : "✗"}</span>
-                          <span>{t("userform.passwordValidation.minLength") || "อย่างน้อย 8 ตัวอักษร"}</span>
-                        </div>
-                        <div className={`flex items-center space-x-2 ${validation.hasUppercase ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"}`}>
-                          <span>{validation.hasUppercase ? "✓" : "✗"}</span>
-                          <span>{t("userform.passwordValidation.uppercase") || "อย่างน้อยตัวใหญ่ 1 ตัว"}</span>
-                        </div>
-                        <div className={`flex items-center space-x-2 ${validation.hasSpecialChar ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"}`}>
-                          <span>{validation.hasSpecialChar ? "✓" : "✗"}</span>
-                          <span>{t("userform.passwordValidation.specialChar") || "อย่างน้อยอักขระพิเศษ 1 ตัว"}</span>
-                        </div>
-                      </>
-                    );
-                  })()}
-                </div>
-              )}
+
+              {newPassword && <PasswordChecklist validation={passwordValidation} />}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">
-                {t("userform.confirmPassword") || "ยืนยันรหัสผ่าน"}
+                {t("userform.confirmPassword")}
               </Label>
               <PasswordInput
                 id="confirmPassword"
                 value={confirmPassword}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
-                placeholder={t("userform.confirmNewPassword") || "ยืนยันรหัสผ่านใหม่"}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder={t("userform.confirmNewPassword")}
                 className="w-full"
               />
-              
-              {/* Password match indicator */}
-              {confirmPassword && (
-                <div className="space-y-1 text-xs">
-                  <div className={`flex items-center space-x-2 ${newPassword === confirmPassword && newPassword !== "" ? "text-green-600 dark:text-green-300" : "text-red-600 dark:text-red-300"}`}>
-                    <span>{newPassword === confirmPassword && newPassword !== "" ? "✓" : "✗"}</span>
-                    <span>{newPassword === confirmPassword && newPassword !== "" ? 
-                      (t("userform.passwordsMatch") || "รหัสผ่านตรงกัน") : 
-                      (t("userform.passwordsDoNotMatch") || "รหัสผ่านไม่ตรงกัน")
-                    }</span>
-                  </div>
-                </div>
-              )}
+
+              <PasswordMatchHint newPassword={newPassword} confirmPassword={confirmPassword} />
             </div>
 
-            <div className="text-sm text-gray-500 dark:text-gray-400 cursor-default">
-              <p>{t("userform.passwordRequirements") || "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร"}</p>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              <p>{t("userform.passwordRequirements")}</p>
             </div>
           </div>
         )}
@@ -268,17 +255,16 @@ const ResetPasswordModal = ({
               onClick={handleClose}
               disabled={loading}
             >
-              {t("common.cancel") || "ยกเลิก"}
+              {t("common.cancel")}
             </Button>
             <Button
               variant="primary"
               onClick={handleReset}
-              disabled={loading}
+              disabled={loading || !hasTargetIdentity}
             >
-              {loading 
-                ? (t("userform.resetting") || "กำลังรีเซ็ต...")
-                : (t("userform.resetPassword") || "รีเซ็ตรหัสผ่าน")
-              }
+              {loading
+                ? t("userform.resetting")
+                : t("userform.resetPassword")}
             </Button>
           </DialogFooter>
         )}

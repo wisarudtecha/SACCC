@@ -1134,7 +1134,8 @@
         "edit_profile": "个人资料",
         "account_settings": "账户设置",
         "notification": "通知",
-        "sign_out": "退出登录"
+        "sign_out": "退出登录",
+        "tenant": "组织"
       }
     },
     "sidebar": {
@@ -4067,7 +4068,10 @@
     "userTypeUnknown": "未知",
     "resetPassword": "重置密码",
     "resetPasswordDescription": "请联系管理员或客服重置密码",
-    "resetPasswordDescriptionForAdmin": "请输入邮箱地址、用户名和新密码进行重置",
+    "resetPasswordDescriptionForAdmin": "为此用户设置新密码。邮箱和用户名将自动取自账户，无需重新输入。",
+    "resetPasswordTargetTitle": "正在重置以下账户的密码",
+    "resetPasswordTargetNote": "该账户的邮箱和用户名将随重置请求一起发送。",
+    "resetPasswordTargetMissing": "该账户缺少用户名或邮箱，无法发送重置请求，请先更新账户信息。",
     "resetPasswordContactEmail": "电子邮件",
     "resetPasswordContactPhone": "电话",
     "changePassword": "修改密码",
@@ -4102,7 +4106,9 @@
     "passwordValidation": {
       "minLength": "至少8个字符",
       "uppercase": "至少1个大写字母",
-      "specialChar": "至少1个特殊字符"
+      "specialChar": "至少1个特殊字符",
+      "met": "满足",
+      "notMet": "不满足"
     },
     "blood_type": {
       "A": "A",

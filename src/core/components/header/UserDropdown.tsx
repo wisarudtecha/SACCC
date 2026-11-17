@@ -260,6 +260,15 @@ const UserDropdown = () => {
   const [photo, setPhoto] = useState("");
   const [showPreferences, setShowPreferences] = useState(false);
 
+  // Tenant the signed-in user belongs to. `organization` is the login-time tenant
+  // identifier (e.g. "SKY-AI", "SKYICT") - the same value the login form's tenant
+  // selector offers (FIXTURE_TENANT_NAMES). There is no separate display name
+  // anywhere in the client yet, so this shows the identifier as-is. Sourced from
+  // auth state, which AuthProvider backfills from the login selection when the
+  // BFF omits the field; an empty value hides the line instead of rendering a
+  // dangling label.
+  const tenantName = state.user?.organization ?? "";
+
   const storage = localStorage || sessionStorage;
   const profileStorage = storage?.getItem("profile") || "{}";
 
@@ -416,6 +425,11 @@ const UserDropdown = () => {
               <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
                 {email}
               </span>
+              {tenantName && (
+                <span className="mt-0.5 block truncate text-theme-xs text-gray-500 dark:text-gray-400">
+                  {t("navigation.topbar.profile.tenant")}: {tenantName}
+                </span>
+              )}
             </div>
 
             <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">

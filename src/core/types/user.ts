@@ -121,11 +121,16 @@ export interface ResetPasswordData {
   newPassword: string;
 }
 
+// The admin no longer types the target's email/username: the dialog reads them off the account
+// record it was opened from and still sends them in the payload, because POST /users/reset_password
+// (User.ResetPassword) identifies the account by email + username, not by id.
 export interface ResetPasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
   userId?: string;
   username?: string;
+  email?: string;
+  displayName?: string;
   onSuccess?: () => void;
 }
 

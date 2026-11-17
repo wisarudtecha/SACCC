@@ -127,6 +127,19 @@ export default function UserMetaCard({ userData: propUserData, loading: propLoad
     return <div className="p-5 text-center text-gray-500 dark:text-gray-400">{t("userform.noUserData")}</div>;
   }
 
+  // ResetPasswordModal still sends email + username to the API, but the admin no longer types
+  // them: they are read off the account rendered here. `userData` is either the context profile
+  // (UserFormProfile, which carries no username) or a UserProfile row from the list/preview, so
+  // username is read defensively rather than assumed to exist on the union. Empty values are
+  // possible at runtime (a server record may omit them) — the modal blocks the submit in that
+  // case instead of posting a blank identity.
+  const profileExtras = userData as unknown as { username?: unknown };
+  const resetTargetUsername = typeof profileExtras.username === "string" ? profileExtras.username : "";
+  const resetTargetEmail = typeof userData.email === "string" ? userData.email : "";
+  const resetTargetDisplayName = userData.displayName
+    || `${userData.firstName ?? ""} ${userData.lastName ?? ""}`.trim();
+  const resetTargetKey = String(userData.id ?? "");
+
   return (
     <div
       className="p-5 border border-gray-200 rounded-2xl dark:border-gray-700 lg:p-6"
@@ -329,8 +342,14 @@ export default function UserMetaCard({ userData: propUserData, loading: propLoad
         />
       ) || ((permissions.hasPermission("user.reset_password") || isSystemAdmin) && (
         <ResetPasswordModal
+          // Re-mounts when the previewed account changes so a half-typed password never follows
+          // the admin from one user to the next.
+          key={resetTargetKey}
           isOpen={showResetPasswordModal}
           onClose={() => setShowResetPasswordModal(false)}
+          username={resetTargetUsername}
+          email={resetTargetEmail}
+          displayName={resetTargetDisplayName}
           onSuccess={handlePasswordChangeSuccess}
         />
       )) || ""}

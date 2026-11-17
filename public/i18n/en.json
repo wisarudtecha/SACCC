@@ -1254,7 +1254,8 @@
         "edit_profile": "Profile",
         "account_settings": "Account Settings",
         "notification": "Notification",
-        "sign_out": "Sign out"
+        "sign_out": "Sign out",
+        "tenant": "Tenant"
       }
     },
     "sidebar": {
@@ -4187,7 +4188,10 @@
     "userTypeUnknown": "Unknown",
     "resetPassword": "Reset Password",
     "resetPasswordDescription": "Contact administrator or support to reset your password.",
-    "resetPasswordDescriptionForAdmin": "Enter email, username, and new password to reset.",
+    "resetPasswordDescriptionForAdmin": "Set a new password for this user. The email and username come from the account, so there is nothing to retype.",
+    "resetPasswordTargetTitle": "Resetting password for",
+    "resetPasswordTargetNote": "The account's email and username are sent with the reset request.",
+    "resetPasswordTargetMissing": "This account has no username or email on record, so the reset cannot be sent. Update the account details first.",
     "resetPasswordContactEmail": "Email",
     "resetPasswordContactPhone": "Phone",
     "changePassword": "Change Password",
@@ -4222,7 +4226,9 @@
     "passwordValidation": {
       "minLength": "At least 8 characters",
       "uppercase": "At least 1 uppercase letter",
-      "specialChar": "At least 1 special character"
+      "specialChar": "At least 1 special character",
+      "met": "Met",
+      "notMet": "Not met"
     },
     "blood_type": {
       "A": "A",
