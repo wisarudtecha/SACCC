@@ -1,16 +1,30 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import { useAuth } from "@/core/hooks/useAuth";
 import reportConfig from "./reportConfig.json";
+import { resolveJasperLogin } from "./jasperCredentials";
 import { openJasperReport } from "./openReport";
-import type { ReportGroup } from "@/cms/types/report";
+import type { ReportConfig } from "@/cms/types/report";
 
-const REPORT_GROUPS = reportConfig as ReportGroup[];
+const REPORT_CATALOGUE = reportConfig as ReportConfig;
+const REPORT_GROUPS = REPORT_CATALOGUE.groups;
 
 function ReportComponent() {
     const { t, language } = useTranslation();
+    const { state } = useAuth();
     const jasperUrl = import.meta.env.VITE_JASPER_URL;
     const location = useLocation();
+
+    // Jasper signs in as "<tenant>_<username>" (SKYICT_wisarud.tec) with the
+    // tenant's default password (Skyict@123) — both rules live in
+    // reportConfig.json. A null half makes openReport fall back to the shared
+    // account and warn, rather than sending a half-built username or a made-up
+    // password.
+    const jasperLogin = resolveJasperLogin(REPORT_CATALOGUE, {
+        tenant: state.user?.organization,
+        username: state.user?.username,
+    });
 
     useEffect(() => {
         if (!location.hash) {
@@ -54,7 +68,7 @@ function ReportComponent() {
                                                 <tr
                                                     key={item.id}
                                                     className="hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
-                                                    onClick={() => openJasperReport(jasperUrl + item.url, language)}
+                                                    onClick={() => openJasperReport(jasperUrl + item.url, language, jasperLogin)}
                                                 >
                                                     <td className="px-6 py-4">
                                                         <div className="text-sm font-medium text-gray-700 dark:text-gray-400">
