@@ -3,7 +3,7 @@
   "plan": "enterprise",
   "skus": [
     "CC-CORE", "CC-AGENT", "CC-KB", "CC-CHAT",
-    "CC-CHANNEL", "CC-GIS", "CC-CAD", "CC-BOT"
+    "CC-CHANNEL", "CC-CAD", "CC-BOT"
   ],
   "features": [
     "entitlement.core",
@@ -12,7 +12,6 @@
     "entitlement.kb.semantic_search",
     "entitlement.chat",
     "entitlement.channel.social",
-    "entitlement.gis",
     "entitlement.cad",
     "entitlement.bot",
     "entitlement.audit",

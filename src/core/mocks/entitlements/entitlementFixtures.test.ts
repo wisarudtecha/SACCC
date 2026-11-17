@@ -46,7 +46,10 @@ describe("entitlement fixture registry", () => {
     const second = resolveFixture("SIH");
     expect(second.seats.used).toBe(80);
     expect(second.features.length).toBeGreaterThan(0);
-    expect(resolveFixture("SKYICT").features).toContain("entitlement.gis");
+    // Deliberately a feature the SKYICT fixture carries, not the GIS add-on: as of
+    // 2026-11-17 the GIS SKU is no longer part of the SKYICT/SKYCC enterprise fixtures, so
+    // asserting it here would make this immutability test fail for a packaging reason.
+    expect(resolveFixture("SKYICT").features).toContain("entitlement.cad");
   });
 
   it("exposes tenant display names for the login selector", () => {
