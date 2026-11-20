@@ -4,6 +4,11 @@ import { AuthContext } from "@/core/context/AuthContext";
 import { authReducer } from "@/core/hooks/useAuthContext";
 import { useHardSessionCap } from "@/core/hooks/useHardSessionCap";
 import { EntitlementsBootstrap } from "@/core/components/entitlements/EntitlementsBootstrap";
+// One-way core -> cms edge, the same existing tangle as `caseApiSetup` below:
+// the map runtime configuration is cms vocabulary (OrgMapSettings) and has to be
+// settled above every map, which means above the router. Do not grow this edge
+// beyond the bootstrap component.
+import { MapRuntimeConfigBootstrap } from "@/cms/components/case/createCase/map/MapRuntimeConfigBootstrap";
 import { useSessionExpiry } from "@/core/hooks/useSessionExpiry";
 import { store } from "@/core/store";
 import { authGqlEndpoints } from "@/core/store/api/graphql/authGqlApi";
@@ -403,6 +408,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {/* Loads (and on logout, clears) the tenant's entitlement set. Must live
           inside the provider: it consumes useAuth(). */}
       <EntitlementsBootstrap />
+      {/* Settles which map provider this session draws with, from the org's own
+          settings. Same placement rule as EntitlementsBootstrap: it consumes
+          useAuth(), so it must be a child of the provider, not a call in the
+          provider's own body. It renders nothing. */}
+      <MapRuntimeConfigBootstrap />
       {children}
     </AuthContext.Provider>
   );

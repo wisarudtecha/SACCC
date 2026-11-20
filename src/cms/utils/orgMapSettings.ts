@@ -28,6 +28,24 @@ export const AUTO_INTERVAL_MIN_SECONDS = 15;
  * Schema-default Map Settings, used both by the empty state (backend 404 on GET)
  * and by the mock stub's initial seed. `incident.radiusMeters` reuses
  * DEFAULT_INCIDENT_RADIUS_METERS so it never drifts from the flat-shape fallback.
+ *
+ * A DEFAULT HERE IS A PROMISE ABOUT BEHAVIOUR, not an ideal configuration
+ * (decision D10/D11 in docs/ORG-SETTINGS-Runtime-Wiring-Plan.md).
+ *
+ * Once a value is consumed at runtime, an org that has never saved anything is
+ * seeded from this object - so a default that disagrees with the surface's own
+ * hardcoded default silently changes behaviour for every existing tenant the day
+ * that surface is wired. These three therefore mirror the layer state each
+ * surface starts with today (hidden), and `tracking` mirrors the 60s safety-net
+ * refetch `useStaffPositions` already runs:
+ *
+ *   layers.showPlace  -> usePlaceLayer `useState(false)`
+ *   staff.showStaff   -> CaseStaffMapField `useState(false)`
+ *   staff.showTrail   -> CaseStaffMapField `isTrailVisible = useState(false)`
+ *   staff.tracking    -> ROSTER_SAFETY_REFETCH_MS = 60_000, always on
+ *
+ * Do not raise one of these to `true` "because the feature is ready": that is a
+ * product change that turns a layer on for every tenant, not a default fix.
  */
 export const DEFAULT_ORG_MAP_SETTINGS: Omit<OrgMapSettings, "orgId"> = {
   general: {
@@ -36,7 +54,7 @@ export const DEFAULT_ORG_MAP_SETTINGS: Omit<OrgMapSettings, "orgId"> = {
     allowMapStyleChange: true,
   },
   layers: {
-    showPlace: true,
+    showPlace: false,
     showBoundaries: true,
     showSearch: true,
     showAddressCoordinates: true,
@@ -48,11 +66,11 @@ export const DEFAULT_ORG_MAP_SETTINGS: Omit<OrgMapSettings, "orgId"> = {
     autoLockServiceCenterOnMatch: true,
   },
   staff: {
-    showStaff: true,
-    showTrail: true,
+    showStaff: false,
+    showTrail: false,
     routing: { mode: "manual", autoIntervalSeconds: null },
     etaTtl: { mode: "manual", autoIntervalSeconds: null, applyToAssignmentPicker: true },
-    tracking: { mode: "manual", autoIntervalSeconds: null },
+    tracking: { mode: "auto", autoIntervalSeconds: 60 },
   },
   assignment: {
     showWorkload: true,

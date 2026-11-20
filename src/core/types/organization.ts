@@ -130,22 +130,27 @@ export function isOrgSettings(value: unknown): value is OrgSettings {
 }
 
 /**
- * Organization-level map configuration (the "Map Settings" section of the
+ * Organization-level map configuration - the `mapSettings` sub-document of the
+ * `org.config.properties` config property (the "Map Settings" section of the
  * Organization/System Settings page).
  *
- * FE contract ahead of the backend: `GET`/`PATCH /organizations/{orgId}/map-settings`
- * do not exist server-side yet. Until they ship, `useOrgMapSettings` isolates the
- * failure - a 404 / GraphQL error / bad shape all fall back to
- * `buildDefaultOrgMapSettings` (schema defaults), and Save surfaces a persistent
- * "not saved to server" banner without discarding the admin's edits. With
- * `VITE_MOCK_API="true"` a session-scoped stub backs both calls so the page is
- * fully demoable.
+ * STORAGE: one JSON document per organisation lives in `public.config_properties`
+ * under `propKey = "org.config.properties"`, holding `{ mapSettings,
+ * assignmentRules }`. It is read/written through the BFF's `ConfigProperty`
+ * operations (`GetConfigPropertyByKey` / `SetConfigPropertyByKey` - see
+ * `src/core/store/api/configPropertyApi.ts` and
+ * `src/core/store/api/graphql/configPropertyQueries.ts`).
  *
- * GraphQL environments (`VITE_USE_GRAPHQL="true"`, which is every `.env*` here)
- * additionally need a `GQL_ORG_MAP_SETTINGS` entry keyed by the exact REST url,
- * registered in `src/core/store/api/graphql/organizationQueries.ts` and spread
- * into `GQL_MAP` (`src/core/utils/gqlMapper.ts`), since there is no REST fallback
- * once GraphQL is on. Adding it now makes the backend cut-over a no-op FE change.
+ * `orgId` is NOT part of the stored document (it is a column on the row, and the
+ * BFF scopes every call by the caller's token). The client fills it in so the
+ * section components and the existing `useOrgMapSettings` consumers keep one
+ * record shape - it is stripped again before a write
+ * (`encodeOrgConfigProperties`).
+ *
+ * Until the key exists, `GetConfigPropertyByKey` answers `status: "-1"` with
+ * `data: null`, which the hybrid base query turns into a real RTK error. That is
+ * "nothing saved yet", not "broken", so the reader falls back to
+ * `buildDefaultOrgMapSettings` and Save (an upsert) creates the record.
  */
 export type AutoManualMode = "auto" | "manual";
 
@@ -237,54 +242,80 @@ export interface OrgMapSettings {
   updatedBy?: string | null;
 }
 
+/**
+ * Shape guard for one `mapSettings` section.
+ *
+ * `orgId` is deliberately NOT required: the stored document does not carry it
+ * (it is a column on the config-properties row), so requiring it here made every
+ * real payload fail the guard and silently fall back to schema defaults.
+ * `Array.isArray` is excluded because `normalizeToApiResponse` coerces a missing
+ * payload to `[]`, which is an object to `typeof`.
+ */
 export function isOrgMapSettings(value: unknown): value is OrgMapSettings {
-  if (typeof value !== "object" || value === null) return false;
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
   const c = value as Record<string, unknown>;
   return (
-    typeof c.orgId === "string" &&
     typeof c.general === "object" &&
+    c.general !== null &&
     typeof c.layers === "object" &&
+    c.layers !== null &&
     typeof c.incident === "object" &&
+    c.incident !== null &&
     typeof c.staff === "object" &&
-    typeof c.assignment === "object"
+    c.staff !== null &&
+    typeof c.assignment === "object" &&
+    c.assignment !== null
   );
 }
 
 /**
- * Organization-level assignment rules (the "Assignment Rules" section of the
- * Organization/System Settings page).
+ * Organization-level assignment rules - the `assignmentRules` sub-document of
+ * the `org.config.properties` config property (the "Assignment Rules" section of
+ * the Organization/System Settings page).
  *
- * Configuration only: an admin toggles Automatic/Manual mode, selects individual
- * routing criteria when Automatic is on, and chooses a workload-allocation
- * method. No routing/assignment engine consumes these values yet.
+ * Configuration only: an admin selects routing criteria and chooses a
+ * workload-allocation method. No routing/assignment engine consumes these values
+ * yet.
  *
- * FE contract ahead of the backend: GET/PATCH /organizations/{orgId}/assignment-rules
- * do not exist server-side yet. Until they ship, useOrgAssignmentRules isolates
- * the failure - a 404 / GraphQL error / bad shape all fall back to
- * buildDefaultOrgAssignmentRuleSettings (schema defaults), and Save surfaces a
- * persistent "not saved to server" banner without discarding the admin's edits.
- * With VITE_MOCK_API="true" a session-scoped stub backs both calls so the page
- * is fully demoable.
+ * Stored in the same JSON document as the map settings - see the storage note on
+ * `OrgMapSettings`. `orgId` is filled in by the client, not stored.
+ */
+
+/**
+ * RETIRED 2026-11-19 - kept as a record, deliberately not used by any field.
  *
- * GraphQL environments (VITE_USE_GRAPHQL="true", which is every .env* here)
- * additionally need the matching entry keyed by the exact REST url, registered in
- * src/core/store/api/graphql/organizationQueries.ts (spread into GQL_MAP via
- * ...GQL_ORGANIZATION), since there is no REST fallback once GraphQL is on.
- * Adding it now makes the backend cut-over a no-op FE change.
+ * The org-wide Automatic/Manual switch was removed from the stored contract
+ * (`assignmentRules.mode`). Auto/manual is now decided PER CASE SUB-TYPE by
+ * `assignmentMode[]` - see docs/ORG-SETTINGS-Assignment-Mode-Survey.md. Do not
+ * re-introduce a field of this type without that review: two places deciding "who
+ * assigns" is the ambiguity the contract change removed.
  */
 export type AssignmentMode = "automatic" | "manual";
 
 export type AllocationMethod = "round_robin" | "load_balance";
 
-/** Individual routing criteria available in both Manual and Automatic modes. */
+/**
+ * Routing criteria.
+ *
+ * The stored contract changed on 2026-11-19: `locationBased`, `department`,
+ * `caseType` and `caseTypeSubTypes` were removed, and `unitProperty` was added
+ * (docs/ORG-SETTINGS-Assignment-Mode-Survey.md §1). The retired keys are
+ * deliberately NOT kept here - a typed field the contract no longer has gets
+ * written back on every Save, which is the drift this change exists to stop.
+ * If they return, restore them from that document instead of guessing the shape.
+ */
 export interface RoutingModes {
   skillBased: boolean;
-  locationBased: boolean;
-  department: boolean;
   availability: boolean;
-  caseType: boolean;
-  /** Selected sub-type sTypeIds when caseType routing is enabled. */
-  caseTypeSubTypes: string[];
+  /** "Area Based" criterion. */
+  areaBased: boolean;
+  /**
+   * "Unit Property" criterion - matches an officer by the properties configured on
+   * the unit (`GET /mdm/units/properties/{unitId}`). The payload carries a plain
+   * boolean (decision U7): which property/value to match on is the backend's
+   * business, so no value list belongs in this type.
+   */
+  unitProperty: boolean;
   /** When true, selected criteria are combined with AND; otherwise OR. */
   combineWithAnd: boolean;
 }
@@ -298,7 +329,23 @@ export const ALLOCATION_METHODS: readonly AllocationMethod[] = [
 /** Service sub-types for advanced assignment options. */
 export type ServiceSubType = "general" | "emergency" | "maintenance" | "inspection";
 
-/** Advanced options that vary by service sub-type and Automatic/Manual mode. */
+/**
+ * The values above in display order, so a control can iterate them instead of
+ * hard-coding the list (the stored document already carries `serviceSubType`; it
+ * had no editor until Phase 2).
+ */
+export const SERVICE_SUB_TYPES: readonly ServiceSubType[] = [
+  "general",
+  "emergency",
+  "maintenance",
+  "inspection",
+];
+
+/**
+ * Advanced options. Org-level by decision U8 - they stay here even though
+ * auto/manual itself moved to `assignmentMode[]`; `serviceSubType` is what scopes
+ * a set of options to one service category.
+ */
 export interface AdvancedAssignmentOptions {
   serviceSubType: ServiceSubType;
   autoRequireAllSkills: boolean;
@@ -309,7 +356,6 @@ export interface AdvancedAssignmentOptions {
 
 /** PATCH body - fields optional so the FE can send a partial update; server merges onto the stored record. */
 export interface OrgAssignmentRulesUpdateData {
-  mode?: AssignmentMode;
   routingModes?: Partial<RoutingModes>;
   allocationMethod?: AllocationMethod;
   advancedOptions?: Partial<AdvancedAssignmentOptions>;
@@ -318,41 +364,132 @@ export interface OrgAssignmentRulesUpdateData {
 /** GET / PATCH response data - always fully populated (server fills unset fields with defaults). */
 export interface OrgAssignmentRuleSettings {
   orgId: string;
-  /** Automatic = auto-route with selected criteria; Manual = dispatcher assigns every case. */
-  mode: AssignmentMode;
-  /** Active routing criteria when mode = "automatic". Ignored when mode = "manual". */
+  /** Active routing criteria. Which criteria apply is no longer gated by an org mode. */
   routingModes: RoutingModes;
   /** The active workload-distribution method. */
   allocationMethod: AllocationMethod;
-  /** Advanced options per service sub-type and mode. */
+  /** Advanced options (org-level - decision U8). */
   advancedOptions: AdvancedAssignmentOptions;
   updatedAt?: string;
   updatedBy?: string | null;
 }
 
+/**
+ * Shape guard for one `assignmentRules` section, matching the 2026-11-19 contract:
+ * no `mode`, and the four criteria that were retired are not required.
+ *
+ * `orgId` is not required (the stored document does not carry it - see the same
+ * note on `isOrgMapSettings`), and `areaBased` / `unitProperty` are tolerated as
+ * absent because a record saved before they existed is still a valid shape; the
+ * decoder fills their defaults.
+ */
 export function isOrgAssignmentRuleSettings(
   value: unknown
 ): value is OrgAssignmentRuleSettings {
-  if (typeof value !== "object" || value === null) return false;
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
   const c = value as Record<string, unknown>;
-  const mode = c.mode as AssignmentMode;
   const allocation = c.allocationMethod as AllocationMethod;
   const routingModes = c.routingModes as Record<string, unknown> | undefined;
+  const optionalBoolean = (candidate: unknown) =>
+    candidate === undefined || typeof candidate === "boolean";
   return (
-    typeof c.orgId === "string" &&
-    (mode === "automatic" || mode === "manual") &&
     ALLOCATION_METHODS.includes(allocation) &&
     typeof routingModes === "object" &&
     routingModes !== null &&
     typeof routingModes.skillBased === "boolean" &&
-    typeof routingModes.locationBased === "boolean" &&
-    typeof routingModes.department === "boolean" &&
     typeof routingModes.availability === "boolean" &&
-    typeof routingModes.caseType === "boolean" &&
-    Array.isArray(routingModes.caseTypeSubTypes) &&
-    routingModes.caseTypeSubTypes.every((s) => typeof s === "string") &&
-    typeof routingModes.combineWithAnd === "boolean"
+    typeof routingModes.combineWithAnd === "boolean" &&
+    optionalBoolean(routingModes.areaBased) &&
+    optionalBoolean(routingModes.unitProperty)
   );
+}
+
+/**
+ * One row of `public.config_properties` as the BFF returns it.
+ *
+ * `propVal` is stored as TEXT server-side and comes back either decoded (when the
+ * text is JSON) or as a plain string (when it is not) - see `ConfigPropVal` in
+ * `src/core/mocks/config_property.go`. It is typed `unknown` on purpose: reading it
+ * as `object` would let a legacy string-valued row type-check and then throw.
+ * Always go through `decodePropVal` (`src/cms/utils/orgConfigProperties.ts`).
+ *
+ * `id` is `number | string` because the REST resource reports an int64 while
+ * GraphQL models it as `ID`; nothing here reads it yet, it is only used for
+ * create/update/delete by id.
+ */
+export interface ConfigPropertyRow {
+  id?: number | string;
+  orgId?: string;
+  propKey: string;
+  propVal?: unknown;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string | null;
+  updatedBy?: string | null;
+}
+
+/** Shape guard - `Array.isArray` is excluded because `[]` is an object to `typeof`. */
+export function isConfigPropertyRow(value: unknown): value is ConfigPropertyRow {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  return typeof (value as { propKey?: unknown }).propKey === "string";
+}
+
+/**
+ * The two stages an assignment mode can be set for (decision U1).
+ *
+ * `pic` = the step that decides who the responsible person (PIC) is.
+ * `assignment` = the step that assigns the case itself.
+ * They are separate stages, not two views of the same value.
+ */
+export type AssignmentModeTarget = "pic" | "assignment";
+
+/**
+ * The token used in the STORED document - note the spelling differs from the
+ * retired org-wide `AssignmentMode` (`"automatic"`); reusing that type here would
+ * fail validation on a real payload.
+ */
+export type AssignmentModeToken = "auto" | "manual";
+
+/**
+ * One entry of the document-level `assignmentMode` array: a set of case sub-types
+ * (`sTypeId`) that share a mode, for one stage.
+ *
+ * A sub-type with no entry for a stage means "not set" - there is no org-wide
+ * default to inherit any more (decision U2: this array replaced
+ * `assignmentRules.mode`), so the UI must be able to express absence.
+ */
+export interface AssignmentModeEntry {
+  type: AssignmentModeTarget;
+  mode: AssignmentModeToken;
+  /** `CaseTypeSubType.sTypeId` values. */
+  caseSubTypes: string[];
+}
+
+/** Display/validation order for the tokens and targets (also the whitelists). */
+export const ASSIGNMENT_MODE_TOKENS: readonly AssignmentModeToken[] = ["auto", "manual"];
+
+export const ASSIGNMENT_MODE_TARGETS: readonly AssignmentModeTarget[] = [
+  "pic",
+  "assignment",
+];
+
+/**
+ * The whole organization settings document, as stored under one config property.
+ *
+ * Read and written as ONE value (`GetConfigPropertyByKey` / `SetConfigPropertyByKey`),
+ * because that is how the backend stores it - the sections are not separate records.
+ * `orgId` is carried here so a decoded document can be matched to the session that
+ * read it; it is never written to the server (see `encodeOrgConfigProperties`).
+ */
+export interface OrgConfigPropertiesDoc {
+  orgId: string;
+  mapSettings: OrgMapSettings;
+  assignmentRules: OrgAssignmentRuleSettings;
+  /**
+   * Assignment mode per case sub-type (added to the contract 2026-11-19). Replaces
+   * the retired org-wide `assignmentRules.mode`.
+   */
+  assignmentMode: AssignmentModeEntry[];
 }
 
 export interface OrganizationManagementProps {

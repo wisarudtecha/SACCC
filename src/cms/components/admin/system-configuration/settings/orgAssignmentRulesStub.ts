@@ -1,11 +1,10 @@
-// Deterministic stand-in for the not-yet-built org assignment-rules endpoints.
+// Deterministic stand-in for the org settings document's assignment half.
 //
-// Used ONLY when VITE_MOCK_API="true" (see useOrgAssignmentRules). It exists so
-// the Organization/System Settings -> Assignment Rules page can be built and
-// demoed end-to-end before the backend (GET/PATCH
-// /organizations/{orgId}/assignment-rules, contract in
-// src/core/types/organization.ts) is available. It is NOT wired to any live
-// data and MUST NOT be imported by production code paths.
+// Used ONLY when VITE_MOCK_API="true" (see useOrgConfigProperties, which composes
+// this stub and orgMapSettingsStub into one document). It exists so the
+// Organization/System Settings -> Assignment Rules section can be demoed without a
+// backend. It is NOT wired to any live data and MUST NOT be imported by production
+// code paths.
 //
 // Like orgMapSettingsStub.ts, this keeps a session-scoped in-memory store keyed
 // by orgId, so a Save inside mock mode persists for the rest of the session -

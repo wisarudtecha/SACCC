@@ -10,9 +10,7 @@ import type {
   Command, CommandCreateData, CommandUpdateData,
   Station, StationCreateData, StationUpdateData,
   Organization, OrganizationQueryParams,
-  OrgSettings,
-  OrgMapSettings, OrgMapSettingsUpdateData,
-  OrgAssignmentRuleSettings, OrgAssignmentRulesUpdateData
+  OrgSettings
 } from "@/core/types/organization";
 
 export const organizationApi = baseApi.injectEndpoints({
@@ -204,60 +202,24 @@ export const organizationApi = baseApi.injectEndpoints({
     }),
 
     // ===================================================================
-    // Org map settings (Organization/System Settings -> Map Settings)
+    // Organization Settings (Map Settings / Assignment Rules)
     // ===================================================================
-    // GET / PATCH api/v1/organizations/{orgId}/map-settings
+    // MOVED OUT of this file, deliberately.
     //
-    // FE contract ahead of the backend: neither route exists server-side yet.
-    // A 404 (or a GraphQL error) on GET is expected until it ships -
-    // useOrgMapSettings isolates the failure and falls back to schema defaults;
-    // a failed PATCH keeps the admin's edits and shows a persistent "not saved"
-    // banner. GraphQL environments need the matching GQL_ORG_MAP_SETTINGS entry
-    // registered in src/core/store/api/graphql/organizationQueries.ts (no REST
-    // fallback when GraphQL is on) - already added so the cut-over is a no-op.
-    getOrgMapSettings: builder.query<ApiResponse<OrgMapSettings>, string>({
-      query: orgId => ({ url: `/organizations/${orgId}/map-settings` }),
-      providesTags: ["Organization"],
-    }),
-
-    // PATCH api/v1/organizations/{orgId}/map-settings
-    updateOrgMapSettings: builder.mutation<ApiResponse<OrgMapSettings>, { orgId: string; data: OrgMapSettingsUpdateData }>({
-      query: ({ orgId, data }) => ({
-        url: `/organizations/${orgId}/map-settings`,
-        method: "PATCH",
-        body: data,
-      }),
-      invalidatesTags: ["Organization"],
-    }),
-
-    // ===================================================================
-    // Org assignment rules (Organization/System Settings -> Assignment Rules)
-    // ===================================================================
-    // GET / PATCH api/v1/organizations/{orgId}/assignment-rules
+    // This used to declare `getOrgMapSettings` / `updateOrgMapSettings` /
+    // `getOrgAssignmentRules` / `updateOrgAssignmentRules` against
+    // `/organizations/{orgId}/map-settings` and `/organizations/{orgId}/assignment-rules`
+    // - routes the BFF never had (and whose GraphQL root, "Organization", does not
+    // exist in the schema at all). Both screens therefore failed on every request and
+    // silently showed schema defaults.
     //
-    // FE contract ahead of the backend: neither route exists server-side yet.
-    // A 404 (or a GraphQL error) on GET is expected until it ships -
-    // useOrgAssignmentRules isolates the failure and falls back to schema
-    // defaults; a failed PATCH keeps the admin's edits and shows a persistent
-    // "not saved" banner. GraphQL environments need the matching entry
-    // registered in src/core/store/api/graphql/organizationQueries.ts (no REST
-    // fallback when GraphQL is on) - already added so the cut-over is a no-op.
-    // Configuration only: no routing/assignment engine consumes these values.
-    getOrgAssignmentRules: builder.query<ApiResponse<OrgAssignmentRuleSettings>, string>({
-      query: orgId => ({ url: `/organizations/${orgId}/assignment-rules` }),
-      providesTags: ["Organization"],
-    }),
-
-    // PATCH api/v1/organizations/{orgId}/assignment-rules
-    updateOrgAssignmentRules: builder.mutation<ApiResponse<OrgAssignmentRuleSettings>, { orgId: string; data: OrgAssignmentRulesUpdateData }>({
-      query: ({ orgId, data }) => ({
-        url: `/organizations/${orgId}/assignment-rules`,
-        method: "PATCH",
-        body: data,
-      }),
-      invalidatesTags: ["Organization"],
-    }),
+    // The settings document now lives under the real config-property resource:
+    // `src/core/store/api/configPropertyApi.ts` (endpoints) +
+    // `graphql/configPropertyQueries.ts` (mapping). Do not re-add a per-section
+    // endpoint here: the backend stores both sections in ONE property value, so a
+    // section cannot be written on its own.
   }),
+
   // Vite HMR re-runs this module without a full page reload, which calls injectEndpoints a
   // second time. Without this, RTK Query keeps the definitions registered by the previous
   // run and an edit to a `query` silently has no effect until the page is reloaded.
@@ -286,8 +248,4 @@ export const {
   // organization
   useGetOrganizationsQuery,
   useGetOrgSettingsQuery,
-  useGetOrgMapSettingsQuery,
-  useUpdateOrgMapSettingsMutation,
-  useGetOrgAssignmentRulesQuery,
-  useUpdateOrgAssignmentRulesMutation
 } = organizationApi;

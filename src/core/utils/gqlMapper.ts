@@ -9,6 +9,7 @@ import type { GqlMapConfig } from "@/core/types/gql";
 // Core
 import { GQL_AUDIT } from "@/core/store/api/graphql/auditQueries";
 import { GQL_AUTH } from "@/core/store/api/graphql/authQueries";
+import { GQL_CONFIG_PROPERTY } from "@/core/store/api/graphql/configPropertyQueries";
 import { GQL_NOTIFICATION } from "@/core/store/api/graphql/notificationQueries";
 import { GQL_ORGANIZATION } from "@/core/store/api/graphql/organizationQueries";
 import { GQL_PERMISSION } from "@/core/store/api/graphql/permissionQueries";
@@ -39,6 +40,7 @@ import { GQL_APPOINTMENT_TYPE } from "@/cms/store/api/graphql/appointmentTypeQue
 import { GQL_BRAND } from "@/cms/store/api/graphql/brandQueries";
 import { GQL_CATEGORY } from "@/cms/store/api/graphql/categoryQueries";
 import { GQL_CUSTOMER } from "@/cms/store/api/graphql/customerQueries";
+import { GQL_CUSTOMER_CONTACT } from "@/cms/store/api/graphql/customerContactQueries";
 import { GQL_CUSTOMER_CONTACT_DEFAULT } from "@/cms/store/api/graphql/customerContactDefaultQueries";
 import { GQL_CUSTOMER_FORM } from "@/cms/store/api/graphql/customerFormQueries";
 import { GQL_CUSTOMER_NOTE } from "@/cms/store/api/graphql/customerNoteQueries";
@@ -66,6 +68,7 @@ const GQL_MAP: Record<string, GqlMapConfig | Record<string, GqlMapConfig>> = {
   // Core
   ...GQL_AUDIT,
   ...GQL_AUTH,
+  ...GQL_CONFIG_PROPERTY,
   ...GQL_NOTIFICATION,
   ...GQL_ORGANIZATION,
   ...GQL_PERMISSION,
@@ -96,6 +99,7 @@ const GQL_MAP: Record<string, GqlMapConfig | Record<string, GqlMapConfig>> = {
   ...GQL_BRAND,
   ...GQL_CATEGORY,
   ...GQL_CUSTOMER,
+  ...GQL_CUSTOMER_CONTACT,
   ...GQL_CUSTOMER_CONTACT_DEFAULT,
   ...GQL_CUSTOMER_FORM,
   ...GQL_CUSTOMER_NOTE,

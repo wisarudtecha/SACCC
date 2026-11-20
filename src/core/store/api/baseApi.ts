@@ -31,6 +31,11 @@ const commonTagTypes = [
   // tag that is not in this list is silently ignored - see the "Store" note on
   // baseApiCrm below for the same mistake.
   "Organization",
+  // configPropertyApi's /config_properties - the org settings document
+  // (org.config.properties). Kept separate from "Organization" so editing map or
+  // assignment settings does not refetch every department/command/station list, and
+  // vice versa. Same registration rule as "Organization" above.
+  "OrgSettings",
   "Ticket",
   "Workflow",
   "Form and Workflow",
@@ -306,6 +311,7 @@ export const baseWelcomeCrmApi = createApi({
     "CustomerProduct",
     "CustomerNote",
     "CustomerSocial",
+    "CustomerContact",
     "CustomerContactDefault",
     "Service",
     "Category"

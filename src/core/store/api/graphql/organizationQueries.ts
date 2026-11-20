@@ -1,8 +1,10 @@
 // src/core/store/api/graphql/organizationQueries.ts
 // Maps REST-style keys to GraphQL operation configs for:
-//   Department (12), Command (13), Station (14), Org Map Settings,
-//   Org Assignment Rules
+//   Department (12), Command (13), Station (14)
 // Source: SuperApp.postman_collection.json
+//
+// The Organization Settings document (Map Settings + Assignment Rules) is NOT here -
+// it lives under the ConfigProperty resource in ./configPropertyQueries.ts.
 
 // ─── Command Queries ──────────────────────────────────────────────────────────
 
@@ -136,47 +138,17 @@ const DELETE_STATION_MUTATION = {
   mutation: true
 };
 
-// ─── Org Map Settings Query / Mutation ────────────────────────────────────────
-// Backend not built yet - operationName / inputType are provisional and MUST be
-// confirmed against the BFF schema when the endpoint ships (Phase 2). Registered
-// now so that cut-over needs no further FE change (no REST fallback once GraphQL
-// is enabled). Until then useOrgMapSettings isolates the resulting error.
-
-const GET_ORG_MAP_SETTINGS_QUERY = {
-  operationName: "GetOrgMapSettings",
-  root: "Organization",
-  inputType: "GetIdInput!",
-  fields: `status msg data desc`
-};
-
-const UPDATE_ORG_MAP_SETTINGS_MUTATION = {
-  operationName: "UpdateOrgMapSettings",
-  root: "Organization",
-  inputType: "OrgMapSettingsInput!",
-  fields: `status msg data desc`,
-  mutation: true
-};
-
-// ─── Org Assignment Rules Query / Mutation ────────────────────────────────────
-// Backend not built yet - operationName / inputType are provisional and MUST be
-// confirmed against the BFF schema when the endpoint ships. Registered now so
-// that cut-over needs no further FE change (no REST fallback once GraphQL is
-// enabled). Until then useOrgAssignmentRules isolates the resulting error.
-
-const GET_ORG_ASSIGNMENT_RULES_QUERY = {
-  operationName: "GetOrgAssignmentRules",
-  root: "Organization",
-  inputType: "GetIdInput!",
-  fields: `status msg data desc`
-};
-
-const UPDATE_ORG_ASSIGNMENT_RULES_MUTATION = {
-  operationName: "UpdateOrgAssignmentRules",
-  root: "Organization",
-  inputType: "OrgAssignmentRulesInput!",
-  fields: `status msg data desc`,
-  mutation: true
-};
+// ─── Org settings moved out of this file ──────────────────────────────────────
+// The Map Settings and Assignment Rules screens used to be mapped here, to a
+// `root: "Organization"` with provisional operation names (GetOrgMapSettings /
+// UpdateOrgMapSettings / GetOrgAssignmentRules / UpdateOrgAssignmentRules). That
+// root does not exist on the BFF at all - confirmed by anonymous introspection of
+// Query and Mutation, 2026-11-18: no field whose name contains "Organ" - so both
+// screens failed on every request and silently fell back to schema defaults.
+//
+// They now live under the real ConfigProperty resource, keyed by
+// `org.config.properties`, in `./configPropertyQueries.ts`. Do not re-add an
+// Organization-rooted entry here; nothing serves it.
 
 // ─── Registration Map ─────────────────────────────────────────────────────────
 
@@ -215,17 +187,5 @@ export const GQL_ORGANIZATION = {
     POST: CREATE_STATION_MUTATION,
     PATCH: UPDATE_STATION_MUTATION,
     DELETE: DELETE_STATION_MUTATION,
-  },
-
-  // Org map settings
-  "/organizations/:orgId/map-settings": {
-    GET: GET_ORG_MAP_SETTINGS_QUERY,
-    PATCH: UPDATE_ORG_MAP_SETTINGS_MUTATION,
-  },
-
-  // Org assignment rules
-  "/organizations/:orgId/assignment-rules": {
-    GET: GET_ORG_ASSIGNMENT_RULES_QUERY,
-    PATCH: UPDATE_ORG_ASSIGNMENT_RULES_MUTATION,
   },
 };

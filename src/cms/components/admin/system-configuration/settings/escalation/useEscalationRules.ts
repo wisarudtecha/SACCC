@@ -1,7 +1,7 @@
 // The one surface the Escalation Rules form uses to read and persist org
 // escalation-rule config.
 //
-// Mirrors useOrgAssignmentRules: behind this facade sits either the real
+// Mirrors useOrgMapSettings (a per-section facade over a document-level hook): behind this facade sits either the real
 // endpoints (GET / PATCH /organizations/{orgId}/escalation-rules) or the
 // session-scoped stub, selected by VITE_MOCK_API. The RTK hooks are always
 // called so hook order stays stable; the query is `skip`ped in mock mode or

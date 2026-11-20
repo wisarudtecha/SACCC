@@ -25,7 +25,7 @@ import { DropdownItem } from "@/core/components/ui/dropdown/DropdownItem";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import type { Language } from "@/core/config/i18n";
 import { MAP_CONTROL_BORDER_CLASS, mapControlRevealClass } from "./mapControlStyles";
-import { BASEMAP_OPTIONS, BasemapOptionId } from "./basemaps";
+import { getBasemapOptions, BasemapOptionId } from "./basemaps";
 
 interface BasemapSwitcherProps {
   value: BasemapOptionId;
@@ -138,7 +138,7 @@ function BasemapSwitcherBase({
 
       {/* Opens downward: the control sits in the map's top-right toolbar row. */}
       <Dropdown isOpen={isOpen} onClose={closeMenu} className="top-full w-48 p-1">
-        {BASEMAP_OPTIONS.map((option) => {
+        {getBasemapOptions().map((option) => {
           const isActive = option.id === value;
           return (
             <DropdownItem
