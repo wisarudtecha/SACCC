@@ -104,6 +104,43 @@ Implications when adding a new endpoint:
 - Permission checks go through `PermissionManager.hasPermission(user, permission)` (`src/core/utils/permissionManager.ts`), enforced via the `PermissionGate` component (`src/core/components/auth/PermissionGate.tsx`) and the `usePermissions` hook (`src/core/hooks/usePermissions.ts`).
 - `TokenManager` (`src/core/utils/tokenManager.ts`) is the source of truth for the JWT; RTK Query base queries pull the token from Redux `auth` state or fall back to `TokenManager`.
 
+## Entitlements (paid capabilities)
+
+Visible = entitled **and** permitted. `useEntitlements()` (`src/core/hooks/useEntitlements.ts`) answers "did this tenant buy X"; `PermissionGate`/`usePermissions` answer "may this user do X". Deliberately no admin bypass: entitlements are tenant-scoped.
+
+- **`isLocked(feature)` vs `hasFeature(feature)` are not interchangeable.** `isLocked` is fail-OPEN while entitlements load (`status !== "ready"` ⇒ `false`), which is right for *rendering a lock badge* and wrong for *deciding whether a capability may run* — a screen would briefly grant it. Use `hasFeature` (fail-closed) for capability decisions, `isLocked` for upsell UI.
+- **Gate the capability, not the component that happens to render it.** `entitlement.gis` used to be enforced only in `AddressMap` (the map SDK switch), so every GIS surface that renders *without* a map stayed open: the assignment picker's ETA/TTL column (a `routeService` call), the dispatch heatmap and the case-area choropleth. When adding a paid capability, enumerate every consumer of the service/provider behind it (`routeService`, `boundarySource`, an SDK import), not just the widget that draws it. Chokepoint gates now live at every provider switch: `AddressMap`, `CaseAreaChoroplethMap`, `DispatchHeatmap`.
+- **Enforcement must not depend on `VITE_SHOW_ENTITLEMENT_UPSELL`.** That flag decides whether a locked thing is *announced* (`LockedFeature`) or hidden (`null`); the gate itself (`EntitlementGate`, `ProtectedRoute requiredFeature`, `isWidgetAvailable`, the picker's column list) applies either way.
+- **Every catalogue key must name its gate.** `FEATURE_CATALOG` (`src/core/config/entitlements/featureCatalog.ts`) and `FEATURE_SURFACES` (`.../featureSurfaces.ts`) are checked against each other by `featureSurfaces.test.ts`: a new feature key either lists the files that enforce it or states why it has no UI surface, and every listed path must still exist. Adding a feature key without a `FEATURE_SURFACES` entry fails that test on purpose.
+- **Org-level narrowing sits *under* the entitlement.** The assignment picker's ETA/TTL column needs `hasFeature("entitlement.gis")` **and** the org's `staff.etaTtl.applyToAssignmentPicker`; whichever is off hides it. `/dashboard/case-summary-by-area` is route-gated on `entitlement.gis` (the page is a map end to end), while `/dashboard/dispatch` is not — only its heatmap section is withheld, because its KPIs, officer panel and event feed are not GIS.
+- **Menu parity is not automatic.** Three hand-maintained menu arrays declare `feature?`: `SuperSidebar`, `cms/layout/AppSidebar` and `SuperTopbar`'s "More" dropdown, all filtered by the shared `hideLockedNavItems` (`src/core/layout/navVisibility.ts`). Adding a feature-gated entry to one means adding it to the others that list the same route — otherwise the un-updated menu advertises a dead link.
+
+## PII (personal data)
+
+The frontend **renders** PII; the BFF **masks** it. Everything the client does with personal data is downstream of the backend's published contract (`/api/v1/customer*`, `/case/{id}`, `/dispatch/{caseId}/SOP`, `/customer_contacts`), and the single source of truth in code is `src/core/security/piiFields.ts`.
+
+Three tables, one per entity — do not merge them:
+
+| Table | Entity | Fields | Permission |
+|---|---|---|---|
+| `CUSTOMER_PII_FIELDS` | `Customer` | `citizenId`, `photo`, `mobileNo`, `landline`, `email`, `gender`, `blood`, `address.*` and `currentAddress.*` (all 13 parts each) | `pii.user.sensitive.personal` |
+| `CASE_PII_FIELDS` | the case's own phone number | `phoneNo` | `pii.case.phoneNo` |
+| `CONTACT_PII_FIELDS` | `CustomerContact` | `contactPhone` | `pii.user.sensitive.personal` |
+
+Dynamic-form fields an admin marks (`IndividualFormField.pii`) are the **only** place the two-way `pii.customer.general.personal` / `pii.customer.sensitive.personal` split applies — see `piiPresets.ts` in `cms`.
+
+**The permission on a rule is the backend's, not ours.** The customer record is filed under `pii.user.*` while dynamic form fields are under `pii.customer.*`; that inversion is the contract, not a mistake. A rule pointed at the wrong permission fails silently in the worst direction — masked for everybody, or editable by everybody.
+
+**`*` is a wire contract.** `MASK_CHAR` is `*` because the backend's write-back safeguard recognises a masked value by that pattern and restores the stored one. Any other character turns an echoed redaction into a real value written over the record.
+
+**`mask*` vs `redact*` — two families, deliberately.** `maskValue` / `maskAddress` / `maskDynamicField` are gated by `PII_MASKING_ENABLED` and are for read-only surfaces whose display the backend already owns. `redactValue` / `redactAddress` / `redactDynamicField` (plus the case and contact variants) ignore the flag and answer only to permissions — they are what a **locked** field renders, because "may this viewer see this value?" cannot depend on which layer the deployment put in charge. A locked field is never an `<input disabled>` or `readOnly`: it renders as text styled to match an input (`MaskedField`), since a disabled input still advertises a field the user cannot have.
+
+**The write path is not optional.** A form's PATCH body is built from state, not from the DOM, so once the backend redacts what it sends, the redaction *is* the state. Unviewable customer keys are dropped by `omitUnviewableCustomerPii`; the case phone number and dynamic-form answers are echoed and rely on the backend's write-back safeguard. When adding a surface, answer both questions: what does this form actually submit, and is a redaction in it?
+
+**A field with two owners needs both permissions.** The case phone input displays `customerData.mobileNo` (customer record) and is submitted as the case's `phoneNo` (case data), so `canEditCasePhoneNo` requires both — with either missing the write is silently discarded.
+
+**Photo cannot be masked** — a redaction string in `<img src>` is a broken image — so its call sites branch on `canViewField("photo")` and fall back to the initials.
+
 ## Dashboard widgets
 
 Dashboard composition lives in `src/core/hooks/useDashboard.ts` (plain React state, types in `src/core/types/dashboard.ts`: `DashboardWidget`, `WidgetConfig`, `WidgetType`, `DashboardLayout`) plus `src/core/components/dashboard/` (`Dashboard.tsx`, `DashboardGrid.tsx`, `WidgetLibrary.tsx`). Reusable widget components live in `src/core/components/widgets/` (e.g. `MetricWidget.tsx`, `ChartWidget.tsx`, `TableWidget.tsx`); feature-specific widgets live under `src/cms/components/widgets/` (e.g. `CaseStatusWidget.tsx`, `SLAMonitorWidget.tsx`).
@@ -131,6 +168,8 @@ When `VITE_MOCK_API=true` (checked in `src/core/utils/constants.ts` / `src/cms/u
 - `VITE_SHOW_CASE_IOT` → `CASE_IOT_ENABLED`: the IoT surfaces of the create/edit case screens — the Device ID and alert-date fields (`caseFormFields.tsx`, `createCaseSchedule.tsx`), the Device layer and its Link/Unlink popup on the case map (`CaseLocationSection.tsx`, `CaseDisplay.tsx`, `CaseStaffMapField.tsx`), and the read-only rows (the `CasePanel` "Device info" tab, `OverviewTab`, `CaseDisplay`). `deviceId`/`startedDate` still travel in the case payload — the update request replaces the record, so hiding the input must not drop the value.
 - `VITE_SHOW_ENTITLEMENT_UPSELL` → `ENTITLEMENT_UPSELL_ENABLED`: the "not in your package" UI — `EntitlementGate`'s inline lock block, `ProtectedRoute`'s `requiredFeature` lock page, and the sidebar lock badges/entries (`hideLockedNavItems` in `src/core/layout/navVisibility.ts`). With it off, inline gates render nothing and route-level gates redirect to `/cms` (never a blank page). The tenant's own Subscription & Entitlements settings page is not an upsell and is unaffected.
 
+**`VITE_ENABLE_PII_MASKING`** (`src/core/security/piiConfig.ts`) is the one flag with the opposite polarity: OFF unless an environment sets the literal `"true"`. The backend is the masking layer (see PII above), so a deployment that has not been given the key must not mask a second time — and double-masking is lossy, not merely redundant (`maskYearOnly` cannot re-parse an already-redacted date and collapses it to a full mask). Everything permission-driven — locked fields, `omitUnviewableCustomerPii`, the whole `redact*` family — stays live either way and must never be gated on this flag.
+
 ## Known quirks
 
 - **No CI, no git hooks**: there's no `.github/workflows` and no Husky config — don't assume lint/build/tests run automatically on commit or push.
@@ -138,6 +177,8 @@ When `VITE_MOCK_API=true` (checked in `src/core/utils/constants.ts` / `src/cms/u
 - **`src/cms/components/d&d upload/`** has a space and `&` in the directory name — quote the path in any shell command that touches it.
 - **Commented-out code is often intentional history, not clutter**: files like `src/core/store/api/baseApi.ts` keep large versioned blocks (`v1.0`, `v2.0`, `v3.0`) of superseded implementations commented out inline instead of deleting them. This is the concrete form the "do not delete existing code you don't understand" rule takes in practice — leave these blocks alone unless asked to clean them up.
 - **`createCaseSchedule.tsx`** (`src/cms/components/case/createCase/`) is ~1,000 lines — a known exception to the "break down components" rule, not a pattern to copy into new code.
+- **`/customer_contacts` has no `custId` filter and no total.** `GetListCustomerContact` takes only `start`/`length`, so `useCustomerContacts` sweeps pages (50 at a time, capped at 5) and filters by customer client-side. Hitting the cap sets `isPartial` and the tab says the list may be incomplete — a single-page fetch would silently drop contacts for any customer whose rows land beyond it. Check the contract before "simplifying" it.
+- **`CustomerContact.contactName` / `contactAddr` are not classified.** The PII matrix lists only `contactPhone` for that entity, so a contact's own name and full address render in the clear even though the customer's address is masked. Closing that gap is a contract change, not a UI change.
 
 ## Build/deploy notes
 

@@ -1851,3 +1851,394 @@ If you catch yourself repeating a documented mistake, stop, identify which Preve
     -> the capability exists, so a 4401 close becomes "refresh once, then reconnect"
        instead of a dead end.
   ```
+
+- **Recurred 2026-11-18 — the search was scoped, not missing.** Auditing which Organization
+  Settings values are consumed at runtime, I wrote into the plan: *"`staff.tracking` ยังไม่มีกลไก —
+  ต้องออกแบบ transport ใหม่"*, based on `grep -include "*.tsx" "setInterval\("` returning nothing
+  relevant. It missed `useStaffPositions.ts` — a **`.ts`** file — which has implemented the whole
+  thing for months: MOB websocket events (`mobEvents.ts`, `UNIT_SELECT`/`STATUS`/`TRACKING`), a
+  safety-net poll (`ROSTER_SAFETY_REFETCH_MS`), a patch flush, a reconcile debounce and a refresh
+  cooldown. The user corrected it with "backend มีแล้ว ลองตรวจสอบดู".
+  Same failure, new mechanism: the vocabulary was right, the **scope filter** silently excluded the
+  file that answers the question. An `include`/path/extension restriction turns a repo-wide search
+  into a search of the files you already suspected.
+  **Prevention Rule (added):** an absence claim requires a grep whose scope is the whole repo — no
+  `--include`, no path prefix, no extension filter, or at minimum a second unfiltered run. State in
+  the claim *what* was searched ("no `setInterval` under `src/cms/**/*.tsx`"), and if the answer
+  matters for a plan, search the capability's domain nouns (`tracking`, `position`, `staff`) instead
+  of one implementation detail (`setInterval`) — a poll can be a `setTimeout` chain, an RTK
+  `pollingInterval`, a websocket heartbeat or a query refetch.
+
+### A comment is source code the compiler reads — `*/` ends it wherever it appears
+
+- **Date:** 2026-11-17
+- **Mistake:** Documenting the new PII redaction character, the example value
+  `**` + `/` + `**` + `/` + `1990` was written literally into three comments: once in the block
+  comment above `applyMask`, and twice inside JSX comment expressions
+  (`{/* ... */}` in `CasePanel.tsx` and `CustomerCreate.tsx`). Both JSX ones broke `tsc -b`
+  (`TS1109: Expression expected`, `TS1161: Unterminated regular expression literal`) and
+  ESLint's parser stopped on the same lines.
+- **Root Cause:** A block comment and a JSX comment expression are both terminated by the
+  two-character sequence `*` `/`, and a date written the obvious way contains it. The comment
+  "looks fine" in the editor because the editor highlights it as a comment; the failure only
+  appears where the tokenizer decides the comment ended, which is one character earlier than
+  the author meant.
+- **Correct Behavior:** Split the sequence with the backticks that already surround the
+  example — `` `**`/`**`/1990 `` — which reads the same to a human and has no `*` `/` adjacency.
+  The same applies to any literal in prose: a glob (`src/**/*.ts`), a regex fragment, a
+  Markdown bold marker followed by a slash.
+- **Prevention Rule:** Before writing `*/` into a comment of any kind, ask whether it is the
+  comment terminator rather than part of the example; if it is, break the adjacency. This
+  repository has **no CI and no git hooks** (`CLAUDE.md`), so a broken comment can be committed
+  and only surface on someone else's `pnpm build` — run `tsc -b` (or `pnpm build`) after editing
+  comments in `.tsx` files, not just after editing code.
+- **Example:**
+  ```tsx
+  // WRONG - the `*/` ends the JSX comment, and the rest is parsed as an expression
+  {/* The mask is a `**/**/1990` string */}
+
+  // CORRECT - same meaning, no terminator inside the comment
+  {/* The redaction is a `**`/`**`/1990 string */}
+  ```
+
+### The contract names an endpoint; the screen calls a different one
+
+- **Date:** 2026-11-18
+- **Mistake:** Front-end PII masking was switched off on the strength of the backend's
+  published contract ("the BFF masks customer records"). A smoke test with a token carrying
+  **zero `pii.*` permissions** then showed the customer list rendering `ana@gmail.com |
+  085-002-0000` in the clear. The contract's row 1 names `CustomerQuery.GetListCustomer`, and
+  that resolver *does* mask (`av****@example.com`, `******8901`, `************`-style
+  `citizenId`) — but the customer screen fires `CustomerProduct.GetListCustomerProduct`, which
+  is not in the contract at all and returns the same columns unmasked. Only the photo stayed
+  hidden, because that one gate is fail-closed in the client (`canViewField("photo")`).
+- **Root Cause:** A masking matrix is **per resolver**; a UI is **per screen**; nothing enforces
+  that the two line up. The contract was read as "what the backend masks" and the client layer
+  was disabled against it, without capturing which operation each screen actually calls. A
+  resolver that ignores the permission fails in exactly the same way as one that honours it —
+  HTTP 200, `status: "0"`, plausible-looking data.
+- **Correct Behavior:** For every PII-bearing screen, capture the operation it really fires and
+  test it with a permission-less token before trusting any other layer. Treat every endpoint
+  outside the published matrix as unmasked until proven otherwise, and keep the client-side
+  redaction fail-closed (`redact*`, flag-independent) on read surfaces rather than only on
+  locked inputs.
+- **Prevention Rule:** Never conclude "the backend masks this" from a contract document — prove
+  it per screen, with the operation name taken from the network log and a token that lacks the
+  permission. When a client-side safety layer is disabled because "another layer covers it",
+  the coverage must be verified on the live screens, not on the endpoint names. Corollary: the
+  one gate that kept working (photo) was the one written fail-closed in the client — prefer that
+  shape for anything that cannot be masked by a string (`<img src>`, downloads, exports).
+- **Example:**
+  ```text
+  Contract row 1:  GET /api/v1/customer -> CustomerQuery.GetListCustomer   -> masked  OK
+  Screen's call:   CustomerProduct.GetListCustomerProduct                    -> NOT masked
+                   email "ana@gmail.com", mobileNo "085-002-0000", photo URL intact
+  Same token, same user, two resolvers, opposite answers.
+  ```
+
+### An entitlement bound to the component that renders a capability leaves every sibling surface open
+
+- **Date:** 2026-11-18
+- **Mistake:** `entitlement.gis` was enforced in exactly one place - `AddressMap`, the map
+  SDK switch - and was treated as "GIS is gated". It was not. The assignment picker kept
+  rendering its ETA/TTL column for a tenant whose GIS add-on had been removed from the
+  fixture, and pressing Calculate called `routeService` against the paid routing provider.
+  Two more surfaces were open the same way: the dispatch dashboard heatmap and the
+  case-summary-by-area choropleth (which also pulled district polygons from object
+  storage). The user found the picker one by looking at a screen; the other two came out
+  of auditing for the same shape.
+- **Root Cause:** The gate was placed at the component that DRAWS the capability. GIS is
+  not "a map" - it is an SDK, a routing service and a boundary-geometry fetch - and several
+  of its capabilities render without any map at all. Because the map component was gated,
+  every review of a map screen said "gated", and nothing in the codebase could answer
+  "which surfaces answer to `entitlement.gis`?". A second contributing fault: the org
+  settings that were supposed to narrow this exact column
+  (`staff.etaTtl.applyToAssignmentPicker`, plus `assignment.showWorkload` /
+  `showAssignedCases` / `enableRecommendRanking`) were declared in the type, rendered in
+  the admin form, and read by nobody - so the control an admin would reach for had no
+  effect either.
+- **Correct Behavior:** Enumerate the consumers of the capability's SERVICES, not the
+  components that display its output: `routeService`, `boundarySource`, every `@arcgis` /
+  `maplibre-gl` importer. Gate at each provider switch (`AddressMap`,
+  `CaseAreaChoroplethMap`, `DispatchHeatmap`), gate the hook that would spend the call
+  (`useOfficerRouteSolves({ enabled })`), gate the route whose whole point is the
+  capability (`/dashboard/case-summary-by-area`), and make the column list declare its own
+  capability (`officerColumns.ts`) so a new column cannot skip the question. Then write
+  down where each feature is enforced (`FEATURE_SURFACES`) and let a test compare it
+  against the catalogue.
+- **Prevention Rule:** Never conclude "feature X is gated" from one gate. List every
+  consumer of the service, SDK or endpoint that X unlocks - including consumers that render
+  no UI from it - and gate each one, or record explicitly why it needs none. Two checks
+  make that verifiable: a registry that maps each catalogue feature to the files that
+  enforce it (with every path asserted to exist), and a test that fails when a catalogue
+  key has no entry. And when a capability decision is made, use the fail-CLOSED read
+  (`hasFeature`); `isLocked` answers `false` while entitlements load and briefly grants
+  the thing you are trying to withhold.
+- **Example:**
+  ```text
+  WRONG (the shape that shipped)            RIGHT (one line per consumer)
+  AddressMap          -> EntitlementGate    AddressMap               -> EntitlementGate
+  assign picker       -> (nothing)          officerColumns.ts        -> hasGis && org switch
+  dispatch heatmap    -> (nothing)          useOfficerRouteSolves    -> enabled:false
+  case-area map       -> (nothing)          CaseAreaChoroplethMap    -> EntitlementGate
+                                            DispatchHeatmap          -> EntitlementGate
+                                            /dashboard/case-summary-by-area -> requiredFeature
+  ```
+
+### HEAD is not "before" when the working tree is the release
+
+- **Date:** 2026-11-18
+- **Mistake:** A plan step required "compare the bundle chunk sizes before and after this
+  change", and the obvious way to get a baseline was `git stash -u` -> `pnpm build` ->
+  `git stash pop`. Running `git status` first showed why that was wrong: the branch carries
+  a large uncommitted feature (a whole settings subsystem plus dozens of untracked source
+  and doc files) on top of `HEAD`, which is a docs-only commit. The "before" build would
+  have been a tree several features older than the one the change was made in - different
+  entry graph, missing modules, and for the files this task touched, versions that predate
+  the surrounding work entirely. It would also have moved every unrelated uncommitted file
+  out of the tree for the duration of a two-minute build.
+- **Root Cause:** "The previous state" was assumed to be `HEAD`. In a repo with no CI and no
+  habit of committing before each task, `HEAD` can be arbitrarily far behind the tree that
+  actually builds - so `HEAD` is a different codebase, not a previous revision of this one.
+  Nothing in the git output volunteers that: `git stash` is happy to stash a feature.
+- **Correct Behavior:** Check `git status --porcelain` and `git log -1` **before** planning
+  any before/after measurement. When `HEAD` is behind, say so and verify the property the
+  measurement exists for directly instead of inventing a baseline: here, "the three map SDKs
+  are still separate lazy chunks" was provable from the single after-build (each provider
+  had its own emitted chunk; `dist/index.html` preloaded only `index` + `vendor`), so the
+  honest report was "separation verified, exact before/after sizes unavailable and why".
+- **Prevention Rule:** A comparison needs a baseline you can name. Before promising
+  "before vs after" for sizes, timings, counts or behaviour, confirm what the baseline state
+  actually is - `HEAD`, a tag, a worktree, a saved artifact. If the baseline cannot be
+  produced without disturbing unrelated work, do not produce one: pick the property the
+  comparison exists to protect, verify that property on the after-state alone, and state the
+  missing number as missing. Same family as "A guard that skips work without reporting is
+  indistinguishable from success" - an unmeasurable diff quietly reported as measured is
+  worse than no diff, because it looks like evidence.
+- **Example:**
+  ```text
+  WRONG  plan: "stash, build, compare sizes" -> builds a codebase from weeks ago,
+                                                buries every other uncommitted file
+  RIGHT  git status --porcelain; git log -1  -> HEAD is a docs commit, tree is a release
+         verify the property instead:           three provider chunks emitted separately,
+         (SDKs stay in their own lazy chunk)    index.html preloads index+vendor only
+         report: "separation verified; sizes not diffed - no valid baseline exists"
+  ```
+
+### A "presentational" component that gains a query gains a Provider requirement
+
+- **Date:** 2026-11-19
+- **Mistake:** Wiring the org's Place count into the Map Settings screen,
+  `LayerMapSettings` (documented as "purely presentational - it renders `value` and
+  reports edits") was given a `useGetPlacesQuery` call. `npx tsc -b` passed, `eslint`
+  passed, and **five tests in `OrganizationSettingsManagement.test.tsx` failed at once**
+  with `could not find react-redux context value; please ensure the component is
+  wrapped in a <Provider>`. That test renders the settings page without a Redux store
+  because, until that moment, nothing in the subtree touched one.
+- **Root Cause:** A data-fetching hook is not a local implementation detail: it adds a
+  RUNTIME REQUIREMENT to every renderer of the component - a store, a provider, a
+  network mock - and the type system cannot express it. Components described as
+  "presentational" are exactly the ones tests render bare, so the requirement lands on
+  the tests least prepared for it. The compiler stays silent because the hook is legal
+  where it is called.
+- **Correct Behavior:** Either keep the section presentational (fetch in the page shell
+  and pass the value down), or accept the new requirement and update every test that
+  renders the subtree - here a two-line `vi.mock` of the api module, which also keeps
+  the test hermetic instead of firing a real request from a unit test.
+- **Prevention Rule:** Before adding a hook that reads shared state (RTK Query, Redux,
+  a context) to a component, ask **who renders this and what do they provide?** Then
+  grep the test files that render that subtree (`grep -rl "<ComponentName" src`) and
+  decide per file: provide the store, or mock the new dependency. Treat "the file's own
+  comment says presentational" as a design signal, not a licence - if the new value is
+  genuinely a view concern of that section, say so in the comment and update the tests
+  in the same change. Same family as "Never call a context-consumer hook inside the
+  component that provides that context": hooks carry environmental requirements that
+  compile fine and fail at render.
+- **Example:**
+  ```tsx
+  // WRONG - green tsc, five red tests, "purely presentational" no longer true
+  export function LayerMapSettings({ value, onChange }) {
+    const { data } = useGetPlacesQuery({ start: 0, length: PLACE_FETCH_LIMIT });
+    // ...
+  }
+
+  // RIGHT - same fetch, and the test that renders the section says what it provides
+  vi.mock("@/cms/store/api/placesApi", () => ({
+    useGetPlacesQuery: () => ({ data: { data: [] }, isLoading: false, isError: false }),
+  }));
+  ```
+
+- **Recurred 2026-11-19 - the trigger was a NEWLY RENDERED SUBTREE, not a new query.**
+  Adding Assignment-Rules validation made a blocked Save focus the `assignment-rules` tab,
+  which meant `SmartRoutingSettings` - and its existing `useGetCaseTypesSubTypesQuery` -
+  rendered in `OrganizationSettingsManagement.test.tsx` for the first time. That file had
+  only ever rendered the `map` tab, so the suite had never needed a store for the
+  assignment half; five tests went red with `could not find react-redux context value` the
+  moment a test navigated there.
+  **Prevention Rule (added):** a test that renders one TAB of a tabbed page proves nothing
+  about the other tabs. When a change can make a different tab/section/render branch
+  active - a validation redirect, an error focus, a default tab change, a deep link - treat
+  that subtree as newly tested and mock or provide everything it reads. When writing the
+  test, assert the branch actually switched (the section's own copy is in the DOM), not
+  only that the action was refused.
+
+### A DevTools `import()` can be a second copy of a module the app loaded with `?t=`
+
+- **Date:** 2026-11-19
+- **Mistake:** Verifying "the runtime map configuration settles at login" by evaluating
+  `await import("/src/cms/components/case/createCase/map/mapRuntimeConfig.ts")` in the browser console.
+  It answered `{ settled: false, orgId: null }` while the app was fully logged in and had clearly settled
+  (its settings form was populated from the server). Read at face value, that says "the bootstrap never
+  runs" - and I was one step from reporting a bug in code that was working.
+- **Root Cause:** Vite serves app modules with an HMR cache-buster (`…/mapRuntimeConfig.ts?t=1795072691577`)
+  while a console `import()` of the bare path resolves `…/mapRuntimeConfig.ts`. Different URL = different
+  module record = a **second instance** with fresh module state. The app had written to its instance;
+  the probe read a new, empty one. Nothing distinguishes them at the call site.
+- **Correct Behavior:** Verify through behaviour that cannot be duplicated - which chunk the network fetches
+  (`ArcgisAddressMap` vs `LongdoAddressMap`), the attribution text rendered on the map, or a `window`
+  sentinel checked before/after an SPA navigation to prove no full reload happened. When internal state is
+  genuinely needed, go through a path that does real work rather than module memory: the RTK store is fine
+  (`store.dispatch(...initiate(...))` hits the server), and so is anything keyed off storage.
+- **Prevention Rule:** A `?t=` suffix in a dev URL is a second module instance, so **never treat a console
+  `import()` as "the app's state"**. Before believing a negative reading from a probe, prove the probe is
+  looking at the same instance: an unsettled/empty value in a session that visibly works is evidence about
+  the probe, not the app. Prefer assertions the user could also see (network, rendered text, a sentinel) -
+  same family as "A selector that matches nothing is not evidence that the UI element is missing".
+- **Example:**
+  ```js
+  // WRONG - app loaded it as mapRuntimeConfig.ts?t=1795…; this is a NEW module
+  const cfg = (await import("/src/cms/components/case/createCase/map/mapRuntimeConfig.ts")).getMapRuntimeConfig();
+  // { settled: false, orgId: null }   <- about the probe, not the app
+
+  // RIGHT - observable behaviour, immune to module duplication
+  window.__smokeSentinel = Date.now();
+  history.pushState({}, "", "/cms/case/creation"); dispatchEvent(new PopStateEvent("popstate"));
+  // sentinel still there  => no reload;  map credit "Esri"  => the new provider applied
+  ```
+
+### A mock/sample payload that no test reads is a contract nobody checks
+
+- **Date:** 2026-11-19
+- **Mistake:** `src/core/mocks/organizationSettings.sh` was the *source* of the org-settings
+  contract (the backend's own sample request), yet nothing in the repo read it: the smoke
+  script carried its own copy of the document and the client had no test built on it. By the
+  time anyone looked, the file had drifted in three ways at once - it named a non-existent
+  GraphQL field (`ListConfigProperty`; the schema has `GetConfigPropertyLists`), it contained
+  no response examples at all even though the client branches on `status`/`desc`, and its
+  payload had already been superseded twice in two days. Every one of those is invisible
+  until someone pastes the file into a terminal.
+- **Root Cause:** A document is not compiled, not imported and not exercised, so it can be
+  wrong in ways no tool fails on. Worse, it *looks* authoritative ("this is what the backend
+  sends"), which is exactly why people copy it instead of interrogating the schema. Two
+  prompts for the same fact existed (the doc and the smoke script), so neither was the source
+  of truth.
+- **Correct Behavior:** Promote the payload to ONE canonical file the code actually reads
+  (`src/core/mocks/orgConfigProperties.payload.json`), and add a test that runs it through the
+  real adapters in both directions: decode must lose nothing and invent nothing, and
+  `encode()` must produce the same document back (that is what a Save sends). Verify every
+  operation name and input type by introspection instead of copying them from the document,
+  and record corrections in the document rather than quietly editing them.
+- **Prevention Rule:** If a file is a sample of a remote contract, a test must read that exact
+  file; otherwise treat it as unverified prose. The check that earns the name is
+  **round-trip through the production adapter** - forward-only checks (does it parse?) pass on
+  payloads the writer would corrupt. And any operation/field name in such a file gets
+  introspected once, because a doc is a claim about the schema, not evidence of it.
+- **Example:**
+  ```ts
+  // The guard that makes the fixture trustworthy (both directions, real adapters)
+  const payload = JSON.parse(readFileSync("src/core/mocks/orgConfigProperties.payload.json", "utf8"));
+  const decoded = decodeOrgConfigProperties(payload, "org-fixture");
+  expect(normalize(decoded.mapSettings)).toEqual(normalize(payload.mapSettings));
+  expect(normalize(encodeOrgConfigProperties(payload, decoded))).toEqual(normalize(payload));
+  ```
+  ```text
+  WRONG  document says ListConfigProperty            -> "Cannot query field" at run time
+  RIGHT  introspected Query.ConfigPropertyQuery      -> GetConfigPropertyLists(ListInput)
+  ```
+
+### A file the user maintains is not yours to rewrite
+
+- **Date:** 2026-11-19
+- **Mistake:** Asked to "survey" `src/core/mocks/organizationSettings.sh` and make it usable, I replaced
+  the whole file with a runnable bash script. The user had to restore it ("ถูกเขียนทับ ... ห้ามเขียนทับนะ").
+  The rebuilt file dropped the file's original shape and the owner's own edits, and the survey they asked
+  for could have been delivered without writing anything to it.
+- **Root Cause:** I treated a document as my artifact because I was improving it, and "make it usable"
+  read like an instruction to author it. A whole-file `write` has no diff to review and no memory of what
+  was there: it silently changes the file's PURPOSE (a contract notebook became a CLI script) and destroys
+  anything the owner added since I read it. Nothing in the tooling warns - the file still opens fine.
+- **Correct Behavior:** Read it, report, and propose the addition. If it must change, add to it (append a
+  section) or hand over the exact block for the owner to paste. Their file, their edit.
+- **Prevention Rule:** Before writing a whole file, establish who owns it. If the user's verb was
+  **survey / inspect / evaluate** (สำรวจ / ตรวจ / ดู), the deliverable is a report - not an edit. If the
+  file is one the user wrote or restored, `write` is forbidden: use targeted `edit`s or append-only
+  additions, and ask when a restructure is genuinely needed. Corollary: never rebuild a spec/mock file into
+  a different KIND of artifact (script, module) without explicit approval.
+- **Example:**
+  ```text
+  WRONG  write("organizationSettings.sh", <new runnable script>)      -> owner must restore it
+  RIGHT  read + report ("payload structure unchanged; only a Get example was added")
+         + propose "may I APPEND a response-samples section?"        -> owner decides
+  ```
+
+### A styled input with its `checked`/`value` binding commented out is uncontrolled
+
+- **Date:** 2026-11-19
+- **Mistake:** Smoke-testing the routing criteria after a reload, the `unitProperty`
+  checkbox reported `input.checked === false` while the stored document said `true`. My
+  first reading was "the saved value did not persist" - a bug report about the settings
+  page that would have been wrong. Measuring the visible tick instead showed it WAS drawn,
+  and the real defect was different: clicking that checkbox once changed nothing, and it
+  took two clicks to turn it off.
+- **Root Cause:** `src/core/components/form/input/Checkbox.tsx` renders
+  `<input type="checkbox" ... />` with the line `// checked={checked}` commented out. The
+  DOM input is therefore uncontrolled - it starts `false` no matter what the prop says -
+  while the tick is a separate `<svg>` drawn from the prop. So the first click on a
+  persisted `true` reports `e.target.checked === true`, React state stays `true`, and the
+  click is a silent no-op. A second copy of the same component (`src/cms/.../Checkbox.tsx`)
+  has the line uncommented, which is why the bug is invisible unless you look at the right
+  file.
+- **Correct Behavior:** A styled checkbox must be driven by its prop
+  (`checked={checked}`), with the visual driven by the same value. When reviewing a
+  "value did not persist" symptom, first confirm the input is controlled: read the
+  component, not the DOM.
+- **Prevention Rule:** Before treating `.checked` / `.value` on a styled input as the
+  component's state, read the component and check the binding is not commented out,
+  shadowed, or replaced by an internal `useState`. Verify with the thing the user sees (a
+  tick, a token) as well as the DOM property, and compare against any sibling copy of the
+  component - a divergent duplicate is both a clue and the fix reference. Same family as
+  "A selector that matches nothing is not evidence that the UI element is missing": a
+  measurement that reads the wrong signal produces a confident, wrong bug report.
+- **Example:**
+  ```tsx
+  // WRONG - uncontrolled input; the tick and the DOM disagree after any external reset
+  <input type="checkbox" onChange={(e) => onChange(e.target.checked)} />
+  {checked && <TickSvg />}
+
+  // RIGHT - one source of truth
+  <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+  ```
+- **Swept 2026-11-19 (same class, whole boolean-control surface):** after fixing the
+  Checkbox, every Switch/Radio/checkbox-style control was audited. One more instance:
+  `src/cms/components/crm/View.tsx` rendered filter radios with
+  `// checked={String(query[filter.key]) === String(option.value)}` commented out, so a
+  filter restored from the URL / a preset / "clear filters" never showed in the circle -
+  and the sibling `checkbox` case three lines below was bound correctly, which is the clue
+  that identified the intent. Fixed (1 line). Everything else came back clean:
+  Switch (`core/components/form/switch/Switch.tsx`) is div-based and explicitly
+  controlled-or-uncontrolled (`checked !== undefined`), and all 21 call sites pass either
+  `checked`+`onChange` or `defaultChecked`+`key`; all four Radio copies
+  (`core`/`cms` × `Radio`/`RadioSm`) bind `checked`; the raw radios in `Calendar.tsx` and
+  `dynamic-form/renderFormField.tsx` bind `checked`; the two hand-rolled checkboxes
+  (`AssignOfficerModel`, `singleAssignOfficer`) bind `checked` too.
+  **Watch items (not defects, uncontrolled on purpose today):** `crm/Form.tsx` passes a
+  live value as `defaultChecked` with no `key`, and `formsManagents/ButtonAction.tsx` drives
+  a switch by `defaultChecked` + `onChick` while its `color` follows separate state - both
+  drift if the source value changes without a remount.
+- **Fixed 2026-11-19:** `src/core/components/form/input/Checkbox.tsx` now binds
+  `checked={checked}` (it had been commented out; the `src/cms/…` duplicate was already
+  correct). Guarded by `Checkbox.test.tsx`, which was proved to fail on the old version
+  (3 of 5 cases: DOM does not mirror the prop, a stored `true` needs two clicks, a re-seed
+  from props is ignored) and pass on the fixed one. All 12 live call sites were audited
+  first - every one feeds `checked` from state its `onChange` updates, so none relied on the
+  uncontrolled behaviour.
