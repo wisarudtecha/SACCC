@@ -44,6 +44,8 @@ import DeviceInfoPopup from "./device/DeviceInfoPopup";
 import DeviceGroupPanel from "./device/DeviceGroupPanel";
 import { useDeviceLayer } from "./device/useDeviceLayer";
 import { useMapThemeOverride } from "./useMapThemeOverride";
+import { resolveBoundaryStartAllHidden } from "./mapControlDefaults";
+import { useOrgMapSettings } from "@/cms/components/admin/system-configuration/settings/useOrgMapSettings";
 import type { StaffMarker, StaffSelection } from "./staff/staffTypes";
 
 interface BoundaryMapFieldProps {
@@ -164,7 +166,18 @@ function BoundaryMapFieldBase({
   const isDarkTheme = theme === "dark";
   const { effectiveTheme, effectiveLanguage, setThemeOverride, setLanguageOverride } =
     useMapThemeOverride();
-  const boundary = useBoundarySelection({ startAllHidden: manualOnly, authorizedDistrictIds });
+  // Org setting `layers.showBoundaries` is the starting point for the boundary
+  // picker; the surface can still ask for "nothing selected" (`manualOnly`), and
+  // either reason starts it hidden. `useBoundarySelection` re-seeds on change, so
+  // this reacts when the settings document arrives.
+  const { loaded: orgMapSettings } = useOrgMapSettings();
+  const boundary = useBoundarySelection({
+    startAllHidden: resolveBoundaryStartAllHidden({
+      manualOnly,
+      showBoundaries: orgMapSettings.layers.showBoundaries,
+    }),
+    authorizedDistrictIds,
+  });
 
   const { showDistrict } = boundary;
   // The one exception to manual-only display: a resolved Service Center match

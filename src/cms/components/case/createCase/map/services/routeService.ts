@@ -11,8 +11,8 @@
 // This module holds no state. The caching, the cooldown and the "which solve
 // does this result belong to" bookkeeping stay in useCaseRoute.ts and
 // useClusterRouteSummaries.ts, which need them in two different shapes.
-import { API_CONFIG } from "@/core/config/api";
 import type { MapLatLon, RoutePath } from "../mapTypes";
+import { getMapRuntimeConfig } from "../mapRuntimeConfig";
 
 export interface RouteSolution {
   /**
@@ -41,21 +41,45 @@ export interface RouteService {
 /**
  * The active implementation, loaded once and shared.
  *
- * The provider cannot change while the app is running, so this resolves at most
- * one chunk per session.
+ * The provider is resolved once per session by `mapRuntimeConfig` (an org may
+ * override the deployment default), and so is this chunk: the first solve loads
+ * the selected provider's implementation, and later solves reuse it.
  */
 let servicePromise: Promise<RouteService> | null = null;
 
+function loadProviderService(): Promise<RouteService> {
+  switch (getMapRuntimeConfig().provider) {
+    case "longdo":
+      return import("./longdoRoute").then((module) => module.longdoRouteService);
+    case "maptiler":
+      return import("./maptilerRoute").then((module) => module.maptilerRouteService);
+    case "arcgis":
+    default:
+      return import("./arcgisRoute").then((module) => module.arcgisRouteService);
+  }
+}
+
 function loadRouteService(): Promise<RouteService> {
   if (!servicePromise) {
-    servicePromise =
-      API_CONFIG.MAP_PROVIDER === "longdo"
-        ? import("./longdoRoute").then((module) => module.longdoRouteService)
-        : API_CONFIG.MAP_PROVIDER === "maptiler"
-          ? import("./maptilerRoute").then((module) => module.maptilerRouteService)
-          : import("./arcgisRoute").then((module) => module.arcgisRouteService);
+    servicePromise = loadProviderService();
   }
   return servicePromise;
+}
+
+/**
+ * Drop the cached implementation so the NEXT solve re-resolves the provider.
+ *
+ * Called when an admin's save changes the map provider for the running session
+ * (see `applyMapSettingsToSession`). Without it the map would draw with the new
+ * SDK while Calculate kept calling the old one - a mismatch that looks like "the
+ * routing is broken for Longdo" and is invisible in the network log at a glance,
+ * because both providers are reached through this same singleton.
+ *
+ * Everything else about this module is per-session caching on purpose; this is the
+ * single, explicit way to reset it.
+ */
+export function resetRouteService(): void {
+  servicePromise = null;
 }
 
 export const routeService: RouteService = {

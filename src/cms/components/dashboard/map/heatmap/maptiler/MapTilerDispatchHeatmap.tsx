@@ -11,7 +11,7 @@ import type { GeoJSONSource } from "maplibre-gl";
 import type { FeatureCollection } from "geojson";
 import { ensureMapTilerWorker } from "@/cms/components/case/createCase/map/maptiler/maptilerSetup";
 import { mapTilerStyleFor } from "@/cms/components/case/createCase/map/maptiler/maptilerBasemaps";
-import { DEFAULT_BASEMAP_ID } from "@/cms/components/case/createCase/map/basemaps";
+import { readBasemapPreference } from "@/cms/components/case/createCase/map/basemaps";
 import { asLayer } from "@/cms/components/case/createCase/map/maptiler/mlTypes";
 import {
   DISPATCH_HEATMAP_DEFAULT_CENTER,
@@ -57,7 +57,7 @@ export const MapTilerDispatchHeatmap: React.FC<DispatchHeatmapProviderMapProps> 
         }
         map = new MlMap({
           container: containerRef.current,
-          style: mapTilerStyleFor(DEFAULT_BASEMAP_ID, isDarkTheme, language),
+          style: mapTilerStyleFor(readBasemapPreference(), isDarkTheme, language),
           center: DISPATCH_HEATMAP_DEFAULT_CENTER,
           zoom: DISPATCH_HEATMAP_DEFAULT_ZOOM,
           attributionControl: { compact: true },

@@ -13,7 +13,7 @@ import HeatmapRenderer from "@arcgis/core/renderers/HeatmapRenderer.js";
 import "@arcgis/core/assets/esri/themes/light/main.css";
 import { initArcgis } from "@/cms/components/case/createCase/map/arcgisSetup";
 import { createBasemap, toEsriLanguage } from "@/cms/components/case/createCase/map/arcgisBasemaps";
-import { DEFAULT_BASEMAP_ID } from "@/cms/components/case/createCase/map/basemaps";
+import { readBasemapPreference } from "@/cms/components/case/createCase/map/basemaps";
 import {
   DISPATCH_HEATMAP_DEFAULT_CENTER,
   DISPATCH_HEATMAP_DEFAULT_ZOOM,
@@ -54,7 +54,7 @@ export const ArcgisDispatchHeatmap: React.FC<DispatchHeatmapProviderMapProps> = 
     initArcgis();
 
     const map = new esriMap({
-      basemap: createBasemap(DEFAULT_BASEMAP_ID, toEsriLanguage(language), isDarkTheme),
+      basemap: createBasemap(readBasemapPreference(), toEsriLanguage(language), isDarkTheme),
     });
 
     const view = new MapView({

@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState } from "react";
 import { loadLongdo } from "@/cms/components/case/createCase/map/longdo/longdoSetup";
 import { applyLongdoBasemap, toLongdoLanguage } from "@/cms/components/case/createCase/map/longdo/longdoBasemaps";
-import { DEFAULT_BASEMAP_ID } from "@/cms/components/case/createCase/map/basemaps";
+import { readBasemapPreference } from "@/cms/components/case/createCase/map/basemaps";
 import type { LongdoGlobal, LongdoMap, LongdoOverlay } from "@/cms/components/case/createCase/map/longdo/longdoApi";
 import { dispatchHeatmapMarkerOptions } from "@/cms/components/dashboard/map/heatmap/longdo/dispatchHeatmapMarkerStyle";
 import {
@@ -50,7 +50,7 @@ export const LongdoDispatchHeatmap: React.FC<DispatchHeatmapProviderMapProps> = 
           language: toLongdoLanguage(language),
         });
         mapRef.current = map;
-        applyLongdoBasemap(longdo, map, DEFAULT_BASEMAP_ID, isDarkTheme);
+        applyLongdoBasemap(longdo, map, readBasemapPreference(), isDarkTheme);
         setIsReady(true);
       })
       .catch((error: unknown) => {

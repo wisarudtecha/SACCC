@@ -1,182 +1,90 @@
-// The Map Settings section: five field groups in one form, one atomic Save for
-// the whole section, one Cancel that reverts to the last-loaded (or schema-
-// default) values with no network call. Owns form state, validation, the save-
-// error banner, and the Staff "Advanced" disclosure open state.
-import { useEffect, useMemo, useState } from "react";
-import { CloseIcon } from "@/core/icons";
+// The Map Settings section: five field groups, purely presentational.
+//
+// Form state, validation, dirty tracking and the Save button all live in the page
+// shell (`OrganizationSettingsManagement`), because the backend stores the map and
+// assignment halves in ONE JSON document and the page saves them together. This
+// component renders `value` and reports edits through `onChange`; it owns only what
+// is genuinely a view concern of this section (the Staff "Advanced" disclosure).
+import { useEffect, useState } from "react";
 import { EntitlementGate } from "@/core/components/entitlements/EntitlementGate";
-import Button from "@/core/components/ui/button/Button";
-import { ToastContainer } from "@/core/components/crud/ToastContainer";
-import { useToast } from "@/core/hooks/useToast";
-import { useTranslation } from "@/core/hooks/useTranslation";
-import type {
-  OrgMapSettings,
-  OrgMapSettingsUpdateData,
-} from "@/core/types/organization";
-import { validateOrgMapSettings } from "@/cms/utils/orgMapSettings";
-import { useOrgMapSettings } from "../useOrgMapSettings";
+import type { OrgMapSettings } from "@/core/types/organization";
 import { AssignmentMapSettings } from "./AssignmentMapSettings";
 import { GeneralMapSettings } from "./GeneralMapSettings";
 import { IncidentMapSettings } from "./IncidentMapSettings";
 import { LayerMapSettings } from "./LayerMapSettings";
 import { StaffMapSettings } from "./StaffMapSettings";
 
-type SectionKey = keyof Omit<OrgMapSettings, "orgId" | "updatedAt" | "updatedBy">;
+/** The editable halves of the record (everything except the client-filled metadata). */
+export type MapSettingsSectionKey = keyof Omit<
+  OrgMapSettings,
+  "orgId" | "updatedAt" | "updatedBy"
+>;
 
-function toUpdateData(form: OrgMapSettings): OrgMapSettingsUpdateData {
-  return {
-    general: form.general,
-    layers: form.layers,
-    incident: form.incident,
-    staff: form.staff,
-    assignment: form.assignment,
-  };
-}
-
-export function MapSettingsSection() {
-  const { t } = useTranslation();
-  const { loaded, isLoading, isSaving, save } = useOrgMapSettings();
-  const { toasts, addToast, removeToast } = useToast();
-
-  const [form, setForm] = useState<OrgMapSettings>(loaded);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [saveFailed, setSaveFailed] = useState(false);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
-
-  // The placeholder below is for the FIRST load only. Once a record has settled
-  // in, a later refetch (every Save invalidates the "Organization" tag) must not
-  // unmount this subtree - unmounting throws away `advancedOpen`, `errors`, and
-  // any edits the admin has typed since.
-  const [hasSettledOnce, setHasSettledOnce] = useState(false);
-  useEffect(() => {
-    if (!isLoading) {
-      setHasSettledOnce(true);
-    }
-  }, [isLoading]);
-
-  // Re-seed the form from the loaded record: first load, and again after a
-  // successful save (the query re-fetches / the mock store updates). This is the
-  // "changes take effect on next load" behaviour - deliberately no live merge.
-  useEffect(() => {
-    setForm(loaded);
-    setErrors({});
-  }, [loaded]);
-
-  const updateSection = <K extends SectionKey>(
+export interface MapSettingsSectionProps {
+  value: OrgMapSettings;
+  /** Validation errors keyed by dotted path (`staff.routing.autoIntervalSeconds`). */
+  errors: Record<string, string>;
+  /**
+   * Unsaved edits exist. Only used to disable the "reload page" escape hatch in the
+   * General panel: reloading with unsaved changes would silently discard them.
+   */
+  isDirty?: boolean;
+  onChange: <K extends MapSettingsSectionKey>(
     key: K,
     patch: Partial<OrgMapSettings[K]>
-  ) => {
-    setForm(
-      (prev) => ({ ...prev, [key]: { ...prev[key], ...patch } }) as OrgMapSettings
-    );
-  };
+  ) => void;
+}
 
-  const isDirty = useMemo(
-    () => JSON.stringify(form) !== JSON.stringify(loaded),
-    [form, loaded]
-  );
+export function MapSettingsSection({
+  value,
+  errors,
+  isDirty = false,
+  onChange,
+}: MapSettingsSectionProps) {
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
-  const handleSave = async () => {
-    const nextErrors = validateOrgMapSettings(form);
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) {
-      // No network call. Open the disclosure if a hidden interval is the problem.
-      if (
-        Object.keys(nextErrors).some((key) => key.startsWith("staff.")) &&
-        !advancedOpen
-      ) {
-        setAdvancedOpen(true);
-      }
-      return;
+  // Validation runs in the shell, so a bad auto interval can be rejected while the
+  // Staff disclosure that holds the field is collapsed. Open it, otherwise Save
+  // looks like it did nothing.
+  const hasStaffError = Object.keys(errors).some((key) => key.startsWith("staff."));
+  useEffect(() => {
+    if (hasStaffError) {
+      setAdvancedOpen(true);
     }
-
-    const result = await save(toUpdateData(form));
-    if (result.ok) {
-      setSaveFailed(false);
-      addToast("success", "settings.map.action.save.success", 4000, true);
-    } else {
-      // Keep the admin's edits; show the persistent banner.
-      setSaveFailed(true);
-    }
-  };
-
-  const handleCancel = () => {
-    setForm(loaded);
-    setErrors({});
-    setSaveFailed(false);
-  };
-
-  if (isLoading && !hasSettledOnce) {
-    return (
-      <div className="animate-pulse space-y-4">
-        {[0, 1, 2].map((row) => (
-          <div
-            key={row}
-            className="h-40 rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-white/[0.02]"
-          />
-        ))}
-      </div>
-    );
-  }
+  }, [hasStaffError]);
 
   return (
-    // Map/GIS configuration is part of the CC-GIS add-on: unentitled tenants
-    // see the lock panel instead of the settings form.
+    // Map/GIS configuration is part of the CC-GIS add-on: unentitled tenants see the
+    // lock panel instead of the form. The shell still holds the loaded document, so a
+    // Save from another section writes the stored map values back unchanged.
     <EntitlementGate feature="entitlement.gis">
       <div className="flex flex-col gap-5">
-      <ToastContainer toasts={toasts} onRemove={removeToast} />
-
-      {saveFailed && (
-        <div className="flex items-start justify-between gap-3 rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-100">
-          <div>
-            <p className="font-semibold">{t("settings.map.banner.not_saved.title")}</p>
-            <p className="mt-0.5">{t("settings.map.banner.not_saved.body")}</p>
-          </div>
-          <button
-            type="button"
-            aria-label={t("settings.map.banner.not_saved.dismiss")}
-            onClick={() => setSaveFailed(false)}
-            className="shrink-0 text-yellow-700 hover:text-yellow-900 dark:text-yellow-200"
-          >
-            <CloseIcon className="h-4 w-4" />
-          </button>
-        </div>
-      )}
-
-      <GeneralMapSettings
-        value={form.general}
-        onChange={(patch) => updateSection("general", patch)}
-      />
-      <LayerMapSettings
-        value={form.layers}
-        onChange={(patch) => updateSection("layers", patch)}
-      />
-      <IncidentMapSettings
-        value={form.incident}
-        onChange={(patch) => updateSection("incident", patch)}
-        errors={errors}
-      />
-      <StaffMapSettings
-        value={form.staff}
-        onChange={(patch) => updateSection("staff", patch)}
-        errors={errors}
-        advancedOpen={advancedOpen}
-        onAdvancedOpenChange={setAdvancedOpen}
-      />
-      <AssignmentMapSettings
-        value={form.assignment}
-        onChange={(patch) => updateSection("assignment", patch)}
-      />
-
-      <div className="flex items-center justify-end gap-3">
-        <Button variant="outline" onClick={handleCancel} disabled={!isDirty || isSaving}>
-          {t("settings.actions.cancel")}
-        </Button>
-        <Button variant="primary" onClick={handleSave} disabled={isSaving}>
-          {isSaving ? t("settings.actions.saving") : t("settings.actions.save")}
-        </Button>
+        <GeneralMapSettings
+          value={value.general}
+          canReload={!isDirty}
+          onChange={(patch) => onChange("general", patch)}
+        />
+        <LayerMapSettings
+          value={value.layers}
+          onChange={(patch) => onChange("layers", patch)}
+        />
+        <IncidentMapSettings
+          value={value.incident}
+          onChange={(patch) => onChange("incident", patch)}
+          errors={errors}
+        />
+        <StaffMapSettings
+          value={value.staff}
+          onChange={(patch) => onChange("staff", patch)}
+          errors={errors}
+          advancedOpen={advancedOpen}
+          onAdvancedOpenChange={setAdvancedOpen}
+        />
+        <AssignmentMapSettings
+          value={value.assignment}
+          onChange={(patch) => onChange("assignment", patch)}
+        />
       </div>
-    </div>
     </EntitlementGate>
   );
 }

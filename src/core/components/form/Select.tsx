@@ -3,6 +3,12 @@ import { useEffect, useState } from "react";
 interface Option {
   value: string;
   label: string;
+  /**
+   * Render the option but make it unpickable. Used for a choice the product does
+   * not support yet: hiding it would leave the admin wondering where it went, and
+   * a stored value for it still has to display.
+   */
+  disabled?: boolean;
 }
 
 interface SelectProps {
@@ -89,6 +95,7 @@ const Select: React.FC<SelectProps> = ({
           // key={option.value}
           key={`${option.value}-${Math.random().toString(36).slice(2, 9)}`}
           value={option.value}
+          disabled={option.disabled}
           className="text-gray-700 dark:bg-gray-900 dark:text-gray-400"
         >
           {option.label}

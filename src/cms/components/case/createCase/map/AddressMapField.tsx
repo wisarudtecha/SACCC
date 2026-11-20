@@ -17,7 +17,9 @@ import type { TrailPoint } from "./staff/useStaffTrails";
 import { Modal } from "@/core/components/ui/modal";
 import { useTranslation } from "@/core/hooks/useTranslation";
 import AddressMap from "./AddressMap";
-import { BasemapOptionId, readBasemapPreference, writeBasemapPreference } from "./basemaps";
+import { useBasemapPreference } from "./useBasemapPreference";
+import { resolveSearchMode } from "./mapControlDefaults";
+import { useOrgMapSettings } from "@/cms/components/admin/system-configuration/settings/useOrgMapSettings";
 import type {
   AddressResult,
   IncidentRadiusOverlay,
@@ -221,9 +223,10 @@ function AddressMapFieldBase({
   const [isExpanded, setIsExpanded] = useState(false);
   // The basemap choice lives here rather than in the map component because the
   // modal renders a SECOND map: were it owned per-map, expanding would drop the
-  // user back to the default basemap. Seeded from (and saved to) the stored
-  // preference so it also survives navigation and reload.
-  const [basemapId, setBasemapId] = useState<BasemapOptionId>(readBasemapPreference);
+  // user back to the default basemap. `useBasemapPreference` seeds it from (and
+  // saves it to) the stored preference, which is keyed by org and provider - so it
+  // waits for the session's map configuration instead of reading the wrong key.
+  const { basemapId, selectBasemap: handleBasemapChange } = useBasemapPreference();
   // The expanded map alone: the Modal unmounts it on close, so its MapView
   // starts fresh every reopen and would otherwise always recentre on the case
   // at the default zoom. This ref lives here - same as `basemapId` - because
@@ -240,12 +243,16 @@ function AddressMapFieldBase({
     onExpandedChange?.(false);
   }, [onExpandedChange]);
 
-  const handleBasemapChange = useCallback((id: BasemapOptionId) => {
-    setBasemapId(id);
-    writeBasemapPreference(id);
-  }, []);
+  // Org settings for the two control defaults this surface owns (Phase B4/B5).
+  // `loaded` is fully populated in every state, so these are defined from the first
+  // render and simply follow the document once it arrives.
+  const { loaded: orgMapSettings } = useOrgMapSettings();
 
-  const resolvedSearchMode: MapSearchMode = searchMode ?? (readOnly ? "never" : "always");
+  const resolvedSearchMode: MapSearchMode = resolveSearchMode({
+    searchMode,
+    readOnly,
+    showSearch: orgMapSettings.layers.showSearch,
+  });
   const showSearchInline = resolvedSearchMode === "always";
   const showSearchExpanded = resolvedSearchMode !== "never";
 
@@ -387,7 +394,10 @@ function AddressMapFieldBase({
             onMapLanguageChange={onMapLanguageChange}
             viewpointRef={expandedViewpointRef}
             address={address}
-            showLocationInfo
+            // B5: the expanded map is the only one with room for the readout (see
+            // AddressMapProps.showLocationInfo), so the org setting can withhold it
+            // but never force it onto the inline map.
+            showLocationInfo={orgMapSettings.layers.showAddressCoordinates}
             overlaySlot={overlaySlot?.({ isExpanded: true })}
             bottomLeftSlot={bottomLeftSlot?.({ isExpanded: true })}
             toolbarSlot={toolbarSlot?.({ isExpanded: true })}

@@ -11,23 +11,35 @@
 // Selecting a Place marker is informational only - stakeholder decision Q1. This
 // hook keeps the selection as local UI state (drives the highlight and the info
 // popup) and never surfaces a callback that could write to the case.
+//
+// THE ORG'S `layers.showPlace` IS THE STARTING POINT, NOT A LOCK (Phase B9 of
+// docs/ORG-SETTINGS-Runtime-Wiring-Plan.md). The layer still toggles; the setting
+// decides what it looks like on arrival. Held as `override ?? orgValue` rather
+// than seeded into `useState` on purpose: this hook mounts before the settings
+// document has been read, so a mount-time seed would capture the defaults and
+// never see the org's choice.
+//
+// Same reason the categories start open when the org shows Places (decision D12):
+// a layer that is on but filters everything out looks identical to a broken
+// layer, and the admin who switched it on would have no way to tell.
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import { useOrgMapSettings } from "@/cms/components/admin/system-configuration/settings/useOrgMapSettings";
 import { useGetPlacesQuery } from "@/cms/store/api/placesApi";
 import { PLACE_CATEGORIES } from "@/cms/types/place";
 import type { PlaceCategory } from "@/cms/types/place";
+import { PLACE_FETCH_LIMIT, isPlaceLayerTruncated } from "../mapControlDefaults";
 import { toPlaceMarkers, type PlaceMarker, type PlaceSelection } from "./placeTypes";
-
-// The dataset is small and org-curated; there is no viewport scoping for Place
-// (ticket Section 7 - "one shared fetch, like boundaries"). RTK Query dedupes
-// this across the inline + expanded maps and every surface. Known limit: an org
-// with more Places than this would be silently truncated.
-const PLACE_FETCH_LIMIT = 1000;
 
 type CategoryVisibility = Record<PlaceCategory, boolean>;
 
 const ALL_CATEGORIES_HIDDEN: CategoryVisibility = PLACE_CATEGORIES.reduce(
   (visibility, category) => ({ ...visibility, [category]: false }),
+  {} as CategoryVisibility
+);
+
+const ALL_CATEGORIES_VISIBLE: CategoryVisibility = PLACE_CATEGORIES.reduce(
+  (visibility, category) => ({ ...visibility, [category]: true }),
   {} as CategoryVisibility
 );
 
@@ -61,22 +73,37 @@ export interface UsePlaceLayerResult {
   backToGroup: () => void;
   isLoading: boolean;
   isError: boolean;
-  /** Localised status line for the toolbar (error / nothing to show), or undefined. */
+  /** How many markers the single fetch returned - the Map Settings screen quotes it against the ceiling. */
+  loadedCount: number;
+  /** True when the fetch may have been cut at `PLACE_FETCH_LIMIT` (decision D9). */
+  isTruncated: boolean;
+  /** Localised status line for the toolbar (error / nothing to show / partial), or undefined. */
   notice: string | undefined;
 }
 
 export function usePlaceLayer(): UsePlaceLayerResult {
   const { language, t } = useTranslation();
+  // The org's default for this layer. `loaded` is fully populated in every state
+  // (schema defaults while loading / unreadable), so the derived values below are
+  // always defined - the map simply renders with the defaults until it settles.
+  const { loaded: orgSettings } = useOrgMapSettings();
+  const orgShowPlace = orgSettings.layers.showPlace;
+
   const { data, isLoading, isError } = useGetPlacesQuery({ start: 0, length: PLACE_FETCH_LIMIT });
 
-  // Reset every time (ticket Decision 6): the layer starts hidden, every
-  // category starts unchecked too (mirrors the Boundaries picker's
-  // nothing-selected default), nothing persists across mounts.
-  const [showPlace, setShowPlace] = useState(false);
-  const [categoryVisibility, setCategoryVisibility] =
-    useState<CategoryVisibility>(ALL_CATEGORIES_HIDDEN);
+  // The user's own choice, or null while the org's default still applies.
+  const [showPlaceOverride, setShowPlaceOverride] = useState<boolean | null>(null);
+  const [categoryVisibilityOverride, setCategoryVisibilityOverride] =
+    useState<CategoryVisibility | null>(null);
   const [selection, setSelection] = useState<PlaceSelection | null>(null);
   const [groupOrigin, setGroupOrigin] = useState<readonly string[] | null>(null);
+
+  const showPlace = showPlaceOverride ?? orgShowPlace;
+  // Module-level constants, so this reference is stable across renders.
+  const initialCategoryVisibility = orgShowPlace
+    ? ALL_CATEGORIES_VISIBLE
+    : ALL_CATEGORIES_HIDDEN;
+  const categoryVisibility = categoryVisibilityOverride ?? initialCategoryVisibility;
 
   const allMarkers = useMemo(() => toPlaceMarkers(data?.data, language), [data, language]);
 
@@ -104,14 +131,20 @@ export function usePlaceLayer(): UsePlaceLayerResult {
   );
 
   const toggleShowPlace = useCallback(() => {
-    setShowPlace((on) => !on);
+    setShowPlaceOverride((previous) => !(previous ?? orgShowPlace));
     setSelection(null);
     setGroupOrigin(null);
-  }, []);
+  }, [orgShowPlace]);
 
-  const toggleCategory = useCallback((category: PlaceCategory) => {
-    setCategoryVisibility((prev) => ({ ...prev, [category]: !prev[category] }));
-  }, []);
+  const toggleCategory = useCallback(
+    (category: PlaceCategory) => {
+      setCategoryVisibilityOverride((previous) => {
+        const current = previous ?? initialCategoryVisibility;
+        return { ...current, [category]: !current[category] };
+      });
+    },
+    [initialCategoryVisibility]
+  );
 
   // A direct click (map marker or group panel's close/re-selection) always
   // starts a fresh journey - only pickFromGroup below sets groupOrigin.
@@ -138,15 +171,28 @@ export function usePlaceLayer(): UsePlaceLayerResult {
     setGroupOrigin(null);
   }, [groupOrigin]);
 
+  const isTruncated = isPlaceLayerTruncated(allMarkers.length);
+
   const notice = useMemo(() => {
     if (isError) {
       return t("case.display.map_place_error");
     }
-    if (showPlace && !isLoading && allMarkers.length === 0) {
+    if (!showPlace || isLoading) {
+      return undefined;
+    }
+    if (allMarkers.length === 0) {
       return t("case.display.map_place_empty");
     }
+    // D9 - never truncate silently. A full page means "there may be more", and the
+    // operator has to know before concluding a Place is missing from the dataset.
+    if (isTruncated) {
+      return t("case.display.map_place_truncated", {
+        count: allMarkers.length,
+        limit: PLACE_FETCH_LIMIT,
+      });
+    }
     return undefined;
-  }, [isError, showPlace, isLoading, allMarkers.length, t]);
+  }, [isError, showPlace, isLoading, allMarkers.length, isTruncated, t]);
 
   return {
     places,
@@ -164,6 +210,8 @@ export function usePlaceLayer(): UsePlaceLayerResult {
     backToGroup,
     isLoading,
     isError,
+    loadedCount: allMarkers.length,
+    isTruncated,
     notice
   };
 }

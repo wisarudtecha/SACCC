@@ -9,7 +9,7 @@ import { Map as MlMap, Popup, type GeoJSONSource, type MapMouseEvent } from "map
 import type { FeatureCollection } from "geojson";
 import { ensureMapTilerWorker } from "@/cms/components/case/createCase/map/maptiler/maptilerSetup";
 import { mapTilerStyleFor } from "@/cms/components/case/createCase/map/maptiler/maptilerBasemaps";
-import { DEFAULT_BASEMAP_ID } from "@/cms/components/case/createCase/map/basemaps";
+import { readBasemapPreference } from "@/cms/components/case/createCase/map/basemaps";
 import { asLayer } from "@/cms/components/case/createCase/map/maptiler/mlTypes";
 import { caseAreaFillColorExpression } from "@/cms/components/dashboard/map/maptiler/caseAreaChoroplethPaint";
 import { CASE_AREA_MAP_DEFAULT_CENTER, CASE_AREA_MAP_DEFAULT_HEIGHT, CASE_AREA_MAP_DEFAULT_ZOOM, type CaseAreaChoroplethProviderMapProps } from "@/cms/components/dashboard/map/caseAreaMapTypes";
@@ -60,7 +60,7 @@ export const MapTilerCaseAreaChoroplethMap: React.FC<CaseAreaChoroplethProviderM
         }
         map = new MlMap({
           container: containerRef.current,
-          style: mapTilerStyleFor(DEFAULT_BASEMAP_ID, isDarkTheme, language),
+          style: mapTilerStyleFor(readBasemapPreference(), isDarkTheme, language),
           center: CASE_AREA_MAP_DEFAULT_CENTER,
           zoom: CASE_AREA_MAP_DEFAULT_ZOOM,
           attributionControl: { compact: true },

@@ -7,6 +7,10 @@ import type {
 } from "@/core/types/organization";
 import { AutoManualField, IntervalField } from "./AutoManualField";
 import { FieldRow, SubsectionCard, ToggleRow } from "./settingsControls";
+import {
+  TRACKING_MIN_POLL_MS,
+  resolveTrackingEffectiveSeconds,
+} from "@/cms/components/case/createCase/map/staff/staffCadence";
 
 interface StaffMapSettingsProps {
   value: OrgMapStaffSettings;
@@ -72,6 +76,17 @@ export function StaffMapSettings({
           labelKey={MODE_LABEL_KEYS[key]}
           mode={(value[key] as AutoManualSetting).mode}
           onModeChange={(mode) => setMode(key, mode)}
+          // D2/D8: Staff Routing has no engine yet. The option stays visible and
+          // a previously saved `auto` still displays - it is only unpickable, so
+          // nobody selects a mode that would silently do nothing.
+          autoDisabled={key === "routing"}
+          note={
+            key === "routing" ? (
+              <span className="text-amber-700 dark:text-amber-400">
+                {t("settings.map.field.staff_routing.auto_unavailable")}
+              </span>
+            ) : undefined
+          }
         />
       ))}
 
@@ -112,6 +127,20 @@ export function StaffMapSettings({
                   onChange={(next) => setInterval(key, next)}
                   errorKey={errors[`staff.${key}.autoIntervalSeconds`]}
                   disabled={setting.mode !== "auto"}
+                  // D7: the poll floor is applied at the point of use, so show the
+                  // value that is really in effect rather than the number typed.
+                  // Otherwise an admin who enters 15 believes the server is being
+                  // polled four times as often as it is.
+                  note={
+                    key === "tracking" && setting.mode === "auto" ? (
+                      <span className="text-amber-700 dark:text-amber-400">
+                        {t("settings.map.field.staff_tracking.effective_interval", {
+                          seconds: resolveTrackingEffectiveSeconds(setting) ?? 0,
+                          floor: TRACKING_MIN_POLL_MS / 1_000,
+                        })}
+                      </span>
+                    ) : undefined
+                  }
                 />
               );
             })}

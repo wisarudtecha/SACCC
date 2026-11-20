@@ -13,7 +13,7 @@ import PopupTemplate from "@arcgis/core/PopupTemplate.js";
 import "@arcgis/core/assets/esri/themes/light/main.css";
 import { initArcgis } from "@/cms/components/case/createCase/map/arcgisSetup";
 import { createBasemap, toEsriLanguage } from "@/cms/components/case/createCase/map/arcgisBasemaps";
-import { DEFAULT_BASEMAP_ID } from "@/cms/components/case/createCase/map/basemaps";
+import { readBasemapPreference } from "@/cms/components/case/createCase/map/basemaps";
 import { createCaseAreaChoroplethRenderer } from "@/cms/components/dashboard/map/arcgis/caseAreaChoroplethRenderer";
 import { CASE_AREA_MAP_DEFAULT_CENTER, CASE_AREA_MAP_DEFAULT_HEIGHT, CASE_AREA_MAP_DEFAULT_ZOOM, type CaseAreaChoroplethProviderMapProps } from "@/cms/components/dashboard/map/caseAreaMapTypes";
 
@@ -37,7 +37,7 @@ export const ArcgisCaseAreaChoroplethMap: React.FC<CaseAreaChoroplethProviderMap
     initArcgis();
 
     const map = new esriMap({
-      basemap: createBasemap(DEFAULT_BASEMAP_ID, toEsriLanguage(language), isDarkTheme),
+      basemap: createBasemap(readBasemapPreference(), toEsriLanguage(language), isDarkTheme),
     });
 
     const view = new MapView({

@@ -1,28 +1,51 @@
-// The provider switch: renders whichever map SDK this environment is
-// configured for (VITE_MAP_PROVIDER, resolved into API_CONFIG.MAP_PROVIDER).
+// The provider switch: renders whichever map SDK this session uses.
 //
-// The two implementations are LAZY, and that is the point of this file rather
-// than a ternary over two imports. Static imports would put both SDKs in the
-// bundle - @arcgis/core is the larger part of this app's JavaScript, and an
-// environment that chose Longdo should never download it.
+// The provider is no longer a build-time constant - an org may override
+// `VITE_MAP_PROVIDER` (Map Settings -> Map Provider) - but it is still resolved
+// ONCE per session by `mapRuntimeConfig`, and that is deliberate: swapping the
+// provider mid-session unmounts the MapView and throws away pan/zoom plus any
+// uncommitted sketch or pin.
 //
-// The choice is made once at module scope: it comes from build-time
-// configuration, cannot change while the app is running, and doing it here
-// means the unused implementation is never even requested.
-import { Suspense, lazy, memo } from "react";
-import { API_CONFIG } from "@/core/config/api";
+// All three implementations stay LAZY and are chosen at render time. That keeps
+// the code-splitting property this file has always had: an environment that
+// picks one SDK never downloads the other two (@arcgis/core alone is the larger
+// part of this app's JavaScript). Do NOT turn these into static imports.
+//
+// While the configuration is still unsettled the map renders its placeholder
+// rather than drawing with the deployment default and re-rendering later - the
+// second render would be the remount described above.
+import { Suspense, lazy, memo, useEffect } from "react";
 import { EntitlementGate } from "@/core/components/entitlements/EntitlementGate";
+import type { MapProviderId } from "@/core/config/api";
 import type { AddressMapProps } from "./mapTypes";
+import { registerMountedMap } from "./mapRuntimeConfig";
+import { useMapRuntimeConfig } from "./useMapRuntimeConfig";
 
-const ProviderMap =
-  API_CONFIG.MAP_PROVIDER === "longdo"
-    ? lazy(() => import("./longdo/LongdoAddressMap"))
-    : API_CONFIG.MAP_PROVIDER === "maptiler"
-      ? lazy(() => import("./maptiler/MapTilerAddressMap"))
-      : lazy(() => import("./ArcgisAddressMap"));
+const ArcgisMap = lazy(() => import("./ArcgisAddressMap"));
+const LongdoMap = lazy(() => import("./longdo/LongdoAddressMap"));
+const MapTilerMap = lazy(() => import("./maptiler/MapTilerAddressMap"));
 
 /**
- * Placeholder while the implementation chunk loads.
+ * Pick the implementation for `provider`.
+ *
+ * A plain function returning an element, not a component: a component created
+ * here would be a new type on every render and remount the map. A `switch` (not
+ * an index into a Record) keeps each branch typed against its own component.
+ */
+function renderAddressMapFor(provider: MapProviderId, props: AddressMapProps) {
+  switch (provider) {
+    case "longdo":
+      return <LongdoMap {...props} />;
+    case "maptiler":
+      return <MapTilerMap {...props} />;
+    case "arcgis":
+    default:
+      return <ArcgisMap {...props} />;
+  }
+}
+
+/**
+ * Placeholder while the configuration settles or the implementation chunk loads.
  *
  * Sized from the same `height` the map will take, so the surrounding form does
  * not jump when it arrives - the maps are 220-320px inline and most of the
@@ -38,16 +61,35 @@ function MapPlaceholder({ height }: { height: number | string }) {
 }
 
 function AddressMapBase(props: AddressMapProps) {
+  const { provider, settled, allowMapStyleChange } = useMapRuntimeConfig();
+  const placeholderHeight = props.height ?? 360;
+
+  // Tell the store a provider switch is on screen: a settings save must not swap
+  // the provider under a live MapView (it would remount and lose pan/zoom plus any
+  // uncommitted sketch or pin). See applyMapRuntimeConfig.
+  useEffect(() => registerMountedMap(), []);
+
   return (
     // GIS is an Enterprise add-on (CC-GIS): unentitled tenants get the lock
     // panel, and the lazy map SDK chunk is never requested for them.
     <EntitlementGate
       feature="entitlement.gis"
-      loadingFallback={<MapPlaceholder height={props.height ?? 360} />}
+      loadingFallback={<MapPlaceholder height={placeholderHeight} />}
     >
-      <Suspense fallback={<MapPlaceholder height={props.height ?? 360} />}>
-        <ProviderMap {...props} />
-      </Suspense>
+      {settled ? (
+        <Suspense fallback={<MapPlaceholder height={placeholderHeight} />}>
+          {/* B7: the org setting "Change Map Style" decides whether the basemap
+              switcher is offered. Resolved here rather than at every call site
+              because no caller passes `showBasemapSwitcher` - the prop stays for
+              a surface that needs to force it. */}
+          {renderAddressMapFor(provider, {
+            ...props,
+            showBasemapSwitcher: props.showBasemapSwitcher ?? allowMapStyleChange,
+          })}
+        </Suspense>
+      ) : (
+        <MapPlaceholder height={placeholderHeight} />
+      )}
     </EntitlementGate>
   );
 }

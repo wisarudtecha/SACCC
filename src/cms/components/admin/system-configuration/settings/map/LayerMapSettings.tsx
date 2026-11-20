@@ -1,5 +1,10 @@
 import { useTranslation } from "@/core/hooks/useTranslation";
 import type { OrgMapLayerSettings } from "@/core/types/organization";
+import { useGetPlacesQuery } from "@/cms/store/api/placesApi";
+import {
+  PLACE_FETCH_LIMIT,
+  isPlaceLayerTruncated,
+} from "@/cms/components/case/createCase/map/mapControlDefaults";
 import { SubsectionCard, ToggleRow } from "./settingsControls";
 
 interface LayerMapSettingsProps {
@@ -10,10 +15,24 @@ interface LayerMapSettingsProps {
 export function LayerMapSettings({ value, onChange }: LayerMapSettingsProps) {
   const { t } = useTranslation();
 
-  // showPlace is shown but disabled: the Place map layer it configures does not
-  // exist yet. Same "ships disabled, says so" treatment as MapPlaceButton, and it
-  // reuses that component's copy.
-  const placeNote = `${t("case.display.map_place")} - ${t("case.display.map_staff_in_development")}`;
+  // The Place layer fetches ONE page (`PLACE_FETCH_LIMIT`) and the response carries
+  // no total, so quoting the count here is the only way an admin can tell
+  // "everything is shown" from "the list was cut" (decisions D9/D17 in
+  // docs/ORG-SETTINGS-Runtime-Wiring-Plan.md). Uses the same query as the map, so
+  // RTK Query serves it from the cache it already has.
+  const { data, isLoading, isError } = useGetPlacesQuery({
+    start: 0,
+    length: PLACE_FETCH_LIMIT,
+  });
+  const placeCount = Array.isArray(data?.data) ? data.data.length : 0;
+  const placeCountNote = isError
+    ? t("settings.map.field.show_place.count_error")
+    : isLoading
+      ? t("settings.map.field.show_place.count_loading")
+      : t("settings.map.field.show_place.count", {
+          count: placeCount,
+          limit: PLACE_FETCH_LIMIT,
+        });
 
   return (
     <SubsectionCard titleKey="settings.map.group.layers">
@@ -22,8 +41,18 @@ export function LayerMapSettings({ value, onChange }: LayerMapSettingsProps) {
         helpKey="settings.map.field.show_place.help"
         checked={value.showPlace}
         onChange={(checked) => onChange({ showPlace: checked })}
-        disabled
-        note={placeNote}
+        note={
+          <>
+            {placeCountNote}
+            {isPlaceLayerTruncated(placeCount) && (
+              <span className="mt-1 block text-amber-700 dark:text-amber-400">
+                {t("settings.map.field.show_place.truncated_warning", {
+                  limit: PLACE_FETCH_LIMIT,
+                })}
+              </span>
+            )}
+          </>
+        }
       />
       <ToggleRow
         labelKey="settings.map.field.show_boundaries.label"

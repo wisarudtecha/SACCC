@@ -1,5 +1,6 @@
 // The mode toggle for a staff Auto/Manual setting, plus the interval input that
 // lives (separately) behind the Staff subsection's shared "Advanced" disclosure.
+import type { ReactNode } from "react";
 import Input from "@/core/components/form/input/InputField";
 import Select from "@/core/components/form/Select";
 import { useTranslation } from "@/core/hooks/useTranslation";
@@ -12,20 +13,35 @@ interface AutoManualFieldProps {
   helpKey?: string;
   mode: AutoManualMode;
   onModeChange: (mode: AutoManualMode) => void;
+  /**
+   * Show "Auto" but make it unpickable (decision D8: Staff Routing has no engine
+   * yet). The option is NOT hidden - an admin who already saved `auto` must still
+   * see that value, and a control that silently disappears reads as a bug.
+   */
+  autoDisabled?: boolean;
+  /** Extra line under the control, e.g. why "Auto" cannot be picked yet. */
+  note?: ReactNode;
 }
 
 /** "Manual" / "Auto" selector for one staff setting. */
-export function AutoManualField({ labelKey, helpKey, mode, onModeChange }: AutoManualFieldProps) {
+export function AutoManualField({
+  labelKey,
+  helpKey,
+  mode,
+  onModeChange,
+  autoDisabled = false,
+  note,
+}: AutoManualFieldProps) {
   const { t } = useTranslation();
   return (
-    <FieldRow labelKey={labelKey} helpKey={helpKey}>
+    <FieldRow labelKey={labelKey} helpKey={helpKey} note={note}>
       <Select
         className="w-40"
         value={mode}
         onChange={(value) => onModeChange(value === "auto" ? "auto" : "manual")}
         options={[
           { value: "manual", label: t("settings.map.field.mode_manual") },
-          { value: "auto", label: t("settings.map.field.mode_auto") },
+          { value: "auto", label: t("settings.map.field.mode_auto"), disabled: autoDisabled },
         ]}
       />
     </FieldRow>
@@ -39,12 +55,21 @@ interface IntervalFieldProps {
   errorKey?: string;
   /** The interval only matters while mode = "auto"; disabled (greyed) otherwise. */
   disabled: boolean;
+  /** Extra line under the input, e.g. the value actually in effect after clamping. */
+  note?: ReactNode;
 }
 
 /** Numeric "auto interval (seconds)" input, rendered inside the Advanced disclosure. */
-export function IntervalField({ labelKey, value, onChange, errorKey, disabled }: IntervalFieldProps) {
+export function IntervalField({
+  labelKey,
+  value,
+  onChange,
+  errorKey,
+  disabled,
+  note,
+}: IntervalFieldProps) {
   return (
-    <FieldRow labelKey={labelKey} errorKey={errorKey}>
+    <FieldRow labelKey={labelKey} errorKey={errorKey} note={note}>
       <Input
         type="number"
         className="w-40"
