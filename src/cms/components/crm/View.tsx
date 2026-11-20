@@ -555,7 +555,12 @@ const View = <T extends { id?: string | number }>({
                 <input
                   type="radio"
                   name={filter.key}
-                  // checked={String(query[filter.key]) === String(option.value)}
+                  // MUST stay bound: with `checked` commented out the radio is
+                  // uncontrolled, so it never reflects `query[filter.key]` - a filter
+                  // restored from the URL, a preset, or "clear filters" left the circle
+                  // showing whatever the browser remembered. Same defect as
+                  // src/core/components/form/input/Checkbox.tsx (2026-11-19).
+                  checked={String(query[filter.key]) === String(option.value)}
                   onChange={() => handleFilterChange(filter.key, option.value)}
                 />
                 <span>{option.label}</span>

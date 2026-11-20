@@ -29,7 +29,12 @@ const Checkbox: React.FC<CheckboxProps> = ({
           type="checkbox"
           className={`w-5 h-5 appearance-none cursor-pointer dark:border-gray-700 border border-gray-300 checked:border-transparent rounded-md checked:bg-brand-500 disabled:opacity-60 
           ${className}`}
-          // checked={checked}
+          // MUST stay: without it the input is uncontrolled (the DOM starts false no
+          // matter what the prop says) while the tick below is drawn from the prop, so
+          // the two disagree and the FIRST click on a stored `true` silently does
+          // nothing. `src/cms/components/form/input/Checkbox.tsx` is the same component
+          // with this line present - keep the two in step.
+          checked={checked}
           onChange={(e) => onChange(e.target.checked)}
           disabled={disabled}
         />
