@@ -605,8 +605,8 @@ const CustomerInfoTab: React.FC<{
                     <div>
                         <div className="text-blue-500 dark:text-blue-400 mb-1">{t("common.dob")}</div>
                         <div className="text-gray-900 dark:text-white">
-                            {/* Masked *instead of* formatted, never after: the mask is a fixed
-                                `••/••/1990` string, and handing that to a date formatter
+                            {/* Redacted *instead of* formatted, never after: the redaction is a
+                                fixed `**`/`**`/1990 string, and handing that to a date formatter
                                 produces "Invalid Date". */}
                             {!customer?.dob
                                 ? "-"

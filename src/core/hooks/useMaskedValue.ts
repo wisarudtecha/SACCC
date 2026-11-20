@@ -7,30 +7,26 @@ import {
   PII_CASE_PHONE_PERMISSION,
   PII_CUSTOMER_GENERAL_PERMISSION,
   PII_CUSTOMER_SENSITIVE_PERMISSION,
-  PII_FULL_MASK,
   PII_USER_GENERAL_PERMISSION,
   PII_USER_SENSITIVE_PERMISSION,
   applyMask,
+  getCasePiiRule,
+  getContactPiiRule,
   getCustomerPiiRule,
   getDynamicFieldPiiRule,
   maskAddressParts,
+  maskCaseField,
+  maskContactField,
   maskCustomerField,
+  redactCaseField,
+  redactContactField,
+  redactCustomerField,
+  redactValue,
 } from "@/core/security/piiFields";
 import type { PiiMarkedField } from "@/core/security/piiFields";
 
 /** Which of the customer's two addresses a path belongs to, for `maskAddress`. */
 export type AddressPrefix = "address" | "currentAddress";
-
-/**
- * Props that lock a form input, spread over whatever the field already declares.
- *
- * Empty when the field is viewable, so the same spread is harmless on every input.
- */
-export interface LockedPiiInputProps {
-  disabled?: boolean;
-  value?: string;
-  placeholder?: string;
-}
 
 export interface PiiMasker {
   /**
@@ -46,8 +42,27 @@ export interface PiiMasker {
   canViewField: (path: string) => boolean;
   /** The same question for a dynamic form field, which carries its own rule. */
   canViewDynamicField: (field: PiiMarkedField | null | undefined) => boolean;
+  /**
+   * Whether this user may see the **case's** own PII at `path` (`phoneNo`).
+   *
+   * Separate from `canViewField` because they are different permissions on the backend: a case
+   * phone number is case-owned data (`pii.case.phoneNo`), the customer record is not.
+   */
+  canViewCaseField: (path: string) => boolean;
+  /**
+   * Whether this user may see a **customer-contact** field (`contactPhone`).
+   *
+   * A third table because `/customer_contacts` is its own entity: a customer has many contacts,
+   * each with its own number, and the permission class happens to be the same customer-record
+   * one.
+   */
+  canViewContactField: (path: string) => boolean;
   /** Masks `value` if `path` is classified and this user can't see it. Identity when masking is off. */
   maskValue: (path: string, value: string | null | undefined) => string | null | undefined;
+  /** `maskValue` for a case path. Identity when masking is off. */
+  maskCaseValue: (path: string, value: string | null | undefined) => string | null | undefined;
+  /** `maskValue` for a customer-contact path. Identity when masking is off. */
+  maskContactValue: (path: string, value: string | null | undefined) => string | null | undefined;
   /** Masks the precise parts of one of the customer's addresses. Identity when masking is off. */
   maskAddress: <T extends object>(address: T | undefined, prefix: AddressPrefix) => T | undefined;
   /**
@@ -60,20 +75,31 @@ export interface PiiMasker {
    */
   maskDynamicField: (field: PiiMarkedField, value: string | null | undefined) => string | null | undefined;
   /**
-   * Blanks and disables a PII form input.
+   * The **locked-field** family: redaction for a field this viewer may not see.
    *
-   * **Superseded, and retained deliberately.** Unviewable fields now render as plain text and
-   * are stripped from the update payload by `omitUnviewableCustomerPii`, which is correct in
-   * both masking modes — a disabled input still advertises a field the user cannot have, and it
-   * does nothing about the value sitting in form state. Kept because it is the only mechanism
-   * that works without touching a call site's JSX, so it remains the cheap option for any form
-   * that later needs locking without a plain-text branch.
+   * Every one of these ignores `PII_MASKING_ENABLED` and answers only to permissions, which is
+   * the whole reason they exist separately from the `mask*` family. "Does the client mask?" is a
+   * display question about which layer the deployment put in charge; "may this viewer see this
+   * value?" is a permission question, and a field the answer excludes must never render its real
+   * value — including when the backend sent one by mistake.
+   *
+   * Use these for a field rendered as **text because it cannot be edited**, and the `mask*` ones
+   * for a read-only surface that is only deciding how much to reveal. A locked field is never an
+   * `<input disabled>`: a disabled input still advertises a field the user cannot have.
    */
-  lockPiiInput: (path: string) => LockedPiiInputProps;
+  redactValue: (path: string, value: string | null | undefined) => string | null | undefined;
+  /** `redactValue` for a case path. */
+  redactCaseValue: (path: string, value: string | null | undefined) => string | null | undefined;
+  /** `redactValue` for a customer-contact path. */
+  redactContactValue: (path: string, value: string | null | undefined) => string | null | undefined;
+  /** Redacts the parts of an address this viewer may not see. Never identity for those parts. */
+  redactAddress: <T extends object>(address: T | undefined, prefix: AddressPrefix) => T | undefined;
+  /** Redacts a dynamic form field's value when this viewer may not see it. */
+  redactDynamicField: (
+    field: PiiMarkedField,
+    value: string | null | undefined
+  ) => string | null | undefined;
 }
-
-/** Nothing to override — the field renders and behaves as its own JSX declares. */
-const UNLOCKED: LockedPiiInputProps = {};
 
 /**
  * The permission-aware face of `src/core/security/piiFields.ts`.
@@ -126,11 +152,27 @@ export const usePiiMasker = (): PiiMasker => {
       return rule ? isGranted(rule.permission) : true;
     };
 
+    const canViewCaseField = (path: string): boolean => {
+      const rule = getCasePiiRule(path);
+      return rule ? isGranted(rule.permission) : true;
+    };
+
+    const canViewContactField = (path: string): boolean => {
+      const rule = getContactPiiRule(path);
+      return rule ? isGranted(rule.permission) : true;
+    };
+
     return {
       canViewField,
       canViewDynamicField,
+      canViewCaseField,
+      canViewContactField,
       maskValue: (path, value) =>
         PII_MASKING_ENABLED && !canViewField(path) ? maskCustomerField(path, value) : value,
+      maskCaseValue: (path, value) =>
+        PII_MASKING_ENABLED && !canViewCaseField(path) ? maskCaseField(path, value) : value,
+      maskContactValue: (path, value) =>
+        PII_MASKING_ENABLED && !canViewContactField(path) ? maskContactField(path, value) : value,
       maskAddress: <T extends object>(address: T | undefined, prefix: AddressPrefix) => {
         if (!PII_MASKING_ENABLED || !address) {
           return address;
@@ -144,8 +186,21 @@ export const usePiiMasker = (): PiiMasker => {
         const rule = getDynamicFieldPiiRule(field);
         return rule ? applyMask(value, rule) : value;
       },
-      lockPiiInput: (path) =>
-        canViewField(path) ? UNLOCKED : { disabled: true, value: "", placeholder: PII_FULL_MASK },
+
+      // The locked-field family. Note the absence of a `PII_MASKING_ENABLED` check: these run
+      // in every deployment, because a field this viewer may not see must not render its value
+      // even when the backend failed to redact it.
+      redactValue: (path, value) => redactCustomerField(path, value, canViewField),
+      redactCaseValue: (path, value) => redactCaseField(path, value, canViewCaseField),
+      redactContactValue: (path, value) => redactContactField(path, value, canViewContactField),
+      redactAddress: <T extends object>(address: T | undefined, prefix: AddressPrefix) => {
+        if (!address) {
+          return address;
+        }
+        return maskAddressParts(address, part => !canViewField(`${prefix}.${part}`));
+      },
+      redactDynamicField: (field, value) =>
+        redactValue(value, getDynamicFieldPiiRule(field), canViewDynamicField(field)),
     };
   }, [
     canViewCasePhone,

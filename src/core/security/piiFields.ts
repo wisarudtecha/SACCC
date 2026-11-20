@@ -7,26 +7,31 @@
  * in `cms`, and `CLAUDE.md` treats `core` -> `cms` imports as an existing tangle to work
  * around rather than extend. Keeping it pure also makes every rule here directly testable.
  *
- * It is a **display-layer** control, and a secondary one: the BFF is the real security boundary
- * and now returns records with PII already redacted for callers who lack the permission. The
- * masking here is what runs when `PII_MASKING_ENABLED` (`./piiConfig.ts`) is on, and is switched
- * off where the backend has taken over so the two do not stack.
+ * **The BFF is the masking layer.** It returns records whose PII is already redacted for
+ * callers who lack the permission, using `*` as the redaction character - the same character
+ * this module produces, on purpose: the backend's write-back safeguard recognises a masked
+ * value by that pattern and restores the stored one, so an echoed mask is safe and a mask made
+ * of a *different* character would be written over the real record.
  *
- * Two things in this module are *not* display-layer and stay live either way, because they
- * protect the write path rather than the screen: the `permission` on each rule, which decides
- * whether a field is editable at all, and `omitUnviewableCustomerPii`, which keeps a redacted
- * value out of an update payload.
+ * The client-side masking in this module is therefore a **fallback** for deployments whose
+ * backend does not mask yet (`PII_MASKING_ENABLED` in `./piiConfig.ts`, off by default). What
+ * stays live in every deployment is everything that is *not* about the screen:
  *
- * Scope is customer data only. User/admin PII (`src/core/types/user.ts`) is deliberately
- * out of scope.
+ *   - the `permission` on each rule, which decides whether a field may be edited at all, and
+ *   - the `redact*` helpers, which produce the value a **locked** field displays. They are
+ *     deliberately not gated by `PII_MASKING_ENABLED`: a field the viewer may not see must
+ *     never render its real value, however the BFF came to send one.
+ *
+ * Scope covers the customer record (`CUSTOMER_PII_FIELDS`) and the case's own phone number
+ * (`CASE_PII_FIELDS`). User/admin PII (`src/core/types/user.ts`) is deliberately out of scope.
  */
 
 /**
- * `lastN`     keep the final `keep` characters, mask the rest      -> `•••••••••0123`
- * `email`     keep one leading character and the domain            -> `m••••••@example.com`
- * `yearOnly`  keep the year, mask day and month                    -> `••/••/1990`
- * `truncate`  keep the first `keep` characters, mask the rest      -> `Somch••••`
- * `full`      reveal nothing                                       -> `••••`
+ * `lastN`     keep the final `keep` characters, mask the rest      -> `******0123`
+ * `email`     keep one leading character and the domain            -> `m******@example.com`
+ * `yearOnly`  keep the year, mask day and month                    -> `**`/`**`/1990`
+ * `truncate`  keep the first `keep` characters, mask the rest      -> `Somch****`
+ * `full`      reveal nothing                                       -> `****`
  */
 export type MaskStrategy = "lastN" | "email" | "yearOnly" | "truncate" | "full";
 
@@ -47,25 +52,49 @@ export interface PiiRule {
  *
  * `PermissionManager.hasPermission` is an exact match over a flattened list, so the extra path
  * segments cost nothing; `groupPermissionsByModule` still buckets all five under `pii`.
+ *
+ * **Which permission a rule may point at is the backend's decision, not ours.** The mapping
+ * below is not the intuitive one, and it is deliberate — it is the backend's published PII
+ * contract (the permission matrix of 2026-11-17):
+ *
+ *   - the **customer record** — every customer column, in every customer endpoint — is one
+ *     class, `pii.user.sensitive.personal`. There is no general/sensitive split on the customer
+ *     entity itself.
+ *   - the **dynamic form fields** an admin marks are the only place the two-way
+ *     `pii.customer.general.personal` / `pii.customer.sensitive.personal` split applies
+ *     (see `piiPresets.ts` in `cms`, which is where an admin picks the class).
+ *   - the **case's own phone number** is `pii.case.phoneNo`.
+ *
+ * A rule pointed at the wrong one of these fails silently in the worst way: the field is
+ * either masked for everybody or editable by everybody, and nothing errors.
  */
 export const PII_CASE_PHONE_PERMISSION = "pii.case.phoneNo";
 export const PII_CUSTOMER_GENERAL_PERMISSION = "pii.customer.general.personal";
 export const PII_CUSTOMER_SENSITIVE_PERMISSION = "pii.customer.sensitive.personal";
 
 /**
- * Declared for completeness of the backend's taxonomy. Nothing reads them yet — user/admin PII
- * (`src/core/types/user.ts`) has no masking anywhere in the app, and wiring it is separate work.
+ * `pii.user.sensitive.personal` is the customer record's class (see above). The general tier
+ * exists in the backend's taxonomy for user/admin records (`src/core/types/user.ts`), which have
+ * no masking anywhere in the app yet — wiring it is separate work.
  */
 export const PII_USER_GENERAL_PERMISSION = "pii.user.general.personal";
 export const PII_USER_SENSITIVE_PERMISSION = "pii.user.sensitive.personal";
 
-const MASK_CHAR = "•";
+/**
+ * The redaction character.
+ *
+ * `*` rather than a bullet, because this is the character the BFF itself masks with: its
+ * write-back safeguard recognises a masked value by this pattern, so anything this module
+ * produces has to be recognisable as a mask. A prettier character here would turn every echoed
+ * redaction into a real value written over the record.
+ */
+const MASK_CHAR = "*";
 
 /**
  * What every fail-closed path returns, and the whole of the `full` strategy.
  *
  * Fixed width on purpose: a length-matched mask would leak how long the hidden value is, and
- * for a `photo` URL it would render as an absurd wall of dots. Format preservation is
+ * for a `photo` URL it would render as an absurd wall of asterisks. Format preservation is
  * reserved for the strategies where it earns its keep — `lastN`, `email` and `yearOnly` —
  * because that is where a jumping column width is actually visible.
  */
@@ -78,12 +107,19 @@ const FULL_MASK = MASK_CHAR.repeat(4);
 export const PII_FULL_MASK = FULL_MASK;
 
 /**
- * The address parts precise enough to identify a household.
+ * Every part of an address.
  *
- * `country`, `province`, `district`, `subDistrict` and `postalCode` are deliberately absent:
- * area and zone routing views read them, and they are not identifying on their own.
+ * This used to be the household-identifying half only, excluding `country`, `province`,
+ * `district`, `subDistrict` and `postalCode` on the argument that area/zone routing views read
+ * them. The backend's contract masks `address.*` as a whole (`parameters: ["address.*"]` on the
+ * customer endpoints), and the two have to agree: this same list decides what is stripped from
+ * an update payload, so a part the client treats as public while the backend masks it would be
+ * sent back with the redaction in it.
+ *
+ * The consequence is real and accepted: an address is editable only by a viewer who may see the
+ * customer record at all, including its province/district selectors.
  */
-export const PRECISE_ADDRESS_PARTS = [
+export const ADDRESS_PARTS = [
   "no",
   "road",
   "street",
@@ -92,41 +128,80 @@ export const PRECISE_ADDRESS_PARTS = [
   "room",
   "lat",
   "lon",
+  "subDistrict",
+  "district",
+  "province",
+  "postalCode",
+  "country",
 ] as const;
 
 const addressRules = (prefix: string): Record<string, PiiRule> =>
   Object.fromEntries(
-    PRECISE_ADDRESS_PARTS.map(part => [
+    ADDRESS_PARTS.map(part => [
       `${prefix}.${part}`,
-      { strategy: "full", permission: PII_CUSTOMER_SENSITIVE_PERMISSION } as PiiRule,
+      { strategy: "full", permission: PII_USER_SENSITIVE_PERMISSION } as PiiRule,
     ])
   );
 
 /**
  * Keyed by dotted path so nested address fields resolve without a separate lookup shape.
  *
- * The general/sensitive split matches what the backend masks on. It has to: the same rule
- * decides both what is hidden and what is stripped from an update payload, so a field the
- * frontend classes as `general` while the backend masks it as `sensitive` would be sent back
- * with the redaction in it.
+ * Every entry points at `PII_USER_SENSITIVE_PERMISSION`, because the backend files the whole
+ * customer record under one class (see the permission comment above). The rule has to match what
+ * the backend masks on: it decides both what is hidden and what is stripped from an update
+ * payload, so a field the frontend classes differently from the backend would be sent back with
+ * the redaction in it.
  *
- * Note `mobileNo` — the customer's phone field. `phoneNo` belongs to Case/dispatch and is still
- * not listed: it is case-owned data, and while `PII_CASE_PHONE_PERMISSION` now exists for it,
- * no case surface reads it yet.
+ * `phoneNo` belongs to Case/dispatch rather than to the customer, and lives in `CASE_PII_FIELDS`
+ * below.
  */
 export const CUSTOMER_PII_FIELDS: Record<string, PiiRule> = {
-  // General — contact details the customer hands out to be reached on.
-  mobileNo: { strategy: "lastN", keep: 4, permission: PII_CUSTOMER_GENERAL_PERMISSION },
-  landline: { strategy: "lastN", keep: 4, permission: PII_CUSTOMER_GENERAL_PERMISSION },
-  email: { strategy: "email", permission: PII_CUSTOMER_GENERAL_PERMISSION },
+  // Contact details the customer hands out to be reached on.
+  mobileNo: { strategy: "lastN", keep: 4, permission: PII_USER_SENSITIVE_PERMISSION },
+  landline: { strategy: "lastN", keep: 4, permission: PII_USER_SENSITIVE_PERMISSION },
+  email: { strategy: "email", permission: PII_USER_SENSITIVE_PERMISSION },
 
-  // Sensitive — identity documents, date of birth, a face, and any address precise enough to
-  // locate a household.
-  citizenId: { strategy: "lastN", keep: 4, permission: PII_CUSTOMER_SENSITIVE_PERMISSION },
-  dob: { strategy: "yearOnly", permission: PII_CUSTOMER_SENSITIVE_PERMISSION },
-  photo: { strategy: "full", permission: PII_CUSTOMER_SENSITIVE_PERMISSION },
+  // Identity documents, date of birth, a face, and any address precise enough to locate a
+  // household.
+  citizenId: { strategy: "lastN", keep: 4, permission: PII_USER_SENSITIVE_PERMISSION },
+  dob: { strategy: "yearOnly", permission: PII_USER_SENSITIVE_PERMISSION },
+  photo: { strategy: "full", permission: PII_USER_SENSITIVE_PERMISSION },
+
+  // Health-related, and the backend files them with the rest of the record rather than in a
+  // class of their own. `full` rather than a partial reveal: both are single-token values
+  // ("Female", "O"), so keeping any character would disclose the whole answer.
+  gender: { strategy: "full", permission: PII_USER_SENSITIVE_PERMISSION },
+  blood: { strategy: "full", permission: PII_USER_SENSITIVE_PERMISSION },
+
   ...addressRules("address"),
   ...addressRules("currentAddress"),
+};
+
+/**
+ * The case's own phone number, which is case-owned data rather than a column of the customer
+ * record — hence its own permission.
+ *
+ * Keyed by dotted path for symmetry with `CUSTOMER_PII_FIELDS`, so `canViewField`-style lookups
+ * and the (single, flat) case payload read the same way.
+ */
+export const CASE_PII_FIELDS: Record<string, PiiRule> = {
+  phoneNo: { strategy: "lastN", keep: 4, permission: PII_CASE_PHONE_PERMISSION },
+};
+
+/**
+ * The customer-**contact** record's own PII — the `contactPhone` column of
+ * `CustomerContact` (`/customer_contacts`).
+ *
+ * A table of its own rather than an entry in `CUSTOMER_PII_FIELDS`, for two reasons: the entity
+ * is not the customer (a customer has many contacts, each with its own number), and
+ * `omitUnviewableCustomerPii` walks the customer table by key — adding `contactPhone` there
+ * would make it try to strip a field the customer payload never carries.
+ *
+ * The permission class is the same customer-record one the backend uses for the whole
+ * `customer_contacts` group (contract rows 5-7).
+ */
+export const CONTACT_PII_FIELDS: Record<string, PiiRule> = {
+  contactPhone: { strategy: "lastN", keep: 4, permission: PII_USER_SENSITIVE_PERMISSION },
 };
 
 /** An absent value is left alone — masking one would falsely imply data exists. */
@@ -161,7 +236,7 @@ const maskEmail = (value: string): string => {
   const domainPart = value.slice(atIndex);
 
   // A single-character local part is fully disclosed by "keep the first character", so it
-  // gets masked outright: `a@example.com` -> `•@example.com`.
+  // gets redacted outright: `a@example.com` -> `*@example.com`.
   const revealed = localPart.length > 1 ? 1 : 0;
 
   return localPart.slice(0, revealed) + MASK_CHAR.repeat(localPart.length - revealed) + domainPart;
@@ -240,20 +315,116 @@ export const maskCustomerField = (
   return rule ? applyMask(value, rule) : value;
 };
 
+/** The rule for a dotted case field path, or `undefined` if the field is not PII. */
+export const getCasePiiRule = (path: string): PiiRule | undefined => CASE_PII_FIELDS[path];
+
+export const isCasePiiField = (path: string): boolean => getCasePiiRule(path) !== undefined;
+
 /**
- * Masks the identifying parts of an address, leaving the coarse ones readable.
+ * Masks `value` if `path` is a classified case field, otherwise returns it unchanged.
+ *
+ * The case counterpart of `maskCustomerField`; like it, this does **not** check permissions.
+ */
+export const maskCaseField = (
+  path: string,
+  value: string | null | undefined
+): string | null | undefined => {
+  const rule = getCasePiiRule(path);
+  return rule ? applyMask(value, rule) : value;
+};
+
+/** The rule for a dotted customer-contact path, or `undefined` if the field is not PII. */
+export const getContactPiiRule = (path: string): PiiRule | undefined => CONTACT_PII_FIELDS[path];
+
+export const isContactPiiField = (path: string): boolean =>
+  getContactPiiRule(path) !== undefined;
+
+/**
+ * Masks `value` if `path` is a classified customer-contact field, otherwise returns it unchanged.
+ *
+ * The customer-contact counterpart of `maskCustomerField`; like it, this does **not** check
+ * permissions.
+ */
+export const maskContactField = (
+  path: string,
+  value: string | null | undefined
+): string | null | undefined => {
+  const rule = getContactPiiRule(path);
+  return rule ? applyMask(value, rule) : value;
+};
+
+/**
+ * What a **locked** field displays: the redaction, unless the viewer may see the real value.
+ *
+ * This is the one masking-adjacent helper that is **not** gated by `PII_MASKING_ENABLED`, and
+ * the distinction is the whole point. "Does the client mask?" is a display question about which
+ * layer the deployment put in charge. "May this viewer see this value?" is a permission
+ * question, and its answer cannot depend on the first: a locked field must never render a real
+ * value, however the BFF came to send one — including the case where the backend masks nothing
+ * yet and the browser is the last line of defence.
+ *
+ * Fails closed: an unrecognised strategy inside `applyMask` still redacts.
+ */
+export const redactValue = (
+  value: string | null | undefined,
+  rule: PiiRule | undefined,
+  canView: boolean
+): string | null | undefined => (canView || !rule ? value : applyMask(value, rule));
+
+/** `redactValue` for a customer-contact path. */
+export const redactContactField = (
+  path: string,
+  value: string | null | undefined,
+  canViewContactField: (path: string) => boolean
+): string | null | undefined =>
+  redactValue(value, getContactPiiRule(path), canViewContactField(path));
+
+/** `redactValue` for a customer path. `canViewField` receives the same dotted keys. */
+export const redactCustomerField = (
+  path: string,
+  value: string | null | undefined,
+  canViewField: (path: string) => boolean
+): string | null | undefined => redactValue(value, getCustomerPiiRule(path), canViewField(path));
+
+/** `redactValue` for a case path. */
+export const redactCaseField = (
+  path: string,
+  value: string | null | undefined,
+  canViewCaseField: (path: string) => boolean
+): string | null | undefined => redactValue(value, getCasePiiRule(path), canViewCaseField(path));
+
+/**
+ * Whether the viewer may **edit** the case's phone field.
+ *
+ * That one input has two owners, and this is the only place the rule is written down: it
+ * displays `customerData.mobileNo` — a column of the customer record, so
+ * `pii.user.sensitive.personal` — and it is submitted as the case's own `phoneNo`, so
+ * `pii.case.phoneNo`. Editing it is only honest when the viewer may do both, because with
+ * either one missing the write is a no-op: the backend's write-back safeguard restores the
+ * stored value, so a field left editable would accept a number and silently not persist it.
+ *
+ * Takes the two predicates rather than a hook so it stays pure and testable — pass
+ * `usePiiMasker().canViewCaseField` and `.canViewField` straight in.
+ */
+export const canEditCasePhoneNo = (
+  canViewCaseField: (path: string) => boolean,
+  canViewCustomerField: (path: string) => boolean
+): boolean => canViewCaseField("phoneNo") && canViewCustomerField("mobileNo");
+
+/**
+ * Masks an address per part, keeping the shape so the merged display still reads as an address.
  *
  * Addresses are displayed as a single merged string (`mergeAddress` in
  * `src/cms/store/api/custommerApi.ts`), so there is no per-field seam to mask at render
  * time. Masking the object *before* it is merged is what produces
- * `••••, ••••, Khlong Toei, Bangkok, 10110` while leaving `mergeAddress` itself untouched.
+ * `****, ****, Khlong Toei, Bangkok, 10110` while leaving `mergeAddress` itself untouched.
  *
  * Returns a new object — the input is never mutated.
  *
  * `shouldMaskPart` lets the caller apply the viewer's permissions per part; it defaults to
- * masking every precise part, which is the behaviour every existing call site had. All eight
- * parts are sensitive today, so the predicate is uniform in practice — it exists so a later
- * reclassification of one part does not need a new function.
+ * masking every part, which is the behaviour every existing call site had. Every part is
+ * classified today (`ADDRESS_PARTS`), so the predicate is uniform in practice — it exists so a
+ * later reclassification of one part does not need a new function.
  *
  * Generic over the address shape so the result stays assignable to whatever type the caller
  * had, without this module importing it. `T extends object` rather than
@@ -266,7 +437,7 @@ export const maskAddressParts = <T extends object>(
 ): T => {
   const masked: Record<string, unknown> = { ...(address as Record<string, unknown>) };
 
-  for (const part of PRECISE_ADDRESS_PARTS) {
+  for (const part of ADDRESS_PARTS) {
     if (!shouldMaskPart(part)) {
       continue;
     }
@@ -319,10 +490,16 @@ export const getDynamicFieldPiiRule = (
  * Drops every classified customer field the viewer may not see from an update payload.
  *
  * This is the write-path counterpart to masking, and the reason masking's own switch must not
- * govern it. Once the backend redacts what it sends, an edit form loads `••••1234` into its
+ * govern it. Once the backend redacts what it sends, an edit form loads `****1234` into its
  * state, and `CustomerCreate`'s `handleSubmit` builds its PATCH body from that state rather than
  * from the DOM — so hiding the input is not protection. Omitting the key is. The customer PATCH
  * ignores absent keys, which makes this the semantically correct move rather than a workaround.
+ *
+ * Belt and braces rather than the only defence: the backend's write-back safeguard also
+ * recognises an echoed redaction and restores the stored value (see this module's header). Both
+ * mechanisms are kept because each covers a case the other cannot — the safeguard cannot help a
+ * payload that carries a redaction in a field it does not classify, and the omit cannot help a
+ * caller that never runs it.
  *
  * `canView` receives the same dotted paths `CUSTOMER_PII_FIELDS` is keyed by, so a caller can
  * pass `usePiiMasker().canViewField` straight in.

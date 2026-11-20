@@ -167,7 +167,7 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
      * A disabled input still advertises a field they cannot have, and — the part that actually
      * matters — it does nothing about the value sitting in `formData`. The record now arrives
      * from the server already redacted, and `handleSubmit` builds its PATCH body from
-     * `formData` rather than from the DOM, so hiding the input would send `••••1234` straight
+     * `formData` rather than from the DOM, so hiding the input would send `****1234` straight
      * back over the real number. `omitUnviewableCustomerPii` is what prevents that; the text
      * render is what stops the agent expecting to be able to edit it.
      *
@@ -1019,13 +1019,20 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
                                         {(formConfig?.gender !== false) && !minimal && (
                                             <div>
                                                 <label className={labelClasses}>{t("userform.gender")}</label>
-                                                <Select
-                                                    value={formData.gender || ""}
-                                                    onChange={val => handleSelectChange("gender", val)}
-                                                    options={genderOptions}
-                                                    placeholder={t("userform.selectGender")}
-                                                    required
-                                                />
+                                                {/* Locked the same way as every other PII field: the
+                                                    stored value is not editable by a viewer who may not
+                                                    see the record, and a `Select` cannot express that. */}
+                                                {canEditPii("gender") ? (
+                                                    <Select
+                                                        value={formData.gender || ""}
+                                                        onChange={val => handleSelectChange("gender", val)}
+                                                        options={genderOptions}
+                                                        placeholder={t("userform.selectGender")}
+                                                        required
+                                                    />
+                                                ) : (
+                                                    <MaskedField path="gender" value={formData.gender} className={PII_TEXT_CLASSES} />
+                                                )}
                                             </div>
                                         )}
 
@@ -1041,13 +1048,17 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
                                         {(formConfig?.blood !== false) && !minimal && (
                                             <div>
                                                 <label className={labelClasses}>{t("userform.blood")}</label>
-                                                <Select
-                                                    value={formData.blood}
-                                                    onChange={val => handleSelectChange("blood", val)}
-                                                    options={bloodOptions}
-                                                    placeholder={t("userform.selectBlood")}
-                                                    required
-                                                />
+                                                {canEditPii("blood") ? (
+                                                    <Select
+                                                        value={formData.blood}
+                                                        onChange={val => handleSelectChange("blood", val)}
+                                                        options={bloodOptions}
+                                                        placeholder={t("userform.selectBlood")}
+                                                        required
+                                                    />
+                                                ) : (
+                                                    <MaskedField path="blood" value={formData.blood} className={PII_TEXT_CLASSES} />
+                                                )}
                                             </div>
                                         )}
                                         {(formConfig?.userType !== false) && !minimal && (
@@ -1070,7 +1081,7 @@ const CustomerCreate: React.FC<CustomerCreateProps> = ({ customer, onSuccess, cu
                                                 </div>
                                                 {/* Text rather than a cleared date picker: the
                                                     picker takes a `Date`, and a redacted date
-                                                    is a string (`••/••/1990`) that cannot be
+                                                    is a string (`**`/`**`/1990) that cannot be
                                                     parsed back into one. `formData.dob` is
                                                     stripped from the payload either way. */}
                                                 {canEditPii("dob") ? (

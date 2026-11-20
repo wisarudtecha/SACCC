@@ -40,8 +40,8 @@ export const CustomerPreviewData = ({ customer, className }: { customer: Custome
         { key: "lastName", labelKey: "userform.lastName" },
         { key: "citizenId", labelKey: "userform.citizenId", piiPath: "citizenId" },
         { key: "dob", labelKey: "userform.dob", piiPath: "dob" },
-        { key: "blood", labelKey: "userform.blood" },
-        { key: "gender", labelKey: "userform.gender" },
+        { key: "blood", labelKey: "userform.blood", piiPath: "blood" },
+        { key: "gender", labelKey: "userform.gender", piiPath: "gender" },
     ];
 
     const isPersonalDetailConfigured = personalFields.some(
@@ -53,7 +53,7 @@ export const CustomerPreviewData = ({ customer, className }: { customer: Custome
 
         if (!rawValue) return "-";
 
-        // `dob` is masked to a `••/••/1990`-shaped string, not an ISO date, so it must only
+        // `dob` is redacted to a `**/**/1990`-shaped string, not an ISO date, so it must only
         // pass through `formatDate` on the branch where it is still the unmasked raw value.
         if (field.key === "dob" && canViewField("dob")) {
             return formatDate(rawValue, { includeTime: false });
@@ -82,12 +82,12 @@ export const CustomerPreviewData = ({ customer, className }: { customer: Custome
             {(formConfig?.photo !== false || formConfig?.displayName !== false) && (
                 <div className='justify-items-center text-center my-5 mx-3'>
                     {formConfig?.photo !== false && (
-                        // A face is identifying, so without the sensitive-PII permission fall
-                        // through to the initials the component already renders for customers
-                        // with no photo — a mask string in `src` would only produce a broken
-                        // image.
+                        // A face is identifying, so without the permission that covers the
+                        // customer record, fall through to the initials the component already
+                        // renders for customers with no photo — a redaction string in `src`
+                        // would only produce a broken image.
 
-                        // canViewField("photo") &&
+                        canViewField("photo") &&
                         customer?.photo ? (
                             <Avatar className="w-30 h-30 justify-center items-center">
                                 <img src={customer?.photo} alt={customer?.displayName} className="h-full w-full object-cover rounded-full" />

@@ -3,6 +3,7 @@ import { AppointmentForm } from "@/cms/components/appointment/AppointmentCreate"
 import { CaseCard } from "@/cms/components/case/kanbanCard";
 import Loading from "@/core/components/common/Loading";
 import { CustomerPreviewData } from "@/cms/components/customer/CustomerPreview";
+import { CustomerContactsTab } from "@/cms/components/customer/contact/CustomerContactsTab";
 import { SocialAccountManager } from "@/cms/components/customer/social/SocialAccountManager";
 import { NoteManager } from "@/cms/components/customer/notes/NoteManager";
 import { getTodayDate } from "@/cms/components/date/DateToString";
@@ -755,6 +756,10 @@ const CustomerView: React.FC<CustomerViewProps> = ({ customer }) => {
                                 ...(formConfigRes?.data?.social !== false
                                     ? [{ id: "contactChannels", label: t("customer.social.channels"), content: <ContactChannelsTab customer={dataOfCustomer || customerData?.data} /> }]
                                     : []),
+                                // The customer's contact records (`/customer_contacts`). Separate from
+                                // Contact Channels above: a channel is a way to reach the customer, a
+                                // contact is another person with their own number.
+                                { id: "contacts", label: t("customer.contact.tab"), content: <CustomerContactsTab customerId={String(dataOfCustomer?.id || customer.id)} /> },
                                 { id: "internalNote", label: t("customer.note.title"), content: <div className="p-5"><NoteManager customerId={dataOfCustomer?.id || customer.id} /></div> }
                             ]}
                             defaultTab="customer"

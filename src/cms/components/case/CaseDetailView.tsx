@@ -34,6 +34,8 @@ import { CaseFormFields } from "./caseFormFields";
 import { CaseTypeSubType } from "../interface/CaseType"
 import { getDaysDifference, getLocalISOString, TodayDate } from "../date/DateToString"
 import { validateCaseForSubmission } from "./caseDataValidation/caseDataValidation"
+import { usePiiMasker } from "@/core/hooks/useMaskedValue"
+import { canEditCasePhoneNo } from "@/core/security/piiFields"
 import { SearchableSelect } from "../SearchInput/SearchSelectInput"
 import { usePermissions, useToast } from "@/core/hooks"
 import { ToastContainer } from "@/core/components/crud/ToastContainer"
@@ -333,6 +335,15 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     const [getCustomerByPhone] = useLazyGetCustommerByPhoneNoQuery();
     const [getSopUnit] = useLazyGetSopUnitQuery();
     const [refetchTriggerUnit, setRefetchTriggerUnit] = useState(Boolean);
+    /**
+     * Whether this viewer may edit the case's phone number.
+     *
+     * The number in form state is whatever the backend sent. For a viewer without the permission
+     * that is the redaction (`******5678`), which fails the submission format check and blocks
+     * every save behind a field they cannot correct — see `CaseValidationOptions.canViewPhoneNo`.
+     */
+    const { canViewCaseField, canViewField } = usePiiMasker();
+    const canEditCasePhone = canEditCasePhoneNo(canViewCaseField, canViewField);
     const canCancelUnit = sopData?.data?.dispatchStage?.data?.data?.config?.action === sopData?.data?.currentStage?.data?.data?.config?.action
     useEffect(() => {
         if (!isInitialized) {
@@ -877,7 +888,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
     }, [caseState, sopData?.data, updateCase, updateCaseInLocalStorage, profile, navigate, isScheduleDate, getCustomerByPhone]);
 
     const handlePreviewShow = useCallback(() => {
-        const errorMessage = validateCaseForSubmission(caseState);
+        const errorMessage = validateCaseForSubmission(caseState, { canViewPhoneNo: canEditCasePhone });
         if (errorMessage) {
             addToast('error', errorMessage);
             return;
@@ -885,7 +896,7 @@ export default function CaseDetailView({ onBack, caseData, disablePageMeta = fal
         setShowPreviewData(true);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [validateCaseForSubmission, caseState]);
+    }, [validateCaseForSubmission, caseState, canEditCasePhone]);
 
     const handleEditClick = useCallback(() => {
         setEditFormData(prev => !prev);

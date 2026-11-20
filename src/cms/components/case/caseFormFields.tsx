@@ -196,6 +196,12 @@ export const CaseFormFields = memo<CaseFormFieldsProps>(({
                 form={selectedCaseTypeForm?.formField}
                 isLoading={isFormLoading}
                 onFormChange={handleFormFieldChange}
+                maskPii
+                // A case being created has no stored answers to withhold, and its PII came from
+                // the agent in the first place — locking there would only make the form
+                // unusable. Editing an existing case leaves this unset so each marked field
+                // resolves its own class.
+                canViewPii={isCreate ? true : undefined}
             />
 
             {/* IoT Device and Alert Date. VITE_SHOW_CASE_IOT="false" drops both

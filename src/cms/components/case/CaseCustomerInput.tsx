@@ -3,6 +3,9 @@ import { ChangeEvent } from "react";
 // import { SearchableSelect } from "../SearchSelectInput/SearchSelectInput";
 import { Customer } from "@/cms/store/api/custommerApi";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import { usePiiMasker } from "@/core/hooks/useMaskedValue";
+import { canEditCasePhoneNo } from "@/core/security/piiFields";
+import MaskedField from "@/core/components/security/MaskedField";
 import { COMMON_INPUT_CSS } from "./constants/caseConstants";
 // import { contractMethodMock } from "./source";
 
@@ -20,6 +23,18 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
     hidePhone = false
 }) => {
     const { t } = useTranslation();
+
+    /**
+     * This one input has two owners — it displays `customerData.mobileNo` (the customer record)
+     * and is submitted as the case's own `phoneNo`. See `canEditCasePhoneNo`.
+     *
+     * Locked renders as text styled to match an input, never as `disabled`/`readOnly`: those
+     * still advertise a field the user cannot have, and they do nothing about the value already
+     * sitting in form state. The redaction is the customer path, because that is the value being
+     * displayed — a viewer who may see the number but not edit the case's copy still sees it.
+     */
+    const { canViewCaseField, canViewField } = usePiiMasker();
+    const canEditPhone = canEditCasePhoneNo(canViewCaseField, canViewField);
 
     // const handleCustomerDataNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     //     handleCustomerDataChange({
@@ -89,12 +104,20 @@ const CustomerInput: React.FC<CustomerInputProps> = ({
                     className={`w-auto md:mr-0`}
                 >
                     <h3 className="my-2 ">{t("case.display.phone_number")} :</h3>
-                    <input
-                        value={customerData.mobileNo ?? ""}
-                        onChange={(e) => { handleCustomerDataPhoneChange(e) }}
-                        className={`${COMMON_INPUT_CSS}`}
-                        placeholder={t("case.display.phone_number_placeholder")}
-                    />
+                    {canEditPhone ? (
+                        <input
+                            value={customerData.mobileNo ?? ""}
+                            onChange={(e) => { handleCustomerDataPhoneChange(e) }}
+                            className={`${COMMON_INPUT_CSS}`}
+                            placeholder={t("case.display.phone_number_placeholder")}
+                        />
+                    ) : (
+                        <MaskedField
+                            path="mobileNo"
+                            value={customerData.mobileNo}
+                            className={COMMON_INPUT_CSS}
+                        />
+                    )}
                 </div>}
             {/* <div className="w-auto md:mr-2">
                 <h3 className="my-2">Contact Method : <span className=" text-red-500 text-sm font-bold">*</span></h3>

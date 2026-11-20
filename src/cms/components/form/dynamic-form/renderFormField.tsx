@@ -44,12 +44,16 @@ const RenderFormField: React.FC<renderRenderFormFieldProps> = ({
     maskPii = false,
     canViewPii,
 }) => {
-    const { canViewDynamicField, maskDynamicField } = usePiiMasker();
+    const { canViewDynamicField, redactDynamicField } = usePiiMasker();
 
     // A marked field the viewer's permissions don't cover renders locked. The real value stays
     // in `field.value`/`formFieldJson` untouched either way - what changes is that the locked
     // branch below renders text rather than an input, so there is nothing to type into and
     // nothing that could carry a redacted string back into a submission.
+    //
+    // The lock is decided by PERMISSION alone, never by `PII_MASKING_ENABLED`: a viewer who may
+    // not see a field must not be shown one, however the BFF came to send it. That is why the
+    // branch below redacts through `redactDynamicField` rather than `maskDynamicField`.
     const piiRule = maskPii ? getDynamicFieldPiiRule(field) : undefined;
     const isLocked = !!piiRule && !(canViewPii ?? canViewDynamicField(field));
 
@@ -716,7 +720,7 @@ const RenderFormField: React.FC<renderRenderFormFieldProps> = ({
             <>
                 {labelComponent}
                 <p className="py-2 text-gray-700 dark:text-gray-300">
-                    {maskDynamicField(field, rawValue) || t("formViewer.emptyValue")}
+                    {redactDynamicField(field, rawValue) || t("formViewer.emptyValue")}
                 </p>
             </>
         );
