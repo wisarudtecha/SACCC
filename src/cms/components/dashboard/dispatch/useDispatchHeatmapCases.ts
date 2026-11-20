@@ -16,7 +16,17 @@ export interface DispatchHeatmapCasesState {
   isLoading: boolean;
 }
 
-export const useDispatchHeatmapCases = (): DispatchHeatmapCasesState => {
+export const useDispatchHeatmapCases = (
+  options: {
+    /**
+     * Whether the caller is allowed to plot a heatmap at all - i.e. the tenant owns the
+     * GIS add-on. `false` skips the sample fetch entirely instead of pulling 500 cases
+     * for a visualization the caller is not going to render.
+     */
+    enabled?: boolean;
+  } = {}
+): DispatchHeatmapCasesState => {
+  const enabled = options.enabled ?? true;
   const { data, isLoading } = useGetListCaseQuery(
     {
       start: 0,
@@ -24,8 +34,11 @@ export const useDispatchHeatmapCases = (): DispatchHeatmapCasesState => {
       orderBy: "receivedDate",
       direction: "desc",
     },
-    { pollingInterval: DISPATCH_HEATMAP_POLL_INTERVAL_MS }
+    {
+      pollingInterval: DISPATCH_HEATMAP_POLL_INTERVAL_MS,
+      skip: !enabled,
+    }
   );
 
-  return { cases: data?.data ?? [], isLoading };
+  return { cases: data?.data ?? [], isLoading: enabled && isLoading };
 };

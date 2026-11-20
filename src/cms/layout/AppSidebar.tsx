@@ -26,6 +26,10 @@ import { useSidebar } from "@/core/context/SidebarContext";
 import { useIsSystemAdmin } from "@/core/hooks/useIsSystemAdmin";
 import { usePermissions } from "@/core/hooks/usePermissions";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import { useEntitlements } from "@/core/hooks/useEntitlements";
+import { ENTITLEMENT_UPSELL_ENABLED } from "@/core/config/featureFlags";
+import { hideLockedNavItems } from "@/core/layout/navVisibility";
+import type { EntitlementFeature } from "@/core/types/entitlement";
 import { APP_CONFIG } from "@/cms/utils/constants";
 import changelog from "@/changelog.json";
 
@@ -36,18 +40,26 @@ type NavItem = {
   icon: React.ReactNode;
   path?: string;
   permission?: boolean;
+  /**
+   * Paid capability this entry needs, mirroring `SuperSidebar`'s `NavItem`. Without it
+   * this sidebar is the one menu that can advertise a feature the tenant never bought -
+   * the divergence the anti-regression log records for the sidebar/topbar pair.
+   */
+  feature?: EntitlementFeature;
   subItems?: {
     name: string;
     path: string;
     pro?: boolean;
     new?: boolean;
     permission?: boolean;
+    feature?: EntitlementFeature;
     subItems?: {
       name: string;
       path: string;
       pro?: boolean;
       new?: boolean;
       permission?: boolean;
+      feature?: EntitlementFeature;
     }[];
   }[];
 };
@@ -59,6 +71,16 @@ const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const isSuper = useSuperApp();
   const { language, t } = useTranslation();
+  const { isLocked } = useEntitlements();
+
+  /**
+   * Entitlement parity with `SuperSidebar`, which has carried this rule all along:
+   * with `VITE_SHOW_ENTITLEMENT_UPSELL` off, an entry the tenant cannot use is removed
+   * (its route gate would only bounce the click home); with it on, the entry stays and
+   * the route-level lock page is the announcement - this sidebar has no badge slot.
+   */
+  const withEntitlements = (items: NavItem[]): NavItem[] =>
+    ENTITLEMENT_UPSELL_ENABLED ? items : hideLockedNavItems(items, isLocked);
 
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -120,6 +142,11 @@ const AppSidebar: React.FC = () => {
           name: t("navigation.sidebar.main.dashboard.nested.case_summary_by_area"),
           path: "/dashboard/case-summary-by-area",
           permission: permissions.hasPermission("dashboard.view"),
+          // The route is `requiredFeature="entitlement.gis"` (the page is a map end to
+          // end), so the menu entry has to answer the same question or it becomes a dead
+          // link. `/dashboard/dispatch` deliberately carries no feature: only its heatmap
+          // section is GIS.
+          feature: "entitlement.gis",
         },
         {
           name: t("navigation.sidebar.main.dashboard.nested.dispatch"),
@@ -801,7 +828,7 @@ const AppSidebar: React.FC = () => {
           <nav className="mb-6">
             <div className="flex flex-col gap-4">
               <div className={`mb-6`}>
-                {renderMenuItems(mainItems, "main")}
+                {renderMenuItems(withEntitlements(mainItems), "main")}
               </div>
 
               {isSystemAdmin && (
@@ -822,7 +849,7 @@ const AppSidebar: React.FC = () => {
                       )}
                     </h2>
 
-                    {renderMenuItems(navItems, "menu")}
+                    {renderMenuItems(withEntitlements(navItems), "menu")}
                   </div>
 
                   <div className={`mb-6 ${menuDisplay}`}>
@@ -841,7 +868,7 @@ const AppSidebar: React.FC = () => {
                       )}
                     </h2>
 
-                    {renderMenuItems(othersItems, "others")}
+                    {renderMenuItems(withEntitlements(othersItems), "others")}
                   </div>
 
                   <div className={`mb-6 ${menuDisplay}`}>
@@ -860,7 +887,7 @@ const AppSidebar: React.FC = () => {
                       )}
                     </h2>
 
-                    {renderMenuItems(archivesItems, "archives")}
+                    {renderMenuItems(withEntitlements(archivesItems), "archives")}
                   </div>
                 </>
               )}

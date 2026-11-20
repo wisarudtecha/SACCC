@@ -2,7 +2,9 @@
 import React, { useMemo } from "react";
 import { Modal } from "@/core/components/ui/modal";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import { useEntitlements } from "@/core/hooks/useEntitlements";
 import { WIDGET_DEFINITIONS } from "@/core/components/custom-dashboard/widgets/registry";
+import { isWidgetAvailable } from "@/core/components/custom-dashboard/widgets/availability";
 import type { WidgetDefinition, WidgetGroup } from "@/core/components/custom-dashboard/widgets/types";
 
 interface WidgetLibraryModalProps {
@@ -26,10 +28,17 @@ export const WidgetLibraryModal: React.FC<WidgetLibraryModalProps> = ({
   onAddWidget,
 }) => {
   const { t } = useTranslation();
+  const { hasFeature } = useEntitlements();
 
   const sections = useMemo(() => {
     const byGroup = new Map<WidgetGroup, WidgetDefinition[]>();
     for (const definition of Object.values(WIDGET_DEFINITIONS)) {
+      // A widget backed by a feature the tenant does not own is not offered: the library
+      // is where a widget gets ADDED, so offering it would only produce a card that
+      // refuses to render.
+      if (!isWidgetAvailable(definition, hasFeature)) {
+        continue;
+      }
       const list = byGroup.get(definition.group) ?? [];
       list.push(definition);
       byGroup.set(definition.group, list);
@@ -37,7 +46,9 @@ export const WidgetLibraryModal: React.FC<WidgetLibraryModalProps> = ({
     return GROUP_ORDER
       .map(entry => ({ ...entry, widgets: byGroup.get(entry.group) ?? [] }))
       .filter(section => section.widgets.length > 0);
-  }, []);
+    // `hasFeature` is a fresh function each render (see the useEntitlements contract);
+    // including it only re-derives this cheap grouping, it cannot loop.
+  }, [hasFeature]);
 
   const handleAdd = (widgetKey: string) => {
     onAddWidget(widgetKey);

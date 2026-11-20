@@ -15,7 +15,7 @@ import { UnitStatus } from "@/cms/types/unit"
 import { AvatarFallback } from "@/core/components/ui/avatar/Avatarv2"
 import { useTranslation } from "@/core/hooks/useTranslation"
 import { ChevronDown, ChevronUp, Search, X } from "lucide-react"
-import { useState, useMemo, useEffect, useRef } from "react"
+import { useState, useMemo, useEffect, useRef, type ReactNode } from "react"
 import type { MapLatLon } from "@/cms/components/case/createCase/map/mapTypes"
 import { buildWorkloadByUnitId } from "@/cms/components/assignOfficer/workload/unitWorkloadAdapter"
 import { compareWorkloadRank, getWorkloadRank } from "@/cms/components/assignOfficer/workload/workloadRank"
@@ -29,10 +29,25 @@ import {
   isSelectAllDisabled,
   pruneSelection
 } from "@/cms/components/assignOfficer/batchAssignSelection"
+import {
+  resolveOfficerColumns,
+  type OfficerColumnId
+} from "@/cms/components/assignOfficer/officerColumns"
+import { EntitlementGate } from "@/core/components/entitlements/EntitlementGate"
+import { useEntitlements } from "@/core/hooks/useEntitlements"
+import { useOrgMapSettings } from "@/cms/components/admin/system-configuration/settings/useOrgMapSettings"
+import type { UnitWorkload } from "@/cms/types/unitWorkload"
+import type { RouteState } from "@/cms/components/case/createCase/map/staff/routeTypes"
 
-// One class for the 7-column officer grid so the header and every row stay in
-// lockstep. Name gets the most room; ETA/TTL needs room for three lines + button.
-const OFFICER_GRID_COLS = "grid grid-cols-[15%_11%_13%_15%_12%_14%_20%] gap-3"
+// The tracks are NOT in this class: which columns exist is decided per tenant
+// entitlement and per org setting (`resolveOfficerColumns`), so the grid template is an
+// inline style derived from that list. The hardcoded
+// `grid-cols-[15%_11%_13%_15%_12%_14%_20%]` this replaces is what let the ETA/TTL
+// column outlive the GIS add-on it belongs to.
+const OFFICER_GRID_CLASS = "grid gap-3"
+
+/** Default wrapper for a cell; a column can override it (name is inset, area is muted). */
+const DEFAULT_OFFICER_CELL_CLASS = "flex items-center justify-center"
 
 // "All Officer" is the default view: today's unfiltered roster. "Recommend"
 // re-ranks by workload then currently-assigned-case count (Decision #9 — ETA/TTL
@@ -158,6 +173,117 @@ const UnifiedCheckbox = ({
       )}
     </div>
   )
+}
+
+/**
+ * Everything one row's cells need, in one object.
+ *
+ * `renderOfficerCell` is a plain function on purpose, not a component: a component
+ * declared inside the modal's render body gets a NEW identity on every render, and
+ * React then unmounts/remounts the entire subtree - which is what makes a table blink
+ * and lose state on unrelated parent updates (a documented lesson in this repo).
+ */
+interface OfficerRowContext {
+  officer: Unit
+  /** The CASE's area label - the same for every row, so it is resolved once per render. */
+  areaLabel: string
+  unitStatuses: UnitStatus[]
+  workload: UnitWorkload | undefined
+  routeState: RouteState
+  canSolveRoute: boolean
+  routeCooldownSeconds: number
+  onSolveRoute: () => void
+  onRetryWorkload: () => void
+  language: string
+}
+
+/**
+ * The content of one cell, chosen by column id. A `switch` (not a lookup of JSX) keeps
+ * it exhaustive: adding an `OfficerColumnId` without a cell here fails to type-check
+ * instead of rendering an empty column.
+ */
+function renderOfficerCell(
+  columnId: OfficerColumnId,
+  context: OfficerRowContext
+): ReactNode {
+  const { officer } = context
+
+  switch (columnId) {
+    case "name":
+      return (
+        <>
+          <Avatar className="w-8 h-8">
+            <AvatarFallback className="bg-gray-200 text-gray-700 text-xs dark:bg-gray-700 dark:text-white">
+              {officer.photo ?
+                <img src={officer.photo} alt="officer" className="w-full h-full object-cover" /> : officer.unitName
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-gray-800 dark:text-white font-medium">
+            {officer.unitName}
+          </span>
+        </>
+      )
+
+    case "status": {
+      const status = unitStatusConfig.find(column => column.group.includes(officer.sttId));
+      return (
+        <div className=" flex items-center ">
+          <div className={`w-3 h-3 rounded-full mx-1 ${officer.isLogin ? "bg-green-500" : "bg-red-500"}`}>
+          </div>
+          <Badge
+            color={status?.color || "secondary"}
+            variant={status?.variant || "light"}
+          >
+            {context.unitStatuses.find(column => column.sttId.includes(officer.sttId))?.sttName || "-"}
+          </Badge>
+        </div>
+      )
+    }
+
+    case "area":
+      return context.areaLabel
+
+    case "skills":
+      return <SkillsDisplay skills={officer.skillLists || []} language={context.language} />
+
+    case "workload":
+      // Workload rides the roster fetch: no separate loading/error state exists anymore
+      // (see the signals comment in the modal). The cells stay as-is; the retry path is
+      // unreachable but stays wired to the roster refetch for prop-shape parity.
+      return (
+        <OfficerWorkloadCell
+          count={context.workload?.activeCaseCount}
+          isLoading={false}
+          isError={false}
+          onRetry={context.onRetryWorkload}
+        />
+      )
+
+    case "assignedCases":
+      return (
+        <OfficerAssignedCasesCell
+          cases={context.workload?.cases}
+          count={context.workload?.activeCaseCount}
+          isLoading={false}
+          isError={false}
+          onRetry={context.onRetryWorkload}
+        />
+      )
+
+    case "etaTtl":
+      return (
+        <OfficerEtaTtlCell
+          state={context.routeState}
+          canSolve={context.canSolveRoute}
+          cooldownSeconds={context.routeCooldownSeconds}
+          onSolve={context.onSolveRoute}
+        />
+      )
+  }
 }
 
 interface AssignOfficerModalProps {
@@ -322,7 +448,48 @@ export default function AssignOfficerModal({
     return { latitude, longitude }
   }, [caseData?.caseLat, caseData?.caseLon])
 
-  const officerRoutes = useOfficerRouteSolves({ officers: rosterOfficers, caseLocation })
+  // --- Which columns this tenant/org may see -----------------------------------------
+  // Two independent inputs, both already loaded by the app shell:
+  //   * the tenant's entitlements - `hasFeature`, NOT `!isLocked`, because `isLocked`
+  //     answers "false" while entitlements are still loading (fail-open) and would hand
+  //     the ETA/TTL column to a tenant we have not proven owns the GIS add-on;
+  //   * the org's Map Settings - `assignment.*` and `staff.etaTtl.applyToAssignmentPicker`,
+  //     which until now were editable in the admin form and read by nobody.
+  // `loaded` is always a fully-populated record (schema defaults when the endpoint has no
+  // saved row), and RTK caches it per orgId, so this adds no request of its own.
+  const { hasFeature } = useEntitlements();
+  // `enabled: open` on purpose: this modal is mounted (closed) on every case page, so an
+  // unconditional fetch here would ask for the org's map settings before anyone opened
+  // the picker - including for tenants with no GIS at all. While skipped, the hook still
+  // returns schema defaults, which is what the column list below reads.
+  const { loaded: mapSettings } = useOrgMapSettings({ enabled: open });
+  const officerColumns = resolveOfficerColumns({
+    hasGis: hasFeature("entitlement.gis"),
+    showWorkload: mapSettings.assignment.showWorkload,
+    showAssignedCases: mapSettings.assignment.showAssignedCases,
+    showRecommendRanking: mapSettings.assignment.enableRecommendRanking,
+    etaTtlInPicker: mapSettings.staff.etaTtl.applyToAssignmentPicker,
+  });
+
+  const officerRoutes = useOfficerRouteSolves({
+    officers: rosterOfficers,
+    caseLocation,
+    // Belt and braces: without the column there is nothing to press, and this makes a
+    // leftover callback unable to reach the routing provider either.
+    enabled: officerColumns.showEtaTtl,
+  })
+
+  // The AREA column shows the CASE's area (existing behaviour — it is identical on every
+  // row), so it is resolved once per render instead of once per row.
+  const caseAreaLabel = useMemo(() => {
+    const matchedArea = areaList.find(
+      item =>
+        caseData?.provId === item.provId &&
+        caseData?.countryId === item.countryId &&
+        caseData?.distId === item.distId
+    );
+    return matchedArea ? mergeArea(matchedArea, language) : "-";
+  }, [areaList, caseData?.provId, caseData?.countryId, caseData?.distId, language])
 
   const filteredOfficers = useMemo(() => {
     if (!searchTerm.trim()) return rosterOfficers
@@ -366,8 +533,15 @@ export default function AssignOfficerModal({
   //
   // The ranking itself lives in workloadRank.ts, shared with the map's staff
   // filter so the two cannot disagree about who is least loaded.
+  // The Recommend view is only reachable when the org enabled it
+  // (`assignment.enableRecommendRanking`). Deriving the EFFECTIVE mode instead of only
+  // hiding the button matters: a picker opened while the switch was on, then closed and
+  // reopened after an admin turned it off, would otherwise keep re-ranking rows with no
+  // visible control saying why.
+  const effectiveViewMode: OfficerViewMode = officerColumns.showRecommendRanking ? viewMode : "all"
+
   const displayedOfficers = useMemo(() => {
-    if (viewMode !== "recommend") return sortedOfficers
+    if (effectiveViewMode !== "recommend") return sortedOfficers
 
     return [...sortedOfficers].sort((a, b) =>
       compareWorkloadRank(
@@ -375,7 +549,7 @@ export default function AssignOfficerModal({
         getWorkloadRank(workloadByUnitId[b.unitId])
       )
     )
-  }, [viewMode, sortedOfficers, workloadByUnitId])
+  }, [effectiveViewMode, sortedOfficers, workloadByUnitId])
 
   const handleSelectOfficer = (officerId: string) => {
     // Assigned officers are listed for tracking only — never selectable.
@@ -498,31 +672,46 @@ export default function AssignOfficerModal({
               />
             </div>
           </div>
-          <div className="flex items-center bg-gray-200 dark:bg-gray-800 rounded-xl mt-2 md:mt-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setViewMode("recommend")}
-              aria-pressed={viewMode === "recommend"}
-              className={viewMode === "recommend"
-                ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
-                : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"}
-            >
-              {t("case.assign_officer_modal.recommend_button")}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setViewMode("all")}
-              aria-pressed={viewMode === "all"}
-              className={viewMode === "all"
-                ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
-                : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"}
-            >
-              {t("case.assign_officer_modal.allofficer_button")}
-            </Button>
-          </div>
+          {/* The Recommend ranking is an org switch (`assignment.enableRecommendRanking`).
+              With it off there is only one view, so the whole segmented control goes
+              rather than showing a single button that looks permanently pressed. */}
+          {officerColumns.showRecommendRanking && (
+            <div className="flex items-center bg-gray-200 dark:bg-gray-800 rounded-xl mt-2 md:mt-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setViewMode("recommend")}
+                aria-pressed={effectiveViewMode === "recommend"}
+                className={effectiveViewMode === "recommend"
+                  ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
+                  : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"}
+              >
+                {t("case.assign_officer_modal.recommend_button")}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setViewMode("all")}
+                aria-pressed={effectiveViewMode === "all"}
+                className={effectiveViewMode === "all"
+                  ? "bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white"
+                  : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"}
+              >
+                {t("case.assign_officer_modal.allofficer_button")}
+              </Button>
+            </div>
+          )}
         </div>
+
+        {/* Why a column is missing, said ONCE. The ETA/TTL column is the GIS add-on, so a
+            tenant without it gets the standard lock block above the table instead of a
+            per-row placeholder. The children are deliberately empty: this gate is used as
+            a NOTICE - it renders the lock UI only when the feature is missing, and nothing
+            at all when the tenant owns it. VITE_SHOW_ENTITLEMENT_UPSELL="false" reduces it
+            to nothing, which is exactly what that flag is for; the column itself stays
+            hidden either way (the entitlement decides, the flag only decides whether we
+            say so). */}
+        <EntitlementGate feature="entitlement.gis">{null}</EntitlementGate>
 
         {/* Officers Table */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden flex flex-col flex-1 min-h-0">
@@ -542,14 +731,15 @@ export default function AssignOfficerModal({
                       onChange={handleSelectAll}
                     />
                   </div>
-                  <div className={`${OFFICER_GRID_COLS} flex-1 pr-10`}>
-                    <div className="flex items-center justify-center">{t("case.assign_officer_modal.name")}</div>
-                    <div className="flex items-center justify-center">{t("case.assign_officer_modal.status")}</div>
-                    <div className="flex items-center justify-center">{t("case.assign_officer_modal.area")}</div>
-                    <div className="flex items-center justify-center">{t("case.assign_officer_modal.skills")}</div>
-                    <div className="flex items-center justify-center">{t("case.assign_officer_modal.workloads")}</div>
-                    <div className="flex items-center justify-center">{t("case.assign_officer_modal.assigned_cases")}</div>
-                    <div className="flex items-center justify-center">{t("case.assign_officer_modal.eta_ttl")}</div>
+                  <div
+                    className={`${OFFICER_GRID_CLASS} flex-1 pr-10`}
+                    style={{ gridTemplateColumns: officerColumns.gridTemplateColumns }}
+                  >
+                    {officerColumns.columns.map((column) => (
+                      <div key={column.id} className="flex items-center justify-center">
+                        {t(column.labelKey)}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -591,90 +781,31 @@ export default function AssignOfficerModal({
                               />
                             </div>
                             <div
-                              className={`${OFFICER_GRID_COLS} flex-1 py-3 pr-10 cursor-pointer`}
+                              className={`${OFFICER_GRID_CLASS} flex-1 py-3 pr-10 cursor-pointer`}
+                              style={{ gridTemplateColumns: officerColumns.gridTemplateColumns }}
                               onClick={() => {
                                 setShowOFFicerData(officer)
                               }}
                             >
-                              <div className="flex items-center mx-4 space-x-2">
-                                <Avatar className="w-8 h-8">
-                                  <AvatarFallback className="bg-gray-200 text-gray-700 text-xs dark:bg-gray-700 dark:text-white">
-                                    {officer.photo ?
-                                      <img src={officer.photo} alt="officer" className="w-full h-full object-cover" /> : officer.unitName
-                                        .split(" ")
-                                        .map((n) => n[0])
-                                        .join("")
-                                        .toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <span className="text-gray-800 dark:text-white font-medium">
-                                  {officer.unitName}
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-center">
-                                {(() => {
-                                  const status = unitStatusConfig.find(column => column.group.includes(officer.sttId));
-                                  return (
-                                    <div className=" flex items-center ">
-                                      <div className={`w-3 h-3 rounded-full mx-1 ${officer.isLogin ? "bg-green-500" : "bg-red-500"}`}>
-                                      </div>
-                                      <Badge
-                                        color={status?.color || "secondary"}
-                                        variant={status?.variant || "light"}
-                                      >
-                                        {unitStatus.find(column => column.sttId.includes(officer.sttId))?.sttName || "-"}
-                                      </Badge>
-                                    </div>
-                                  );
-                                })()}
-                              </div>
-                              <div className="flex items-center justify-center text-gray-600 dark:text-gray-300">
-                                {(() => {
-                                  const matchedArea = areaList.find(
-                                    item =>
-                                      caseData?.provId === item.provId &&
-                                      caseData?.countryId === item.countryId &&
-                                      caseData?.distId === item.distId
-                                  );
-                                  return matchedArea ? mergeArea(matchedArea, language) : "-";
-                                })()}
-                              </div>
-                              <div className="flex items-center justify-center">
-                                <SkillsDisplay skills={officer.skillLists || []} language={language} />
-                              </div>
-                              {/* Workload — plain count of active/open assigned cases. */}
-                              <div className="flex items-center justify-center">
-                                <OfficerWorkloadCell
-                                  count={workloadByUnitId[officer.unitId]?.activeCaseCount}
-                                  // Workload rides the roster fetch: no separate
-                                  // loading/error state exists anymore (see the
-                                  // signals comment above). The cells stay as-is;
-                                  // the retry path is unreachable but stays wired
-                                  // to the roster refetch for prop-shape parity.
-                                  isLoading={false}
-                                  isError={false}
-                                  onRetry={refetchUnits}
-                                />
-                              </div>
-                              {/* Currently assigned cases — count, click to expand the list. */}
-                              <div className="flex items-center justify-center">
-                                <OfficerAssignedCasesCell
-                                  cases={workloadByUnitId[officer.unitId]?.cases}
-                                  count={workloadByUnitId[officer.unitId]?.activeCaseCount}
-                                  isLoading={false}
-                                  isError={false}
-                                  onRetry={refetchUnits}
-                                />
-                              </div>
-                              {/* ETA / TTL — solved on demand, per row only. */}
-                              <div className="flex items-center justify-center">
-                                <OfficerEtaTtlCell
-                                  state={officerRoutes.routeStateFor(officer.unitId)}
-                                  canSolve={officerRoutes.canSolve(officer.unitId)}
-                                  cooldownSeconds={officerRoutes.cooldownSeconds(officer.unitId)}
-                                  onSolve={() => officerRoutes.solve(officer.unitId)}
-                                />
-                              </div>
+                              {officerColumns.columns.map((column) => (
+                                <div
+                                  key={column.id}
+                                  className={column.cellClass ?? DEFAULT_OFFICER_CELL_CLASS}
+                                >
+                                  {renderOfficerCell(column.id, {
+                                    officer,
+                                    areaLabel: caseAreaLabel,
+                                    unitStatuses: unitStatus,
+                                    workload: workloadByUnitId[officer.unitId],
+                                    routeState: officerRoutes.routeStateFor(officer.unitId),
+                                    canSolveRoute: officerRoutes.canSolve(officer.unitId),
+                                    routeCooldownSeconds: officerRoutes.cooldownSeconds(officer.unitId),
+                                    onSolveRoute: () => officerRoutes.solve(officer.unitId),
+                                    onRetryWorkload: refetchUnits,
+                                    language,
+                                  })}
+                                </div>
+                              ))}
                             </div>
                           </div>
                         )

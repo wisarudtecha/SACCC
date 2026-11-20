@@ -64,11 +64,24 @@ interface UseOfficerRouteSolvesOptions {
   officers: readonly Unit[];
   /** The open case's location, from `caseData.caseLat` / `caseLon`. */
   caseLocation: MapLatLon | null;
+  /**
+   * Whether ETA/TTL may be offered AT ALL. False when the tenant has no GIS add-on
+   * (`entitlement.gis`) or when the org turned the picker column off
+   * (`staff.etaTtl.applyToAssignmentPicker`).
+   *
+   * This is the second line of defence, not the first: the caller hides the column, and
+   * this flag makes it impossible for anything else on the row - a stale click, a
+   * leftover callback - to reach the routing provider and spend a request the tenant did
+   * not buy. Defaults to true so a future caller cannot silently lose the capability;
+   * an unentitled caller has to say so.
+   */
+  enabled?: boolean;
 }
 
 export function useOfficerRouteSolves({
   officers,
   caseLocation,
+  enabled = true,
 }: UseOfficerRouteSolvesOptions): UseOfficerRouteSolvesResult {
   const cacheRef = useRef<Map<string, RouteResult>>(new Map());
   // Last solve outcome per row, stamped with the route key it belongs to. A row
@@ -155,6 +168,10 @@ export function useOfficerRouteSolves({
 
   const canSolve = useCallback(
     (unitId: string): boolean => {
+      // Entitlement first: an unentitled row has no solvable state at all.
+      if (!enabled) {
+        return false;
+      }
       const context = contextByUnitId[unitId];
       if (!context || !context.key || !context.position || !caseMappable) {
         return false;
@@ -164,11 +181,14 @@ export function useOfficerRouteSolves({
       }
       return cooldownRemainingMs(unitId) <= 0;
     },
-    [contextByUnitId, caseMappable, routeStateFor, cooldownRemainingMs]
+    [enabled, contextByUnitId, caseMappable, routeStateFor, cooldownRemainingMs]
   );
 
   const solve = useCallback(
     (unitId: string): void => {
+      if (!enabled) {
+        return;
+      }
       const context = contextByUnitId[unitId];
       if (!context || !context.key || !context.position || !caseMappable) {
         return;
@@ -222,7 +242,7 @@ export function useOfficerRouteSolves({
           );
         });
     },
-    [contextByUnitId, caseMappable]
+    [enabled, contextByUnitId, caseMappable]
   );
 
   return { routeStateFor, canSolve, cooldownSeconds, solve };

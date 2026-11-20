@@ -1,4 +1,12 @@
 "use client"
+// DEPRECATED - superseded by `singleAssignOfficer.tsx`, and currently imported nowhere
+// (the only reference is a commented-out import in `CaseDetailView.tsx`). Kept rather
+// than deleted because the repo rule is not to remove code whose history is unclear.
+//
+// Do NOT wire this file back up as it stands: it predates the batch-assign, workload,
+// assigned-cases and ETA/TTL columns and renders a hardcoded `workLoadsMock` - two fake
+// skill ids presented as the officer's workload. It also has no entitlement gate, so
+// reviving it would re-open exactly the GIS leak that `officerColumns.ts` closed.
 import { useState, useMemo, useEffect, useRef } from "react"
 import { ChevronDown, ChevronUp, Search, X, } from "lucide-react"
 import { unitStatusConfig } from "../ui/status/status"

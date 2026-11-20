@@ -56,6 +56,10 @@ import { Dropdown } from "@/core/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/core/components/ui/dropdown/DropdownItem";
 import { usePermissions } from "@/core/hooks/usePermissions";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import { useEntitlements } from "@/core/hooks/useEntitlements";
+import { ENTITLEMENT_UPSELL_ENABLED } from "@/core/config/featureFlags";
+import { hideLockedNavItems } from "@/core/layout/navVisibility";
+import type { EntitlementFeature } from "@/core/types/entitlement";
 import LangDropdown from "@/core/components/header/LangDropdown";
 import NotificationDropdown from "@/core/components/header/NotificationDropdown";
 import UserDropdown from "@/core/components/header/UserDropdown";
@@ -66,12 +70,20 @@ export type MoreItem = {
   path?: string;
   permission?: boolean;
   disabled?: boolean;
+  /**
+   * Paid capability this entry needs, mirroring the sidebar's `NavItem.feature`. The
+   * "More" dropdown is one of the three hand-maintained menu arrays in the app, and it
+   * was the only one with no way to say "this tenant never bought it" — so KB entries
+   * survived here as dead links while the sidebar hid them.
+   */
+  feature?: EntitlementFeature;
   subItems?: {
     name: string;
     icon?: React.ReactNode;
     path: string;
     permission?: boolean;
     disabled?: boolean;
+    feature?: EntitlementFeature;
   }[];
 };
 
@@ -123,6 +135,7 @@ const SuperTopbar = (
 ) => {
   const permissions = usePermissions();
   const { t } = useTranslation();
+  const { isLocked } = useEntitlements();
 
   const moreItems: MoreItem[] = useMemo(() => [
     {
@@ -330,7 +343,10 @@ const SuperTopbar = (
           icon: <Map />,
           name: t("navigation.super_app.topbar.more.menu.dashboard_analytic.sub_menu.case_summary_by_area"),
           path: "/cms/dashboard/case-summary-by-area",
-          permission: permissions.hasPermission("dashboard.view")
+          permission: permissions.hasPermission("dashboard.view"),
+          // Mirrors the route gate AND the cms sidebar entry: the page is a map end to
+          // end, so a tenant without the GIS add-on must not be offered it here either.
+          feature: "entitlement.gis"
         },
         {
           icon: <Radar />,
@@ -505,6 +521,11 @@ const SuperTopbar = (
         icon: <Package />,
         name: t("navigation.super_app.topbar.more.menu.knowledge.title"),
         permission: true,
+        // The whole knowledge section lives behind `/kms/*`, which is gated on
+        // `entitlement.kb`. Declaring it on the GROUP is enough: `hideLockedNavItems`
+        // checks the group before its children. `as const` keeps the literal narrow -
+        // this array sits in a ternary, so it loses its contextual `MoreItem` type.
+        feature: "entitlement.kb" as const,
         subItems: [
           {
             icon: <ListIcon />,
@@ -550,8 +571,14 @@ const SuperTopbar = (
   ], [permissions, t]);
 
   const sortedItems = useMemo(() => {
-    // return moreItems;
-    return [...moreItems].sort((a, b) => {
+    // Same entitlement rule as the sidebar (shared helper, so the two arrays cannot
+    // disagree): with the upsell flag off, entries the tenant never bought are removed
+    // instead of left as dead links; with it on they stay and their route-level lock page
+    // is the announcement.
+    const visibleItems = ENTITLEMENT_UPSELL_ENABLED
+      ? moreItems
+      : hideLockedNavItems(moreItems, isLocked);
+    return [...visibleItems].sort((a, b) => {
       const aCount = a.subItems?.length ?? 0;
       const bCount = b.subItems?.length ?? 0;
       if (bCount !== aCount) {
@@ -559,7 +586,7 @@ const SuperTopbar = (
       }
       return a.name.localeCompare(b.name);
     });
-  }, [moreItems]);
+  }, [moreItems, isLocked]);
 
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);

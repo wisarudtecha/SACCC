@@ -21,6 +21,9 @@ import { useDashboardDraft } from "@/core/components/custom-dashboard/useDashboa
 import { useDashboardLayoutActions } from "@/core/components/custom-dashboard/useDashboardLayoutActions";
 import { buildDefaultLayout } from "@/core/components/custom-dashboard/constants";
 import { canManageLayout } from "@/core/components/custom-dashboard/layoutOwnership";
+import { useEntitlements } from "@/core/hooks/useEntitlements";
+import { getWidgetDefinition } from "@/core/components/custom-dashboard/widgets/registry";
+import { isWidgetAvailable } from "@/core/components/custom-dashboard/widgets/availability";
 import type { LayoutNameMode } from "@/core/components/custom-dashboard/modals/LayoutNameModal";
 import type { DashboardWidget } from "@/core/types/dashboardLayout";
 
@@ -34,6 +37,7 @@ const CustomDashboardContent: React.FC = () => {
   const { t } = useTranslation();
   const { state: authState } = useAuth();
   const { toasts, addToast, removeToast } = useToast();
+  const { hasFeature } = useEntitlements();
 
   const persistence = useDashboardLayouts();
   const { layouts, isLoading, isError, isFetching, refetch } = persistence;
@@ -199,6 +203,17 @@ const CustomDashboardContent: React.FC = () => {
     return null;
   }
 
+  /**
+   * Widgets this tenant may see. A saved layout can carry a widget whose feature is no
+   * longer granted (plan downgrade, or the layout was shared from another tenant), and
+   * `WidgetHost` has no sensible state for that: an empty card looks broken. Filtering
+   * here keeps the grid clean; the stored layout is untouched, so re-granting the feature
+   * brings the widget back exactly where it was.
+   */
+  const visibleWidgets = draft.widgets.filter(widget =>
+    isWidgetAvailable(getWidgetDefinition(widget.widgetKey), hasFeature)
+  );
+
   const confirmCopy = pendingConfirm?.kind === "discard"
     ? {
         title: t("dashboard.custom.confirm_discard_title"),
@@ -247,13 +262,13 @@ const CustomDashboardContent: React.FC = () => {
           stays enabled — a transient list failure shouldn't lock the page. */}
       {isError && <DashboardUnavailableNotice onRetry={() => void refetch()} isRetrying={isFetching} />}
 
-      {draft.widgets.length === 0 ? (
+      {visibleWidgets.length === 0 ? (
         <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-gray-300 text-gray-500 dark:border-gray-600 dark:text-gray-400">
           {t("dashboard.custom.no_widgets")}
         </div>
       ) : (
         <DashboardGrid
-          widgets={draft.widgets}
+          widgets={visibleWidgets}
           isEditing={isEditing && canManage}
           onReorder={reorderWidgets}
           onConfigure={setConfiguringWidget}

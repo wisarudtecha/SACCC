@@ -114,4 +114,40 @@ describe("hideLockedNavItems", () => {
     expect(result[0]).toBe(items[0]);
     expect(result[1]).toBe(items[1]);
   });
+
+  it("applies to any menu item shape, not just the sidebar's NavItem", () => {
+    // The rule is shared by three hand-maintained menu arrays (super sidebar, cms
+    // sidebar, topbar "More"). It is generic so each keeps its own item type - this is
+    // the assertion that the topbar's shape (plain `path` + `icon`, no `pro`/`new`)
+    // still works.
+    type TopbarItem = {
+      name: string;
+      icon?: null;
+      path?: string;
+      feature?: EntitlementFeature;
+      subItems?: { name: string; path: string; feature?: EntitlementFeature }[];
+    };
+
+    const topbarItems: TopbarItem[] = [
+      { name: "Cases", path: "/cms/cases" },
+      {
+        name: "Knowledge",
+        feature: "entitlement.kb",
+        subItems: [{ name: "Articles", path: "/kms/articles" }],
+      },
+      {
+        name: "Dashboards",
+        subItems: [
+          { name: "Summary by area", path: "/cms/dashboard/case-summary-by-area", feature: "entitlement.gis" },
+          { name: "Dispatch", path: "/cms/dashboard/dispatch" },
+        ],
+      },
+    ];
+
+    const result = hideLockedNavItems(topbarItems, (feature) => feature === "entitlement.gis");
+
+    expect(result.map((item) => item.name)).toEqual(["Cases", "Knowledge", "Dashboards"]);
+    // Only the GIS entry goes; its non-GIS sibling in the same group survives.
+    expect(result[2].subItems?.map((sub) => sub.name)).toEqual(["Dispatch"]);
+  });
 });

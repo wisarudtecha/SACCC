@@ -7,8 +7,22 @@
 // and a plain function loses Fast Refresh (react-refresh/only-export-components
 // warns about exactly that), and the rule below decides which menus a user can
 // see at all, so it is worth testing on its own.
+//
+// GENERIC ON PURPOSE. This rule has to guard three arrays that are maintained by hand
+// and cannot see each other: `SuperSidebar`'s items, `cms`'s `AppSidebar` items and
+// `SuperTopbar`'s "More" dropdown. For a long time only the first one carried the rule,
+// so a locked KB/chat entry survived in the other two as a dead link - the exact
+// divergence documented in the anti-regression log for the sidebar/topbar pair.
 import type { EntitlementFeature } from "@/core/types/entitlement";
-import type { NavItem } from "./SuperSidebar";
+
+/**
+ * The minimum shape this rule needs. Structural, so every menu's own item type can be
+ * passed without importing (or widening) `NavItem`.
+ */
+export interface EntitlementAwareNavItem {
+  feature?: EntitlementFeature;
+  subItems?: readonly EntitlementAwareNavItem[];
+}
 
 /**
  * Drops every entry the tenant is not entitled to, instead of showing it locked.
@@ -24,10 +38,10 @@ import type { NavItem } from "./SuperSidebar";
  * passes `useEntitlements().isLocked`, which is a fresh function identity each
  * render but is only ever called during that render.
  */
-export const hideLockedNavItems = (
-  items: NavItem[],
+export const hideLockedNavItems = <T extends EntitlementAwareNavItem>(
+  items: readonly T[],
   isLocked: (feature: EntitlementFeature) => boolean
-): NavItem[] =>
+): T[] =>
   items.flatMap((nav) => {
     if (nav.feature && isLocked(nav.feature)) {
       return [];
@@ -43,7 +57,11 @@ export const hideLockedNavItems = (
     }
     // Nothing was filtered: hand the SAME object back so the render tree (and any
     // downstream memo) sees no change at all.
-    return visibleSubItems.length === nav.subItems.length
-      ? [nav]
-      : [{ ...nav, subItems: visibleSubItems }];
+    if (visibleSubItems.length === nav.subItems.length) {
+      return [nav];
+    }
+    // The cast is the price of the generic item type: `subItems` here is narrowed to
+    // the structural base type, while the caller's `T` keeps its own element type.
+    // Every element came from `nav.subItems`, so the runtime shape is unchanged.
+    return [{ ...nav, subItems: visibleSubItems } as unknown as T];
   });

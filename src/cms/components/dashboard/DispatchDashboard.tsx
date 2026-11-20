@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { FileDown } from "lucide-react";
 import { DashboardSourceProvider } from "@/core/components/custom-dashboard/sources/DashboardSourceProvider";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import { useEntitlements } from "@/core/hooks/useEntitlements";
 import { useDashboardExport } from "@/core/hooks/useDashboardExport";
 import { Skeleton } from "@/core/components/ui/loading/LoadingSystem";
 import ExportReportModal from "@/cms/components/crm/products/ExportReportModal";
@@ -15,8 +16,16 @@ import { DispatchHeatmap } from "@/cms/components/dashboard/map/heatmap/Dispatch
 
 const DispatchDashboardContent: React.FC = () => {
   const { t } = useTranslation();
+  // The heatmap is a GIS surface; the rest of this dashboard (KPIs, officer panel,
+  // event feed) is not. Unentitled tenants keep everything else and the density map is
+  // removed - with its 500-case sample fetch - instead of leaving an empty card.
+  const { hasFeature } = useEntitlements();
+  const hasGis = hasFeature("entitlement.gis");
+
   const { events, isLoading: isEventsLoading } = useDispatchEventsFeed();
-  const { cases: heatmapCases, isLoading: isHeatmapLoading } = useDispatchHeatmapCases();
+  const { cases: heatmapCases, isLoading: isHeatmapLoading } = useDispatchHeatmapCases({
+    enabled: hasGis,
+  });
 
   const [showExportModal, setShowExportModal] = useState(false);
   const { captureRef, hideDuringCaptureRef, isExporting, exportDashboard } =
@@ -54,26 +63,28 @@ const DispatchDashboardContent: React.FC = () => {
 
       <DispatchKpiRow />
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <div className="space-y-2 xl:col-span-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-              {t("dashboard.dispatch.heatmap_title")}
-            </h3>
-            {/* Officer-density plotting needs an org-wide live position feed the backend
-                doesn't expose yet (position tracking today is scoped to one open case at a
-                time) - see the FE-BE dependency request. The toggle is shown, disabled, so
-                the layout doesn't need rework once that feed exists. */}
-            <label
-              className="flex cursor-not-allowed items-center gap-2 text-xs text-gray-400 dark:text-gray-500"
-              title={t("dashboard.dispatch.officer_density_toggle_disabled_tooltip")}
-            >
-              <input type="checkbox" disabled className="cursor-not-allowed" />
-              {t("dashboard.dispatch.officer_density_toggle")}
-            </label>
+      <div className={`grid grid-cols-1 gap-4 ${hasGis ? "xl:grid-cols-3" : ""}`}>
+        {hasGis && (
+          <div className="space-y-2 xl:col-span-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                {t("dashboard.dispatch.heatmap_title")}
+              </h3>
+              {/* Officer-density plotting needs an org-wide live position feed the backend
+                  doesn't expose yet (position tracking today is scoped to one open case at a
+                  time) - see the FE-BE dependency request. The toggle is shown, disabled, so
+                  the layout doesn't need rework once that feed exists. */}
+              <label
+                className="flex cursor-not-allowed items-center gap-2 text-xs text-gray-400 dark:text-gray-500"
+                title={t("dashboard.dispatch.officer_density_toggle_disabled_tooltip")}
+              >
+                <input type="checkbox" disabled className="cursor-not-allowed" />
+                {t("dashboard.dispatch.officer_density_toggle")}
+              </label>
+            </div>
+            {isHeatmapLoading ? <Skeleton height={520} /> : <DispatchHeatmap cases={heatmapCases} />}
           </div>
-          {isHeatmapLoading ? <Skeleton height={520} /> : <DispatchHeatmap cases={heatmapCases} />}
-        </div>
+        )}
 
         <div className="space-y-2">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">

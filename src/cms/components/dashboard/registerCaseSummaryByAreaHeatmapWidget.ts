@@ -29,4 +29,10 @@ registerWidgetDefinition({
   defaultConfig: { showHeader: true },
   configurable: ["title", "showHeader", "colSpan", "rowSpan", "displayMode"],
   compactAdapter: compactCaseSummaryByArea,
+  // A choropleth map is this widget's whole point, so it carries the GIS add-on: hidden
+  // from the library and not rendered from a saved layout without it (see
+  // `isWidgetAvailable`). The compact tile that shares the same source is deliberately
+  // covered too - one widget, one entitlement answer - and the numbers it would show are
+  // still available from the table-shaped "top districts" widget, which needs no feature.
+  feature: "entitlement.gis",
 });

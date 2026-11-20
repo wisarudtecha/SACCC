@@ -57,4 +57,9 @@ registerWidgetDefinition({
   defaultPosition: { colSpan: 4, rowSpan: 2 },
   defaultConfig: { showHeader: true },
   configurable: ["title", "showHeader", "colSpan", "rowSpan", "displayMode"],
+  // The heatmap IS the GIS add-on: without it the widget has nothing to draw, so it is
+  // not offered in the library and not rendered from a saved layout (see
+  // `isWidgetAvailable`). The officer-status and events-feed widgets above stay
+  // available - they are tables and feeds, not maps.
+  feature: "entitlement.gis",
 });

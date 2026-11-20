@@ -143,10 +143,19 @@ export default function CmsApp() {
           <Route path="/dashboard/analytics" element={<AnalyticsDashboard />} />
           <Route path="/dashboard/callcenter" element={<CallcenterDashboard />} />
 
+          {/* Case Summary by Area is a GIS page end to end: the table tab is a
+              breakdown of the same map data, and the map is the reason the page exists.
+              Route-level gate, so an unentitled tenant gets the lock page (or the /cms
+              redirect when the upsell flag is off) instead of a page whose main view can
+              never render. `/dashboard/dispatch` is NOT gated this way - its heatmap is
+              one section among KPIs and feeds, so only that section is withheld. */}
           <Route
             path="/dashboard/case-summary-by-area"
             element={
-              <ProtectedRoute requiredPermissions={["dashboard.view"]}>
+              <ProtectedRoute
+                requiredPermissions={["dashboard.view"]}
+                requiredFeature="entitlement.gis"
+              >
                 <CaseSummaryByAreaPage />
               </ProtectedRoute>
             }

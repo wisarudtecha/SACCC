@@ -2,6 +2,7 @@
 import type React from "react";
 import type { LucideIcon } from "lucide-react";
 import type { Language } from "@/core/config/i18n";
+import type { EntitlementFeature } from "@/core/types/entitlement";
 import type { DashboardWidget, WidgetConfig } from "@/core/types/dashboardLayout";
 import type { WidgetSourceData } from "@/core/components/custom-dashboard/sources/types";
 import type { CompactTileValue } from "@/core/components/custom-dashboard/widgets/compactAdapters";
@@ -53,6 +54,12 @@ interface WidgetDefinitionBase {
   defaultPosition: { colSpan: number; rowSpan: number };
   defaultConfig: WidgetConfig;
   configurable: WidgetConfigurableField[];
+  /**
+   * Paid capability this widget displays (e.g. `entitlement.gis` for the map widgets).
+   * A widget that declares one is hidden from the library and never rendered for a
+   * tenant that does not own it - see `isWidgetAvailable` in `widgets/availability.ts`.
+   */
+  feature?: EntitlementFeature;
 }
 
 export interface SourcedWidgetDefinition extends WidgetDefinitionBase {
