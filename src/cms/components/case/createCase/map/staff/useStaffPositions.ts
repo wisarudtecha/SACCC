@@ -34,7 +34,10 @@ import { useGetUnitQuery } from "@/cms/store/api/dispatch";
 import type { Unit, UnitWithWorkload } from "@/cms/types/dispatch";
 import type { UnitStatus } from "@/cms/types/unit";
 import { useWebSocket } from "@/core/components/websocket/websocket";
+import { useDocumentVisible } from "@/core/hooks/useDocumentVisible";
+import { useOrgMapSettings } from "@/cms/components/admin/system-configuration/settings/useOrgMapSettings";
 import { parseMobEvent, type MobUnitEvent } from "./mobEvents";
+import { resolveTrackingPollMs } from "./staffCadence";
 import { toStaffMarkers, type StaffMarker, type UnitPatch } from "./staffTypes";
 
 export const STAFF_REFRESH_COOLDOWN_MS = 10_000;
@@ -56,20 +59,6 @@ const MOB_RECONCILE_DEBOUNCE_MS = 2_000;
  * idle map still has none from this path.
  */
 const LIVE_POSITION_FLUSH_MS = 1_000;
-
-/**
- * Safety net for roster drift.
- *
- * Assignments made in THIS app invalidate the "Dispatch" tag and refetch on
- * their own, but another dispatcher's assignment does not reach us, and TRACKING
- * deliberately no longer refetches as a side effect. A slow poll while the layer
- * is open is the cheapest way to notice a unit that joined or left the case.
- *
- * This is a considered exception to the rule that an idle map runs no timers:
- * the cost is one request a minute, and only while an operator is actually
- * looking at the staff layer.
- */
-const ROSTER_SAFETY_REFETCH_MS = 60_000;
 
 /**
  * How often markers are rebuilt so staleness is re-evaluated against the clock.
@@ -258,6 +247,13 @@ export function useStaffPositions(caseId: string, enabled: boolean): UseStaffPos
   const refetchRef = useRef(refetch);
   refetchRef.current = refetch;
 
+  // The org's `staff.tracking` cadence (Phase C3). `null` means "no safety-net
+  // timer at all", which is what `manual` asks for (decision D6).
+  const { loaded: orgMapSettings } = useOrgMapSettings();
+  const trackingPollMs = resolveTrackingPollMs(orgMapSettings.staff.tracking);
+  // A hidden tab is one request per open case for nobody's benefit.
+  const isDocumentVisible = useDocumentVisible();
+
   // Units this map is responsible for. Deliberately the RAW list rather than the
   // rendered markers: toStaffMarkers drops units reporting 0/0, and those are
   // exactly the ones whose first real position a TRACKING event should pick up.
@@ -422,14 +418,16 @@ export function useStaffPositions(caseId: string, enabled: boolean): UseStaffPos
     }
   }, [enabled]);
 
-  // Roster drift - see ROSTER_SAFETY_REFETCH_MS.
+  // Roster drift - the cadence comes from the org's `staff.tracking` setting
+  // (Phase C3). `trackingPollMs === null` (manual) means no timer is ever set;
+  // a hidden tab stops it too, and coming back re-runs this effect.
   useEffect(() => {
-    if (!enabled || !caseId) {
+    if (!enabled || !caseId || trackingPollMs === null || !isDocumentVisible) {
       return;
     }
-    const intervalId = setInterval(() => refetchRef.current(), ROSTER_SAFETY_REFETCH_MS);
+    const intervalId = setInterval(() => refetchRef.current(), trackingPollMs);
     return () => clearInterval(intervalId);
-  }, [enabled, caseId]);
+  }, [enabled, caseId, trackingPollMs, isDocumentVisible]);
 
   // Advances the clock the `staff` memo below is rebuilt against.
   useEffect(() => {

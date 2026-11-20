@@ -7,17 +7,18 @@ import { useTranslation } from "@/core/hooks/useTranslation";
 import { formatDriveTime, formatEtaClock, routeErrorKey, ttlMinutesRemaining } from "./routeFormat";
 import type { StaffSectionContext } from "./staffPanelSections";
 import StaffRouteCalculateButton from "./StaffRouteCalculateButton";
+import { useEtaTtlTickMs } from "./useEtaTtlTickMs";
 
 interface StaffEtaTtlSectionProps {
   ctx: StaffSectionContext;
 }
 
-/** How often the TTL countdown re-renders. Display-only - no re-solve. */
-const TTL_TICK_MS = 30_000;
-
 function StaffEtaTtlSectionBase({ ctx }: StaffEtaTtlSectionProps) {
   const { t, language } = useTranslation();
   const { state, canSolve, cooldownSeconds, onSolve } = ctx.route;
+  // How often the TTL countdown re-renders (org setting `staff.etaTtl`).
+  // Display-only - no re-solve.
+  const tickMs = useEtaTtlTickMs();
 
   // Write-only: bumping it re-renders so the TTL countdown advances without a
   // second solve. No timer runs while there is nothing to count down.
@@ -26,9 +27,9 @@ function StaffEtaTtlSectionBase({ ctx }: StaffEtaTtlSectionProps) {
     if (state.status !== "ready") {
       return;
     }
-    const intervalId = setInterval(() => setTick((tick) => tick + 1), TTL_TICK_MS);
+    const intervalId = setInterval(() => setTick((tick) => tick + 1), tickMs);
     return () => clearInterval(intervalId);
-  }, [state.status]);
+  }, [state.status, tickMs]);
 
   return (
     <div className="space-y-2">

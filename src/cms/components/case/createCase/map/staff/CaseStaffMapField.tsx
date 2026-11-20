@@ -22,6 +22,7 @@ import type { CaseSopUnit } from "@/cms/types/dispatch";
 import { PermissionGate } from "@/core/components/auth/PermissionGate";
 import { usePermissions } from "@/core/hooks/usePermissions";
 import { useTranslation } from "@/core/hooks/useTranslation";
+import { useOrgMapSettings } from "@/cms/components/admin/system-configuration/settings/useOrgMapSettings";
 import { CASE_IOT_ENABLED } from "@/core/config/featureFlags";
 import BoundaryMapField from "../BoundaryMapField";
 import { dockedCardsWidthPx } from "../frameBounds";
@@ -194,7 +195,13 @@ function CaseStaffMapFieldBase({
 }: CaseStaffMapFieldProps) {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isStaffVisible, setIsStaffVisible] = useState(false);
+  // The org's defaults for the two staff-layer toggles (Phase B2/B3). Held as
+  // `override ?? orgValue` rather than seeded into `useState`: this field mounts
+  // before the settings document has been read, so a mount-time seed would capture
+  // the defaults and never see the org's choice (the same trap as A4).
+  const { loaded: orgMapSettings } = useOrgMapSettings();
+  const [staffVisibleOverride, setStaffVisibleOverride] = useState<boolean | null>(null);
+  const isStaffVisible = staffVisibleOverride ?? orgMapSettings.staff.showStaff;
   // Which officers the layer shows. Recommend is the default, as in the
   // assign-officer modal; see staffFilter.ts. Owned here so it survives the large
   // map closing and is shared by both maps, like the layer's on/off state.
@@ -211,7 +218,8 @@ function CaseStaffMapFieldBase({
   // section that offers the control, because that section unmounts every time
   // its row is collapsed - and for the same reason the rest of this state lives
   // here rather than below AddressMapField.
-  const [isTrailVisible, setIsTrailVisible] = useState(false);
+  const [trailVisibleOverride, setTrailVisibleOverride] = useState<boolean | null>(null);
+  const isTrailVisible = trailVisibleOverride ?? orgMapSettings.staff.showTrail;
   // The Case Panel, opened from the incident pin. Owned here for the same reason
   // as `selection`, and - like it - kept across the large map closing, so
   // reopening restores what the dispatcher had open.
@@ -338,7 +346,10 @@ function CaseStaffMapFieldBase({
       return;
     }
     hasSettledStaffDefaultRef.current = true;
-    setIsStaffVisible(true);
+    // D13: the org's `staff.showStaff` is only the starting point, so this rule
+    // still wins - an assigned case shows its staff even when the org default is
+    // off. Recorded as an override, which is what makes it outrank the default.
+    setStaffVisibleOverride(true);
   }, [assignment.assignedUnitIds]);
 
   const clearSelection = useCallback(() => {
@@ -350,20 +361,21 @@ function CaseStaffMapFieldBase({
   }, []);
 
   const toggleTrail = useCallback(() => {
-    setIsTrailVisible((visible) => !visible);
-  }, []);
+    setTrailVisibleOverride((previous) => !(previous ?? orgMapSettings.staff.showTrail));
+  }, [orgMapSettings.staff.showTrail]);
 
   const handleToggle = useCallback(() => {
     // A dispatcher's own choice outranks the default, even one made before the
     // assignment list has loaded.
     hasSettledStaffDefaultRef.current = true;
-    setIsStaffVisible((visible) => {
+    setStaffVisibleOverride((previous) => {
+      const visible = previous ?? orgMapSettings.staff.showStaff;
       if (visible) {
         clearSelection();
       }
       return !visible;
     });
-  }, [clearSelection]);
+  }, [clearSelection, orgMapSettings.staff.showStaff]);
 
   // Ignored unless the large map is open. Markers now draw on the inline map too,
   // but its Staff toggle opens no panel, so a click there must not set a
@@ -428,7 +440,7 @@ function CaseStaffMapFieldBase({
   // position is known). Deliberately never touches the route - selecting a person
   // does not solve one, that stays the Calculate button's job.
   const handleFocusResponder = useCallback((unitId: string) => {
-    setIsStaffVisible(true);
+    setStaffVisibleOverride(true);
     setGroupOrigin(null);
     setSelection({ type: "staff", unitId });
     setPendingFocusUnitId(unitId);

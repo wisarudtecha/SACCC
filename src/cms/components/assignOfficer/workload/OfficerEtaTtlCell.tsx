@@ -19,10 +19,8 @@ import {
   ttlMinutesRemaining,
 } from "@/cms/components/case/createCase/map/staff/routeFormat";
 import StaffRouteCalculateButton from "@/cms/components/case/createCase/map/staff/StaffRouteCalculateButton";
+import { useEtaTtlTickMs } from "@/cms/components/case/createCase/map/staff/useEtaTtlTickMs";
 import type { RouteState } from "@/cms/components/case/createCase/map/staff/routeTypes";
-
-/** How often the TTL countdown re-renders. Display-only — never a re-solve. */
-const TTL_TICK_MS = 30_000;
 
 interface OfficerEtaTtlCellProps {
   state: RouteState;
@@ -33,15 +31,18 @@ interface OfficerEtaTtlCellProps {
 
 function OfficerEtaTtlCellBase({ state, canSolve, cooldownSeconds, onSolve }: OfficerEtaTtlCellProps) {
   const { t, language } = useTranslation();
+  // How often the TTL countdown re-renders (org setting `staff.etaTtl`).
+  // Display-only - never a re-solve.
+  const tickMs = useEtaTtlTickMs();
 
   const [, setTick] = useState(0);
   useEffect(() => {
     if (state.status !== "ready") {
       return;
     }
-    const intervalId = window.setInterval(() => setTick((tick) => tick + 1), TTL_TICK_MS);
+    const intervalId = window.setInterval(() => setTick((tick) => tick + 1), tickMs);
     return () => window.clearInterval(intervalId);
-  }, [state.status]);
+  }, [state.status, tickMs]);
 
   return (
     <div
