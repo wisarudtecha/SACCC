@@ -7,6 +7,31 @@
       "subscription": "订阅与授权",
       "escalation_rules": "升级规则"
     },
+    "shell": {
+      "dirty": "有未保存的更改",
+      "load_error": {
+        "title": "无法加载设置",
+        "body": "无法读取已保存的配置，因此下方显示的是系统默认值。在加载成功之前保存功能已禁用，否则会覆盖已存储的设置。",
+        "retry": "重试"
+      },
+      "not_saved_yet": {
+        "title": "该组织尚未保存任何设置",
+        "body": "下方显示的是系统默认值。保存一次即可创建。"
+      },
+      "save_failed": {
+        "title": "未保存",
+        "body": "服务器拒绝了本次修改，因此没有写入任何内容。您的修改仍保留在此处。",
+        "dismiss": "关闭"
+      },
+      "last_saved": "最后保存者 {{by}} · {{at}}",
+      "last_saved_unknown_user": "未知用户",
+      "save": {
+        "success": "设置已保存",
+        "failure": "无法保存设置"
+      },
+      "map_apply_deferred": "由于有地图处于打开状态，新的地图服务商尚未生效。请重新加载页面。",
+      "unload_warning": "您有尚未保存的设置更改。"
+    },
     "actions": {
       "save": "保存",
       "cancel": "取消",
@@ -28,7 +53,11 @@
         "map_provider": {
           "label": "地图服务商",
           "help": "为该组织覆盖部署默认的地图服务商。",
-          "inherit": "继承部署默认值"
+          "inherit": "继承部署默认值",
+          "fallback_unsupported": "所选地图服务商在此环境中不可用，地图将改用 {{provider}}（部署默认值）绘制。",
+          "effect_note": "更改地图服务商后，仅对保存之后打开的地图生效。已打开的地图（本页或其他标签页）会继续使用原服务商，直到重新加载页面。",
+          "reload": "重新加载页面",
+          "reload_disabled_hint": "请先保存或取消更改——重新加载会丢失未保存的修改。"
         },
         "default_basemap": {
           "label": "默认地图样式",
@@ -41,7 +70,11 @@
         },
         "show_place": {
           "label": "显示地点",
-          "help": "在地图上显示地点和兴趣点标记。"
+          "help": "在地图上显示地点和兴趣点标记。",
+          "count": "将显示 {{count}} 个地点（上限 {{limit}} 个）。",
+          "count_loading": "正在检查地点数量…",
+          "count_error": "无法读取地点数据。",
+          "truncated_warning": "地点数量超过该上限，地图仅显示前 {{limit}} 个。请缩小数据集范围或按类别拆分。"
         },
         "show_boundaries": {
           "label": "显示边界与多边形",
@@ -81,7 +114,8 @@
         },
         "staff_routing": {
           "label": "人员路径规划",
-          "interval": "路径规划自动间隔（秒）"
+          "interval": "路径规划自动间隔（秒）",
+          "auto_unavailable": "自动路径规划尚不可用。系统仍使用手动模式；已保存的自动值会保留但不生效。"
         },
         "staff_eta_ttl": {
           "label": "人员 ETA / TTL",
@@ -89,7 +123,8 @@
         },
         "staff_tracking": {
           "label": "人员追踪",
-          "interval": "追踪自动间隔（秒）"
+          "interval": "追踪自动间隔（秒）",
+          "effective_interval": "实际生效：每 {{seconds}} 秒刷新一次（最低 {{floor}} 秒）。"
         },
         "eta_ttl_apply_to_picker": {
           "label": "将 ETA / TTL 设置应用于指派选择器",
@@ -135,6 +170,7 @@
         "mode": {
           "label": "分配模式",
           "help": "开启自动模式后，系统将根据所选条件自动分配工单。手动模式表示调度员手动分配每个工单。",
+          "engine_unavailable": "自动路径规划尚未启用——路由引擎仍在开发中。所选条件会被保存，但目前不会用于分配案件。",
           "manual": "手动",
           "automatic": "自动"
         },
@@ -179,7 +215,28 @@
         "case_type": {
           "label": "按工单类型",
           "desc": "根据事件类型和严重程度进行分类和分配。"
+        },
+        "area_based": {
+          "label": "按区域",
+          "desc": "根据工单所属区域和负责的服务区域边界进行分派。"
+        },
+        "unit_property": {
+          "label": "按单元属性",
+          "desc": "根据单元上配置的属性匹配人员（例如能力或设备标签）。"
         }
+      },
+      "mode_table": {
+        "title": "按工单子类型的分配模式",
+        "help": "为每个工单子类型选择哪一步自动执行：PIC 为确定负责人，Assignment 为派单本身。“未设置”表示该子类型尚未配置。",
+        "column_pic": "负责人 (PIC)",
+        "column_assignment": "工单分配",
+        "column_sub_types": "工单子类型",
+        "unknown_group": "已不在当前清单中",
+        "option_auto": "自动",
+        "option_manual": "手动",
+        "option_none": "未设置",
+        "empty": "尚未配置工单子类型。",
+        "unknown_sub_type": "未知子类型"
       },
       "allocation": {
         "round_robin": {
@@ -4277,6 +4334,7 @@
       "map_place_hide": "隐藏地点",
       "map_place_empty": "没有可显示的地点",
       "map_place_error": "无法加载地点",
+      "map_place_truncated": "显示 {{count}} 个地点（上限 {{limit}} 个）——可能缺少部分地点。",
       "map_place_coordinates": "坐标",
       "map_place_close": "关闭",
       "map_place_category_police_station": "警察局",
@@ -5485,6 +5543,10 @@
     }
   },
   "customer": {
+    "contact": {
+      "tab": "联系人",
+      "partial": "部分联系人可能未列出。"
+    },
     "social": {
       "already_in_list": "该 {{channel}} 账号已在下方列表中。",
       "already_linked_other": "该 {{channel}} 账号已关联到其他客户。",

@@ -1,0 +1,88 @@
+{
+  "mapSettings": {
+    "general": {
+      "mapProvider": "arcgis",
+      "defaultBasemapId": "street",
+      "allowMapStyleChange": true
+    },
+    "layers": {
+      "showPlace": true,
+      "showBoundaries": true,
+      "showSearch": true,
+      "showAddressCoordinates": true,
+      "allowPlaceIncidentPin": true
+    },
+    "incident": {
+      "radiusMeters": 900,
+      "showRadius": true,
+      "autoLockServiceCenterOnMatch": true
+    },
+    "staff": {
+      "showStaff": true,
+      "showTrail": true,
+      "routing": {
+        "mode": "auto",
+        "autoIntervalSeconds": 60
+      },
+      "etaTtl": {
+        "mode": "auto",
+        "autoIntervalSeconds": 30,
+        "applyToAssignmentPicker": true
+      },
+      "tracking": {
+        "mode": "auto",
+        "autoIntervalSeconds": 15
+      }
+    },
+    "assignment": {
+      "showWorkload": true,
+      "showAssignedCases": true,
+      "enableRecommendRanking": true
+    }
+  },
+  "assignmentMode": [
+    {
+      "caseSubTypes": [
+        "5972c770-2b72-4d65-ac93-d19c1555aaf7",
+        "5972c770-2b72-4d65-ac93-d19c1555aaf8"
+      ],
+      "mode": "auto",
+      "type": "pic"
+    },
+    {
+      "caseSubTypes": ["7489f87c-a1d2-4d20-b9a1-40c9b1702e8b"],
+      "mode": "manual",
+      "type": "pic"
+    },
+    {
+      "caseSubTypes": ["35114206-e8f4-43c6-b112-5e4a7ebb8c51"],
+      "mode": "auto",
+      "type": "assignment"
+    },
+    {
+      "caseSubTypes": [
+        "cda51f75-32d7-4441-84bc-52728f64dfdd",
+        "5972c770-2b72-4d65-ac93-d19c1555aaf9"
+      ],
+      "mode": "manual",
+      "type": "assignment"
+    }
+  ],
+  "assignmentRules": {
+    "routingModes": {
+      "skillBased": true,
+      "availability": true,
+      "areaBased": true,
+      "unitProperty": true,
+      "combineWithAnd": false
+    },
+    "allocationMethod": "load_balance",
+    "advancedOptions": {
+      "serviceSubType": "general",
+      "autoRequireAllSkills": false,
+      "autoRespectShiftSchedule": true,
+      "manualSuggestByWorkload": true,
+      "manualAllowOverride": true
+    }
+  }
+}

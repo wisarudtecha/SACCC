@@ -7,6 +7,31 @@
       "subscription": "Subscription & Entitlements",
       "escalation_rules": "Escalation Rules"
     },
+    "shell": {
+      "dirty": "Unsaved changes",
+      "load_error": {
+        "title": "Could not load the settings",
+        "body": "The stored configuration could not be read, so the values below are system defaults. Saving is disabled until they load, otherwise it would overwrite what is already stored.",
+        "retry": "Retry"
+      },
+      "not_saved_yet": {
+        "title": "No settings saved for this organization yet",
+        "body": "The values below are system defaults. Save once to store them."
+      },
+      "save_failed": {
+        "title": "Not saved",
+        "body": "The server rejected the change, so nothing was written. Your edits are kept here.",
+        "dismiss": "Dismiss"
+      },
+      "last_saved": "Last saved by {{by}} · {{at}}",
+      "last_saved_unknown_user": "unknown user",
+      "save": {
+        "success": "Settings saved",
+        "failure": "Could not save the settings"
+      },
+      "map_apply_deferred": "The new map provider could not be applied because a map is open. Reload the page to use it.",
+      "unload_warning": "You have settings changes that have not been saved."
+    },
     "actions": {
       "save": "Save",
       "cancel": "Cancel",
@@ -28,7 +53,11 @@
         "map_provider": {
           "label": "Map provider",
           "help": "Override the deployment default map provider for this organization.",
-          "inherit": "Inherit deployment default"
+          "inherit": "Inherit deployment default",
+          "fallback_unsupported": "The selected map provider is not usable in this environment, so maps are drawn with {{provider}} (the deployment default) instead.",
+          "effect_note": "A change of map provider applies to the maps opened after saving. Maps already open in this session (or in another tab) keep the old provider until the page is reloaded.",
+          "reload": "Reload page",
+          "reload_disabled_hint": "Save or cancel your changes first - reloading would discard them."
         },
         "default_basemap": {
           "label": "Default map style",
@@ -41,7 +70,11 @@
         },
         "show_place": {
           "label": "Show place",
-          "help": "Show named place and point-of-interest markers on the map."
+          "help": "Show named place and point-of-interest markers on the map.",
+          "count": "{{count}} of at most {{limit}} places will be shown.",
+          "count_loading": "Checking how many places exist…",
+          "count_error": "Could not read the place dataset.",
+          "truncated_warning": "There are more places than this limit, so the map shows only the first {{limit}}. Narrow the dataset or split it by category."
         },
         "show_boundaries": {
           "label": "Show boundaries and polygon",
@@ -81,7 +114,8 @@
         },
         "staff_routing": {
           "label": "Staff routing",
-          "interval": "Routing auto interval (seconds)"
+          "interval": "Routing auto interval (seconds)",
+          "auto_unavailable": "Automatic routing is not available yet. Manual mode stays in effect; a saved Automatic value is kept but does nothing."
         },
         "staff_eta_ttl": {
           "label": "Staff ETA / TTL",
@@ -89,7 +123,8 @@
         },
         "staff_tracking": {
           "label": "Staff tracking",
-          "interval": "Tracking auto interval (seconds)"
+          "interval": "Tracking auto interval (seconds)",
+          "effective_interval": "In effect: one refresh every {{seconds}} seconds (minimum {{floor}}s)."
         },
         "eta_ttl_apply_to_picker": {
           "label": "Apply ETA / TTL settings to the assignment picker",
@@ -135,6 +170,7 @@
         "mode": {
           "label": "Assignment mode",
           "help": "Turn Automatic on to let the system route cases based on selected criteria. Manual means dispatchers assign every case by hand.",
+          "engine_unavailable": "Automatic routing is not active yet - the routing engine is still being built. The criteria you select are saved, but nothing routes cases with them yet.",
           "manual": "Manual",
           "automatic": "Automatic"
         },
@@ -179,7 +215,28 @@
         "case_type": {
           "label": "Case Type",
           "desc": "Classify and assign based on incident type and severity."
+        },
+        "area_based": {
+          "label": "Area-Based",
+          "desc": "Assign based on the area the case belongs to and the responsible service-area boundary."
+        },
+        "unit_property": {
+          "label": "Unit Property",
+          "desc": "Match an officer by the properties set on their unit (for example a capability or equipment tag)."
         }
+      },
+      "mode_table": {
+        "title": "Assignment Mode by Case Sub-Type",
+        "help": "Choose, per case sub-type, which stage runs automatically. PIC decides who the responsible person is; Assignment assigns the case itself. \"Not set\" leaves the sub-type unconfigured.",
+        "column_pic": "PIC",
+        "column_assignment": "Case assignment",
+        "column_sub_types": "Case sub-type",
+        "unknown_group": "No longer in the catalogue",
+        "option_auto": "Auto",
+        "option_manual": "Manual",
+        "option_none": "Not set",
+        "empty": "No case sub-types are configured yet.",
+        "unknown_sub_type": "Unknown sub-type"
       },
       "allocation": {
         "round_robin": {
@@ -4401,6 +4458,7 @@
       "map_place_hide": "Hide places",
       "map_place_empty": "No places to show",
       "map_place_error": "Could not load places",
+      "map_place_truncated": "Showing {{count}} of at most {{limit}} places - some may be missing.",
       "map_place_coordinates": "Coordinates",
       "map_place_close": "Close",
       "map_place_category_police_station": "Police Station",
@@ -4899,6 +4957,10 @@
     "unsupportedFieldType": "Unsupported field type: {{type}}"
   },
   "customer": {
+    "contact": {
+      "tab": "Contacts",
+      "partial": "Some contacts may not be listed."
+    },
     "social": {
       "already_in_list": "This {{channel}} account is already in the list below.",
       "already_linked_other": "This {{channel}} account is already linked to another customer.",

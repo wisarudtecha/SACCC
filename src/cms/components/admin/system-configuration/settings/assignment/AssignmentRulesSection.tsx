@@ -1,137 +1,66 @@
-// The Assignment Rules section: Automatic/Manual toggle, routing criteria
-// checkboxes (when Automatic), AND/OR combine toggle, plus Workload Allocation.
-// One atomic Save for the whole section, one Cancel that reverts to the last-loaded
-// (or schema-default) values with no network call. Owns form state and the
-// save-error banner. Mirrors MapSettingsSection.tsx.
+// The Assignment Rules section: assignment mode per case sub-type, routing criteria,
+// AND/OR combine toggle, Workload Allocation and the advanced options. Purely
+// presentational.
 //
-// Configuration only - selecting a routing or allocation method here does not
-// change how any real case is assigned; no engine consumes these values yet.
-import { useEffect, useMemo, useState } from "react";
-import { CloseIcon } from "@/core/icons";
-import Button from "@/core/components/ui/button/Button";
-import { ToastContainer } from "@/core/components/crud/ToastContainer";
-import { useToast } from "@/core/hooks/useToast";
-import { useTranslation } from "@/core/hooks/useTranslation";
-import type { OrgAssignmentRuleSettings } from "@/core/types/organization";
-import { useOrgAssignmentRules } from "../useOrgAssignmentRules";
+// Form state and Save live in the page shell (`OrganizationSettingsManagement`),
+// because the backend stores this half, the map half and the `assignmentMode[]` array
+// in ONE JSON document and the page saves them together.
+//
+// The org-wide Automatic/Manual toggle is GONE (2026-11-19 contract): auto/manual is
+// decided per case sub-type by `AssignmentModeTable` - docs/ORG-SETTINGS-Assignment-Mode-Survey.md.
+//
+// Configuration only - selecting a routing or allocation method here does not change
+// how any real case is assigned; no engine consumes these values yet.
+import type {
+  AssignmentModeEntry,
+  OrgAssignmentRuleSettings,
+} from "@/core/types/organization";
+import { AdvancedAssignmentSettings } from "./AdvancedAssignmentSettings";
+import { AssignmentModeTable } from "./AssignmentModeTable";
 import { SmartRoutingSettings } from "./SmartRoutingSettings";
 import { WorkloadAllocationSettings } from "./WorkloadAllocationSettings";
-import { AdvancedAssignmentSettings } from "./AdvancedAssignmentSettings";
 
-export function AssignmentRulesSection() {
-  const { t } = useTranslation();
-  const { loaded, isLoading, isSaving, save } = useOrgAssignmentRules();
-  const { toasts, addToast, removeToast } = useToast();
+export interface AssignmentRulesSectionProps {
+  value: OrgAssignmentRuleSettings;
+  /** The document-level `assignmentMode[]` - a sibling of this section, not a field in it. */
+  assignmentMode: AssignmentModeEntry[];
+  onChange: (patch: Partial<OrgAssignmentRuleSettings>) => void;
+  onAssignmentModeChange: (entries: AssignmentModeEntry[]) => void;
+  /** Validation errors keyed by field (`routingModes`, `assignmentMode`), from the shell. */
+  errors?: Record<string, string>;
+}
 
-  const [form, setForm] = useState<OrgAssignmentRuleSettings>(loaded);
-  const [saveFailed, setSaveFailed] = useState(false);
-
-  // Re-seed the form from the loaded record: first load, and again after a
-  // successful save (the query re-fetches / the mock store updates).
-  useEffect(() => {
-    setForm(loaded);
-  }, [loaded]);
-
-  const isDirty = useMemo(
-    () => JSON.stringify(form) !== JSON.stringify(loaded),
-    [form, loaded]
-  );
-
-  const handleSave = async () => {
-    const result = await save({
-      mode: form.mode,
-      routingModes: form.routingModes,
-      allocationMethod: form.allocationMethod,
-      advancedOptions: form.advancedOptions,
-    });
-    if (result.ok) {
-      setSaveFailed(false);
-      addToast("success", "settings.assignment.action.save.success", 4000, true);
-    } else {
-      // Keep the admin's edits; show the persistent banner.
-      setSaveFailed(true);
-    }
-  };
-
-  const handleCancel = () => {
-    setForm(loaded);
-    setSaveFailed(false);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="animate-pulse space-y-4">
-        {[0, 1, 2].map((row) => (
-          <div
-            key={row}
-            className="h-40 rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-white/[0.02]"
-          />
-        ))}
-      </div>
-    );
-  }
-
+export function AssignmentRulesSection({
+  value,
+  assignmentMode,
+  onChange,
+  onAssignmentModeChange,
+  errors = {},
+}: AssignmentRulesSectionProps) {
   return (
     <div className="flex flex-col gap-5">
-      <ToastContainer toasts={toasts} onRemove={removeToast} />
-
-      {saveFailed && (
-        <div className="flex items-start justify-between gap-3 rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-100">
-          <div>
-            <p className="font-semibold">
-              {t("settings.assignment.banner.not_saved.title")}
-            </p>
-            <p className="mt-0.5">{t("settings.assignment.banner.not_saved.body")}</p>
-          </div>
-          <button
-            type="button"
-            aria-label={t("settings.assignment.banner.not_saved.dismiss")}
-            onClick={() => setSaveFailed(false)}
-            className="shrink-0 text-yellow-700 hover:text-yellow-900 dark:text-yellow-200"
-          >
-            <CloseIcon className="h-4 w-4" />
-          </button>
-        </div>
-      )}
-
+      <AssignmentModeTable
+        entries={assignmentMode}
+        onChange={onAssignmentModeChange}
+        errorKey={errors["assignmentMode"]}
+      />
       <SmartRoutingSettings
-        mode={form.mode}
-        routingModes={form.routingModes}
-        onModeChange={(mode) =>
-          setForm((prev) => ({ ...prev, mode }))
-        }
+        routingModes={value.routingModes}
+        errorKey={errors["routingModes"]}
         onRoutingModesChange={(routingModes) =>
-          setForm((prev) => ({
-            ...prev,
-            routingModes: { ...prev.routingModes, ...routingModes },
-          }))
+          onChange({ routingModes: { ...value.routingModes, ...routingModes } })
         }
       />
       <WorkloadAllocationSettings
-        value={form.allocationMethod}
-        onChange={(allocationMethod) =>
-          setForm((prev) => ({ ...prev, allocationMethod }))
-        }
+        value={value.allocationMethod}
+        onChange={(allocationMethod) => onChange({ allocationMethod })}
       />
       <AdvancedAssignmentSettings
-        mode={form.mode}
-        options={form.advancedOptions}
+        options={value.advancedOptions}
         onChange={(advancedOptions) =>
-          setForm((prev) => ({
-            ...prev,
-            advancedOptions: { ...prev.advancedOptions, ...advancedOptions },
-          }))
+          onChange({ advancedOptions: { ...value.advancedOptions, ...advancedOptions } })
         }
       />
-
-      <div className="flex items-center justify-end gap-3">
-        <Button variant="outline" onClick={handleCancel} disabled={!isDirty || isSaving}>
-          {t("settings.actions.cancel")}
-        </Button>
-        <Button variant="primary" onClick={handleSave} disabled={isSaving}>
-          {isSaving ? t("settings.actions.saving") : t("settings.actions.save")}
-        </Button>
-      </div>
     </div>
   );
 }
